@@ -1,16 +1,42 @@
-# 🦎 Reptitist - Nền tảng chăm sóc & mua bán sản phẩm cho bò sát cảnh
+# 🦎 Reptitist - Reptile Care & Product Marketplace Platform
 
-Reptitist là một hệ thống web giúp kết nối người nuôi bò sát cảnh với cộng đồng và nhà cung cấp, cung cấp các tính năng hỗ trợ chăm sóc, chia sẻ kiến thức và mua sắm sản phẩm phù hợp.
+**Reptitist** is a fullstack web platform designed to support reptile enthusiasts in both caring for their pets and purchasing specialized products. It offers tools for community engagement, expert advice, and an e-commerce experience tailored to reptiles like snakes, geckos, turtles, and more.
+
+---
+
+## 🚀 Key Features
+
+- 🛒 **Product Marketplace**: Buy essential reptile care items like UVB lights, enclosures, food, and more.
+- 📖 **Care Articles & Guides**: Browse informative posts on caring for different types of reptiles.
+- 🩺 **Consultation & Q&A**: Ask questions and get help from the community or specialists.
+- 📦 **Order Management**: Easily track your purchases and shipping status.
+- 👤 **User Accounts**: Register, log in, manage profiles with user/admin roles.
+- 📊 **Admin Dashboard**: Manage products, orders, users, and articles with ease.
 
 ---
 
-## 🚀 Tính năng nổi bật
+## 🧱 Project Structure
 
-- 🛒 **Mua bán sản phẩm**: Các sản phẩm chuyên dụng cho bò sát như đèn UVB, lồng nuôi, thức ăn, v.v.
-- 📖 **Bài viết & hướng dẫn chăm sóc**: Kiến thức nuôi rắn, tắc kè, rùa nước, kỳ nhông,...
-- 🩺 **Tư vấn chăm sóc**: Gửi câu hỏi và nhận hỗ trợ từ chuyên gia hoặc cộng đồng.
-- 📦 **Quản lý đơn hàng**: Theo dõi đơn, trạng thái giao hàng, thanh toán dễ dàng.
-- 👤 **Tài khoản người dùng**: Đăng ký, đăng nhập, phân quyền admin/user.
-- 📊 **Dashboard Admin**: Quản lý sản phẩm, đơn hàng, người dùng và nội dung bài viết.
+WDP301_REPTITISTSERVICE/
+├── backend/ # REST API using Express & MongoDB
+├── frontend/ # Web UI built with React & Vite
 
 ---
+
+## 🛠️ Technologies Used
+
+| Frontend (Client) | Backend (Server) | Database   |
+|-------------------|------------------|------------|
+| React + Vite      | Node.js + Express| MongoDB    |
+| TailwindCSS       | JWT Authentication | Mongoose |
+| Axios, React Router | Joi Validation | Cloudinary (image hosting) |
+
+---
+
+## ⚙️ About this project
+
+FPT University – WDP301 Course
+
+📄 License
+This project is licensed under the MIT License.
+Feel free to use, modify, and deploy it for educational or community purposes.
