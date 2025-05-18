@@ -2,6 +2,7 @@ const express = require('express');
 const { connect } = require('mongoose');
 const router = require('./src/routes/index.js');
 const dotenv = require('dotenv');
+const morgan = require('morgan');
 var cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./src/config/db.js');
@@ -9,6 +10,8 @@ const app = express();
 dotenv.config();
 app.use(cors());
 
+
+app.use(morgan('dev'));
 
 //Cônection to MongoDB
 connectDB();
