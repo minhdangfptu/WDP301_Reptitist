@@ -10,3 +10,4 @@ const apiRouteSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('ApiRoute', apiRouteSchema);
+console.log('Permissions model loaded');

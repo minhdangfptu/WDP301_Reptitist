@@ -10,3 +10,4 @@ const aiRecommendationSchema = new mongoose.Schema({
 }, { collection: 'ai_recommendation' });
 
 module.exports = mongoose.model('AIRecommendation', aiRecommendationSchema);
+console.log('AIRecommendation model loaded');

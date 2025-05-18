@@ -32,3 +32,4 @@ const reptileSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Reptile', reptileSchema);
+console.log('Reptile model loaded');

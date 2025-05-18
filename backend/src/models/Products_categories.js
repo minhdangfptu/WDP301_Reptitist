@@ -15,3 +15,4 @@ const productCategorySchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('ProductCategory', productCategorySchema);
+console.log('ProductCategory model loaded');
