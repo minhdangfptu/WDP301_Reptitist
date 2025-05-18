@@ -11,3 +11,4 @@ const libraryContentSchema = new mongoose.Schema({
 }, { collection: 'library_content' });
 
 module.exports = mongoose.model('LibraryContent', libraryContentSchema);
+console.log('LibraryContent model loaded');

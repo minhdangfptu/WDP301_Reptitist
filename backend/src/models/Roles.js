@@ -18,3 +18,4 @@ const roleSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Role', roleSchema);
+console.log('Role model loaded');

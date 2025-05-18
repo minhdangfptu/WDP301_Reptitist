@@ -92,3 +92,4 @@ const userReptileSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('UserReptile', userReptileSchema);
+console.log('UserReptile model loaded');

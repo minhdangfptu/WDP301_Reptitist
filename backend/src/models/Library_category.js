@@ -8,3 +8,4 @@ const categorySchema = new mongoose.Schema({
 },{ collection: 'library_categories' });
 
 module.exports = mongoose.model('LibraryCategories', categorySchema);
+console.log('LibraryCategories model loaded');
