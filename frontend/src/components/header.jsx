@@ -25,12 +25,12 @@ const Header = () => {
             className="logo"
           />
           <ul className="nav-links">
-            <li><a href="LandingPage">Trang chủ</a></li>
-            <li><a href="#">Giới thiệu</a></li>
-            <li><a href="#">Sản phẩm</a></li>
-            <li><a href="#">Dịch vụ</a></li>
-            <li><a href="#">Tin tức</a></li>
+            <li><a href="LandingPage">TRANG CHỦ</a></li>
+            <li><a href="#">CỘNG ĐỒNG</a></li>
+            <li><a href="Library">THƯ VIỆN </a></li>
+            <li><a href="#">MUA SẮM </a></li>
             <li><a href="ContactUs">Liên hệ</a></li>
+            <li><a href="#">YOUR PET</a></li>
           </ul>
 
           {/* Phần tài khoản với dropdown */}
