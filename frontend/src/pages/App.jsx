@@ -1,8 +1,8 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom/client'; // Sửa import ReactDOM
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
-
+import './css/Login.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import LandingPage from './pages/LandingPage';
@@ -15,18 +15,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/Login" element={<Login />} />
-        <Route path="/LandingPage" element={<LandingPage />} />
-        <Route path="/ContactUs" element={<ContactUs />} />
-        <Route path="/Library" element={<Library />} />
-        <Route path="/SignUp" element={<SignUp />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/library" element={<Library />} /> {/* Sửa path */}
+        <Route path="/signup" element={<SignUp />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
