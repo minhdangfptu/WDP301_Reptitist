@@ -3,7 +3,6 @@
 /* General styling */
 :root {
   --primary-color: #0fa958;
-  --secondary-color: #006934;
   --text-color: #333;
   --light-text: #666;
   --white: #fff;
@@ -26,7 +25,7 @@
 
 /* Page title banner */
 .page-title-banner {
-  background-color: var(--secondary-color);
+  background-color: var(--primary-color);
   color: white;
   padding: 20px 0;
   text-align: center;

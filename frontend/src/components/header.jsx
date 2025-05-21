@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -19,18 +20,17 @@ const Header = () => {
     <header>
       <div className="container">
         <nav>
-          <img
-            src="Screenshot 2025-05-20 072648.png"
-            alt="Reptiest Logo"
-            className="logo"
-          />
+            <img
+              src="logo1.png"
+              className="logo"
+            />
           <ul className="nav-links">
-            <li><a href="LandingPage">TRANG CHỦ</a></li>
-            <li><a href="#">CỘNG ĐỒNG</a></li>
-            <li><a href="Library">THƯ VIỆN </a></li>
-            <li><a href="#">MUA SẮM </a></li>
-            <li><a href="ContactUs">Liên hệ</a></li>
-            <li><a href="#">YOUR PET</a></li>
+            <li><Link to="/LandingPage">TRANG CHỦ</Link></li>
+            <li><Link to="/Community">CỘNG ĐỒNG</Link></li>
+            <li><Link to="/Library">THƯ VIỆN</Link></li>
+            <li><Link to="/Shop">MUA SẮM</Link></li>
+            <li><Link to="/ContactUs">Liên hệ</Link></li>
+            <li><Link to="/YourPet">YOUR PET</Link></li>
           </ul>
 
           {/* Phần tài khoản với dropdown */}
@@ -43,9 +43,9 @@ const Header = () => {
             Tài khoản
             {showAccountMenu && (
               <ul className="account-dropdown">
-                <li><a href="/Login">Login</a></li>
-                <li><a href="/Logout">Logout</a></li>
-                <li><a href="/SignUp">Sign Up</a></li>
+                <li><Link to="/Login">Login</Link></li>
+                <li><Link to="/Logout">Logout</Link></li>
+                <li><Link to="/Signup">Sign Up</Link></li>
               </ul>
             )}
           </div>

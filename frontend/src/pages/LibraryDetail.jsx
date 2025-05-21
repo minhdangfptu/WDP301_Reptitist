@@ -1,9 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import Sellerproduct from "../components/sellerproduct";
+import { bestsellingProducts } from "../data/productData";
 import "../css/LibraryDetail.css";
 
 const LibraryDetail = () => {
+  const navigate = useNavigate();
+
   // Data for reptile categories
   const reptileCategories = [
     {
@@ -46,33 +51,9 @@ const LibraryDetail = () => {
     { id: 10, name: "Các loài bò sát khác", count: null }
   ];
 
-  // Data for bestselling products
-  const bestsellingProducts = [
-    {
-      id: 1,
-      name: "Thức ăn hỗn hợp dành cho bò sát Repti 7 65g Power Deluxe 1",
-      price: "180.000đ",
-      imageUrl: "/public/product1.png"
-    },
-    {
-      id: 2,
-      name: "Thức ăn hỗn hợp cho bò sát Repti 7 65g cho bóng Nam Mỹ 65g Vitamin Power Deluxe 2",
-      price: "180.000đ",
-      imageUrl: "/public/product1.png"
-    },
-    {
-      id: 3,
-      name: "Thức ăn hỗn hợp cho bò sát Repti 7 65g Nam Mỹ Vitamin Power Deluxe 3",
-      price: "180.000đ",
-      imageUrl: "/public/product1.png"
-    },
-    {
-      id: 4,
-      name: "Thức ăn hỗn hợp cho bò sát Repti 7 65g Nam Mỹ Vitamin Power Deluxe 4",
-      price: "180.000đ",
-      imageUrl: "/public/product1.png"
-    }
-  ];
+  const handleCardClick = (categoryId) => {
+    navigate(`/LibraryDetail2/${categoryId}`);
+  };
 
   return (
     <div className="library-page">
@@ -86,7 +67,7 @@ const LibraryDetail = () => {
       {/* Breadcrumb */}
       <div className="container">
         <div className="breadcrumb">
-          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/Library">Thư viện kiến thức</a> &gt; <span>Bò sát phổ biến ở Việt Nam</span>
+          <a href="/">Trang chủ</a> &gt; <a href="/thu-vien">Thư viện kiến thức</a> &gt; <span>Bò sát phổ biến ở Việt Nam</span>
         </div>
         
         <div className="library-content">
@@ -103,29 +84,20 @@ const LibraryDetail = () => {
               ))}
             </ul>
             
-            <div className="bestselling">
-              <h3 className="sidebar-title">Sản phẩm bán chạy</h3>
-              <ul className="product-list">
-                {bestsellingProducts.map(product => (
-                  <li key={product.id} className="product-item">
-                    <div className="product-image">
-                      <img src={product.imageUrl} alt={product.name} />
-                    </div>
-                    <div className="product-info">
-                      <a href={`#product-${product.id}`} className="product-name">{product.name}</a>
-                      <span className="product-price">{product.price}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {/* Sử dụng component Sellerproduct */}
+            <Sellerproduct products={bestsellingProducts} />
           </div>
           
           {/* Main Content */}
           <div className="main-content">
             <div className="reptile-categories">
               {reptileCategories.map(category => (
-                <div key={category.id} className="category-card">
+                <div 
+                  key={category.id} 
+                  className="category-card"
+                  onClick={() => handleCardClick(category.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="category-image">
                     <img src={category.imageUrl} alt={category.title} />
                   </div>
