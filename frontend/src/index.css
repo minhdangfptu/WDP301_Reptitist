@@ -31,38 +31,50 @@ body {
 /* Header styles */
 header {
   background-color: var(--white);
-  padding: 10px 0;
+  padding: 15px 0;
   border-bottom: 1px solid #eee;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1000;
 }
 
-nav {
+header nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.logo {
-  height: 40px;
+header .logo {
+  height: 80px;
+  margin-top: 20px;
 }
 
-.nav-links {
+header .logo img {
+  height: 80px;
+  width: auto;
+}
+
+header .nav-links {
   display: flex;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-links li {
-  margin-left: 20px;
+header .nav-links li {
+  margin-left: 25px;
 }
 
-.nav-links a {
+header .nav-links a {
   text-decoration: none;
   color: var(--text-color);
   font-weight: 500;
   text-transform: uppercase;
   font-size: 14px;
+  transition: color 0.3s ease;
 }
 
-.nav-links a:hover {
+header .nav-links a:hover {
   color: var(--primary-color);
 }
 
@@ -641,9 +653,12 @@ footer {
   margin-bottom: 30px;
 }
 
-.footer-logo img {
-  height: 50px;
+.footer-logo {
   margin-bottom: 15px;
+}
+
+.footer-logo img {
+  height: 80px;
 }
 
 .footer-column {
@@ -655,19 +670,7 @@ footer {
 .footer-column h3 {
   font-size: 18px;
   margin-bottom: 15px;
-  position: relative;
-  padding-bottom: 10px;
   text-transform: uppercase;
-}
-
-.footer-column h3::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 30px;
-  height: 2px;
-  background-color: white;
 }
 
 .footer-links {
@@ -694,31 +697,36 @@ footer {
   margin-bottom: 10px;
   font-size: 14px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .footer-contact i {
   margin-right: 10px;
-  width: 20px;
+  width: 14px;
+  margin-top: 3px;
 }
 
 .footer-social {
   display: flex;
-  justify-content: center;
-  gap: 30px;
-  margin-top: 20px;
+  margin-top: 15px;
+  gap: 10px;
 }
 
 .footer-social a {
-  font-size: 40px;
-  color: black;
-  transition: color 0.3s;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  transition: background-color 0.3s;
 }
 
 .footer-social a:hover {
-  color: #06a13d;
+  background-color: rgba(255, 255, 255, 0.3);
 }
-
 
 .copyright {
   text-align: center;
@@ -792,7 +800,7 @@ nav {
 .nav-links a {
   text-decoration: none;
   color: #333;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   text-transform: uppercase;
 }
