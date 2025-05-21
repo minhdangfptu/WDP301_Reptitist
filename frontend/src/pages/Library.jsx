@@ -56,8 +56,8 @@ const Library = () => {
 
       <div className="container">
         <div className="breadcrumb">
-          <a href="#">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
-          <a href="#">Thư viện kiến thức</a>
+          <a href="/LandingPage">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/Library">Thư viện kiến thức</a>
         </div>
       </div>
 
@@ -70,15 +70,12 @@ const Library = () => {
               <ul className="sidebar-menu">
                 {menuData.map((item, idx) => (
                   <li key={idx}>
-                    <div className="menu-item">
+                    <div className="menu-item" onClick={() => toggleSubmenu(idx)} style={{ cursor: "pointer", userSelect: "none" }}>
                       <a href="#" className="menu-link">{item.title}</a>
-                      <div
-                        className="toggle-btn"
-                        onClick={() => toggleSubmenu(idx)}
-                        style={{ userSelect: "none" }}
-                      >
-                        {openIndexes[idx] ? "■" : "□"}
-                      </div>
+                      <span
+                        className={`caret ${openIndexes[idx] ? "caret-up" : "caret-down"}`}
+                        aria-hidden="true"
+                      ></span>
                     </div>
                     <ul
                       className="submenu"
@@ -86,7 +83,9 @@ const Library = () => {
                     >
                       {item.submenu.map((sub, i) => (
                         <li key={i}>
-                          <a href="#">{sub}</a>
+                          <a href={sub === "Khái quát về bò sát" ? "/LibraryDetail" : "#"}>
+                            {sub}
+                          </a>
                         </li>
                       ))}
                     </ul>

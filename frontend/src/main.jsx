@@ -10,6 +10,7 @@ import ContactUs from './pages/ContactUs';
 import Library from './pages/Library'; 
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
+import LibraryDetail from './pages/LibraryDetail';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/ContactUs" element={<ContactUs />} />
         <Route path="/Library" element={<Library />} />
         <Route path="/SignUp" element={<SignUp />} />
+        <Route path="/LibraryDetail" element={<LibraryDetail />} />
       </Routes>
     </BrowserRouter>
   );

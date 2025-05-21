@@ -6,12 +6,12 @@
   font-family: 'Segoe UI', Arial, sans-serif;
 }
 
-body1 {
+.signup-body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f5f5f5;
+  background-image: url('/BGLogin.jpg');
   padding: 20px;
 }
 
