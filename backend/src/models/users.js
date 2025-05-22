@@ -38,10 +38,10 @@ const userSchema = new mongoose.Schema({
     default: true
   },
   wallet: {
-    type: mongoose.Schema.Types.Mixed // nếu bạn chưa có cấu trúc cụ thể, hoặc thay đổi sau
+    type: mongoose.Schema.Types.Mixed 
   },
   account_type: {
-    type: mongoose.Schema.Types.Mixed // tương tự wallet, tùy chỉnh sau
+    type: mongoose.Schema.Types.Mixed 
   },
   user_reptile_id: {
     type: mongoose.Schema.Types.ObjectId,
