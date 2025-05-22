@@ -1,8 +1,10 @@
-const User = require('../models/users');
+const User = require('../models/Users');
 const Cart = require('../models/Carts');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
+const fs = require('fs');
+console.log(fs.readdirSync(__dirname + '/../models'));
 const signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
