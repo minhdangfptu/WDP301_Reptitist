@@ -20,6 +20,7 @@ connectDB();
 app.use(express.json());
 app.use(bodyParser.json());
 app.use('/', router);
+app.use('/api/auth', require('./src/routes/authRoute.js'));
 
 router.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
