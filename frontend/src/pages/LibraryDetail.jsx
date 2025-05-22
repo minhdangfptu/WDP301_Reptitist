@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Sellerproduct from "../components/sellerproduct";
+import Sellerproduct from "../components/SellProduct";
 import { bestsellingProducts } from "../data/productData";
 import "../css/LibraryDetail.css";
 

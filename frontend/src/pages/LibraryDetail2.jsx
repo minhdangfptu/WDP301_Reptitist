@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Sellerproduct from "../components/sellerproduct";
+import SellProduct from "../components/SellProduct";
 import { bestsellingProducts } from "../data/productData";
 import "../css/LibraryDetail2.css";
 
@@ -93,8 +93,8 @@ const LibraryDetail2 = () => {
               ))}
             </ul>
             
-            {/* Sử dụng component Sellerproduct */}
-            <Sellerproduct products={bestsellingProducts} />
+            {/* Sử dụng component SellProduct */}
+            <SellProduct products={bestsellingProducts} />
           </div>
           
           {/* Main Content */}
