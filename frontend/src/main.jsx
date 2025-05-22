@@ -12,7 +12,6 @@ import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import LibraryDetail from './pages/LibraryDetail';
 import LibraryDetail2 from './pages/LibraryDetail2';
-import YourPet from './pages/YourPet';
 
 function App() {
   return (
@@ -25,7 +24,6 @@ function App() {
         <Route path="/SignUp" element={<SignUp />} />
         <Route path="/LibraryDetail" element={<LibraryDetail />} />
         <Route path="/LibraryDetail2/1" element={<LibraryDetail2 />} />
-        <Route path='/YourPet' element={<YourPet />} />
       </Routes>
     </BrowserRouter>
   );
