@@ -4,9 +4,6 @@ const createCategory = async (req, res) => {
     try {
         const {product_category_name } = req.body;
 
-        
-
-
         const nameExists = await ProductCategory.findOne({ product_category_name });
         if (nameExists) {
             return res.status(400).json({ message: 'Product category name already exists' });
@@ -44,6 +41,7 @@ const getAllCategories = async (req, res) => {
 }
 const getCategoriesById = async (req, res) => {
     try {
+        
         const { categoryId } = req.params;
         const category = await ProductCategory.findById(categoryId);
         if (!category) {

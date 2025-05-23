@@ -3,7 +3,6 @@ const Product = require('../models/Products');
 const createProduct = async (req, res) => {
   try {
     const {
-      
       product_name,
       product_price,
       user_id,
@@ -15,7 +14,6 @@ const createProduct = async (req, res) => {
 
     
     const product = new Product({
-      
       product_name,
       product_price,
       user_id,
