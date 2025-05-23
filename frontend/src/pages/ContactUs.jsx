@@ -53,7 +53,7 @@ const ContactUs = () => (
     <section className="map-section">
       <div className="container">
         <div className="map-container">
-          <img src="/api/placeholder/1200/300" alt="Bản đồ" />
+          <img src="map.png" alt="Bản đồ" />
           <div className="contact-cards">
             <div className="contact-card">
               <div className="card-icon"><i className="fas fa-map-marker-alt"></i></div>
