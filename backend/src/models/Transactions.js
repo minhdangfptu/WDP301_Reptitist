@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-  transaction_id: {
-    type: Number,
-    required: true,
-    unique: true
-  },
+  
   amount: {
     type: Number,
     required: true
@@ -64,7 +60,7 @@ const transactionSchema = new mongoose.Schema({
     required: true
   }
 }, {
-  timestamps: true, // tạo createdAt và updatedAt tự động
+  timestamps: true, 
   collection: 'transactions'
 });
 

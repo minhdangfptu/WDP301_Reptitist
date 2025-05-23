@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 
 const userReptileSchema = new mongoose.Schema({
-  user_reptile_id: {
-    type: Number,
-    required: true,
-    unique: true
-  },
+  
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -52,13 +48,13 @@ const userReptileSchema = new mongoose.Schema({
     type: String
   },
   sleeping_status: {
-    type: mongoose.Schema.Types.Mixed // nếu cấu trúc phức tạp, chưa rõ
+    type: mongoose.Schema.Types.Mixed 
   },
   sleeping_history: {
     type: [
       {
         date: Date,
-        status: String // hoặc bạn có thể chi tiết hơn tùy dữ liệu
+        status: String 
       }
     ],
     default: []

@@ -16,7 +16,7 @@ const cartItemSchema = new mongoose.Schema({
     required: true,
     min: 0
   }
-}, { _id: false }); // không tạo _id cho từng cart item con
+}, { _id: false }); 
 
 const cartSchema = new mongoose.Schema({
   user_id: {
