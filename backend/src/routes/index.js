@@ -16,6 +16,5 @@ const router =express.Router();
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/info', reptileRoutes);
-router.use('/library_categories', libraryCategoriesRoute);
->>>>>>> Stashed changes
+
 module.exports= router;
