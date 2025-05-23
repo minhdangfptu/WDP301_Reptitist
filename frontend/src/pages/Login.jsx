@@ -43,7 +43,7 @@ const Login = () => {
                         <div>
                             <p className="login-instructions">
                                 Nếu chưa có tài khoản, hãy{' '}
-                                <a href="/signup" className="signup-link">
+                                <a href="/SignUp" className="signup-link">
                                     đăng kí
                                 </a>
                                 !

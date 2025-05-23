@@ -51,7 +51,7 @@ const Signup = () => {
 
           <div className="divider">HOẶC</div>
 
-          <a href="/Login" className="email-signup-btn">
+          <a href="/SignUp2" className="email-signup-btn">
             Tiếp tục với Email
           </a>
         </div>
