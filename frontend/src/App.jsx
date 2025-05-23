@@ -18,6 +18,7 @@ import Profile from './pages/Profile';
 import Security from './pages/Security';
 import Transaction from './pages/Transaction';
 import Settings from './pages/Settings';
+import SignUp2 from './pages/SignUp2';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/Security" element={<Security />} />
           <Route path="/Transaction" element={<Transaction />} />
           <Route path="/Settings" element={<Settings />} />
+          <Route path="/SignUp2" element={<SignUp2 />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
