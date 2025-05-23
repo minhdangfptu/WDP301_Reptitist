@@ -2,12 +2,9 @@ const ProductCategory = require('../models/Products_categories');
 
 const createCategory = async (req, res) => {
     try {
-        const { product_category_id, product_category_name } = req.body;
+        const {product_category_name } = req.body;
 
-        const idExists = await ProductCategory.findOne({ product_category_id });
-        if (idExists) {
-            return res.status(400).json({ message: 'Product category ID already exists' });
-        }
+        
 
 
         const nameExists = await ProductCategory.findOne({ product_category_name });
@@ -17,7 +14,7 @@ const createCategory = async (req, res) => {
 
 
         const category = new ProductCategory({
-            product_category_id,
+            
             product_category_name,
         });
 

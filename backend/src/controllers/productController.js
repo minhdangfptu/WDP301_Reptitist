@@ -3,7 +3,7 @@ const Product = require('../models/Products');
 const createProduct = async (req, res) => {
   try {
     const {
-      product_id,
+      
       product_name,
       product_price,
       user_id,
@@ -14,14 +14,8 @@ const createProduct = async (req, res) => {
     } = req.body;
 
     
-    const idExists = await Product.findOne({ product_id });
-    if (idExists) {
-      return res.status(400).json({ message: 'Product ID already exists' });
-    }
-
-    
     const product = new Product({
-      product_id,
+      
       product_name,
       product_price,
       user_id,
