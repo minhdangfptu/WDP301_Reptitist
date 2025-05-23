@@ -17,7 +17,7 @@ connect(MONGODB_URI);
 // For parsing application/json
 //app.use(express.json());
 app.use(bodyParser.json());
-app.use('/', router);
+app.use('/reptitist', router);
 
 router.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
