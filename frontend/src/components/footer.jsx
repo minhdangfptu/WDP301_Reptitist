@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-grid">
           <div>
-            <img src="Screenshot_2025-05-20_072836-removebg-preview.png" alt="Reptiest Logo" className="footer-logo" />
+            <img src="logo2.png" alt="Reptiest Logo" className="footer-logo" />
           </div>
           <div>
             <h3 className="footer-title">VỀ REPTIEST</h3>

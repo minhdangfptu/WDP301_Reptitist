@@ -1,0 +1,213 @@
+/* SignUp2.css - Matching the style of SignUp.css but for the new layout */
+
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  
+  .signup2-body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('/BGLogin.jpg');
+    padding: 20px;
+  }
+  
+  .signup2-container {
+    width: 900px;
+    min-height: 550px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    position: relative;
+    background-color: white;
+  }
+  
+  .signup2-content {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+  }
+  
+  .signup2-logo {
+    margin-bottom: 30px;
+  }
+  
+  .signup2-logo img {
+    height: 60px;
+  }
+  
+  .signup2-headline {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1.3;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .signup2-subheadline {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    max-width: 350px;
+  }
+  
+  .signup2-input-wrapper {
+    width: 100%;
+    max-width: 340px;
+    margin-bottom: 20px;
+  }
+  
+  .signup2-email-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 50px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    outline: none;
+  }
+  
+  .signup2-email-input:focus {
+    border-color: #0fa958;
+  }
+  
+  .signup2-button {
+    background-color: #0fa958;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: fit-content;
+  }
+  
+  .signup2-button:hover {
+    background-color: #048632;
+  }
+  
+  .signup2-image {
+    flex: 1;
+    background-image: url('/Screenshot 2025-05-20 072126.png');
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .signup2-social-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 340px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 50px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    color: #333;
+    background-color: white;
+  }
+  
+  .signup2-social-btn:hover {
+    background-color: #f8f8f8;
+  }
+  
+  .signup2-google-icon, .signup2-facebook-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+  }
+  
+  .signup2-google-icon img, .signup2-facebook-icon img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .signup2-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 340px;
+    margin: 20px 0;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  .signup2-divider::before,
+  .signup2-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: #e0e0e0;
+  }
+  
+  .signup2-divider::before {
+    margin-right: 15px;
+  }
+  
+  .signup2-divider::after {
+    margin-left: 15px;
+  }
+  
+  .signup2-email-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 340px;
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 50px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    color: #333;
+    background-color: white;
+  }
+  
+  .signup2-email-btn:hover {
+    background-color: #f8f8f8;
+  }
+  
+  .signup2-terms {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    max-width: 340px;
+    text-align: center;
+  }
+  
+  .signup2-terms a {
+    color: #06a13d;
+    text-decoration: none;
+  }
+  
+  @media (max-width: 768px) {
+    .signup2-container {
+      flex-direction: column;
+      width: 100%;
+    }
+    
+    .signup2-image {
+      min-height: 250px;
+    }
+  }
