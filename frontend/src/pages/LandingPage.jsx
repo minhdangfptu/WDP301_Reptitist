@@ -11,27 +11,36 @@ const LandingPage = () => {
       <section className="hero">
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">ĐIỀU CHĂM SÓC BÒ SÁT THÀNH NIỀM VUI MỖI NGÀY CÙNG REPTIEST</h1>
-            <a href="#" className="btn">Tìm hiểu thêm</a>
+            <h1 className="hero-title">
+              BIẾN CHĂM SÓC BÒ SÁT THÀNH NIỀM VUI MỖI NGÀY CÙNG REPTISIST
+            </h1>
+            <p className="hero-description">
+              Website chăm sóc bò sát cung cấp Chatbot AI 24/7, thư viện kiến thức phong phú, hồ sơ cá nhân hóa, và kết nối cộng đồng giúp bạn chăm sóc bò sát dễ dàng. Hệ sinh thái toàn diện hỗ trợ khám bệnh và mua sắm sản phẩm chất lượng. Chăm sóc bò sát chưa bao giờ dễ dàng hơn!
+            </p>
+            <div className="hero-buttons">
+              <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY!</a>
+              <a href="#" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
+            </div>
           </div>
           <div className="discount-badge">
-            <span className="amount">30%</span>
-            <span>OFF</span>
-          </div>
+              <span className="amount">30%</span>
+              <span>OFF</span>
+            </div>
         </div>
       </section>
 
+
       <section className="about">
         <div className="container">
-          <h2>Hiểu tổng chăm sóc bò sát hoàn diễn</h2>
-          <h3>REPTIEST</h3>
+          <h2>Nền tảng chăm sóc bò sát toàn diện</h2>
+          <h3 className="about-title1">REPTIEST</h3>
           <div className="about-flex">
             <div className="about-content">
-              <p>Reptiest là trung tâm chuyên về bò sát hàng đầu tại Hà Nội...</p>
-              <p>Chúng tôi tự hào mang đến những loài bò sát khỏe mạnh...</p>
+              <p>Reptitist tự hào là nền tảng chăm sóc bò sát hàng đầu tại Việt Nam. Chúng tôi chuyên cung cấp đa dạng các dịch vụ chất lượng cao dành cho bò sát cảnh, bao gồm bộ công cụ chăm sóc chuyên nghiệp, áp dụng trí tuệ nhân tạo AI </p>
+              <p>Chúng tôi tự hào mang đến những trải nghiệm tốt nhất, được khách hàng tin tưởng và đánh giá cao, trở thành lựa chọn ưu tiên cho cộng đồng yêu bò sát tại Việt Nam.</p>
             </div>
             <div className="about-image">
-              <img src="/api/placeholder/500/300" alt="Bò sát tại Reptiest" />
+              <img src="BGLandingPage.png" alt="Bò sát tại Reptiest" />
               <div className="play-button"></div>
             </div>
           </div>
@@ -44,7 +53,7 @@ const LandingPage = () => {
           <div className="features-grid">
             {["CHĂM SÓC THÚ CƯNG", "THỨC ĂN ĐẶC BIỆT", "TƯ VẤN CHUYÊN SÂU", "PHỤ KIỆN CHĂM SÓC"].map((title, i) => (
               <div className="feature-card" key={i}>
-                <img src={`/api/placeholder/300/180`} alt={title} />
+                <img src={`BGLandingPage.png`} alt={title} />
                 <div className="feature-content">
                   <h3 className="feature-title">{title}</h3>
                 </div>
@@ -64,7 +73,7 @@ const LandingPage = () => {
               </div>
               <div className="featured-news-content">
                 <h3 className="news-title">CÓ NÊN TẮM CHO RÙA VÀO MÙA ĐÔNG?</h3>
-                <p className="news-excerpt">Vào mùa đông, tắm cho rùa là việc làm cần thiết...</p>
+                <p className="news-excerpt">Thông thường, bạn không cần phải tắm cho rùa trong mùa đông, vì trong thời gian này, rùa thường sẽ bước vào trạng thái "ngủ đông" (hibernate) hoặc giảm hoạt động. Việc tắm cho rùa vào mùa đông có thể gây căng thẳng cho chúng, đặc biệt nếu nước tắm quá lạnh hoặc không thích hợp với nhiệt độ cơ thể của chúng</p>
                 <a href="#" className="btn">Xem thêm</a>
               </div>
             </div>
