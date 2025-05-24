@@ -25,7 +25,7 @@ const Header = () => {
               className="logo"
             />
           <ul className="nav-links">
-            <li><Link to="/LandingPage">TRANG CHỦ</Link></li>
+            <li><Link to="/">TRANG CHỦ</Link></li>
             <li><Link to="/Community">CỘNG ĐỒNG</Link></li>
             <li><Link to="/Library">THƯ VIỆN</Link></li>
             <li><Link to="/ShopLandingPage">MUA SẮM</Link></li>
