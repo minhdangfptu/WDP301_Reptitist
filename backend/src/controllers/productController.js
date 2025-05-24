@@ -1,5 +1,13 @@
 const Product = require('../models/Products');
-
+const Feedback = require('../models/ProductFeedback');
+async function updateAverageRating(productId) {
+  const result = await Feedback.aggregate([
+    { $match: { product_id: mongoose.Types.ObjectId(productId) } },
+    { $group: { _id: '$product_id', avgRating: { $avg: '$rating' } } }
+  ]);
+  const avgRating = result.length > 0 ? result[0].avgRating : 0;
+  await Product.findByIdAndUpdate(productId, { average_rating: avgRating });
+}
 const createProduct = async (req, res) => {
   try {
     const {
@@ -140,34 +148,68 @@ const updateProduct = async (req, res) => {
 
 const createFeedbackAndRating = async (req, res) => {
   try {
-    const { productId, userId, feedback, rating } = req.body;
+    const { productId } = req.params;
+    const userId = req.user._id;
+    const { rating, comment } = req.body;
 
-    const feedbackData = {
-      feedback,
-      rating,
-      user_id: userId
-    };
 
-    const product = await Product.findByIdAndUpdate(
-      productId,
-      { $push: { feedback: feedbackData } },
-      { new: true }
-    );
-
+    const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    res.status(200).json({ message: 'Feedback and rating created successfully!', product });
+
+    const existingFeedback = await Feedback.findOne({ product_id: productId, user_id: userId });
+    if (existingFeedback) {
+      return res.status(400).json({ message: 'User has already submitted feedback for this product' });
+    }
+
+
+    const newFeedback = new Feedback({
+      product_id: productId,
+      user_id: userId,
+      rating,
+      comment
+    });
+
+    await newFeedback.save();
+
+    //update average rating
+    await updateAverageRating(productId);
+
+    return res.status(201).json({
+      message: 'Feedback created successfully',
+      feedback: newFeedback
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: 'Failed to create feedback and rating!',
+    return res.status(500).json({
+      message: 'Failed to create feedback',
       error: error.message
     });
   }
 }
 const viewFeedbackAndRating = async (req, res) => {
+  try {
+    const { productId } = req.params;
   
+    const feedbacks = await Feedback.find({ product_id: productId })
+      .populate('user_id') 
+      .sort({ created_at: -1 }); 
+
+    return res.status(200).json({
+      message: 'Feedbacks fetched successfully',
+      count: feedbacks.length,
+      feedbacks
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: 'Failed to fetch feedbacks',
+      error: error.message
+    });
+  }
 }
-module.exports = { createProduct, getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct , updateProduct};
+
+module.exports = { createProduct, getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct, updateProduct, createFeedbackAndRating ,viewFeedbackAndRating};
