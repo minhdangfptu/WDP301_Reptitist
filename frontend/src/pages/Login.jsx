@@ -1,11 +1,37 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../css/Login.css';
-
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
     const togglePassword = () => setShowPassword(prev => !prev);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            const result = await login(email, password);
+            if (result.success) {
+                navigate('/'); // Redirect to home page after successful login
+            } else {
+                setError(result.message);
+            }
+        } catch (err) {
+            setError('Đã xảy ra lỗi khi đăng nhập');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className="login-body">
@@ -54,40 +80,55 @@ const Login = () => {
                     {/* Phần form đăng nhập */}
                     <div className="login-form">
                         <h1 className="login-title">ĐĂNG NHẬP</h1>
+                        
+                        {error && <div className="error-message">{error}</div>}
 
-                        <div className="input-group">
-                            <span className="input-icon">
-                                <i className="fa-solid fa-user"></i>
-                            </span>
-                            <input
-                                type="text"
-                                className="form-input"
-                                placeholder="Nhập tên đăng nhập/email"
-                            />
-                        </div>
+                        <form onSubmit={handleSubmit}>
+                            <div className="input-group">
+                                <span className="input-icon">
+                                    <i className="fa-solid fa-user"></i>
+                                </span>
+                                <input
+                                    type="email"
+                                    className="form-input"
+                                    placeholder="Nhập email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
 
-                        <div className="input-group">
-                            <span className="input-icon">
-                                <i className="fa-solid fa-lock"></i>
-                            </span>
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                className="form-input"
-                                placeholder="Nhập mật khẩu"
-                            />
-                            <i
-                                className={`password-toggle fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'
-                                    }`}
-                                onClick={togglePassword}
-                                style={{ userSelect: 'none' }}
-                            ></i>
-                        </div>
+                            <div className="input-group">
+                                <span className="input-icon">
+                                    <i className="fa-solid fa-lock"></i>
+                                </span>
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="form-input"
+                                    placeholder="Nhập mật khẩu"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                                <i
+                                    className={`password-toggle fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}
+                                    onClick={togglePassword}
+                                    style={{ userSelect: 'none' }}
+                                ></i>
+                            </div>
 
-                        <div className="forgot-password">
-                            <a href="#">Quên mật khẩu?</a>
-                        </div>
+                            <div className="forgot-password">
+                                <a href="#">Quên mật khẩu?</a>
+                            </div>
 
-                        <button className="login-btn">ĐĂNG NHẬP</button>
+                            <button 
+                                className="login-btn" 
+                                type="submit"
+                                disabled={loading}
+                            >
+                                {loading ? 'ĐANG XỬ LÝ...' : 'ĐĂNG NHẬP'}
+                            </button>
+                        </form>
 
                         <div className="divider">HOẶC</div>
 
