@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Search, User, HelpCircle, Facebook } from 'lucide-react';
 import '../css/ShopLandingPage.css';
+import Footer from '../components/Footer';
 
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -254,68 +255,7 @@ const ShopLandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="footer">
-        <div className="footer-container">
-          <div className="footer-section">
-            <div className="footer-logo">
-              <img src="logo.png" alt="Reptisist" />
-              <h3>REPTISIST</h3>
-            </div>
-            <div className="footer-links-section">
-              <div className="footer-links-column">
-                <h4>VỀ REPTISIST</h4>
-                <ul>
-                  <li><a href="#">Trang chủ</a></li>
-                  <li><a href="#">Cộng đồng</a></li>
-                  <li><a href="#">Thư viện kiến thức</a></li>
-                  <li><a href="#">Mẹo nuôi</a></li>
-                  <li><a href="#">Cải đặt</a></li>
-                </ul>
-              </div>
-
-              <div className="footer-links-column">
-                <h4>VỀ BẠN</h4>
-                <ul>
-                  <li><a href="#">Tài khoản</a></li>
-                  <li><a href="#">Bò sát của bạn</a></li>
-                  <li><a href="#">Giỏ hàng</a></li>
-                  <li><a href="#">Bài viết của bạn</a></li>
-                </ul>
-              </div>
-
-              <div className="footer-links-column">
-                <h4>HỖ TRỢ</h4>
-                <ul>
-                  <li><a href="#">Chat bot 24/7</a></li>
-                  <li><a href="#">Câu hỏi thường gặp</a></li>
-                  <li><a href="#">Chuyên gia</a></li>
-                </ul>
-              </div>
-
-              <div className="footer-links-column">
-                <h4>LIÊN HỆ</h4>
-                <ul>
-                  <li><a href="tel:0987654321">📞 0987654321</a></li>
-                  <li>
-                    <address>
-                      📍 Phòng 320, Tòa nhà Beta, Đại học FPT Hà Nội, KM29 Đại lộ Thăng Long
-                    </address>
-                  </li>
-                  <li className="social-links">
-                    <a href="#"><Facebook size={20} /></a>
-                    <a href="#">Ins</a>
-                    <a href="#">Dis</a>
-                    <a href="#">Med</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="footer-copyright">
-            COPYRIGHT 2025 © REPTISIST
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
