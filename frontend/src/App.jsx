@@ -1,47 +1,144 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './index.css';
-import { ThemeProvider } from './context/ThemeContext';
-
-import '@fortawesome/fontawesome-free/css/all.min.css';
-
-import LandingPage from './pages/LandingPage';
-import ContactUs from './pages/ContactUs';
-import Library from './pages/Library'; 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
+import SignUp2 from './pages/SignUp2';
+import LandingPage from './pages/LandingPage';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import Security from './pages/Security';
+import YourPet from './pages/YourPet';
+import Library from './pages/Library';
 import LibraryDetail from './pages/LibraryDetail';
 import LibraryDetail2 from './pages/LibraryDetail2';
-import YourPet from './pages/YourPet';
-import Profile from './pages/Profile';
-import Security from './pages/Security';
 import Transaction from './pages/Transaction';
-import Settings from './pages/Settings';
-import SignUp2 from './pages/SignUp2';
+import ContactUs from './pages/ContactUs';
+import UserList from './pages/UserList';
+import SignUp3 from './pages/SignUp3';
+// Protected Route component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
 
-function App() {
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/Login" />;
+  }
+
+  return children;
+};
+
+// Admin Route component
+const AdminRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user || user.role_id !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
+
+const App = () => {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
+    <AuthProvider>
+      <Router>
         <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/Login" element={<Login />} />
-          <Route path="/LandingPage" element={<LandingPage />} />
-          <Route path="/ContactUs" element={<ContactUs />} />
-          <Route path="/Library" element={<Library />} />
           <Route path="/SignUp" element={<SignUp />} />
-          <Route path="/LibraryDetail" element={<LibraryDetail />} />
-          <Route path="/LibraryDetail2/1" element={<LibraryDetail2 />} />
-          <Route path="/YourPet" element={<YourPet />} />
-          <Route path="/Profile" element={<Profile />} />
-          <Route path="/Security" element={<Security />} />
-          <Route path="/Transaction" element={<Transaction />} />
-          <Route path="/Settings" element={<Settings />} />
           <Route path="/SignUp2" element={<SignUp2 />} />
+          <Route path="/SignUp3" element={<SignUp3 />} />
+          <Route path="/ContactUs" element={<ContactUs />} />
+
+
+          {/* Protected routes */}
+          <Route
+            path="/Profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Security"
+            element={
+              <ProtectedRoute>
+                <Security />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/YourPet"
+            element={
+              <ProtectedRoute>
+                <YourPet />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Library"
+            element={
+              <ProtectedRoute>
+                <Library />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/LibraryDetail"
+            element={
+              <ProtectedRoute>
+                <LibraryDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/LibraryDetail2"
+            element={
+              <ProtectedRoute>
+                <LibraryDetail2 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Transaction"
+            element={
+              <ProtectedRoute>
+                <Transaction />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin routes */}
+          <Route
+            path="/users"
+            element={
+              <AdminRoute>
+                <UserList />
+              </AdminRoute>
+            }
+          />
         </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
