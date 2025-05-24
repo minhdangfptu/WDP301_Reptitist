@@ -7,3 +7,4 @@ const aiHistorySchema = new mongoose.Schema({
 }, { collection: 'ai_history' });
 
 module.exports = mongoose.model('AIHistory', aiHistorySchema);
+console.log('AIHistory model loaded');

@@ -1,11 +1,13 @@
 const mongoose = require('mongoose');
 
+const reptileCategorySchema = new mongoose.Schema({
+  class: { type: String, required: true },
+  order: { type: String, required: true },
+  family: { type: String, required: true },
+}, { _id: false });
+
 const reptileSchema = new mongoose.Schema({
-  reptile_id: {
-    type: Number,
-    required: true,
-    unique: true
-  },
+
   scientific_name: {
     type: String,
     required: true
@@ -14,10 +16,7 @@ const reptileSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  reptile_category: {
-    type: mongoose.Schema.Types.Mixed, // Nếu chưa rõ cấu trúc chi tiết
-    default: {}
-  },
+  reptile_category: reptileCategorySchema,
   breed_or_morph: {
     type: String
   },
@@ -32,3 +31,4 @@ const reptileSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Reptile', reptileSchema);
+console.log('Reptile model loaded');
