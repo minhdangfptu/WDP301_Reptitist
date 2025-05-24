@@ -28,7 +28,7 @@ const Header = () => {
             <li><Link to="/LandingPage">TRANG CHỦ</Link></li>
             <li><Link to="/Community">CỘNG ĐỒNG</Link></li>
             <li><Link to="/Library">THƯ VIỆN</Link></li>
-            <li><Link to="/Shop">MUA SẮM</Link></li>
+            <li><Link to="/ShopLandingPage">MUA SẮM</Link></li>
             <li><Link to="/ContactUs">Liên hệ</Link></li>
             <li><Link to="/YourPet">YOUR PET</Link></li>
           </ul>

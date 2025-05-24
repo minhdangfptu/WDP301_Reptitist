@@ -16,6 +16,7 @@ import Transaction from './pages/Transaction';
 import ContactUs from './pages/ContactUs';
 import UserList from './pages/UserList';
 import SignUp3 from './pages/SignUp3';
+import ShopLandingPage from './pages/ShopLandingPage';
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -58,6 +59,7 @@ const App = () => {
           <Route path="/SignUp2" element={<SignUp2 />} />
           <Route path="/SignUp3" element={<SignUp3 />} />
           <Route path="/ContactUs" element={<ContactUs />} />
+          <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
 
 
           {/* Protected routes */}
