@@ -5,7 +5,7 @@ import '../css/Login.css';
 
 const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState('');
+    const [emailOrUsername, setEmailOrUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const result = await login(email, password);
+            const result = await login(emailOrUsername, password);
             if (result.success) {
                 navigate('/'); // Redirect to home page after successful login
             } else {
@@ -89,11 +89,11 @@ const Login = () => {
                                     <i className="fa-solid fa-user"></i>
                                 </span>
                                 <input
-                                    type="email"
+                                    type="text"
                                     className="form-input"
-                                    placeholder="Nhập email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Nhập email hoặc tên người dùng"
+                                    value={emailOrUsername}
+                                    onChange={(e) => setEmailOrUsername(e.target.value)}
                                     required
                                 />
                             </div>

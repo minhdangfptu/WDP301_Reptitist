@@ -5,6 +5,7 @@ const crypto = require('crypto');
 
 const fs = require('fs');
 console.log(fs.readdirSync(__dirname + '/../models'));
+
 const signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -35,17 +36,30 @@ const signup = async (req, res) => {
         });
     }
 }
+
 const login = async (req, res) => {
     try {
-        const { username, password } = req.body;
-        const existUser = await User.findOne({ username });
-        if (!existUser) {
-            return res.status(404).json({ message: 'Username or password is incorrect!' });
+        const { username, email, password } = req.body;
+        
+        // Hỗ trợ login bằng cả username và email
+        let existUser;
+        if (email) {
+            existUser = await User.findOne({ email });
+        } else if (username) {
+            existUser = await User.findOne({ username });
+        } else {
+            return res.status(400).json({ message: 'Username or email is required!' });
         }
+        
+        if (!existUser) {
+            return res.status(404).json({ message: 'Username/email or password is incorrect!' });
+        }
+        
         const isMatch = password === existUser.password_hashed;
         if (!isMatch) {
-            return res.status(400).json({ message: 'Username or password is incorrect!' });
+            return res.status(400).json({ message: 'Username/email or password is incorrect!' });
         }
+        
         const access_token = jwt.sign(
             { id: existUser._id },
             process.env.JWT_SECRET,
@@ -53,8 +67,8 @@ const login = async (req, res) => {
                 algorithm: 'HS256',
                 expiresIn: '7d'
             }
-
         );
+        
         const refresh_token = jwt.sign(
             { id: existUser._id },
             process.env.JWT_SECRET,
@@ -63,25 +77,36 @@ const login = async (req, res) => {
                 expiresIn: '30d'
             }
         );
+        
         const refresh_token_hashed = crypto.createHash('sha256').update(refresh_token).digest('hex');
-        const expires_at = new Date(Date.now()+ 30*24*60*60*1000);
+        const expires_at = new Date(Date.now() + 30*24*60*60*1000);
+        
         existUser.refresh_tokens.push({
             hashed_token: refresh_token_hashed,
             expires_at: expires_at,
             user_agent: req.headers['user-agent'],
             ip_address: req.ip,
         });
+        
         await existUser.save();
+        
         res.status(200).json({
             message: 'Login successfully!',
             access_token: access_token,
             refresh_token: refresh_token,
+            user: {
+                id: existUser._id,
+                username: existUser.username,
+                email: existUser.email,
+                fullname: existUser.fullname
+            }
         });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Failed to login!' });
     }
 }
+
 const refreshToken = async (req,res) => {
     try{
         const {refresh_token} = req.body;
@@ -125,6 +150,7 @@ const refreshToken = async (req,res) => {
         res.status(500).json({ message: 'Failed to refresh token!' });
     }
 };
+
 const logout = async (req,res) => {
     try {
         const {refresh_token} = req.body;
