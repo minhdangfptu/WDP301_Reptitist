@@ -72,8 +72,13 @@ const login = async (req, res) => {
         await existUser.save();
         res.status(200).json({
             message: 'Login successfully!',
-            access_token: access_token,
+            token: access_token,
             refresh_token: refresh_token,
+            user: {
+                id: existUser._id,
+                username: existUser.username,
+                email: existUser.email,
+            }
         });
     } catch (error) {
         console.log(error);
