@@ -84,6 +84,7 @@ const login = async (req, res) => {
 
         res.status(200).json({
             message: 'Login successfully!',
+            user_id: existUser._id,
             access_token,
             access_token_expires_at: new Date(Date.now() + accessTokenExpirySeconds * 1000), // ISO string thời gian hết hạn
             refresh_token,
