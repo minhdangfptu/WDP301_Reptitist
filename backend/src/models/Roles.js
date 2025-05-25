@@ -14,7 +14,7 @@ const roleSchema = new mongoose.Schema({
     default: true
   }
 }, {
-  collection: 'roles' // Tên collection trong MongoDB
+  collection: 'roles'
 });
 
 module.exports = mongoose.model('Role', roleSchema);
