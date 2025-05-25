@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Đóng menu khi click ra ngoài
   useEffect(() => {
@@ -44,7 +47,15 @@ const Header = () => {
             {showAccountMenu && (
               <ul className="account-dropdown">
                 <li><Link to="/Login">Login</Link></li>
-                <li><Link to="/Logout">Logout</Link></li>
+                <li
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  Logout
+                </li>
                 <li><Link to="/Signup">Sign Up</Link></li>
                 <li><Link to="/Profile">Profile</Link></li>
               </ul>
