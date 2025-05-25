@@ -3,7 +3,6 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
-// Đổi từ localhost:5000 thành localhost:8080 để khớp với backend
 const API_BASE_URL = 'http://localhost:8080/reptitist';
 
 export const AuthProvider = ({ children }) => {
@@ -14,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     // Check if user is logged in on mount
     const token = localStorage.getItem('token');
     if (token) {
-      // Verify token and get user data - cần tạo endpoint này nếu chưa có
+      // Verify token and get user data
       axios.get(`${API_BASE_URL}/auth/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -26,11 +25,22 @@ export const AuthProvider = ({ children }) => {
       .catch(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
       })
       .finally(() => {
         setLoading(false);
       });
     } else {
+      // Check if user data is stored locally (from login)
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          localStorage.removeItem('user');
+        }
+      }
       setLoading(false);
     }
   }, []);
@@ -38,17 +48,18 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        username,  // Backend expect username, not email
+        username,
         password
       });
       
-      const { access_token, refresh_token } = response.data;
+      const { access_token, refresh_token, user: userData } = response.data;
+      
+      // Store tokens and user data
       localStorage.setItem('token', access_token);
       localStorage.setItem('refreshToken', refresh_token);
+      localStorage.setItem('user', JSON.stringify(userData));
       
-      // Get user info after login
-      // Bạn cần tạo endpoint để lấy thông tin user hoặc return user info từ login
-      setUser({ username }); // Tạm thời set username
+      setUser(userData);
       
       return { success: true };
     } catch (error) {
@@ -62,7 +73,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
-        username: userData.username || userData.name, // Backend expects username
+        username: userData.username,
         email: userData.email,
         password: userData.password
       });
@@ -81,7 +92,7 @@ export const AuthProvider = ({ children }) => {
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         await axios.post(`${API_BASE_URL}/auth/logout`, {
-          refresh_token: refreshToken  // Backend expects refresh_token
+          refresh_token: refreshToken
         });
       }
     } catch (error) {
@@ -89,8 +100,15 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       setUser(null);
     }
+  };
+
+  const updateUser = (updatedUserData) => {
+    const newUserData = { ...user, ...updatedUserData };
+    setUser(newUserData);
+    localStorage.setItem('user', JSON.stringify(newUserData));
   };
 
   const value = {
@@ -98,7 +116,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
-    logout
+    logout,
+    updateUser
   };
 
   return (

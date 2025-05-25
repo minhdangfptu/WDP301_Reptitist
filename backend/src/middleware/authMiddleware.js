@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 
 const authMiddleware = async (req, res, next) => {
     try {
-        // Sửa từ req.headers() thành req.headers
         const authHeader = req.headers.authorization;
         if (!authHeader) {
             return res.status(401).json({ message: 'Access denied! No token provided.' });
@@ -14,16 +13,28 @@ const authMiddleware = async (req, res, next) => {
             return res.status(401).json({ message: 'Access denied! No token provided.' });
         }
 
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select('-password_hashed -__v');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id)
+            .select('-password_hashed -__v')
+            .populate('role_id', 'role_name role_description');
         
-        if (!req.user) {
-            return res.status(401).json({ message: 'Invalid token!' });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid token! User not found.' });
+        }
+
+        if (!user.isActive) {
+            return res.status(401).json({ message: 'Account is deactivated.' });
         }
         
+        req.user = user;
         next();
     } catch (error) {
-        console.error(error);
+        console.error('Auth middleware error:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(403).json({ message: 'Invalid token format' });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(403).json({ message: 'Token expired' });
+        }
         return res.status(403).json({ message: 'Invalid or expired token' });
     }
 };

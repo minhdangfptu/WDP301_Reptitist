@@ -1,7 +1,9 @@
 const User = require('../models/Users');
 const Cart = require('../models/Carts');
+const Role = require('../models/Roles');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 const fs = require('fs');
 console.log(fs.readdirSync(__dirname + '/../models'));
@@ -9,24 +11,50 @@ console.log(fs.readdirSync(__dirname + '/../models'));
 const signup = async (req, res) => {
     try {
         const { username, email, password } = req.body;
+        
+        // Check if username already exists
         const username_existing = await User.findOne({ username });
         if (username_existing) {
             return res.status(400).json({ message: 'Username already exists' });
         }
+        
+        // Check if email already exists
         const email_existing = await User.findOne({ email });
         if (email_existing) {
             return res.status(400).json({ message: 'Email already exists' });
         }
+
+        // Find or create default customer role
+        let customerRole = await Role.findOne({ role_name: 'customer' });
+        if (!customerRole) {
+            customerRole = await Role.create({
+                role_name: 'customer',
+                role_description: 'Default customer role',
+                role_active: true
+            });
+        }
+
+        // Hash password
+        const saltRounds = parseInt(process.env.SALT_JWT) || 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Create user with hashed password
         const user = new User({
             username,
             email,
-            password_hashed: password,
+            password_hashed: hashedPassword, // Store hashed password
+            role_id: customerRole._id,
+            fullname: username, // Set fullname to username initially
         });
+        
         await user.save();
+        
+        // Create cart for user
         const cart = new Cart({
             user_id: user._id
         });
         await cart.save();
+        
         res.status(201).json({ message: 'Sign up successfully!' });
     } catch (error) {
         console.log(error);
@@ -41,12 +69,12 @@ const login = async (req, res) => {
     try {
         const { username, email, password } = req.body;
         
-        // Hỗ trợ login bằng cả username và email
+        // Support login with both username and email
         let existUser;
         if (email) {
-            existUser = await User.findOne({ email });
+            existUser = await User.findOne({ email }).populate('role_id');
         } else if (username) {
-            existUser = await User.findOne({ username });
+            existUser = await User.findOne({ username }).populate('role_id');
         } else {
             return res.status(400).json({ message: 'Username or email is required!' });
         }
@@ -55,7 +83,8 @@ const login = async (req, res) => {
             return res.status(404).json({ message: 'Username/email or password is incorrect!' });
         }
         
-        const isMatch = password === existUser.password_hashed;
+        // Compare hashed password
+        const isMatch = await bcrypt.compare(password, existUser.password_hashed);
         if (!isMatch) {
             return res.status(400).json({ message: 'Username/email or password is incorrect!' });
         }
@@ -98,7 +127,13 @@ const login = async (req, res) => {
                 id: existUser._id,
                 username: existUser.username,
                 email: existUser.email,
-                fullname: existUser.fullname
+                fullname: existUser.fullname,
+                phone_number: existUser.phone_number,
+                address: existUser.address,
+                wallet: existUser.wallet,
+                account_type: existUser.account_type,
+                user_imageurl: existUser.user_imageurl,
+                role: existUser.role_id ? existUser.role_id.role_name : 'customer'
             }
         });
     } catch (error) {

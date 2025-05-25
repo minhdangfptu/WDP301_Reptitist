@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
 import "../css/SignUp3.css";
 
 const SignUp3 = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { register } = useAuth();
   
   // Check if user came from SignUp2 with verified email
   const email = location.state?.email || "";
@@ -98,38 +100,25 @@ const SignUp3 = () => {
         password: formData.password,
       }); // Debug log
       
-      // Send registration data to backend
-      const response = await fetch('http://localhost:8080/reptitist/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username.trim(),
-          email: email,
-          password: formData.password,
-        }),
+      // Use the register function from AuthContext
+      const result = await register({
+        username: formData.username.trim(),
+        email: email,
+        password: formData.password,
       });
       
-      const data = await response.json();
-      console.log("Registration response:", response.status, data); // Debug log
-      
-      if (response.ok) {
+      if (result.success) {
         // Registration successful
         alert("Đăng ký thành công! Vui lòng đăng nhập.");
         navigate('/Login');
       } else {
         // Registration failed
-        if (response.status === 400) {
-          if (data.message.includes('Username already exists')) {
-            setErrors({ username: "Tên người dùng đã tồn tại" });
-          } else if (data.message.includes('Email already exists')) {
-            setErrors({ submit: "Email đã được đăng ký" });
-          } else {
-            setErrors({ submit: data.message || "Đăng ký thất bại. Vui lòng thử lại." });
-          }
+        if (result.message.includes('Username already exists')) {
+          setErrors({ username: "Tên người dùng đã tồn tại" });
+        } else if (result.message.includes('Email already exists')) {
+          setErrors({ submit: "Email đã được đăng ký" });
         } else {
-          setErrors({ submit: data.message || "Đăng ký thất bại. Vui lòng thử lại." });
+          setErrors({ submit: result.message || "Đăng ký thất bại. Vui lòng thử lại." });
         }
       }
     } catch (error) {
@@ -302,7 +291,7 @@ const SignUp3 = () => {
               className="signup3-button"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "⏳ Đang tạo tài khoản..." : " Hoàn tất đăng ký"}
+              {isSubmitting ? "⏳ Đang tạo tài khoản..." : "Hoàn tất đăng ký"}
             </button>
           </form>
           
