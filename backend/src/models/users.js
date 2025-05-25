@@ -71,6 +71,11 @@ const userSchema = new mongoose.Schema({
     ,
     default: [],
   },
+  role_id:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
+    required: true
+  },
   phone_number: {
     type: String,
     trim: true,

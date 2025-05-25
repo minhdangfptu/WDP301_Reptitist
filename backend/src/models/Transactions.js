@@ -1,11 +1,7 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-  transaction_id: {
-    type: Number,
-    required: true,
-    unique: true
-  },
+  
   amount: {
     type: Number,
     required: true
@@ -22,10 +18,6 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     default: 'VND'
   },
-  payment_type: {
-    type: String,
-    required: true
-  },
   transaction_type: {
     type: String,
     required: true
@@ -37,15 +29,7 @@ const transactionSchema = new mongoose.Schema({
   },
   description: {
     type: String
-  },
-  locale: {
-    type: String,
-    default: 'vi'
-  },
-  is_test: {
-    type: Boolean,
-    default: false
-  },
+  },  
   items: {
     type: String
   },
@@ -54,6 +38,10 @@ const transactionSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  is_test: {
+    type: Boolean,
+    default: false
+  },
   refund_transaction_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Transaction',
@@ -61,10 +49,10 @@ const transactionSchema = new mongoose.Schema({
   },
   transaction_date: {
     type: Date,
-    required: true
+    default: Date.now
   }
 }, {
-  timestamps: true, // tạo createdAt và updatedAt tự động
+  timestamps: true, 
   collection: 'transactions'
 });
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const { connect } = require('mongoose');
-const router = require('./src/routes/index.js');
+const router = require('./src/routes');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 var cors = require('cors');
