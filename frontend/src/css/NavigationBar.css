@@ -1,0 +1,150 @@
+/* NavigationBar.css */
+
+.navigation-container {
+  width: 256px;
+  background: var(--bg-secondary);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 64px;
+  z-index: 40;
+  transition: transform 0.3s ease-in-out;
+  border-right: 1px solid var(--border-color);
+}
+
+.navigation-content {
+  padding: 16px;
+}
+
+.navigation-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  color: var(--text-primary);
+  width: 100%;
+  text-align: left;
+  background: none;
+}
+
+.menu-item:hover {
+  background-color: var(--hover-color);
+  transform: translateX(2px);
+  color: var(--text-primary);
+}
+
+.menu-item.active {
+  background-color: var(--hover-color);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.menu-item.active .menu-icon-wrapper {
+  background-color: var(--button-bg);
+}
+
+.menu-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.menu-icon {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+}
+
+.menu-text {
+  font-size: 16px;
+  font-weight: 400;
+  text-decoration: none;
+  color: var(--text-primary);
+}
+
+.menu-item.active .menu-text {
+  font-weight: 500;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .navigation-container {
+    transform: translateX(-100%);
+  }
+  
+  .navigation-container.mobile-open {
+    transform: translateX(0);
+  }
+}
+
+/* Custom scrollbar for navigation */
+.navigation-container::-webkit-scrollbar {
+  width: 4px;
+}
+
+.navigation-container::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+.navigation-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.navigation-container::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Animation for menu items */
+.menu-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.menu-item:hover::before {
+  left: 100%;
+}
+
+/* Dark mode overrides */
+.dark-mode .navigation-container {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+}
+
+.dark-mode .menu-item,
+.dark-mode .menu-text {
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .menu-item:hover,
+.dark-mode .menu-item.active {
+  color: var(--text-primary) !important;
+  background-color: var(--hover-color);
+}

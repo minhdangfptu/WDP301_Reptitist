@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import SellProduct from "../components/SellProduct";
 import { bestsellingProducts } from "../data/productData";
 import "../css/LibraryDetail2.css";
 
@@ -17,7 +18,7 @@ const LibraryDetail2 = () => {
     { id: 4, name: "Thằn lằn mắt lồi", count: 45 },
     { id: 5, name: "Thằn lằn bò sừng", count: 48 },
     { id: 6, name: "Trăn Gấm", count: 45 },
-    { id: 7, name: "Mèo cánh", count: 45 },
+    { id: 7, name: "Minh Đặng", count: 45 },
     { id: 8, name: "Rùa sulcata", count: 45 },
     { id: 9, name: "Cá sấu cảnh", count: 45 },
     { id: 10, name: "Các loài bò sát khác", count: null }
@@ -65,6 +66,7 @@ const LibraryDetail2 = () => {
   return (
     <div className="gecko-detail-page">
       <Header />
+      
       {/* Page Title Banner */}
       <div className="page-title-banner">
         <h1>THƯ VIỆN KIẾN THỨC</h1>
@@ -74,7 +76,7 @@ const LibraryDetail2 = () => {
       <div className="container">
         {/* Breadcrumb */}
         <div className="breadcrumb">
-          <a href="/">Trang chủ</a> &gt; <a href="/thu-vien">Thư viện kiến thức</a> &gt; <a href="/bo-sat-viet-nam">Bò sát phổ biến ở Việt Nam</a> &gt; <span>Thằn lằn da báo</span>
+          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/Library">Thư viện kiến thức</a> &gt; <a href="/LibraryDetail">Bò sát phổ biến ở Việt Nam</a> &gt; <span>Thằn lằn da báo</span>
         </div>
         
         <div className="content-wrapper">
@@ -91,8 +93,8 @@ const LibraryDetail2 = () => {
               ))}
             </ul>
             
-            {/* Sử dụng component Sellerproduct */}
-            <Sellerproduct products={bestsellingProducts} />
+            {/* Sử dụng component SellProduct */}
+            <SellProduct products={bestsellingProducts} />
           </div>
           
           {/* Main Content */}

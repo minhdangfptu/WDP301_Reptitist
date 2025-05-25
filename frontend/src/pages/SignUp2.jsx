@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "emailjs-com";
@@ -217,6 +218,7 @@ const SignUp2 = () => {
               </p>
             </>
           )}
+
         </div>
         
         <div className="signup2-image">

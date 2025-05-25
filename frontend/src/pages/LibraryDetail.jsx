@@ -2,7 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Sellerproduct from "../components/sellerproduct";
+import Sellerproduct from "../components/SellProduct";
 import { bestsellingProducts } from "../data/productData";
 import "../css/LibraryDetail.css";
 
@@ -67,7 +67,7 @@ const LibraryDetail = () => {
       {/* Breadcrumb */}
       <div className="container">
         <div className="breadcrumb">
-          <a href="/">Trang chủ</a> &gt; <a href="/thu-vien">Thư viện kiến thức</a> &gt; <span>Bò sát phổ biến ở Việt Nam</span>
+          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/Library">Thư viện kiến thức</a> &gt; <span>Bò sát phổ biến ở Việt Nam</span>
         </div>
         
         <div className="library-content">

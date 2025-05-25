@@ -1,0 +1,153 @@
+/* Security.css */
+
+/* Import Profile.css styles */
+@import url('./Profile.css');
+
+/* Security specific styles */
+.security-title {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.security-title h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.security-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.security-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.security-field {
+  margin-bottom: 16px;
+}
+
+.security-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.security-field p {
+  color: #1f2937;
+  margin: 0;
+  font-size: 16px;
+  background-color: #f3f4f6;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.2s ease;
+  min-height: 20px;
+}
+
+.security-field p:hover {
+  border-color: #d1d5db;
+}
+
+.security-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.change-password-button {
+  background-color: #10b981;
+  color: white;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 180px;
+}
+
+.change-password-button:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.change-password-button:active {
+  transform: translateY(0);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .security-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .security-title h2 {
+    font-size: 24px;
+  }
+  
+  .change-password-button {
+    width: 100%;
+    padding: 16px;
+  }
+}
+
+/* Animation for button */
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.change-password-button:focus {
+  animation: buttonPulse 1.5s infinite;
+  outline: none;
+}
+
+/* Dark mode overrides */
+.dark-mode .security-title h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .security-title {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-mode .security-field label {
+  color: var(--text-primary);
+}
+
+.dark-mode .security-field p {
+  color: var(--text-primary);
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+.dark-mode .security-field p:hover {
+  border-color: var(--border-color);
+}
+
+.dark-mode .security-button-container {
+  border-top: 1px solid var(--border-color);
+}

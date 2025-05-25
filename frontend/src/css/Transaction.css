@@ -1,0 +1,354 @@
+/* Transaction.css */
+
+/* Import Profile.css styles */
+@import url('./Profile.css');
+
+/* Balance Section */
+.balance-section {
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.balance-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.balance-amount {
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Transaction Content Layout */
+.transaction-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+/* Billing Section */
+.billing-section {
+  background: #f9fafb;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.billing-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.billing-item {
+  display: flex;
+  gap: 4px;
+}
+
+.billing-item.name-item {
+  margin-bottom: 16px;
+}
+
+.billing-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.billing-label {
+  font-size: 16px;
+  font-weight: 400;
+  color: #6b7280;
+}
+
+.billing-value {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+/* Transactions Section */
+.transactions-section {
+  background: white;
+}
+
+.transactions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+/* Transaction Groups */
+.transaction-group {
+  margin-bottom: 24px;
+}
+
+.group-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 16px 0;
+}
+
+/* Transaction Items */
+.transaction-item {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.transaction-item:hover {
+  background-color: #f9fafb;
+  margin: 0 -16px;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.transaction-item:last-child {
+  border-bottom: none;
+}
+
+.transaction-icon {
+  margin-right: 16px;
+}
+
+.company-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  color: white;
+}
+
+/* Arrow Icons */
+.arrow-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid;
+  background-color: white;
+}
+
+.arrow-icon.positive {
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.arrow-icon.negative {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.arrow-icon.pending {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+.arrow-svg {
+  width: 20px;
+  height: 20px;
+}
+
+.transaction-details {
+  flex: 1;
+}
+
+.company-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.transaction-date {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Transaction Amounts */
+.transaction-amount {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: right;
+  min-width: 80px;
+}
+
+.transaction-amount.positive {
+  color: #10b981;
+}
+
+.transaction-amount.negative {
+  color: #ef4444;
+}
+
+.transaction-amount.pending {
+  color: #f59e0b;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .transaction-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .transactions-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .balance-title {
+    font-size: 20px;
+  }
+  
+  .transaction-item {
+    padding: 12px 0;
+  }
+  
+  .company-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .company-name {
+    font-size: 15px;
+  }
+  
+  .transaction-date {
+    font-size: 13px;
+  }
+  
+  .transaction-amount {
+    font-size: 15px;
+    min-width: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .billing-section {
+    padding: 16px;
+  }
+  
+  .transaction-item:hover {
+    margin: 0 -8px;
+    padding: 12px 8px;
+  }
+}
+
+/* Dark mode overrides */
+.dark-mode .balance-section {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-mode .balance-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .balance-amount {
+  color: #10b981;
+}
+
+.dark-mode .transaction-content {
+  background: none;
+}
+
+.dark-mode .billing-section {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .section-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .billing-name,
+.dark-mode .billing-label,
+.dark-mode .billing-value {
+  color: var(--text-primary);
+}
+
+.dark-mode .transactions-section {
+  background: var(--bg-secondary);
+}
+
+.dark-mode .transactions-header {
+  color: var(--text-primary);
+}
+
+.dark-mode .date-range {
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.dark-mode .transaction-group {
+  color: var(--text-primary);
+}
+
+.dark-mode .group-title {
+  color: #10b981;
+}
+
+.dark-mode .transaction-item {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-mode .transaction-item:hover {
+  background-color: var(--hover-color);
+}
+
+.dark-mode .company-icon {
+  color: white;
+}
+
+.dark-mode .arrow-icon {
+  background-color: var(--bg-primary);
+}
+
+.dark-mode .company-name,
+.dark-mode .transaction-date {
+  color: var(--text-primary);
+}
+
+.dark-mode .transaction-amount,
+.dark-mode .transaction-amount.positive,
+.dark-mode .transaction-amount.negative,
+.dark-mode .transaction-amount.pending {
+  color: var(--text-primary);
+}
