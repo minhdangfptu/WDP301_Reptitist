@@ -13,7 +13,7 @@ const orderItemSchema = new mongoose.Schema({
   }
 }, { _id: false });  
 
-// Định nghĩa schema đơn hàng
+
 const orderSchema = new mongoose.Schema({
   order_items: {
     type: [orderItemSchema], 

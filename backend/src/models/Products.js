@@ -9,11 +9,12 @@ const productSchema = new mongoose.Schema({
   product_category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory', required: true },
   product_quantity: { type: Number, default: 0 },
   product_status: { type: String, enum: ['available', 'pending', 'not_available'], default: 'pending' },
-  create_at: { type: Date, default: Date.now },
-
-  average_rating: { type: Number, min: 0, max: 5, default: 0 }
+  average_rating: { type: Number, min: 0, max: 5, default: 0 },
+  
+  
 }, {
-  collection: 'products'
+  collection: 'products',
+  timestamps: true 
 });
 
 const Product = mongoose.model('Product', productSchema);
