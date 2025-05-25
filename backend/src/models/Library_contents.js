@@ -10,5 +10,6 @@ const libraryContentSchema = new mongoose.Schema({
   category_content_id: { type: mongoose.Schema.Types.ObjectId, ref: 'LibraryCategories', required: true  }
 }, { collection: 'library_contents' });
 
-module.exports = mongoose.model('LibraryContent', libraryContentSchema);
+module.exports = mongoose.models.LibraryContent || mongoose.model('LibraryContent', libraryContentSchema);
+
 console.log('LibraryContent model loaded');
