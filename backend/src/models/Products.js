@@ -5,7 +5,7 @@ const productSchema = new mongoose.Schema({
   product_price: { type: Number, required: true },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   product_description: { type: String },
-  product_images: { type: [String], default: [] },
+  product_imageurl: { type: [String], default: [] },
   product_category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory', required: true },
   product_quantity: { type: Number, default: 0 },
   product_status: { type: String, enum: ['available', 'pending', 'not_available'], default: 'pending' },

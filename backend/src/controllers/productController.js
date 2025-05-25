@@ -1,5 +1,5 @@
 const Product = require('../models/Products');
-const Feedback = require('../models/ProductFeedback');
+const Feedback = require('../models/Product_feedback');
 async function updateAverageRating(productId) {
   const result = await Feedback.aggregate([
     { $match: { product_id: mongoose.Types.ObjectId(productId) } },
