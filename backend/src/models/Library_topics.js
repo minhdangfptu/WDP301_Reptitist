@@ -8,5 +8,5 @@ const topicCategorySchema = new mongoose.Schema({
   collection: 'library_topics' 
 });
 
-module.exports = mongoose.model('TopicCategory', topicCategorySchema);
-console.log('TopicCategory model loaded');
+module.exports = mongoose.model('LibraryTopic', topicCategorySchema);
+console.log('LibraryTopic model loaded');
