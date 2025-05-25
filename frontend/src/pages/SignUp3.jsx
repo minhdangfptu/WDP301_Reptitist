@@ -23,7 +23,11 @@ const SignUp3 = () => {
 
   // Redirect if not verified or no email
   useEffect(() => {
+    console.log("SignUp3 - Email:", email, "Verified:", isVerified); // Debug log
+    
     if (!email || !isVerified) {
+      // Show alert and redirect
+      alert("Vui lòng xác thực email trước khi tiếp tục đăng ký.");
       navigate('/SignUp2');
     }
   }, [email, isVerified, navigate]);
@@ -36,6 +40,11 @@ const SignUp3 = () => {
     if (errors[name]) {
       setErrors({ ...errors, [name]: null });
     }
+    
+    // Clear submit error when user makes changes
+    if (errors.submit) {
+      setErrors({ ...errors, submit: null });
+    }
   };
 
   const validateForm = () => {
@@ -44,11 +53,11 @@ const SignUp3 = () => {
     // Username validation
     if (!formData.username.trim()) {
       newErrors.username = "Tên người dùng là bắt buộc";
-    } else if (formData.username.length < 3) {
+    } else if (formData.username.trim().length < 3) {
       newErrors.username = "Tên người dùng phải có ít nhất 3 ký tự";
-    } else if (formData.username.length > 30) {
+    } else if (formData.username.trim().length > 30) {
       newErrors.username = "Tên người dùng không được quá 30 ký tự";
-    } else if (!/^[a-zA-Z0-9]+$/.test(formData.username)) {
+    } else if (!/^[a-zA-Z0-9]+$/.test(formData.username.trim())) {
       newErrors.username = "Tên người dùng chỉ được chứa chữ cái và số";
     }
     
@@ -83,6 +92,12 @@ const SignUp3 = () => {
     setErrors({});
     
     try {
+      console.log("Submitting registration with:", {
+        username: formData.username.trim(),
+        email: email,
+        password: formData.password,
+      }); // Debug log
+      
       // Send registration data to backend
       const response = await fetch('http://localhost:8080/reptitist/auth/signup', {
         method: 'POST',
@@ -97,6 +112,7 @@ const SignUp3 = () => {
       });
       
       const data = await response.json();
+      console.log("Registration response:", response.status, data); // Debug log
       
       if (response.ok) {
         // Registration successful
@@ -104,17 +120,21 @@ const SignUp3 = () => {
         navigate('/Login');
       } else {
         // Registration failed
-        if (response.status === 400 && data.message.includes('Username already exists')) {
-          setErrors({ username: "Tên người dùng đã tồn tại" });
-        } else if (response.status === 400 && data.message.includes('Email already exists')) {
-          setErrors({ submit: "Email đã được đăng ký" });
+        if (response.status === 400) {
+          if (data.message.includes('Username already exists')) {
+            setErrors({ username: "Tên người dùng đã tồn tại" });
+          } else if (data.message.includes('Email already exists')) {
+            setErrors({ submit: "Email đã được đăng ký" });
+          } else {
+            setErrors({ submit: data.message || "Đăng ký thất bại. Vui lòng thử lại." });
+          }
         } else {
           setErrors({ submit: data.message || "Đăng ký thất bại. Vui lòng thử lại." });
         }
       }
     } catch (error) {
       console.error("Error during registration:", error);
-      setErrors({ submit: "Lỗi kết nối. Vui lòng thử lại sau." });
+      setErrors({ submit: "Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại." });
     } finally {
       setIsSubmitting(false);
     }
@@ -128,6 +148,7 @@ const SignUp3 = () => {
     }
   };
 
+  // Show loading while checking verification status
   if (!email || !isVerified) {
     return (
       <div style={{
@@ -135,9 +156,15 @@ const SignUp3 = () => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        fontSize: '18px'
+        fontSize: '18px',
+        color: '#666'
       }}>
-        Đang chuyển hướng...
+        <div style={{ textAlign: 'center' }}>
+          <div>⏳ Đang kiểm tra xác thực...</div>
+          <div style={{ fontSize: '14px', marginTop: '10px' }}>
+            Vui lòng đợi trong giây lát
+          </div>
+        </div>
       </div>
     );
   }
@@ -153,23 +180,27 @@ const SignUp3 = () => {
           <h1 className="signup3-headline">Hoàn tất đăng ký</h1>
           
           <p className="signup3-subheadline">
-            Vui lòng tạo tên người dùng và mật khẩu để hoàn tất việc tạo tài khoản của bạn.
+            Vui lòng tạo tên người dùng và mật khẩu để hoàn tất việc tạo tài khoản cho email: <strong>{email}</strong>
           </p>
           
           <form className="signup3-form" onSubmit={handleSubmit}>
             <div className="signup3-input-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">Email đã xác thực</label>
               <input 
                 type="email" 
                 id="email"
                 value={email}
                 disabled
                 className="signup3-input disabled"
+                style={{ backgroundColor: '#e8f5e8', color: '#0a5a0a' }}
               />
+              <div style={{ fontSize: '12px', color: '#28a745', marginTop: '5px' }}>
+                ✓ Email đã được xác thực
+              </div>
             </div>
             
             <div className="signup3-input-group">
-              <label htmlFor="username">Tên người dùng</label>
+              <label htmlFor="username">Tên người dùng *</label>
               <input 
                 type="text" 
                 id="username"
@@ -177,14 +208,14 @@ const SignUp3 = () => {
                 value={formData.username}
                 onChange={handleChange}
                 className={`signup3-input ${errors.username ? 'error' : ''}`}
-                placeholder="Tạo tên người dùng"
+                placeholder="Nhập tên người dùng (3-30 ký tự, chỉ chữ và số)"
                 disabled={isSubmitting}
               />
               {errors.username && <div className="error-message">{errors.username}</div>}
             </div>
             
             <div className="signup3-input-group">
-              <label htmlFor="password">Mật khẩu</label>
+              <label htmlFor="password">Mật khẩu *</label>
               <div style={{ position: 'relative' }}>
                 <input 
                   type={showPassword ? "text" : "password"}
@@ -193,7 +224,7 @@ const SignUp3 = () => {
                   value={formData.password}
                   onChange={handleChange}
                   className={`signup3-input ${errors.password ? 'error' : ''}`}
-                  placeholder="Tạo mật khẩu"
+                  placeholder="Nhập mật khẩu (ít nhất 8 ký tự, có chữ hoa và số)"
                   disabled={isSubmitting}
                 />
                 <button
@@ -207,17 +238,19 @@ const SignUp3 = () => {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#666'
+                    color: '#666',
+                    fontSize: '16px'
                   }}
+                  disabled={isSubmitting}
                 >
-                  {showPassword ? '🙈' : '👁️'}
+                  {showPassword ? '👁️‍🗨️' : '👁️'}
                 </button>
               </div>
               {errors.password && <div className="error-message">{errors.password}</div>}
             </div>
             
             <div className="signup3-input-group">
-              <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
+              <label htmlFor="confirmPassword">Xác nhận mật khẩu *</label>
               <div style={{ position: 'relative' }}>
                 <input 
                   type={showConfirmPassword ? "text" : "password"}
@@ -226,7 +259,7 @@ const SignUp3 = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className={`signup3-input ${errors.confirmPassword ? 'error' : ''}`}
-                  placeholder="Xác nhận mật khẩu"
+                  placeholder="Nhập lại mật khẩu"
                   disabled={isSubmitting}
                 />
                 <button
@@ -240,10 +273,12 @@ const SignUp3 = () => {
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
-                    color: '#666'
+                    color: '#666',
+                    fontSize: '16px'
                   }}
+                  disabled={isSubmitting}
                 >
-                  {showConfirmPassword ? '🙈' : '👁️'}
+                  {showConfirmPassword ? '👁️‍🗨️' : '👁️'}
                 </button>
               </div>
               {errors.confirmPassword && (
@@ -251,21 +286,30 @@ const SignUp3 = () => {
               )}
             </div>
             
-            {errors.submit && <div className="error-message submit-error">{errors.submit}</div>}
+            {errors.submit && (
+              <div className="error-message submit-error" style={{ 
+                backgroundColor: '#f8d7da', 
+                border: '1px solid #f5c6cb', 
+                padding: '10px',
+                borderRadius: '5px'
+              }}>
+                {errors.submit}
+              </div>
+            )}
             
             <button 
               type="submit" 
               className="signup3-button"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Đang tạo tài khoản..." : "Hoàn tất đăng ký"}
+              {isSubmitting ? "⏳ Đang tạo tài khoản..." : " Hoàn tất đăng ký"}
             </button>
           </form>
           
           <div className="signup3-terms">
             Bằng cách đăng ký, bạn đồng ý với{" "}
-            <a href="#">Điều khoản sử dụng</a> và{" "}
-            <a href="#">Chính sách bảo mật</a> của chúng tôi.
+            <a href="#" style={{ color: '#0fa958' }}>Điều khoản sử dụng</a> và{" "}
+            <a href="#" style={{ color: '#0fa958' }}>Chính sách bảo mật</a> của chúng tôi.
           </div>
         </div>
         
