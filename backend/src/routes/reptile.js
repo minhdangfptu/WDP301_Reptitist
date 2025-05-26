@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Reptile = require('../models/Reptiles');
-const { successResponse } = require('../../utils/SuccessResponse');
+const { successResponse } = require('../../utils/APIResponse');
 const UserReptiles = require('../models/User_reptiles');
 const LibraryContents = require('../models/Library_contents');
 const Carts = require('../models/Carts');
@@ -40,7 +40,7 @@ router.post('/create-reptile', async (req, res) => {
     });
 
     const savedReptile = await newReptile.save();
-    res.json(successResponse(savedReptile));
+    res.json(successResponse(savedReptile, code));
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
