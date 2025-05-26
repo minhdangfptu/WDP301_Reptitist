@@ -2,10 +2,7 @@ const ProductCategory = require('../models/Products_categories');
 
 const createCategory = async (req, res) => {
     try {
-        const {product_category_name } = req.body;
-
-        
-
+        const {product_category_name, product_category_imageUrl } = req.body;
 
         const nameExists = await ProductCategory.findOne({ product_category_name });
         if (nameExists) {
@@ -14,8 +11,8 @@ const createCategory = async (req, res) => {
 
 
         const category = new ProductCategory({
-            
             product_category_name,
+            product_category_imageUrl
         });
 
         await category.save();
@@ -44,6 +41,7 @@ const getAllCategories = async (req, res) => {
 }
 const getCategoriesById = async (req, res) => {
     try {
+        
         const { categoryId } = req.params;
         const category = await ProductCategory.findById(categoryId);
         if (!category) {

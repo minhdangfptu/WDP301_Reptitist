@@ -6,5 +6,5 @@ const categorySchema = new mongoose.Schema({
   category_imageurl: { type: String }
 }, { collection: 'library_categories' });
 
-module.exports = mongoose.model('LibraryCategories', categorySchema);
-console.log('LibraryCategories model loaded');
+module.exports = mongoose.model('LibraryCategory', categorySchema);
+console.log('LibraryCategory model loaded');
