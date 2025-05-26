@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
+<<<<<<< HEAD
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+=======
+>>>>>>> parent of 81a8016 (1)
 
   // Đóng menu khi click ra ngoài
   useEffect(() => {
@@ -54,6 +56,7 @@ const Header = () => {
             Tài khoản
             {showAccountMenu && (
               <ul className="account-dropdown">
+<<<<<<< HEAD
                 {!user && <li><Link to="/Login">Login</Link></li>}
                 {user && (
                   <>
@@ -69,6 +72,12 @@ const Header = () => {
                   </>
                 )}
                 {!user && <li><Link to="/Signup">Sign Up</Link></li>}
+=======
+                <li><Link to="/Login">Login</Link></li>
+                <li><Link to="/Logout">Logout</Link></li>
+                <li><Link to="/Signup">Sign Up</Link></li>
+                <li><Link to="/Profile">Profile</Link></li>
+>>>>>>> parent of 81a8016 (1)
               </ul>
             )}
           </div>

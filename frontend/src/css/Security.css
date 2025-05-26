@@ -1,324 +1,153 @@
-/* Security Verification CSS - Add to Security.css */
+/* Security.css */
 
-/* Verification Section */
-.verification-section {
-  margin-top: 24px;
-}
+/* Import Profile.css styles */
+@import url('./Profile.css');
 
-.verification-email-field {
-  margin-bottom: 20px;
-}
-
-.verification-email-field label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.verification-email-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: #e8f5e8;
-  color: #0a5a0a;
-}
-
-.verification-email-success {
-  font-size: 12px;
-  color: #28a745;
-  margin-top: 5px;
-}
-
-.verification-code-field {
-  margin-bottom: 20px;
-}
-
-.verification-code-field label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.verification-code-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
+/* Security specific styles */
+.security-title {
   text-align: center;
-  letter-spacing: 2px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.change-password-button{
-  margin-right: 16px;
-  padding: 12px 28px;
-  border-radius: 100px;
-  background-color: #06a13d;
-  color: white;
+.security-title h2 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
 }
 
-.verification-code-help {
-  font-size: 12px;
-  color: #666;
-  margin-top: 5px;
-  text-align: center;
+.security-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 40px;
 }
 
-.verification-buttons {
+.security-column {
   display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 20px;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.verification-button {
+.security-field {
+  margin-bottom: 16px;
+}
+
+.security-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.security-field p {
+  color: #1f2937;
+  margin: 0;
+  font-size: 16px;
+  background-color: #f3f4f6;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.2s ease;
+  min-height: 20px;
+}
+
+.security-field p:hover {
+  border-color: #d1d5db;
+}
+
+.security-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.change-password-button {
   background-color: #10b981;
   color: white;
-  padding: 12px 24px;
+  padding: 12px 32px;
   border-radius: 8px;
   font-size: 16px;
   font-weight: 500;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 140px;
+  min-width: 180px;
 }
 
-.verification-button:hover {
+.change-password-button:hover {
   background-color: #059669;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.verification-button:active {
+.change-password-button:active {
   transform: translateY(0);
 }
 
-.verification-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.verification-button.secondary {
-  background-color: #6b7280;
-}
-
-.verification-button.secondary:hover {
-  background-color: #4b5563;
-}
-
-.verification-button.danger {
-  background-color: #dc2626;
-}
-
-.verification-button.danger:hover {
-  background-color: #b91c1c;
-}
-
-/* Password Field Styles */
-.password-field {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.password-field label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.password-input-wrapper {
-  position: relative;
-}
-
-.password-input {
-  width: 100%;
-  padding: 12px 40px 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.2s ease;
-}
-
-.password-input:focus {
-  outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-}
-
-.password-input.error {
-  border-color: #dc3545;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  color: #6b7280;
-  transition: color 0.2s ease;
-}
-
-.password-toggle:hover {
-  color: #374151;
-}
-
-.password-toggle:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-.success-message {
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.submit-error {
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* Security Info Section */
-.security-info-section {
-  margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
-}
-
-.security-status-field {
-  margin-bottom: 16px;
-}
-
-.security-status-field label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 8px;
-}
-
-.security-status-box {
-  padding: 12px 16px;
-  background-color: #d4edda;
-  border: 1px solid #c3e6cb;
-  border-radius: 8px;
-  color: #155724;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Mobile Responsive */
+/* Mobile responsiveness */
 @media (max-width: 768px) {
-  .verification-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .verification-button {
-    width: 100%;
-    max-width: 300px;
-  }
-  
   .security-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
   
-  .password-input {
-    padding: 14px 40px 14px 16px;
+  .security-title h2 {
+    font-size: 24px;
+  }
+  
+  .change-password-button {
+    width: 100%;
+    padding: 16px;
   }
 }
 
+/* Animation for button */
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+.change-password-button:focus {
+  animation: buttonPulse 1.5s infinite;
+  outline: none;
+}
+
 /* Dark mode overrides */
-.dark-mode .verification-email-input {
-  background-color: #2d4a2d;
-  color: #a7f3d0;
-  border-color: var(--input-border);
+.dark-mode .security-title h2 {
+  color: var(--text-primary);
 }
 
-.dark-mode .verification-code-input,
-.dark-mode .password-input {
+.dark-mode .security-title {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dark-mode .security-field label {
+  color: var(--text-primary);
+}
+
+.dark-mode .security-field p {
+  color: var(--text-primary);
   background-color: var(--input-bg);
-  color: var(--text-primary);
   border-color: var(--input-border);
 }
 
-.dark-mode .verification-code-input:focus,
-.dark-mode .password-input:focus {
-  border-color: #10b981;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+.dark-mode .security-field p:hover {
+  border-color: var(--border-color);
 }
 
-.dark-mode .verification-email-success,
-.dark-mode .verification-code-help {
-  color: var(--text-secondary);
-}
-
-.dark-mode .password-field label,
-.dark-mode .verification-code-field label,
-.dark-mode .verification-email-field label,
-.dark-mode .security-status-field label {
-  color: var(--text-primary);
-}
-
-.dark-mode .password-toggle {
-  color: var(--text-secondary);
-}
-
-.dark-mode .password-toggle:hover {
-  color: var(--text-primary);
-}
-
-.dark-mode .security-status-box {
-  background-color: #1f4a1f;
-  border-color: #2d5a2d;
-  color: #a7f3d0;
-}
-
-.dark-mode .success-message {
-  background-color: #1f4a1f;
-  border-color: #2d5a2d;
-  color: #a7f3d0;
-}
-
-.dark-mode .submit-error {
-  background-color: #4a1f1f;
-  border-color: #5a2d2d;
-  color: #f3a7a7;
-}
-
-.dark-mode .security-info-section {
-  border-top-color: var(--border-color);
+.dark-mode .security-button-container {
+  border-top: 1px solid var(--border-color);
 }
