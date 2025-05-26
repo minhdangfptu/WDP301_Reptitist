@@ -1,5 +1,6 @@
-const User = require('../models/Users');
+const User = require('../models/users');
 const Cart = require('../models/Carts');
+const Role = require('../models/Roles');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
@@ -14,10 +15,15 @@ const signup = async (req, res) => {
         if (email_existing) {
             return res.status(400).json({ message: 'Email already exists' });
         }
+        const role = await Role.findOne({ role_name: 'user' });
+        if (!role) {
+            return res.status(400).json({ message: 'Role not found' });
+        }
         const user = new User({
             username,
             email,
             password_hashed: password,
+            role_id: role._id,
         });
         await user.save();
         const cart = new Cart({
@@ -72,8 +78,13 @@ const login = async (req, res) => {
         await existUser.save();
         res.status(200).json({
             message: 'Login successfully!',
-            access_token: access_token,
+            token: access_token,
             refresh_token: refresh_token,
+            user: {
+                id: existUser._id,
+                username: existUser.username,
+                email: existUser.email,
+            }
         });
     } catch (error) {
         console.log(error);

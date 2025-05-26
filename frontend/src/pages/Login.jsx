@@ -1,11 +1,46 @@
 import React, { useState } from 'react';
 import '../css/Login.css';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { loginSuccess } from '../features/auth/authSlice';
+import {  loginApi } from '../api/auth';
+import { toast } from 'react-toastify';
 
 
 const Login = () => {
+    const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState(null);
+
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const togglePassword = () => setShowPassword(prev => !prev);
+
+    // Handle login form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await loginApi(userName, password);
+            const { token, refresh_token, user } = response.data;
+
+            // Save token to local storage
+            localStorage.setItem('token', token);
+            localStorage.setItem('refresh_token', refresh_token);
+            // Dispatch login action
+            dispatch(loginSuccess({ token, user }));
+            setTimeout(() => toast.success('Đăng nhập thành công!'), 500);
+            // Redirect to home page
+            navigate('/LandingPage');
+
+        } catch (err) {
+            console.error(err);
+            toast.error(err.message || 'Đăng nhập thất bại!');
+            setError('Tên đăng nhập hoặc mật khẩu không chính xác!');
+        }
+    }
 
     return (
         <div className="login-body">
@@ -52,8 +87,11 @@ const Login = () => {
                     </div>
 
                     {/* Phần form đăng nhập */}
-                    <div className="login-form">
+                    <form className="login-form" onSubmit={handleSubmit}>
                         <h1 className="login-title">ĐĂNG NHẬP</h1>
+
+                        {/*Display error message */}
+                        {error && <div className="login-error">{error}</div>}
 
                         <div className="input-group">
                             <span className="input-icon">
@@ -62,7 +100,10 @@ const Login = () => {
                             <input
                                 type="text"
                                 className="form-input"
-                                placeholder="Nhập tên đăng nhập/email"
+                                placeholder="Nhập tên đăng nhập"
+                                required
+                                value={userName}
+                                onChange={(e) => setUserName(e.target.value)}
                             />
                         </div>
 
@@ -74,6 +115,9 @@ const Login = () => {
                                 type={showPassword ? 'text' : 'password'}
                                 className="form-input"
                                 placeholder="Nhập mật khẩu"
+                                required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
                             <i
                                 className={`password-toggle fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'
@@ -87,7 +131,7 @@ const Login = () => {
                             <a href="#">Quên mật khẩu?</a>
                         </div>
 
-                        <button className="login-btn">ĐĂNG NHẬP</button>
+                        <button type='submit' className="login-btn">ĐĂNG NHẬP</button>
 
                         <div className="divider">HOẶC</div>
 
@@ -117,7 +161,7 @@ const Login = () => {
                             <a href="#">Chính sách bảo mật</a>, bao gồm việc sử dụng{' '}
                             <a href="#">Cookies</a>.
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
