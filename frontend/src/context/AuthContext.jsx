@@ -9,44 +9,59 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Debug function
+  const debugLog = (message, data = '') => {
+    console.log(`[AuthContext] ${message}`, data);
+  };
+
   useEffect(() => {
-    // Check if user is logged in on mount
-    const token = localStorage.getItem('token');
-    if (token) {
+    debugLog('AuthProvider mounted, checking authentication...');
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        debugLog('No token found in localStorage');
+        setLoading(false);
+        return;
+      }
+
+      debugLog('Token found, verifying with server...');
+      
       // Verify token and get user data
-      axios.get(`${API_BASE_URL}/auth/profile`, {
+      const response = await axios.get(`${API_BASE_URL}/auth/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      })
-      .then(response => {
-        setUser(response.data);
-      })
-      .catch(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-      })
-      .finally(() => {
-        setLoading(false);
       });
-    } else {
-      // Check if user data is stored locally (from login)
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        try {
-          setUser(JSON.parse(userData));
-        } catch (error) {
-          console.error('Error parsing stored user data:', error);
-          localStorage.removeItem('user');
-        }
-      }
+      
+      debugLog('Profile fetched successfully:', response.data);
+      setUser(response.data);
+      
+      // Update localStorage with fresh user data
+      localStorage.setItem('user', JSON.stringify(response.data));
+      
+    } catch (error) {
+      debugLog('Auth verification failed:', error.response?.data || error.message);
+      
+      // Clear invalid auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      setUser(null);
+    } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   const login = async (username, password) => {
     try {
+      debugLog('Login attempt for username:', username);
+      
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         username,
         password
@@ -54,15 +69,21 @@ export const AuthProvider = ({ children }) => {
       
       const { access_token, refresh_token, user: userData } = response.data;
       
+      debugLog('Login successful:', userData);
+      
       // Store tokens and user data
       localStorage.setItem('token', access_token);
       localStorage.setItem('refreshToken', refresh_token);
       localStorage.setItem('user', JSON.stringify(userData));
       
+      // Update state immediately
       setUser(userData);
+      
+      debugLog('User state updated in context');
       
       return { success: true };
     } catch (error) {
+      debugLog('Login failed:', error.response?.data || error.message);
       return {
         success: false,
         message: error.response?.data?.message || 'Đăng nhập thất bại'
@@ -72,14 +93,19 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      debugLog('Registration attempt for:', userData.email);
+      
       const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
         username: userData.username,
         email: userData.email,
         password: userData.password
       });
       
+      debugLog('Registration successful:', response.data);
+      
       return { success: true, message: response.data.message };
     } catch (error) {
+      debugLog('Registration failed:', error.response?.data || error.message);
       return {
         success: false,
         message: error.response?.data?.message || 'Đăng ký thất bại'
@@ -89,38 +115,58 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      debugLog('Logout attempt...');
+      
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         await axios.post(`${API_BASE_URL}/auth/logout`, {
           refresh_token: refreshToken
         });
       }
+      
+      debugLog('Logout successful');
     } catch (error) {
-      console.error('Logout error:', error);
+      debugLog('Logout error:', error.message);
     } finally {
+      // Always clear local data regardless of server response
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       setUser(null);
+      debugLog('User state cleared');
     }
   };
 
   const updateUser = (updatedUserData) => {
+    debugLog('Updating user data:', updatedUserData);
+    
     const newUserData = { ...user, ...updatedUserData };
     setUser(newUserData);
     localStorage.setItem('user', JSON.stringify(newUserData));
+    
+    debugLog('User data updated successfully');
   };
 
   // Check if user has required role
   const hasRole = (requiredRole) => {
-    if (!user) return false;
-    return user.role === requiredRole;
+    if (!user) {
+      debugLog('hasRole check failed: no user');
+      return false;
+    }
+    const result = user.role === requiredRole;
+    debugLog(`hasRole(${requiredRole}):`, result);
+    return result;
   };
 
   // Check if user has any of the required roles
   const hasAnyRole = (requiredRoles) => {
-    if (!user) return false;
-    return requiredRoles.includes(user.role);
+    if (!user) {
+      debugLog('hasAnyRole check failed: no user');
+      return false;
+    }
+    const result = requiredRoles.includes(user.role);
+    debugLog(`hasAnyRole(${requiredRoles}):`, result);
+    return result;
   };
 
   const value = {
@@ -131,12 +177,15 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     hasRole,
-    hasAnyRole
+    hasAnyRole,
+    checkAuthStatus // Expose for manual refresh
   };
+
+  debugLog('AuthProvider rendering with user:', user ? user.username : 'null');
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
