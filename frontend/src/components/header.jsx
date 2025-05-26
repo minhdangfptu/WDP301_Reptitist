@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   // Đóng menu khi click ra ngoài
@@ -19,14 +19,22 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Xử lý logout
+  const handleLogout = async () => {
+    await logout();
+    setShowAccountMenu(false);
+    navigate("/");
+  };
+
   return (
     <header>
       <div className="container">
         <nav>
-            <img
-              src="logo1.png"
-              className="logo"
-            />
+          <img
+            src="logo1.png"
+            className="logo"
+            alt="Logo"
+          />
           <ul className="nav-links">
             <li><Link to="/">TRANG CHỦ</Link></li>
             <li><Link to="/Community">CỘNG ĐỒNG</Link></li>
@@ -46,18 +54,21 @@ const Header = () => {
             Tài khoản
             {showAccountMenu && (
               <ul className="account-dropdown">
-                <li><Link to="/Login">Login</Link></li>
-                <li
-                  onClick={() => {
-                    logout();
-                    navigate('/');
-                  }}
-                  style={{ cursor: "pointer" }}
-                >
-                  Logout
-                </li>
-                <li><Link to="/Signup">Sign Up</Link></li>
-                <li><Link to="/Profile">Profile</Link></li>
+                {!user && <li><Link to="/Login">Login</Link></li>}
+                {user && (
+                  <>
+                    <li>
+                      <span
+                        onClick={handleLogout}
+                        style={{ cursor: "pointer" }}
+                      >
+                        Logout
+                      </span>
+                    </li>
+                    <li><Link to="/Profile">Profile</Link></li>
+                  </>
+                )}
+                {!user && <li><Link to="/Signup">Sign Up</Link></li>}
               </ul>
             )}
           </div>

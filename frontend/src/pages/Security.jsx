@@ -22,7 +22,6 @@ const Security = () => {
   
   // Password change states
   const [formData, setFormData] = useState({
-    currentPassword: '',
     newPassword: '',
     confirmNewPassword: ''
   });
@@ -31,8 +30,7 @@ const Security = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
     new: false,
-    confirm: false,
-    current: false
+    confirm: false
   });
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -151,10 +149,6 @@ const Security = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.currentPassword) {
-      newErrors.currentPassword = 'Vui lòng nhập mật khẩu hiện tại';
-    }
-
     if (!formData.newPassword) {
       newErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
     } else if (formData.newPassword.length < 8) {
@@ -185,18 +179,10 @@ const Security = () => {
 
     try {
       const token = localStorage.getItem('token');
-      
-      // Log để debug
-      console.log('Sending request to change password...');
-      console.log('Token exists:', !!token);
-      console.log('New password length:', formData.newPassword.length);
-      console.log('Current password length:', formData.currentPassword.length);
-      
       const response = await axios.put(
         'http://localhost:8080/reptitist/auth/change-password',
         {
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
+          newPassword: formData.newPassword
         },
         {
           headers: {
@@ -206,11 +192,8 @@ const Security = () => {
         }
       );
 
-      console.log('Password change successful:', response.data);
-      
       setSuccessMessage('Mật khẩu đã được thay đổi thành công!');
       setFormData({
-        currentPassword: '',
         newPassword: '',
         confirmNewPassword: ''
       });
@@ -219,29 +202,13 @@ const Security = () => {
       setTimeout(() => {
         setCurrentStep('initial');
         setSuccessMessage('');
-        setFormData({
-          currentPassword: '',
-          newPassword: '',
-          confirmNewPassword: ''
-        });
       }, 3000);
 
     } catch (error) {
-      console.error('Password change error:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      
       if (error.response?.status === 401) {
         setErrors({ submit: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
-      } else if (error.response?.status === 400) {
-        setErrors({ submit: error.response?.data?.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.' });
-      } else if (error.response?.status === 404) {
-        setErrors({ submit: 'API endpoint không tồn tại. Vui lòng liên hệ hỗ trợ.' });
-      } else if (error.code === 'ERR_NETWORK') {
-        setErrors({ submit: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.' });
       } else {
-        const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
-        setErrors({ submit: `Lỗi: ${errorMessage}` });
+        setErrors({ submit: error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.' });
       }
     } finally {
       setIsSubmitting(false);
@@ -253,7 +220,6 @@ const Security = () => {
     setInputCode('');
     setVerificationCode('');
     setFormData({
-      currentPassword: '',
       newPassword: '',
       confirmNewPassword: ''
     });
@@ -352,7 +318,7 @@ const Security = () => {
 
             {/* Security Title */}
             <div className="security-title">
-              <h2>Thay đổi mật khẩu</h2>
+              <h2>Bảo mật</h2>
             </div>
 
             {/* Success Message */}
@@ -448,34 +414,6 @@ const Security = () => {
                 <div className="security-grid">
                   {/* Left Column */}
                   <div className="security-column">
-                    {/* Current Password Field */}
-                    <div className="password-field">
-                      <label htmlFor="currentPassword">Mật khẩu hiện tại *</label>
-                      <div className="password-input-wrapper">
-                        <input
-                          type={showPasswords.current ? "text" : "password"}
-                          id="currentPassword"
-                          name="currentPassword"
-                          value={formData.currentPassword}
-                          onChange={handleInputChange}
-                          className={`password-input ${errors.currentPassword ? 'error' : ''}`}
-                          placeholder="Nhập mật khẩu hiện tại"
-                          disabled={isSubmitting}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => togglePasswordVisibility('current')}
-                          className="password-toggle"
-                          disabled={isSubmitting}
-                        >
-                          {showPasswords.current ? '👁️‍🗨️' : '👁️'}
-                        </button>
-                      </div>
-                      {errors.currentPassword && (
-                        <div className="error-message">{errors.currentPassword}</div>
-                      )}
-                    </div>
-                    
                     <div className="password-field">
                       <label htmlFor="newPassword">Mật khẩu mới *</label>
                       <div className="password-input-wrapper">
@@ -576,6 +514,7 @@ const Security = () => {
                     </div>
                   </div>
                 </div>
+            
               </div>
             </div>
           </div>
