@@ -6,7 +6,7 @@ import "../css/Header.css";
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-  const { user, logout } = useAuth();
+  const { user, logout, hasRole, hasAnyRole } = useAuth();
   const navigate = useNavigate();
 
   // Close menu when clicking outside
@@ -23,6 +23,7 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      setShowAccountMenu(false);
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -47,7 +48,10 @@ const Header = () => {
             <li><Link to="/ShopLandingPage">MUA SẮM</Link></li>
             <li><Link to="/ContactUs">Liên hệ</Link></li>
             {user && <li><Link to="/YourPet">YOUR PET</Link></li>}
-            {user?.role === 'admin' && <li><Link to="/UserList">QUẢN LÝ</Link></li>}
+            {/* Admin menu - only show if user is admin */}
+            {hasRole('admin') && <li><Link to="/UserList">QUẢN LÝ</Link></li>}
+            {/* Shop menu - show if user is shop owner or admin */}
+            {hasAnyRole(['shop', 'admin']) && <li><Link to="/ShopManagement">SHOP</Link></li>}
           </ul>
 
           {/* Account menu with dropdown */}
@@ -70,6 +74,21 @@ const Header = () => {
                     <li><Link to="/Profile">Hồ sơ</Link></li>
                     <li><Link to="/Security">Bảo mật</Link></li>
                     <li><Link to="/Settings">Cài đặt</Link></li>
+                    <li><Link to="/Transaction">Giao dịch</Link></li>
+                    {/* Admin specific menu items */}
+                    {hasRole('admin') && (
+                      <>
+                        <li><Link to="/AdminPanel">Quản trị</Link></li>
+                        <li><Link to="/UserManagement">Quản lý người dùng</Link></li>
+                      </>
+                    )}
+                    {/* Shop owner specific menu items */}
+                    {hasAnyRole(['shop', 'admin']) && (
+                      <>
+                        <li><Link to="/ShopDashboard">Dashboard Shop</Link></li>
+                        <li><Link to="/ProductManagement">Quản lý sản phẩm</Link></li>
+                      </>
+                    )}
                     <li onClick={handleLogout} style={{ cursor: "pointer" }}>
                       Đăng xuất
                     </li>

@@ -134,5 +134,6 @@ const userSchema = new mongoose.Schema({
   collection: 'users'
 });
 
-module.exports = mongoose.model('User', userSchema);
+// Check if the model exists before creating it
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);
 console.log('User model loaded');

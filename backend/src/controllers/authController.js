@@ -23,14 +23,20 @@ const signup = async (req, res) => {
         if (email_existing) {
             return res.status(400).json({ message: 'Email already exists' });
         }
-        const role = await Role.findOne({ role_name: 'user' });
+        
+        // Hash password before saving
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        
+        const role = await Role.findOne({ role_name: 'customer' });
         if (!role) {
             return res.status(400).json({ message: 'Role not found' });
         }
+        
         const user = new User({
             username,
             email,
-            password_hashed: password,
+            password_hashed: hashedPassword,
             role_id: role._id,
         });
         
@@ -108,12 +114,13 @@ const login = async (req, res) => {
         
         res.status(200).json({
             message: 'Login successfully!',
-            token: access_token,
+            access_token: access_token,
             refresh_token: refresh_token,
             user: {
                 id: existUser._id,
                 username: existUser.username,
                 email: existUser.email,
+                role: existUser.role_id ? existUser.role_id.role_name : 'customer'
             }
         });
     } catch (error) {
@@ -204,6 +211,53 @@ const logout = async (req,res) => {
     }
 }
 
+// New endpoint specifically for changing password without current password
+const changePasswordWithEmail = async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+        const userId = req.user._id;
+
+        // Validate new password
+        if (!newPassword) {
+            return res.status(400).json({ message: 'New password is required' });
+        }
+
+        if (newPassword.length < 8) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+        }
+
+        if (!/(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+            return res.status(400).json({ message: 'Password must contain at least 1 uppercase letter and 1 number' });
+        }
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        // Update password
+        user.password_hashed = hashedPassword;
+        await user.save();
+
+        // Revoke all refresh tokens to force re-login
+        user.refresh_tokens = user.refresh_tokens.map(token => ({
+            ...token,
+            is_revoked: true
+        }));
+        await user.save();
+
+        res.status(200).json({ message: 'Password changed successfully. Please login again.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to change password' });
+    }
+};
+
 const changePassword = async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
@@ -245,5 +299,6 @@ module.exports = {
     login, 
     refreshToken,
     logout,
-    changePassword
+    changePassword,
+    changePasswordWithEmail
 }

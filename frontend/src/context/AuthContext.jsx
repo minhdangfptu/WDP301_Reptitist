@@ -111,13 +111,27 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(newUserData));
   };
 
+  // Check if user has required role
+  const hasRole = (requiredRole) => {
+    if (!user) return false;
+    return user.role === requiredRole;
+  };
+
+  // Check if user has any of the required roles
+  const hasAnyRole = (requiredRoles) => {
+    if (!user) return false;
+    return requiredRoles.includes(user.role);
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
     logout,
-    updateUser
+    updateUser,
+    hasRole,
+    hasAnyRole
   };
 
   return (

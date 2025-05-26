@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../css/Login.css';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { loginSuccess } from '../features/auth/authSlice';
 import {  loginApi } from '../api/auth';
 import { toast } from 'react-toastify';

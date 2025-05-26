@@ -1,5 +1,5 @@
 const express = require('express');
-const {signup, login, refreshToken, logout, changePassword} = require('../controllers/authController');
+const {signup, login, refreshToken, logout, changePassword, changePasswordWithEmail} = require('../controllers/authController');
 const authMiddleware = require('../middleware/authMiddleware');
 const User = require('../models/users');
 
@@ -10,6 +10,7 @@ router.post('/login', login);
 router.post('/refresh-token', refreshToken);
 router.post('/logout', logout);
 router.post('/change-password', authMiddleware, changePassword);
+router.post('/change-password-email', authMiddleware, changePasswordWithEmail);
 
 // Route để lấy thông tin profile user (cần authentication)
 router.get('/profile', authMiddleware, async (req, res) => {
