@@ -4,22 +4,119 @@ import Footer from '../components/Footer';
 import NavigationBar from '../components/NavigationBar';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import emailjs from 'emailjs-com';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import '../css/Security.css';
 
 const Security = () => {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
+  
+  // Step control
+  const [currentStep, setCurrentStep] = useState('initial'); // 'initial', 'verification', 'password'
+  
+  // Email verification states
+  const [verificationCode, setVerificationCode] = useState('');
+  const [inputCode, setInputCode] = useState('');
+  const [isLoadingEmail, setIsLoadingEmail] = useState(false);
+  
+  // Password change states
   const [formData, setFormData] = useState({
     newPassword: '',
     confirmNewPassword: ''
   });
+  
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswords, setShowPasswords] = useState({
-    current: false,
     new: false,
     confirm: false
   });
   const [successMessage, setSuccessMessage] = useState('');
+
+  const handleStartPasswordChange = () => {
+    setCurrentStep('verification');
+    sendVerificationCode();
+  };
+
+  const sendVerificationCode = () => {
+    setIsLoadingEmail(true);
+    
+    const codeGenerated = Math.floor(100000 + Math.random() * 900000);
+    setVerificationCode(codeGenerated.toString());
+
+    const templateParams = {
+      user_name: user.fullname || user.username,
+      verification_code: codeGenerated,
+      to_email: user.email,
+    };
+
+    emailjs.send(
+      "service_llx7onu",
+      "template_dd8viae",
+      templateParams,
+      "qOVKbEY7rEG5Dhe6D"
+    )
+    .then((response) => {
+      console.log("Mã xác nhận đã được gửi thành công!", response);
+      toast.success("Mã xác nhận đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+    })
+    .catch((error) => {
+      console.log("Có lỗi xảy ra khi gửi email:", error);
+      toast.error("Đã xảy ra lỗi khi gửi mã xác nhận. Vui lòng thử lại.", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true
+      });
+      setCurrentStep('initial');
+    })
+    .finally(() => {
+      setIsLoadingEmail(false);
+    });
+  };
+
+  const handleVerifyCode = () => {
+    if (!inputCode.trim()) {
+      toast.error("Vui lòng nhập mã xác nhận.", {
+        position: "top-right",
+        autoClose: 5000
+      });
+      return;
+    }
+
+    if (inputCode.trim() === verificationCode) {
+      toast.success("Xác thực thành công!", {
+        position: "top-right",
+        autoClose: 2000
+      });
+      setCurrentStep('password');
+      setInputCode('');
+    } else {
+      toast.error("Mã xác nhận không đúng. Vui lòng kiểm tra lại.", {
+        position: "top-right",
+        autoClose: 5000
+      });
+    }
+  };
+
+  const handleResendCode = () => {
+    setInputCode('');
+    toast.info("Đang gửi lại mã xác nhận...", {
+      position: "top-right",
+      autoClose: 2000
+    });
+    sendVerificationCode();
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -66,10 +163,6 @@ const Security = () => {
       newErrors.confirmNewPassword = 'Mật khẩu xác nhận không khớp';
     }
 
-    if (formData.currentPassword === formData.newPassword) {
-      newErrors.newPassword = 'Mật khẩu mới phải khác mật khẩu hiện tại';
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -86,14 +179,18 @@ const Security = () => {
 
     try {
       const token = localStorage.getItem('token');
+      
+      // Log để debug
+      console.log('Sending request to change password...');
+      console.log('Token exists:', !!token);
+      console.log('New password length:', formData.newPassword.length);
+      
       const response = await axios.put(
-        'http://localhost:8080/reptitist/auth/change-password',
+        'http://localhost:8080/reptitist/auth/profile', // Thử endpoint profile trước
         {
-<<<<<<< HEAD
-=======
-          currentPassword: formData.currentPassword,
->>>>>>> parent of 81a8016 (1)
-          newPassword: formData.newPassword
+          newPassword: formData.newPassword,
+          // Thêm currentPassword nếu cần
+          currentPassword: 'temp' // Có thể cần điều chỉnh theo API
         },
         {
           headers: {
@@ -103,12 +200,13 @@ const Security = () => {
         }
       );
 
+      console.log('Password change successful:', response.data);
+      
       setSuccessMessage('Mật khẩu đã được thay đổi thành công!');
       setFormData({
         newPassword: '',
         confirmNewPassword: ''
       });
-<<<<<<< HEAD
       
       // Reset to initial step after success
       setTimeout(() => {
@@ -117,24 +215,27 @@ const Security = () => {
       }, 3000);
 
     } catch (error) {
+      console.error('Password change error:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
       if (error.response?.status === 401) {
-=======
-
-    } catch (error) {
-      if (error.response?.status === 400) {
-        setErrors({ currentPassword: 'Mật khẩu hiện tại không đúng' });
-      } else if (error.response?.status === 401) {
->>>>>>> parent of 81a8016 (1)
         setErrors({ submit: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
+      } else if (error.response?.status === 400) {
+        setErrors({ submit: error.response?.data?.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.' });
+      } else if (error.response?.status === 404) {
+        setErrors({ submit: 'API endpoint không tồn tại. Vui lòng liên hệ hỗ trợ.' });
+      } else if (error.code === 'ERR_NETWORK') {
+        setErrors({ submit: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.' });
       } else {
-        setErrors({ submit: error.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.' });
+        const errorMessage = error.response?.data?.message || error.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
+        setErrors({ submit: `Lỗi: ${errorMessage}` });
       }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-<<<<<<< HEAD
   const handleCancel = () => {
     setCurrentStep('initial');
     setInputCode('');
@@ -147,8 +248,6 @@ const Security = () => {
     setSuccessMessage('');
   };
 
-=======
->>>>>>> parent of 81a8016 (1)
   const formatDate = () => {
     const today = new Date();
     const options = { 
@@ -183,6 +282,19 @@ const Security = () => {
   return (
     <>
       <Header />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+      
       <div className="profile-layout">
         <NavigationBar />
         
@@ -227,206 +339,27 @@ const Security = () => {
 
             {/* Security Title */}
             <div className="security-title">
-              <h2>Bảo mật</h2>
+              <h2>Thay đổi mật khẩu</h2>
             </div>
 
             {/* Success Message */}
             {successMessage && (
-              <div style={{
-                backgroundColor: '#d4edda',
-                border: '1px solid #c3e6cb',
-                color: '#155724',
-                padding: '12px',
-                borderRadius: '8px',
-                marginBottom: '20px',
-                textAlign: 'center'
-              }}>
+              <div className="success-message">
                 {successMessage}
               </div>
             )}
 
-            {/* Change Password Form */}
-            <form onSubmit={handleSubmit}>
-              <div className="security-grid">
-                {/* Left Column */}
-                <div className="security-column">
-                  <div className="security-field">
-                    <label htmlFor="currentPassword">Mật khẩu hiện tại *</label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPasswords.current ? "text" : "password"}
-                        id="currentPassword"
-                        name="currentPassword"
-                        value={formData.currentPassword}
-                        onChange={handleInputChange}
-                        style={{
-                          width: '100%',
-                          padding: '12px 40px 12px 16px',
-                          border: `1px solid ${errors.currentPassword ? '#dc3545' : '#d1d5db'}`,
-                          borderRadius: '8px',
-                          fontSize: '16px'
-                        }}
-                        placeholder="Nhập mật khẩu hiện tại"
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility('current')}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '16px'
-                        }}
-                        disabled={isSubmitting}
-                      >
-                        {showPasswords.current ? '👁️‍🗨️' : '👁️'}
-                      </button>
-                    </div>
-                    {errors.currentPassword && (
-                      <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '5px' }}>
-                        {errors.currentPassword}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="security-field">
-                    <label htmlFor="newPassword">Mật khẩu mới *</label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPasswords.new ? "text" : "password"}
-                        id="newPassword"
-                        name="newPassword"
-                        value={formData.newPassword}
-                        onChange={handleInputChange}
-                        style={{
-                          width: '100%',
-                          padding: '12px 40px 12px 16px',
-                          border: `1px solid ${errors.newPassword ? '#dc3545' : '#d1d5db'}`,
-                          borderRadius: '8px',
-                          fontSize: '16px'
-                        }}
-                        placeholder="Nhập mật khẩu mới (ít nhất 8 ký tự, có chữ hoa và số)"
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility('new')}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '16px'
-                        }}
-                        disabled={isSubmitting}
-                      >
-                        {showPasswords.new ? '👁️‍🗨️' : '👁️'}
-                      </button>
-                    </div>
-                    {errors.newPassword && (
-                      <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '5px' }}>
-                        {errors.newPassword}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="security-column">
-                  <div className="security-field">
-                    <label htmlFor="confirmNewPassword">Xác nhận mật khẩu mới *</label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPasswords.confirm ? "text" : "password"}
-                        id="confirmNewPassword"
-                        name="confirmNewPassword"
-                        value={formData.confirmNewPassword}
-                        onChange={handleInputChange}
-                        style={{
-                          width: '100%',
-                          padding: '12px 40px 12px 16px',
-                          border: `1px solid ${errors.confirmNewPassword ? '#dc3545' : '#d1d5db'}`,
-                          borderRadius: '8px',
-                          fontSize: '16px'
-                        }}
-                        placeholder="Nhập lại mật khẩu mới"
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility('confirm')}
-                        style={{
-                          position: 'absolute',
-                          right: '12px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '16px'
-                        }}
-                        disabled={isSubmitting}
-                      >
-                        {showPasswords.confirm ? '👁️‍🗨️' : '👁️'}
-                      </button>
-                    </div>
-                    {errors.confirmNewPassword && (
-                      <div style={{ color: '#dc3545', fontSize: '14px', marginTop: '5px' }}>
-                        {errors.confirmNewPassword}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Account Security Info */}
-                  <div className="security-field">
-                    <label>Trạng thái bảo mật</label>
-                    <div style={{
-                      padding: '12px 16px',
-                      backgroundColor: '#d4edda',
-                      border: '1px solid #c3e6cb',
-                      borderRadius: '8px',
-                      color: '#155724'
-                    }}>
-                      ✓ Tài khoản được bảo mật
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Submit Error */}
-              {errors.submit && (
-                <div style={{
-                  backgroundColor: '#f8d7da',
-                  border: '1px solid #f5c6cb',
-                  color: '#721c24',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  marginBottom: '20px',
-                  textAlign: 'center'
-                }}>
-                  {errors.submit}
-                </div>
-              )}
-
-              {/* Change Password Button */}
+            {/* Step 1: Initial Button */}
+            {currentStep === 'initial' && (
               <div className="security-button-container">
                 <button 
-                  type="submit"
                   className="change-password-button"
-                  disabled={isSubmitting}
+                  onClick={handleStartPasswordChange}
+                  disabled={isLoadingEmail}
                 >
-                  {isSubmitting ? 'Đang xử lý...' : 'Thay đổi mật khẩu'}
+                  {isLoadingEmail ? 'Đang gửi mã...' : 'Tôi muốn thay đổi mật khẩu'}
                 </button>
               </div>
-<<<<<<< HEAD
             )}
 
             {/* Step 2: Email Verification */}
@@ -602,12 +535,8 @@ const Security = () => {
                     </div>
                   </div>
                 </div>
-            
               </div>
             </div>
-=======
-            </form>
->>>>>>> parent of 81a8016 (1)
           </div>
         </div>
       </div>
