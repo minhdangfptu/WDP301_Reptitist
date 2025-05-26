@@ -1,4 +1,4 @@
-const User = require('../models/Users');
+const User = require('../models/users');
 const Cart = require('../models/Carts');
 const Role = require('../models/Roles');
 const jwt = require('jsonwebtoken');
@@ -23,28 +23,15 @@ const signup = async (req, res) => {
         if (email_existing) {
             return res.status(400).json({ message: 'Email already exists' });
         }
-
-        // Find or create default customer role
-        let customerRole = await Role.findOne({ role_name: 'customer' });
-        if (!customerRole) {
-            customerRole = await Role.create({
-                role_name: 'customer',
-                role_description: 'Default customer role',
-                role_active: true
-            });
+        const role = await Role.findOne({ role_name: 'user' });
+        if (!role) {
+            return res.status(400).json({ message: 'Role not found' });
         }
-
-        // Hash password
-        const saltRounds = parseInt(process.env.SALT_JWT) || 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Create user with hashed password
         const user = new User({
             username,
             email,
-            password_hashed: hashedPassword, // Store hashed password
-            role_id: customerRole._id,
-            fullname: username, // Set fullname to username initially
+            password_hashed: password,
+            role_id: role._id,
         });
         
         await user.save();
@@ -121,19 +108,12 @@ const login = async (req, res) => {
         
         res.status(200).json({
             message: 'Login successfully!',
-            access_token: access_token,
+            token: access_token,
             refresh_token: refresh_token,
             user: {
                 id: existUser._id,
                 username: existUser.username,
                 email: existUser.email,
-                fullname: existUser.fullname,
-                phone_number: existUser.phone_number,
-                address: existUser.address,
-                wallet: existUser.wallet,
-                account_type: existUser.account_type,
-                user_imageurl: existUser.user_imageurl,
-                role: existUser.role_id ? existUser.role_id.role_name : 'customer'
             }
         });
     } catch (error) {
