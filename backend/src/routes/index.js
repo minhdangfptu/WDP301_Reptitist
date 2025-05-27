@@ -4,6 +4,7 @@ const authRoute=require('./authRoute.js')
 const shopRoute=require('./shopRoute.js')
 const reptileRoutes = require('./reptile');
 const libraryCategoriesRoute = require('./libraryCategoriesRoute');
+const { User } = require('../models');
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);

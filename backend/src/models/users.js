@@ -2,14 +2,12 @@ const mongoose = require('mongoose');
 
 const usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/; 
 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
     required: [true,'User name is required'],
     unique: true,
-
     trim: true,
     minlength: [3, 'Username must be at least 3 characters long'],
     maxlength: [30, 'Username must be at most 30 characters long'],
@@ -31,12 +29,6 @@ const userSchema = new mongoose.Schema({
   password_hashed: {
     type: String,
     required: [true,'Password is required'],
-    validate: {
-      validator: function(v) {
-        return passwordRegex.test(v);
-      },
-      message: props => `${props.value} is not a valid password! Password must contain at least one uppercase letter, one digit, and be at least 8 characters long.`
-    }
   },
   refresh_tokens: {
     type: [
@@ -66,9 +58,7 @@ const userSchema = new mongoose.Schema({
           default: false,
         },
       }
-    ]
-      
-    ,
+    ],
     default: [],
   },
   role_id:{
@@ -144,5 +134,6 @@ const userSchema = new mongoose.Schema({
   collection: 'users'
 });
 
-module.exports = mongoose.model('User', userSchema);
+// Check if the model exists before creating it
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);
 console.log('User model loaded');

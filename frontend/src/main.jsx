@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
-
+import './css/dark-mode.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'react-toastify/dist/ReactToastify.css';
 import App from './App';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
