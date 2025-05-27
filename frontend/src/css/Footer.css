@@ -1,6 +1,6 @@
 /* Footer styles */
 footer {
-  background-color: var(--secondary-color);
+  background-color: var(--primary-color);
   color: var(--white);
   padding: 40px 0 20px;
 }
