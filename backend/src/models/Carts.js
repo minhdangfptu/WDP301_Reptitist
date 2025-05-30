@@ -36,10 +36,5 @@ const cartSchema = new mongoose.Schema({
   timestamps: true
 });
 
-cartSchema.pre('save', function (next) {
-  this.update_at = new Date();
-  next();
-});
-
 module.exports = mongoose.model('Cart', cartSchema);
 console.log('Cart model loaded');
