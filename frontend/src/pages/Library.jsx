@@ -132,7 +132,7 @@ import { Link } from "react-router-dom";
 const Library = () => {
   const [categories, setCategories] = useState([]);
   const [openIndex, setOpenIndex] = useState(null); // Để mở/đóng từng danh mục
-
+  
   useEffect(() => {
     axios
       .get("http://localhost:8080/reptitist/library_categories")
@@ -199,7 +199,7 @@ const Library = () => {
                     {openIndex === idx && (
                       <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
                         <li>
-                          <Link to={`/LibraryDetail/${cat._id}`}>
+                          <Link to={`/LibraryDetail`}>
                             {cat.category_description || "Chưa có mô tả"}
                           </Link>
                         </li>
