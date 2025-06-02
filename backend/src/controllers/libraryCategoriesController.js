@@ -58,3 +58,13 @@ exports.deleteCategory = async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi xóa danh mục', error: error.message });
   }
 };
+
+
+exports.getAllCategories = async (req, res) => {
+  try {
+    const categories = await LibraryCategories.find();
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh mục', error: error.message });
+  }
+};
