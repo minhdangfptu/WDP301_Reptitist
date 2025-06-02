@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Schema cho cart_items (embedded trong carts)
 const cartItemSchema = new mongoose.Schema({
   product_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -18,6 +19,7 @@ const cartItemSchema = new mongoose.Schema({
   }
 }, { _id: false }); 
 
+// Schema cho carts
 const cartSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,9 +27,10 @@ const cartSchema = new mongoose.Schema({
     required: true
   },
   cart_items: {
-    type: [cartItemSchema],
+    type: [cartItemSchema], 
     default: []
-  }
+  },
+  
 }, {
   collection: 'carts',
   timestamps: true

@@ -2,10 +2,7 @@ const ProductCategory = require('../models/Products_categories');
 
 const createCategory = async (req, res) => {
     try {
-        const {product_category_name } = req.body;
-
-        
-
+        const {product_category_name, product_category_imageurl } = req.body;
 
         const nameExists = await ProductCategory.findOne({ product_category_name });
         if (nameExists) {
@@ -14,13 +11,13 @@ const createCategory = async (req, res) => {
 
 
         const category = new ProductCategory({
-            
             product_category_name,
+            product_category_imageurl
         });
 
         await category.save();
 
-        res.status(201).json({ message: 'Product category created successfully!' });
+        res.status(201).json({ message: 'Product category created successfully!', 'Created category': category });
 
     } catch (error) {
         console.log(error);
@@ -44,6 +41,7 @@ const getAllCategories = async (req, res) => {
 }
 const getCategoriesById = async (req, res) => {
     try {
+        
         const { categoryId } = req.params;
         const category = await ProductCategory.findById(categoryId);
         if (!category) {
@@ -61,7 +59,7 @@ const getCategoriesById = async (req, res) => {
 const editCategory = async (req, res) => {
     try {
         const { categoryId } = req.params;
-        const { product_category_name, product_category_imageUrl } = req.body;
+        const { product_category_name, product_category_imageurl } = req.body;
 
         const category = await ProductCategory.findById(categoryId);
         if (!category) {
@@ -71,8 +69,8 @@ const editCategory = async (req, res) => {
         if (nameExists) {
             return res.status(400).json({ message: 'Product category name already exists' });
         }
-        if (product_category_imageUrl) {
-            category.product_category_imageUrl = product_category_imageUrl;
+        if (product_category_imageurl) {
+            category.product_category_imageurl = product_category_imageurl;
         }
         category.product_category_name = product_category_name;
         await category.save();
