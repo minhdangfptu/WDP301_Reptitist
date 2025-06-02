@@ -7,6 +7,7 @@ const libraryCategoriesRoute = require('./libraryCategoriesRoute');
 const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
 
+
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/info', reptileRoutes);
