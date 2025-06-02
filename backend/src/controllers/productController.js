@@ -1,5 +1,7 @@
 const Product = require('../models/Products');
 const Feedback = require('../models/Product_feedback');
+const mongoose = require('mongoose');
+
 async function updateAverageRating(productId) {
   const result = await Feedback.aggregate([
     { $match: { product_id: mongoose.Types.ObjectId(productId) } },
@@ -15,20 +17,26 @@ const createProduct = async (req, res) => {
       product_price,
       user_id,
       product_description,
-      product_images,
+      product_imageurl,
       product_category_id,
       product_quantity
     } = req.body;
 
+    if (!product_name || !product_price || !user_id || !product_category_id) {
+      return res.status(400).json({
+        message: 'Missing required fields: product_name, product_price, user_id, or product_category_id'
+      });
+    }
 
     const product = new Product({
       product_name,
       product_price,
-      user_id,
+      user_id, // lấy từ jwwt sau
       product_description,
-      product_images,
+      product_imageurl: product_imageurl || [], 
       product_category_id,
-      product_quantity
+      product_quantity: product_quantity || 0,
+      product_status: 'pending' 
     });
 
     await product.save();
@@ -42,6 +50,7 @@ const createProduct = async (req, res) => {
     });
   }
 };
+
 
 const getAllProductsByCategory = async (req, res) => {
   try {
@@ -117,7 +126,7 @@ const deleteProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
-    res.status(200).json({ message: 'Product deleted successfully!' });
+    res.status(200).json({ message: 'Product deleted successfully!', deletedProduct: product });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -146,35 +155,64 @@ const updateProduct = async (req, res) => {
   }
 }
 
+const updateProductStatus = async (req, res) => {
+  try {
+    const productId = req.params.productId; 
+    const { product_status } = req.body; 
+
+    if (!product_status) {
+      return res.status(400).json({ message: 'Missing product_status in request body' });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      productId,
+      { product_status },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      message: 'Product status updated successfully!',
+      product
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Failed to update product status!',
+      error: error.message
+    });
+  }
+};
+
+
 const createFeedbackAndRating = async (req, res) => {
   try {
     const { productId } = req.params;
-    const userId = req.user._id;
-    const { rating, comment } = req.body;
-
+    const { user_id, rating, comment } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-
-    const existingFeedback = await Feedback.findOne({ product_id: productId, user_id: userId });
+    const existingFeedback = await Feedback.findOne({ product_id: productId, user_id });
     if (existingFeedback) {
       return res.status(400).json({ message: 'User has already submitted feedback for this product' });
     }
 
-
     const newFeedback = new Feedback({
       product_id: productId,
-      user_id: userId,
+      user_id,
       rating,
       comment
     });
 
     await newFeedback.save();
 
-    //update average rating
+    // Update average rating
     await updateAverageRating(productId);
 
     return res.status(201).json({
@@ -189,14 +227,18 @@ const createFeedbackAndRating = async (req, res) => {
       error: error.message
     });
   }
-}
+};
+
 const viewFeedbackAndRating = async (req, res) => {
   try {
     const { productId } = req.params;
-  
+
     const feedbacks = await Feedback.find({ product_id: productId })
-      .populate('user_id') 
-      .sort({ created_at: -1 }); 
+      .populate({
+        path: 'user_id',
+        select: 'username fullname user_imageurl '
+      })
+      .sort({ createdAt: -1 }); 
 
     return res.status(200).json({
       message: 'Feedbacks fetched successfully',
@@ -210,6 +252,7 @@ const viewFeedbackAndRating = async (req, res) => {
       error: error.message
     });
   }
-}
+};
 
-module.exports = { createProduct, getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct, updateProduct, createFeedbackAndRating ,viewFeedbackAndRating};
+
+module.exports = { createProduct, getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct, updateProduct, createFeedbackAndRating ,viewFeedbackAndRating, updateProductStatus};
