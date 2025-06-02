@@ -27,26 +27,32 @@ import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
 
+// Loading component
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '18px',
+    flexDirection: 'column',
+    gap: '16px'
+  }}>
+    <div className="spinner"></div>
+    <div>Đang tải...</div>
+  </div>
+);
+
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px'
-      }}>
-        Đang tải...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!user) {
-    return <Navigate to="/Login" replace />;
+    return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
@@ -57,25 +63,15 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 // Public Route component (redirect to home if already logged in)
-const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px'
-      }}>
-        Đang tải...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
-  // If user is already logged in, redirect to home
-  if (user) {
+  // If user is already logged in and we should redirect
+  if (user && redirectIfAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
@@ -85,7 +81,7 @@ const PublicRoute = ({ children }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
@@ -93,7 +89,7 @@ const AppRoutes = () => {
       <Route path="/LibraryDetail" element={<LibraryDetail />} />
       <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} />
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-      <Route path="/PlanUpgrade" element={<PlanUpgrade/>} />
+      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
       {/* Auth routes - redirect if already logged in */}
       <Route path="/Login" element={
@@ -163,7 +159,9 @@ const App = () => {
       <ThemeProvider>
         <AuthProvider>
           <Router>
-            <AppRoutes />
+            <div className="app">
+              <AppRoutes />
+            </div>
           </Router>
         </AuthProvider>
       </ThemeProvider>
