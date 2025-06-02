@@ -25,6 +25,7 @@ import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
+import PlanUpgrade from './pages/PlanUpgrade';
 
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -92,6 +93,7 @@ const AppRoutes = () => {
       <Route path="/LibraryDetail" element={<LibraryDetail />} />
       <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} />
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+      <Route path="/PlanUpgrade" element={<PlanUpgrade/>} />
       
       {/* Auth routes - redirect if already logged in */}
       <Route path="/Login" element={

@@ -1,0 +1,215 @@
+/* PlanUpgrade.css - Organized Styles */
+
+/* Main Container */
+.plan-upgrade-container {
+  padding: 50px 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-secondary); /* Using a background color from index.css */
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Title */
+.plan-upgrade-title {
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  color: var(--text-primary); /* Using a text color from index.css */
+  margin-bottom: 30px;
+}
+
+/* Plan Toggle Buttons */
+.plan-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.plan-toggle button {
+  padding: 10px 30px;
+  border: 1px solid var(--primary-color); /* Using primary color from index.css */
+  background-color: var(--white); /* Using white from index.css */
+  color: var(--primary-color); /* Using primary color from index.css */
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.plan-toggle button:first-child {
+  border-top-left-radius: var(--border-radius); /* Using border radius from index.css */
+  border-bottom-left-radius: var(--border-radius); /* Using border radius from index.css */
+  border-right: none;
+}
+
+.plan-toggle button:last-child {
+  border-top-right-radius: var(--border-radius); /* Using border radius from index.css */
+  border-bottom-right-radius: var(--border-radius); /* Using border radius from index.css */
+}
+
+.plan-toggle button.active {
+  background-color: var(--primary-color); /* Using primary color from index.css */
+  color: var(--white); /* Using white from index.css */
+}
+
+/* Plans Grid */
+.plans-grid {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Plan Card */
+.plan-card {
+  background-color: var(--card-bg); /* Using card background from index.css */
+  border: 1px solid var(--border-color); /* Using border color from index.css */
+  border-radius: var(--border-radius); /* Using border radius from index.css */
+  padding: 30px;
+  width: 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.plan-card.premium {
+  border-color: var(--primary-color); /* Using primary color from index.css */
+}
+
+.plan-card .popular-label {
+  position: absolute;
+  top: 0;
+  right: 20px;
+  background-color: #d1fae5; /* Light green background */
+  color: #065f46; /* Dark green text */
+  padding: 4px 12px;
+  border-bottom-left-radius: var(--border-radius); /* Using border radius from index.css */
+  border-bottom-right-radius: var(--border-radius); /* Using border radius from index.css */
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.plan-card h3 {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--text-primary); /* Using text primary from index.css */
+  margin-bottom: 10px;
+}
+
+.plan-card .price {
+  font-size: 48px;
+  font-weight: bold;
+  color: var(--primary-color); /* Using primary color from index.css */
+  margin-bottom: 15px;
+}
+
+.plan-card .price span {
+  font-size: 18px;
+  font-weight: normal;
+  color: var(--text-secondary); /* Using text secondary from index.css */
+}
+
+.plan-card .description {
+  font-size: 15px;
+  color: var(--text-secondary); /* Using text secondary from index.css */
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.plan-card .btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: var(--border-radius); /* Using border radius from index.css */
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  margin-top: auto; /* Push button to the bottom */
+}
+
+.plan-card .btn-outline {
+  background-color: var(--white); /* Using white from index.css */
+  color: var(--text-secondary); /* Using text secondary from index.css */
+  border: 1px solid var(--border-color); /* Using border color from index.css */
+}
+
+.plan-card .btn-outline:hover {
+  background-color: var(--hover-color); /* Using hover color from index.css */
+}
+
+.plan-card .btn-primary {
+  background-color: var(--primary-color); /* Using primary color from index.css */
+  color: var(--white); /* Using white from index.css */
+  border: 1px solid var(--primary-color); /* Using primary color from index.css */
+}
+
+.plan-card .btn-primary:hover {
+  background-color: var(--secondary-color); /* Using secondary color from index.css */
+}
+
+.plan-card .features-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.plan-card .features-list li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 15px;
+  color: var(--text-primary); /* Using text primary from index.css */
+}
+
+.plan-card .features-list li svg {
+  margin-right: 10px;
+  color: var(--primary-color); /* Using primary color from index.css */
+  flex-shrink: 0;
+}
+
+/* More Info Section */
+.upgrade-more-info {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 16px;
+  color: var(--text-primary); /* Using text primary from index.css */
+}
+
+.upgrade-more-info a {
+  color: var(--primary-color); /* Using primary color from index.css */
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.upgrade-more-info a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .plan-upgrade-title {
+    font-size: 28px;
+  }
+  
+  .plans-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .plan-card {
+    width: 90%; /* Adjust width for smaller screens */
+    max-width: 350px;
+  }
+  
+  .plan-card .price {
+    font-size: 40px;
+  }
+} 
