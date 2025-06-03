@@ -21,12 +21,12 @@
 
 const express = require('express');
 const router = express.Router();
-const { createCategory, getCategoryById, updateCategory, deleteCategory } = require('../controllers/libraryCategoriesController');
+const { createCategory, getCategoryById, updateCategory, deleteCategory, getAllCategories } = require('../controllers/libraryCategoriesController');
 
 // Bỏ middleware checkRole để không kiểm tra quyền
 router.post('/', createCategory); // Create
 router.get('/:id', getCategoryById); // View
 router.put('/:id', updateCategory); // Update
 router.delete('/:id', deleteCategory); // Delete
-
+router.get('/', getAllCategories);
 module.exports = router;

@@ -1,9 +1,6 @@
-/* Security.css */
+/* Security.css - Pure CSS for styling only */
 
-/* Import Profile.css styles */
-@import url('./Profile.css');
-
-/* Security specific styles */
+/* Security title */
 .security-title {
   text-align: center;
   margin-bottom: 32px;
@@ -18,6 +15,7 @@
   margin: 0;
 }
 
+/* Security grid layout */
 .security-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -31,6 +29,7 @@
   gap: 24px;
 }
 
+/* Security fields */
 .security-field {
   margin-bottom: 16px;
 }
@@ -59,6 +58,7 @@
   border-color: #d1d5db;
 }
 
+/* Button container */
 .security-button-container {
   display: flex;
   justify-content: center;
@@ -67,6 +67,7 @@
   border-top: 1px solid #e5e7eb;
 }
 
+/* Main password change button */
 .change-password-button {
   background-color: #10b981;
   color: white;
@@ -77,10 +78,10 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-width: 180px;
+  min-width: 200px;
 }
 
-.change-password-button:hover {
+.change-password-button:hover:not(:disabled) {
   background-color: #059669;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
@@ -88,6 +89,252 @@
 
 .change-password-button:active {
   transform: translateY(0);
+}
+
+.change-password-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Verification section */
+.verification-section {
+  margin: 32px 0;
+}
+
+/* Email verification field */
+.verification-email-field {
+  margin-bottom: 20px;
+}
+
+.verification-email-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.verification-email-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.verification-email-success {
+  font-size: 12px;
+  color: #059669;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* Code verification field */
+.verification-code-field {
+  margin-bottom: 20px;
+}
+
+.verification-code-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.verification-code-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #ffffff;
+  transition: border-color 0.2s ease;
+}
+
+.verification-code-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.verification-code-help {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Verification buttons */
+.verification-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.verification-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.verification-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.verification-button:active {
+  transform: translateY(0);
+}
+
+.verification-button:disabled {
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.6;
+}
+
+/* Primary verification button (default) */
+.verification-button:not(.secondary):not(.danger) {
+  background-color: #10b981;
+  color: white;
+}
+
+.verification-button:not(.secondary):not(.danger):hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Secondary verification button */
+.verification-button.secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.verification-button.secondary:hover:not(:disabled) {
+  background-color: #4b5563;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+/* Danger verification button */
+.verification-button.danger {
+  background-color: #ef4444;
+  color: white;
+}
+
+.verification-button.danger:hover:not(:disabled) {
+  background-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Password field */
+.password-field {
+  margin-bottom: 20px;
+}
+
+.password-field label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 50px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.password-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.password-input.error {
+  border-color: #ef4444;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover:not(:disabled) {
+  color: #374151;
+}
+
+.password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Error messages */
+.error-message {
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.submit-error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Success message */
+.success-message {
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #059669;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Security info section */
+.security-info-section {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
 }
 
 /* Mobile responsiveness */
@@ -101,13 +348,19 @@
     font-size: 24px;
   }
   
-  .change-password-button {
+  .change-password-button,
+  .verification-button {
     width: 100%;
-    padding: 16px;
+    min-width: auto;
+  }
+  
+  .verification-buttons {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
-/* Animation for button */
+/* Focus animations */
 @keyframes buttonPulse {
   0% {
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
@@ -120,12 +373,13 @@
   }
 }
 
-.change-password-button:focus {
+.change-password-button:focus,
+.verification-button:focus {
   animation: buttonPulse 1.5s infinite;
   outline: none;
 }
 
-/* Dark mode overrides */
+/* Dark mode support */
 .dark-mode .security-title h2 {
   color: var(--text-primary);
 }
@@ -149,5 +403,47 @@
 }
 
 .dark-mode .security-button-container {
+  border-top: 1px solid var(--border-color);
+}
+
+.dark-mode .verification-email-input,
+.dark-mode .verification-code-input,
+.dark-mode .password-input {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+.dark-mode .password-input:focus,
+.dark-mode .verification-code-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.dark-mode .password-toggle {
+  color: var(--text-secondary);
+}
+
+.dark-mode .password-toggle:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.dark-mode .verification-code-help {
+  color: var(--text-secondary);
+}
+
+.dark-mode .submit-error {
+  background-color: #2d1a1a;
+  border-color: #5c2626;
+  color: #f87171;
+}
+
+.dark-mode .success-message {
+  background-color: #1a2e1f;
+  border-color: #2d5a3d;
+  color: #34d399;
+}
+
+.dark-mode .security-info-section {
   border-top: 1px solid var(--border-color);
 }

@@ -1,20 +1,42 @@
 const User = require('../models/Users');
 const jwt = require('jsonwebtoken');
+
 const authMiddleware = async (req, res, next) => {
     try {
-        const token = req.headers('Authorization')?.split(' ')[1];
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({ message: 'Access denied! No token provided.' });
+        }
+
+        const token = authHeader.split(' ')[1]; // Bearer TOKEN
         if (!token) {
-            return res.status(401).json({ message: 'Access denied!No token provided.' });
+            return res.status(401).json({ message: 'Access denied! No token provided.' });
         }
-        const decoded = await jwt.verify(token, process.env.JWT_SECRET);
-        req.user = await User.findById(decoded.id).select('-password_hashed -__v');
-        if (!req.user) {
-            return res.status(401).json({ message: 'Invalid token!' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id)
+            .select('-password_hashed -__v')
+            .populate('role_id', 'role_name role_description');
+        
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid token! User not found.' });
         }
+
+        if (!user.isActive) {
+            return res.status(401).json({ message: 'Account is deactivated.' });
+        }
+        
+        req.user = user;
         next();
     } catch (error) {
-        console.error(error);
+        console.error('Auth middleware error:', error);
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(403).json({ message: 'Invalid token format' });
+        } else if (error.name === 'TokenExpiredError') {
+            return res.status(403).json({ message: 'Token expired' });
+        }
         return res.status(403).json({ message: 'Invalid or expired token' });
     }
 };
+
 module.exports = authMiddleware;
