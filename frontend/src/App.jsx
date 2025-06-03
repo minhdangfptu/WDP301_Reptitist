@@ -25,7 +25,7 @@ import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
-
+// import loadinggif from './public/loading.gif';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
         height: '100vh',
         fontSize: '18px'
       }}>
-        Đang tải...
+        <img src="/loading.gif" alt="loading" />
       </div>
     );
   }
@@ -68,7 +68,7 @@ const PublicRoute = ({ children }) => {
         height: '100vh',
         fontSize: '18px'
       }}>
-        Đang tải...
+       <img src="/loading.gif" alt="loading" />
       </div>
     );
   }
