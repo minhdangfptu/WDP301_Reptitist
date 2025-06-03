@@ -1,14 +1,112 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../css/Login.css';
-
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
+    const [userName, setUserName] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const togglePassword = () => setShowPassword(prev => !prev);
 
+    // Handle login form submission
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Clear previous errors
+        setError(null);
+        
+        // Validate inputs
+        if (!userName.trim()) {
+            setError('Vui lòng nhập tên đăng nhập');
+            return;
+        }
+        
+        if (!password.trim()) {
+            setError('Vui lòng nhập mật khẩu');
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            console.log('Starting login process...');
+            
+            // Use AuthContext login function
+            const result = await login(userName.trim(), password);
+            
+            console.log('Login result:', result);
+
+            if (result.success) {
+                // Show success message
+                toast.success('Đăng nhập thành công!', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true
+                });
+
+                // Small delay to show success message before redirect
+                setTimeout(() => {
+                    console.log('Redirecting to home page...');
+                    navigate('/');
+                }, 1000);
+
+            } else {
+                console.log('Login failed:', result.message);
+                setError(result.message);
+                toast.error(result.message, {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true
+                });
+            }
+
+        } catch (err) {
+            console.error('Login error:', err);
+            const errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại.';
+            setError(errorMessage);
+            toast.error(errorMessage, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     return (
         <div className="login-body">
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+            />
+            
             <div className="login-container">
                 <div className="bg-image"></div>
                 <div className="login-content">
@@ -52,8 +150,23 @@ const Login = () => {
                     </div>
 
                     {/* Phần form đăng nhập */}
-                    <div className="login-form">
+                    <form className="login-form" onSubmit={handleSubmit}>
                         <h1 className="login-title">ĐĂNG NHẬP</h1>
+                        
+                        {/* Display error message */}
+                        {error && (
+                            <div className="error-message" style={{
+                                backgroundColor: '#f8d7da',
+                                color: '#721c24',
+                                padding: '10px',
+                                borderRadius: '4px',
+                                marginBottom: '15px',
+                                border: '1px solid #f5c6cb',
+                                fontSize: '14px'
+                            }}>
+                                {error}
+                            </div>
+                        )}
 
                         <div className="input-group">
                             <span className="input-icon">
@@ -62,7 +175,14 @@ const Login = () => {
                             <input
                                 type="text"
                                 className="form-input"
-                                placeholder="Nhập tên đăng nhập/email"
+                                placeholder="Nhập tên đăng nhập"
+                                required
+                                value={userName}
+                                onChange={(e) => {
+                                    setUserName(e.target.value);
+                                    if (error) setError(null); // Clear error when user types
+                                }}
+                                disabled={isLoading}
                             />
                         </div>
 
@@ -74,12 +194,23 @@ const Login = () => {
                                 type={showPassword ? 'text' : 'password'}
                                 className="form-input"
                                 placeholder="Nhập mật khẩu"
+                                required
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (error) setError(null); // Clear error when user types
+                                }}
+                                disabled={isLoading}
                             />
                             <i
                                 className={`password-toggle fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'
                                     }`}
                                 onClick={togglePassword}
-                                style={{ userSelect: 'none' }}
+                                style={{ 
+                                    userSelect: 'none',
+                                    cursor: isLoading ? 'not-allowed' : 'pointer',
+                                    opacity: isLoading ? 0.5 : 1
+                                }}
                             ></i>
                         </div>
 
@@ -87,7 +218,17 @@ const Login = () => {
                             <a href="#">Quên mật khẩu?</a>
                         </div>
 
-                        <button className="login-btn">ĐĂNG NHẬP</button>
+                        <button 
+                            type='submit' 
+                            className="login-btn"
+                            disabled={isLoading}
+                            style={{
+                                opacity: isLoading ? 0.7 : 1,
+                                cursor: isLoading ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isLoading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP'}
+                        </button>
 
                         <div className="divider">HOẶC</div>
 
@@ -117,7 +258,7 @@ const Login = () => {
                             <a href="#">Chính sách bảo mật</a>, bao gồm việc sử dụng{' '}
                             <a href="#">Cookies</a>.
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
