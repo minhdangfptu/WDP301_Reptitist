@@ -33,10 +33,10 @@ const createProduct = async (req, res) => {
       product_price,
       user_id, // lấy từ jwwt sau
       product_description,
-      product_imageurl: product_imageurl || [], 
+      product_imageurl: product_imageurl || [],
       product_category_id,
       product_quantity: product_quantity || 0,
-      product_status: 'pending' 
+      product_status: 'pending'
     });
 
     await product.save();
@@ -157,8 +157,8 @@ const updateProduct = async (req, res) => {
 
 const updateProductStatus = async (req, res) => {
   try {
-    const productId = req.params.productId; 
-    const { product_status } = req.body; 
+    const productId = req.params.productId;
+    const { product_status } = req.body;
 
     if (!product_status) {
       return res.status(400).json({ message: 'Missing product_status in request body' });
@@ -238,7 +238,7 @@ const viewFeedbackAndRating = async (req, res) => {
         path: 'user_id',
         select: 'username fullname user_imageurl '
       })
-      .sort({ createdAt: -1 }); 
+      .sort({ createdAt: -1 });
 
     return res.status(200).json({
       message: 'Feedbacks fetched successfully',
@@ -253,6 +253,76 @@ const viewFeedbackAndRating = async (req, res) => {
     });
   }
 };
+const editFeedbackAndRating = async (req, res) => {
+  try {
+
+    const { feedbackId } = req.params;
+    const { rating, comment } = req.body;
+    const feedback = await Feedback.findById(feedbackId);
+
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback not found' });
+    }
+
+    if (feedback.user_id.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You do not have permission to edit this feedback' });
+    }
+    console.log(feedback);
+    feedback.rating = rating;
+    feedback.comment = comment;
+    await feedback.save();
+    // Update average rating for the product
+    // await updateAverageRating(feedback.product_id);
+    return res.status(200).json({
+      message: 'Feedback updated successfully',
+      feedback
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: 'Failed to update feedback',
+      error: error.message
+    });
+  }
+};
+const deleteFeedbackAndRating = async (req, res) => {
+  try {
+    const { feedbackId } = req.params;
+    const feedback = await Feedback.findById(feedbackId);
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback not found' });
+    }
+    if (feedback.user_id.toString() !== req.userId) {
+      return res.status(403).json({ message: 'You do not have permission to delete this feedback' });
+    }
+    await Feedback.findByIdAndDelete(feedbackId);
+    // Update average rating for the product
+    // await updateAverageRating(feedback.product_id);
+    return res.status(200).json({
+      message: 'Feedback deleted successfully'
+    });
+  }
+  catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: 'Failed to delete feedback',
+      error: error.message
+    });
+  }
+};
 
 
-module.exports = { createProduct, getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct, updateProduct, createFeedbackAndRating ,viewFeedbackAndRating, updateProductStatus};
+module.exports = {
+  createProduct,
+  getAllProductsByCategory,
+  getAllProductByName, 
+  getAllProductRecentUploaded, 
+  getProductDetails, 
+  deleteProduct, 
+  updateProduct, 
+  createFeedbackAndRating, 
+  viewFeedbackAndRating, 
+  updateProductStatus, 
+  editFeedbackAndRating,
+  deleteFeedbackAndRating
+};

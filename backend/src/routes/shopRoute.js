@@ -1,6 +1,8 @@
 const express = require('express');
+const {authMiddleware, authUserIdOnly} = require('../middleware/authMiddleware');
 const {createCategory, getAllCategories, getCategoriesById, editCategory, deleteCategory} = require('../controllers/productCategoryController');
-const {getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct, updateProduct, updateProductStatus, createProduct, createFeedbackAndRating, viewFeedbackAndRating} = require('../controllers/productController');
+const {getAllProductsByCategory, getAllProductByName, getAllProductRecentUploaded, getProductDetails, deleteProduct, updateProduct, updateProductStatus, createProduct, createFeedbackAndRating, viewFeedbackAndRating, deleteFeedbackAndRating, editFeedbackAndRating} = require('../controllers/productController');
+const {addProductToCart, getCart, deleteProductFromCart, deleteAllProductFromCart} = require('../controllers/cartController');
 const router = express.Router();
 router.post('/create-category', createCategory);
 router.get('/category', getAllCategories);
@@ -19,7 +21,14 @@ router.post('/products/create', createProduct);
 
 router.post('/products-feedbacks/:productId', createFeedbackAndRating);
 router.get('/products-feedbacks/:productId', viewFeedbackAndRating);
+router.put('/products-feedbacks/:feedbackId',authUserIdOnly, editFeedbackAndRating);
+router.delete('/products-feedbacks/:feedbackId',authUserIdOnly, deleteFeedbackAndRating);
 
+// Cart routes
+router.post('/cart/add-product', authUserIdOnly, addProductToCart);
+router.get('/my-cart', authUserIdOnly, getCart);
+router.delete('/cart/:cartItemId', authUserIdOnly, deleteProductFromCart);
+router.delete('/my-cart', authUserIdOnly, deleteAllProductFromCart);
 
 
 module.exports = router;
