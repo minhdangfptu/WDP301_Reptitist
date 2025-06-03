@@ -70,7 +70,10 @@ export const AuthProvider = ({ children }) => {
       
       if (result.success) {
         debugLog('Login successful:', result.user);
-        setUser(result.user);
+        // Ensure we have complete user data
+        const userData = await authService.verifyToken();
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
         return { success: true };
       } else {
         debugLog('Login failed:', result.message);

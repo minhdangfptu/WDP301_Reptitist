@@ -6,12 +6,16 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
 import '../css/Profile.css';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [editForm, setEditForm] = useState({
     fullname: '',
     phone_number: '',
@@ -19,13 +23,18 @@ const Profile = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      setEditForm({
-        fullname: user.fullname || '',
-        phone_number: user.phone_number || '',
-        address: user.address || ''
-      });
-    }
+    const loadUserData = async () => {
+      if (user) {
+        setEditForm({
+          fullname: user.fullname || '',
+          phone_number: user.phone_number || '',
+          address: user.address || ''
+        });
+        setIsDataLoaded(true);
+      }
+    };
+
+    loadUserData();
   }, [user]);
 
   const handleEdit = () => {
@@ -181,7 +190,11 @@ const Profile = () => {
     }
   };
 
-  if (!user) {
+  const handleUpgradeClick = () => {
+    navigate('/upgrade-plan');
+  };
+
+  if (!user || !isDataLoaded) {
     return (
       <>
         <Header />
@@ -202,8 +215,8 @@ const Profile = () => {
           <div className="profile-container">
             <div className="welcome-header">
               <div className="welcome-content">
-                <h1>Vui lòng đăng nhập</h1>
-                <p>Bạn cần đăng nhập để xem thông tin profile</p>
+                <h1>Đang tải thông tin...</h1>
+                <p>Vui lòng đợi trong giây lát</p>
               </div>
             </div>
           </div>
@@ -256,16 +269,16 @@ const Profile = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  <div className="profile-badge-container">
-                    <span className="profile-badge-text">
-                      {user.account_type?.type === 'premium' ? 'Premium Customer' : 'Customer'}
-                    </span>
-                    {user.account_type?.type !== 'premium' && (
-                      <button className="upgrade-button">
-                        Upgrade account
-                      </button>
-                    )}
-                  </div>
+                  {user.account_type?.type === 'premium' ? (
+                    <div className="profile-badge-container">
+                      <span className="profile-badge-text">Premium Customer</span>
+                    </div>
+                  ) : (
+                    <Link to="/PlanUpgrade" className="profile-badge-container">
+                      <span className="profile-badge-text">Customer</span>
+                      <span className="upgrade-button">Upgrade account</span>
+                    </Link>
+                  )}
                 </div>
               </div>
               
