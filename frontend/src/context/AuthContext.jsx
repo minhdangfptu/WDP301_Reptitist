@@ -118,14 +118,53 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Fixed updateUser function
   const updateUser = (updatedUserData) => {
     debugLog('Updating user data:', updatedUserData);
     
-    const newUserData = { ...user, ...updatedUserData };
-    setUser(newUserData);
-    localStorage.setItem('user', JSON.stringify(newUserData));
-    
-    debugLog('User data updated successfully');
+    try {
+      // Merge new data with existing user data
+      const newUserData = { 
+        ...user, 
+        ...updatedUserData,
+        // Ensure we don't lose important fields
+        id: user?.id || updatedUserData?.id,
+        username: user?.username || updatedUserData?.username,
+        email: user?.email || updatedUserData?.email,
+        role: user?.role || updatedUserData?.role
+      };
+      
+      // Update state
+      setUser(newUserData);
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(newUserData));
+      
+      debugLog('User data updated successfully:', newUserData);
+      
+      return { success: true, user: newUserData };
+    } catch (error) {
+      debugLog('Error updating user data:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Function to refresh user data from server
+  const refreshUserData = async () => {
+    try {
+      debugLog('Refreshing user data from server...');
+      
+      const userData = await authService.verifyToken();
+      
+      debugLog('User data refreshed successfully:', userData);
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return { success: true, user: userData };
+    } catch (error) {
+      debugLog('Error refreshing user data:', error.message);
+      return { success: false, error: error.message };
+    }
   };
 
   // Check if user has required role
@@ -157,6 +196,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    refreshUserData,
     hasRole,
     hasAnyRole,
     checkAuthStatus

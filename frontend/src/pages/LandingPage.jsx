@@ -20,7 +20,7 @@ const LandingPage = () => {
             </p>
             <div className="hero-buttons">
               <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY!</a>
-              <a href="#" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
+              <a href="/PlanUpgrade" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
             </div>
           </div>
           <div className="discount-badge">

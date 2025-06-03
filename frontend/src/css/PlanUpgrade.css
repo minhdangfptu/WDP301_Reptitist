@@ -1,215 +1,536 @@
-/* PlanUpgrade.css - Organized Styles */
+/* 
+PlanUpgrade.css - Enhanced Design with Dark Green
+Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css 
+*/
 
-/* Main Container */
-.plan-upgrade-container {
-  padding: 50px 0;
+.plan-upgrade-page {
+  min-height: calc(100vh - 64px);
+  background-color: #f8f9fa;
+  padding: 60px 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--bg-secondary); /* Using a background color from index.css */
 }
 
-.container {
-  width: 100%;
+.plan-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 15px;
+  padding: 0 20px;
 }
 
-/* Title */
-.plan-upgrade-title {
-  font-size: 36px;
-  font-weight: bold;
+/* Header */
+.plan-upgrade-header {
   text-align: center;
-  color: var(--text-primary); /* Using a text color from index.css */
-  margin-bottom: 30px;
-}
-
-/* Plan Toggle Buttons */
-.plan-toggle {
-  display: flex;
-  justify-content: center;
   margin-bottom: 40px;
 }
 
-.plan-toggle button {
-  padding: 10px 30px;
-  border: 1px solid var(--primary-color); /* Using primary color from index.css */
-  background-color: var(--white); /* Using white from index.css */
-  color: var(--primary-color); /* Using primary color from index.css */
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.3s ease;
+.plan-upgrade-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 16px 0;
 }
 
-.plan-toggle button:first-child {
-  border-top-left-radius: var(--border-radius); /* Using border radius from index.css */
-  border-bottom-left-radius: var(--border-radius); /* Using border radius from index.css */
+.plan-upgrade-subtitle {
+  font-size: 16px;
+  color: #718096;
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* Tab Toggle */
+.plan-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 50px;
+}
+
+.plan-toggle-btn {
+  padding: 12px 32px;
+  border: 2px solid #48bb78;
+  background-color: white;
+  color: #48bb78;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.plan-toggle-btn:first-child {
+  border-top-left-radius: 25px;
+  border-bottom-left-radius: 25px;
   border-right: none;
 }
 
-.plan-toggle button:last-child {
-  border-top-right-radius: var(--border-radius); /* Using border radius from index.css */
-  border-bottom-right-radius: var(--border-radius); /* Using border radius from index.css */
+.plan-toggle-btn:last-child {
+  border-top-right-radius: 25px;
+  border-bottom-right-radius: 25px;
+  border-left: none;
 }
 
-.plan-toggle button.active {
-  background-color: var(--primary-color); /* Using primary color from index.css */
-  color: var(--white); /* Using white from index.css */
+.plan-toggle-btn.active {
+  background-color: #48bb78;
+  color: white;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
 }
 
-/* Plans Grid */
-.plans-grid {
-  display: flex;
+.plan-toggle-btn:hover:not(.active) {
+  background-color: #f7fafc;
+  transform: translateY(-1px);
+}
+
+/* Plans Container */
+.plan-plans-container {
+  margin-bottom: 60px;
+}
+
+.plan-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 30px;
-  justify-content: center;
-  flex-wrap: wrap;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 /* Plan Card */
 .plan-card {
-  background-color: var(--card-bg); /* Using card background from index.css */
-  border: 1px solid var(--border-color); /* Using border color from index.css */
-  border-radius: var(--border-radius); /* Using border radius from index.css */
-  padding: 30px;
-  width: 350px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 0;
   position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  animation: planSlideInUp 0.6s ease-out;
 }
 
-.plan-card.premium {
-  border-color: var(--primary-color); /* Using primary color from index.css */
+.plan-card:nth-child(2) {
+  animation-delay: 0.1s;
 }
 
-.plan-card .popular-label {
+.plan-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-color: #48bb78;
+}
+
+.plan-card.popular {
+  transform: scale(1.02);
+}
+
+.plan-card.popular:hover {
+  transform: scale(1.02) translateY(-4px);
+}
+
+/* Popular Badge - Đồng bộ hiệu ứng hover */
+.plan-popular-badge {
   position: absolute;
-  top: 0;
+  top: 20px;
   right: 20px;
-  background-color: #d1fae5; /* Light green background */
-  color: #065f46; /* Dark green text */
-  padding: 4px 12px;
-  border-bottom-left-radius: var(--border-radius); /* Using border radius from index.css */
-  border-bottom-right-radius: var(--border-radius); /* Using border radius from index.css */
+  background: #e2e8f0;
+  color: #718096;
+  padding: 6px 16px;
+  border-radius: 20px;
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
-.plan-card h3 {
+.plan-card:hover .plan-popular-badge {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+}
+
+/* Plan Content */
+.plan-content {
+  padding: 40px 30px 30px;
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.plan-name {
   font-size: 24px;
-  font-weight: bold;
-  color: var(--text-primary); /* Using text primary from index.css */
-  margin-bottom: 10px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 20px 0;
 }
 
-.plan-card .price {
-  font-size: 48px;
-  font-weight: bold;
-  color: var(--primary-color); /* Using primary color from index.css */
-  margin-bottom: 15px;
-}
-
-.plan-card .price span {
-  font-size: 18px;
-  font-weight: normal;
-  color: var(--text-secondary); /* Using text secondary from index.css */
-}
-
-.plan-card .description {
-  font-size: 15px;
-  color: var(--text-secondary); /* Using text secondary from index.css */
+.plan-pricing {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
   margin-bottom: 20px;
+  line-height: 1;
+}
+
+.plan-currency {
+  font-size: 20px;
+  font-weight: 600;
+  color: #48bb78;
+  margin-right: 4px;
+}
+
+.plan-price {
+  font-size: 48px;
+  font-weight: 800;
+  color: #48bb78;
+  margin-right: 8px;
+}
+
+.plan-period {
+  font-size: 16px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.plan-description {
+  font-size: 15px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
+  text-align: center;
+}
+
+/* Plan Button - Đồng bộ hiệu ứng hover cho tất cả button */
+.plan-button {
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+  text-transform: none;
+  border: none;
+}
+
+.plan-button.outline {
+  background: white;
+  border: 2px solid #e2e8f0;
+  color: #718096;
+}
+
+.plan-button.outline:hover:not(:disabled) {
+  background: #48bb78;
+  color: white;
+  border-color: #48bb78;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.plan-button.primary {
+  background: white;
+  color: #718096;
+  border: 2px solid #e2e8f0;
+}
+
+.plan-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  border-color: #48bb78;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+}
+
+.plan-button.current {
+  background: #edf2f7;
+  color: #718096;
+  cursor: not-allowed;
+  border: 2px solid #e2e8f0;
+}
+
+.plan-button:disabled {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Features List - Đồng bộ hiệu ứng hover cho icons */
+.plan-features {
+  margin-bottom: 30px;
+}
+
+.plan-features-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-feature-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
-.plan-card .btn {
-  display: block;
-  width: 100%;
-  padding: 12px;
-  text-align: center;
-  text-decoration: none;
-  border-radius: var(--border-radius); /* Using border radius from index.css */
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-  margin-top: auto; /* Push button to the bottom */
-}
-
-.plan-card .btn-outline {
-  background-color: var(--white); /* Using white from index.css */
-  color: var(--text-secondary); /* Using text secondary from index.css */
-  border: 1px solid var(--border-color); /* Using border color from index.css */
-}
-
-.plan-card .btn-outline:hover {
-  background-color: var(--hover-color); /* Using hover color from index.css */
-}
-
-.plan-card .btn-primary {
-  background-color: var(--primary-color); /* Using primary color from index.css */
-  color: var(--white); /* Using white from index.css */
-  border: 1px solid var(--primary-color); /* Using primary color from index.css */
-}
-
-.plan-card .btn-primary:hover {
-  background-color: var(--secondary-color); /* Using secondary color from index.css */
-}
-
-.plan-card .features-list {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0;
-}
-
-.plan-card .features-list li {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  font-size: 15px;
-  color: var(--text-primary); /* Using text primary from index.css */
-}
-
-.plan-card .features-list li svg {
-  margin-right: 10px;
-  color: var(--primary-color); /* Using primary color from index.css */
+.plan-feature-icon {
+  width: 20px;
+  height: 20px;
+  color: #718096;
+  margin-right: 12px;
+  margin-top: 2px;
   flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
-/* More Info Section */
-.upgrade-more-info {
+.plan-card:hover .plan-feature-icon {
+  color: #48bb78;
+  transform: scale(1.1);
+}
+
+.plan-feature-item span {
+  color: #4a5568;
+}
+
+/* Plan Footer */
+.plan-footer {
+  padding: 0 30px 30px;
+  border-top: 1px solid #f7fafc;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+
+.plan-terms {
+  font-size: 13px;
+  color: #a0aec0;
   text-align: center;
-  margin-top: 50px;
-  font-size: 16px;
-  color: var(--text-primary); /* Using text primary from index.css */
+  margin: 0;
+  line-height: 1.4;
+  font-style: italic;
 }
 
-.upgrade-more-info a {
-  color: var(--primary-color); /* Using primary color from index.css */
+/* Bottom Info */
+.plan-bottom-info {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.plan-info-icon {
+  width: 40px;
+  height: 40px;
+  color: #48bb78;
+}
+
+.plan-info-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.plan-info-text {
+  font-size: 16px;
+  color: #4a5568;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.plan-info-link {
+  color: #48bb78;
   text-decoration: none;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
-.upgrade-more-info a:hover {
+.plan-info-link:hover {
+  color: #38a169;
   text-decoration: underline;
 }
 
-/* Responsive adjustments */
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .plan-plans-grid {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+  }
+  
+  .plan-card.popular {
+    transform: none;
+  }
+  
+  .plan-card.popular:hover {
+    transform: translateY(-4px);
+  }
+}
+
 @media (max-width: 768px) {
+  .plan-upgrade-page {
+    padding: 40px 0;
+  }
+  
+  .plan-container {
+    padding: 0 16px;
+  }
+  
   .plan-upgrade-title {
     font-size: 28px;
   }
   
-  .plans-grid {
+  .plan-upgrade-subtitle {
+    font-size: 14px;
+  }
+  
+  .plan-toggle-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+  }
+  
+  .plan-plans-grid {
+    gap: 20px;
+  }
+  
+  .plan-content {
+    padding: 30px 20px 20px;
+  }
+  
+  .plan-name {
+    font-size: 20px;
+  }
+  
+  .plan-price {
+    font-size: 36px;
+  }
+  
+  .plan-description {
+    font-size: 14px;
+  }
+  
+  .plan-footer {
+    padding: 0 20px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .plan-upgrade-title {
+    font-size: 24px;
+  }
+  
+  .plan-toggle-btn {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+  
+  .plan-plans-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .plan-content {
+    padding: 24px 16px 16px;
+  }
+  
+  .plan-pricing {
     flex-direction: column;
-    align-items: center;
+    gap: 4px;
   }
   
-  .plan-card {
-    width: 90%; /* Adjust width for smaller screens */
-    max-width: 350px;
+  .plan-currency, .plan-period {
+    font-size: 14px;
   }
   
-  .plan-card .price {
-    font-size: 40px;
+  .plan-price {
+    font-size: 32px;
   }
-} 
+  
+  .plan-feature-item {
+    font-size: 14px;
+  }
+  
+  .plan-feature-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Dark mode support */
+.dark-mode .plan-upgrade-page {
+  background-color: var(--bg-primary);
+}
+
+.dark-mode .plan-upgrade-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-upgrade-subtitle {
+  color: var(--text-secondary);
+}
+
+.dark-mode .plan-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .plan-name {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-description {
+  color: var(--text-secondary);
+}
+
+.dark-mode .plan-feature-item span {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-terms {
+  color: var(--text-secondary);
+}
+
+.dark-mode .plan-info-text {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-button.outline {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-button.outline:hover:not(:disabled) {
+  background: var(--hover-color);
+  border-color: var(--border-color);
+}
+
+.dark-mode .plan-footer {
+  border-top-color: var(--border-color);
+}
+
+/* Animation enhancements */
+@keyframes planSlideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus states for accessibility */
+.plan-toggle-btn:focus,
+.plan-button:focus {
+  outline: 2px solid #48bb78;
+  outline-offset: 2px;
+}
+
+.plan-toggle-btn:focus:not(:focus-visible),
+.plan-button:focus:not(:focus-visible) {
+  outline: none;
+}
