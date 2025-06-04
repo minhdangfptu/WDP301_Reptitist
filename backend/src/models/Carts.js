@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Schema cho cart_items (embedded trong carts)
 const cartItemSchema = new mongoose.Schema({
   product_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -16,8 +17,9 @@ const cartItemSchema = new mongoose.Schema({
     required: true,
     min: 0
   }
-}, { _id: false }); // không tạo _id cho từng cart item con
+}, { _id: false }); 
 
+// Schema cho carts
 const cartSchema = new mongoose.Schema({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,12 +27,18 @@ const cartSchema = new mongoose.Schema({
     required: true
   },
   cart_items: {
-    type: [cartItemSchema],
+    type: [cartItemSchema], 
     default: []
-  }
+  },
+  
 }, {
   collection: 'carts',
   timestamps: true
+});
+
+cartSchema.pre('save', function (next) {
+  this.update_at = new Date();
+  next();
 });
 
 module.exports = mongoose.model('Cart', cartSchema);

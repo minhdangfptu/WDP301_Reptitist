@@ -1,55 +1,23 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  product_id: {
-    type: Number,
-    required: true,
-    unique: true
-  },
-  product_name: {
-    type: String,
-    required: true
-  },
-  product_price: {
-    type: Number,
-    required: true
-  },
-  user_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // nếu bạn có model User
-    required: true
-  },
-  feedback: {
-    type: String
-  },
-  rating: {
-    type: Number,
-    min: 0,
-    max: 5
-  },
-  product_description: {
-    type: String
-  },
-  product_images: {
-    type: [String],
-    default: []
-  },
-  product_category_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ProductCategory', // nếu bạn đã có model category
-    required: true
-  },
-  product_quantity: {
-    type: Number,
-    default: 0
-  },
-  create_at: {
-    type: Date,
-    default: Date.now
-  }
+  product_name: { type: String, required: true },
+  product_price: { type: Number, required: true },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  product_description: { type: String },
+  product_imageurl: { type: [String], default: [] },
+  product_category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory', required: true },
+  product_quantity: { type: Number, default: 0 },
+  product_status: { type: String, enum: ['available', 'pending', 'not_available'], default: 'pending' },
+  average_rating: { type: Number, min: 0, max: 5, default: 0 },
+  
+  
 }, {
-  collection: 'products' // hoặc tên bạn dùng trong MongoDB
+  collection: 'products',
+  timestamps: true 
 });
 
-module.exports = mongoose.model('Product', productSchema);
+const Product = mongoose.model('Product', productSchema);
+
+module.exports = Product;
 console.log('Product model loaded');
