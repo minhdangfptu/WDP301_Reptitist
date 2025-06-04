@@ -4,7 +4,7 @@ const {
   loginUser,
   getUserProfile,
   updateUserProfile,
-  changeUserPassword, // Thêm endpoint mới
+  changeUserPassword, 
   refreshToken,
   logoutUser,
   getUsers,

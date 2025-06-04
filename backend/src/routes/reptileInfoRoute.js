@@ -1,0 +1,10 @@
+const express = require('express');
+const {createReptile, insertManyReptiles} = require('../controllers/reptileInfoController');
+const router = express.Router();
+router.post('/create', createReptile);
+router.post('/create-many', insertManyReptiles);
+// router.get('/category', getAllCategories);
+// router.get('/category/:categoryId', getCategoriesById);
+// router.put('/edit-category/:categoryId', editCategory);
+// router.delete('/category/:categoryId', deleteCategory); 
+module.exports = router;
