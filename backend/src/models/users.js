@@ -118,8 +118,8 @@ const userSchema = new mongoose.Schema({
     ref: 'UserReptile'
   },
   user_imageurl: {
-    type: String, 
-    default: ''
+    type: String,
+    default: null
   },
   fullname: {
     type: String,

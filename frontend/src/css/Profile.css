@@ -129,34 +129,15 @@
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  position: relative;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4px solid #e5e7eb;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-}
-
-.profile-avatar::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10b981, #059669, #10b981);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
-}
-
-.profile-avatar:hover::before {
-  opacity: 1;
-}
-
-.profile-avatar:hover {
-  transform: scale(1.05);
-  border-color: transparent;
+  margin-right: 20px;
+  transition: all 0.3s ease;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .profile-avatar img {
@@ -164,10 +145,110 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  background-color: #f3f4f6;
+}
+
+.profile-avatar img[src="/api/placeholder/64/64"] {
+  background-color: #e5e7eb;
+  padding: 20%;
 }
 
 .profile-avatar:hover img {
   transform: scale(1.1);
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+}
+
+.profile-avatar:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-overlay span {
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover .avatar-overlay span {
+  transform: translateY(0);
+}
+
+/* Loading state */
+.profile-avatar.uploading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.profile-avatar.uploading img {
+  opacity: 0.7;
+  filter: blur(2px);
+}
+
+.profile-avatar.uploading .avatar-overlay {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.profile-avatar.uploading .avatar-overlay span {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Error state */
+.profile-avatar.error {
+  border-color: #ef4444;
+}
+
+.profile-avatar.error img {
+  border: 2px solid #ef4444;
+}
+
+.profile-avatar.error .avatar-overlay {
+  background: rgba(239, 68, 68, 0.5);
+}
+
+/* Success state */
+.profile-avatar.success {
+  border-color: #10b981;
+}
+
+.profile-avatar.success .avatar-overlay {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+/* Dark mode */
+.dark-mode .profile-avatar {
+  border-color: var(--border-color);
+}
+
+.dark-mode .avatar-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dark-mode .avatar-overlay span {
+  background: rgba(0, 0, 0, 0.9);
 }
 
 .profile-user-details h2 {

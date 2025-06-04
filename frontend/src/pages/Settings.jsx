@@ -50,7 +50,7 @@ const Settings = () => {
   };
 
   const handleUpgradeClick = () => {
-    navigate('/upgrade-plan');
+    navigate('/PlanUpgrade');
   };
 
   if (!user || !isDataLoaded) {
@@ -166,9 +166,9 @@ const Settings = () => {
                       <span className="settings-item-title">Đổi mật khẩu</span>
                       <span className="settings-item-description">Cập nhật mật khẩu của bạn để tăng cường bảo mật</span>
                     </div>
-                    <button className="settings-action-button">
+                    <Link to="/Security" className="edit-button">
                       Đổi mật khẩu
-                    </button>
+                    </Link>
                   </div>
 
                   <div className="settings-item">
@@ -191,7 +191,7 @@ const Settings = () => {
                       <span className="settings-item-title">Phiên đăng nhập</span>
                       <span className="settings-item-description">Xem và quản lý các thiết bị đã đăng nhập</span>
                     </div>
-                    <button className="settings-action-button">
+                    <button className="edit-button">
                       Xem phiên
                     </button>
                   </div>
@@ -207,9 +207,9 @@ const Settings = () => {
                       <span className="settings-item-title">Lịch sử giao dịch</span>
                       <span className="settings-item-description">Xem lại các giao dịch đã thực hiện</span>
                     </div>
-                    <button className="settings-action-button">
+                    <Link to="/Transaction" className="edit-button">
                       Xem lịch sử
-                    </button>
+                    </Link>
                   </div>
 
                   <div className="settings-item">
@@ -217,7 +217,7 @@ const Settings = () => {
                       <span className="settings-item-title">Phương thức thanh toán</span>
                       <span className="settings-item-description">Quản lý các phương thức thanh toán đã lưu</span>
                     </div>
-                    <button className="settings-action-button">
+                    <button className="edit-button">
                       Quản lý
                     </button>
                   </div>
@@ -227,7 +227,7 @@ const Settings = () => {
                       <span className="settings-item-title">Giới hạn giao dịch</span>
                       <span className="settings-item-description">Đặt giới hạn cho các giao dịch của bạn</span>
                     </div>
-                    <button className="settings-action-button">
+                    <button className="edit-button">
                       Cài đặt
                     </button>
                   </div>

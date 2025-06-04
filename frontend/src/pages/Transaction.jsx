@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NavigationBar from '../components/NavigationBar';
 import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Transaction.css';
 
@@ -258,16 +259,16 @@ const Transaction = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  <div className="profile-badge-container">
-                    <span className="profile-badge-text">
-                      {user.account_type?.type === 'premium' ? 'Premium Customer' : 'Customer'}
-                    </span>
-                    {user.account_type?.type !== 'premium' && (
-                      <button className="upgrade-button">
-                        Upgrade account
-                      </button>
-                    )}
-                  </div>
+                  {user.account_type?.type === 'premium' ? (
+                    <div className="profile-badge-container">
+                      <span className="profile-badge-text">Premium Customer</span>
+                    </div>
+                  ) : (
+                    <Link to="/PlanUpgrade" className="profile-badge-container">
+                      <span className="profile-badge-text">Customer</span>
+                      <span className="upgrade-button">Upgrade account</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

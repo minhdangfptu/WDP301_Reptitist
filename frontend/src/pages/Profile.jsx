@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NavigationBar from '../components/NavigationBar';
@@ -16,6 +16,8 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const [editForm, setEditForm] = useState({
     fullname: '',
     phone_number: '',
@@ -194,6 +196,82 @@ const Profile = () => {
     navigate('/upgrade-plan');
   };
 
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Vui lòng chọn file ảnh hợp lệ');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Kích thước ảnh không được vượt quá 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        return;
+      }
+
+      const response = await axios.post(
+        'http://localhost:8080/reptitist/auth/upload-avatar',
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data.imageUrl) {
+        // Update user data in context and localStorage
+        const updatedUser = { ...user, user_imageurl: response.data.imageUrl };
+        updateUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        
+        toast.success('Cập nhật ảnh đại diện thành công!');
+      }
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      
+      let errorMessage = 'Có lỗi xảy ra khi tải lên ảnh đại diện';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      } else if (error.response?.status === 413) {
+        errorMessage = 'Kích thước file quá lớn';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const getAvatarUrl = (imageUrl) => {
+    if (!imageUrl) return "/api/placeholder/64/64";
+    if (imageUrl.startsWith('http')) return imageUrl;
+    return `http://localhost:8080${imageUrl}`;
+  };
+
   if (!user || !isDataLoaded) {
     return (
       <>
@@ -261,10 +339,29 @@ const Profile = () => {
             {/* Profile Header */}
             <div className="profile-header">
               <div className="profile-user-info">
-                <div className="profile-avatar">
+                <div 
+                  className="profile-avatar" 
+                  onClick={triggerFileInput} 
+                  style={{ cursor: 'pointer' }}
+                >
                   <img
-                    src={user.user_imageurl || "/api/placeholder/64/64"}
+                    src={getAvatarUrl(user.user_imageurl)}
                     alt="Profile"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/api/placeholder/64/64";
+                    }}
+                  />
+                  <div className="avatar-overlay">
+                    <span>{isUploading ? 'Đang tải lên...' : 'Thay đổi ảnh'}</span>
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    disabled={isUploading}
                   />
                 </div>
                 <div className="profile-user-details">
