@@ -10,8 +10,6 @@ const productSchema = new mongoose.Schema({
   product_quantity: { type: Number, default: 0 },
   product_status: { type: String, enum: ['available', 'pending', 'not_available'], default: 'pending' },
   average_rating: { type: Number, min: 0, max: 5, default: 0 },
-  
-  
 }, {
   collection: 'products',
   timestamps: true 

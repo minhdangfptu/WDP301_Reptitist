@@ -1,119 +1,148 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Sellerproduct from "../components/SellProduct";
-import { bestsellingProducts } from "../data/productData";
-import "../css/LibraryDetail.css";
+import axios from "axios";
+import { useLocation } from "react-router-dom";
 
 const LibraryDetail = () => {
-  const navigate = useNavigate();
+  const [contents, setContents] = useState([]);
+  const [selectedContent, setSelectedContent] = useState(null);
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Data for reptile categories
-  const reptileCategories = [
-    {
-      id: 1,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Khám phá thế giới đa dạng của các loài bò sát có vỏ với nhiều hoạt tiết tuyệt đẹp, từ rùa cạn đến rùa biển, rùa vàng và nhiều loài rùa khác. Tìm hiểu về đặc tính và môi trường sống.",
-      imageUrl: "/api/placeholder/250/150"
-    },
-    {
-      id: 2,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Các loài rùa với những đặc tính khác nhau và môi trường sống đa dạng. Tìm hiểu về chế độ ăn, sinh sản và cách chăm sóc rùa đúng cách trong môi trường nuôi nhốt.",
-      imageUrl: "/api/placeholder/250/150"
-    },
-    {
-      id: 3, 
-      title: "Loài bò sát không vỏ đặc sắc",
-      description: "Tìm hiểu về các loài bò sát không vỏ như rắn, thằn lằn, tắc kè và kỳ đà. Khám phá đặc điểm sinh học, tập tính và nhu cầu của chúng để xây dựng môi trường sống phù hợp.",
-      imageUrl: "/api/placeholder/250/150"
-    },
-    {
-      id: 4,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Phân loại giữa các loài rùa nước ngọt, rùa cạn và cách nhận biết. Tìm hiểu về sức khỏe và dinh dưỡng của loài bò sát có vỏ và các bệnh thường gặp trong quá trình nuôi.",
-      imageUrl: "/api/placeholder/250/150"
-    }
-  ];
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const categoryId = queryParams.get("category");
 
-  // Data for reptile articles
-  const reptileArticles = [
-    { id: 1, name: "Bóng Nam Phi (Iguanas)", count: 46 },
-    { id: 2, name: "Bóng Úc Úc", count: 49 },
-    { id: 3, name: "Kỳ đà cảnh", count: 50 },
-    { id: 4, name: "Thằn lằn mắt lồi", count: 45 },
-    { id: 5, name: "Thằn lằn bò sừng", count: 48 },
-    { id: 6, name: "Trăn Gấm", count: 45 },
-    { id: 7, name: "Mèo cánh", count: 45 },
-    { id: 8, name: "Rùa sulcata", count: 45 },
-    { id: 9, name: "Cá sấu cảnh", count: 45 },
-    { id: 10, name: "Các loài bò sát khác", count: null }
-  ];
+  useEffect(() => {
+    setLoadingList(true);
+    let url = "http://localhost:8080/reptitist/library_contents";
+    axios
+      .get(url)
+      .then((res) => {
+        let data = res.data;
+        if (categoryId) {
+          data = data.filter(
+            (item) =>
+              item.category_content_id &&
+              item.category_content_id._id === categoryId
+          );
+        }
+        setContents(data);
+        setLoadingList(false);
+      })
+      .catch(() => {
+        setError("Lỗi khi tải danh sách nội dung.");
+        setLoadingList(false);
+      });
+  }, [categoryId]);
 
-  const handleCardClick = (categoryId) => {
-    navigate(`/LibraryDetail2/${categoryId}`);
+  const handleContentClick = (id) => {
+    setLoadingDetail(true);
+    axios
+      .get(`http://localhost:8080/reptitist/library_contents/${id}`)
+      .then((res) => {
+        setSelectedContent(res.data);
+        setLoadingDetail(false);
+      })
+      .catch(() => {
+        setError("Lỗi khi tải chi tiết nội dung.");
+        setLoadingDetail(false);
+      });
   };
 
   return (
-    <div className="library-page">
+    <>
       <Header />
-      
-      {/* Page Title Banner */}
-      <div className="page-title-banner">
-        <h1>THƯ VIỆN KIẾN THỨC</h1>
-      </div>
-      
-      {/* Breadcrumb */}
-      <div className="container">
-        <div className="breadcrumb">
-          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/Library">Thư viện kiến thức</a> &gt; <span>Bò sát phổ biến ở Việt Nam</span>
-        </div>
-        
-        <div className="library-content">
-          {/* Sidebar */}
-          <div className="sidebar">
-            <h3 className="sidebar-title">Chuyên mục bài viết</h3>
-            <ul className="article-list">
-              {reptileArticles.map(article => (
-                <li key={article.id}>
-                  <a href={`#${article.id}`}>
-                    {article.name} {article.count && <span className="count">({article.count})</span>}
-                  </a>
+      <div
+        className="container my-4"
+        style={{ display: "flex", gap: "2rem", minHeight: "600px" }}
+      >
+        {/* Danh sách nội dung */}
+        <div
+          style={{
+            flex: 1,
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+            padding: "1rem",
+            overflowY: "auto",
+            maxHeight: "600px",
+          }}
+        >
+          <h2>Danh sách nội dung thư viện</h2>
+          {loadingList ? (
+            <p>Đang tải danh sách...</p>
+          ) : error ? (
+            <p style={{ color: "red" }}>{error}</p>
+          ) : contents.length === 0 ? (
+            <p>Không có nội dung nào.</p>
+          ) : (
+            <ul style={{ listStyleType: "none", padding: 0 }}>
+              {contents.map((content) => (
+                <li
+                  key={content._id}
+                  onClick={() => handleContentClick(content._id)}
+                  style={{
+                    cursor: "pointer",
+                    marginBottom: "10px",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    backgroundColor:
+                      selectedContent && selectedContent._id === content._id
+                        ? "#e0f7fa"
+                        : "transparent",
+                  }}
+                >
+                  {content.title}
                 </li>
               ))}
             </ul>
-            
-            {/* Sử dụng component Sellerproduct */}
-            <Sellerproduct products={bestsellingProducts} />
-          </div>
-          
-          {/* Main Content */}
-          <div className="main-content">
-            <div className="reptile-categories">
-              {reptileCategories.map(category => (
-                <div 
-                  key={category.id} 
-                  className="category-card"
-                  onClick={() => handleCardClick(category.id)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="category-image">
-                    <img src={category.imageUrl} alt={category.title} />
-                  </div>
-                  <div className="category-content">
-                    <h3 className="category-title">{category.title}</h3>
-                    <p className="category-description">{category.description}</p>
-                  </div>
-                </div>
-              ))}
+          )}
+        </div>
+
+        {/* Chi tiết nội dung */}
+        <div
+          style={{
+            flex: 2,
+            border: "1px solid #ddd",
+            borderRadius: "8px",
+            padding: "1rem",
+            overflowY: "auto",
+            maxHeight: "600px",
+          }}
+        >
+          <h2>Chi tiết nội dung</h2>
+          {loadingDetail ? (
+            <p>Đang tải chi tiết...</p>
+          ) : selectedContent ? (
+            <div>
+              <h3>{selectedContent.title}</h3>
+              {selectedContent.image_urls &&
+                selectedContent.image_urls.length > 0 &&
+                selectedContent.image_urls.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Ảnh ${idx + 1}`}
+                    style={{
+                      maxWidth: "100%",
+                      marginBottom: "15px",
+                      borderRadius: "4px",
+                    }}
+                  />
+                ))}
+              <div
+                dangerouslySetInnerHTML={{ __html: selectedContent.content }}
+              />
             </div>
-          </div>
+          ) : (
+            <p>Vui lòng chọn nội dung để xem chi tiết.</p>
+          )}
         </div>
       </div>
-      
       <Footer />
-    </div>
+    </>
   );
 };
 

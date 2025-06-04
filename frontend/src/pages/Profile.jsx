@@ -1,23 +1,108 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NavigationBar from '../components/NavigationBar';
+import { useAuth } from '../context/AuthContext';
 import '../css/Profile.css';
 
 const Profile = () => {
+  const { user, updateUser } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    fullname: '',
+    phone_number: '',
+    address: ''
+  });
+
+  useEffect(() => {
+    if (user) {
+      setEditForm({
+        fullname: user.fullname || '',
+        phone_number: user.phone_number || '',
+        address: user.address || ''
+      });
+    }
+  }, [user]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    // Update user data locally (in a real app, you'd also update on the server)
+    updateUser(editForm);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    if (user) {
+      setEditForm({
+        fullname: user.fullname || '',
+        phone_number: user.phone_number || '',
+        address: user.address || ''
+      });
+    }
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const formatDate = () => {
+    const today = new Date();
+    const options = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    return today.toLocaleDateString('vi-VN', options).toUpperCase();
+  };
+
+  const formatBalance = (balance) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(balance || 0);
+  };
+
+  if (!user) {
+    return (
+      <>
+        <Header />
+        <div className="profile-layout">
+          <NavigationBar />
+          <div className="profile-container">
+            <div className="welcome-header">
+              <div className="welcome-content">
+                <h1>Vui lòng đăng nhập</h1>
+                <p>Bạn cần đăng nhập để xem thông tin profile</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
       <div className="profile-layout">
-        {/* Sử dụng NavigationBar component thay vì sidebar đơn giản */}
         <NavigationBar />
         
         <div className="profile-container">
           {/* Welcome Header */}
           <div className="welcome-header">
             <div className="welcome-content">
-              <h1>Xin chào, Minh Đăng</h1>
-              <p>THỨ 3, 20/05/2025</p>
+              <h1>Xin chào, {user.fullname || user.username}</h1>
+              <p>{formatDate()}</p>
             </div>
             <div className="welcome-emoji">
               🐢
@@ -31,23 +116,36 @@ const Profile = () => {
               <div className="profile-user-info">
                 <div className="profile-avatar">
                   <img
-                    src="/api/placeholder/64/64"
+                    src={user.user_imageurl || "/api/placeholder/64/64"}
                     alt="Profile"
                   />
                 </div>
                 <div className="profile-user-details">
-                  <h2>mangdinh_buonngu</h2>
+                  <h2>{user.username}</h2>
                   <div className="profile-badge-container">
-                    <span className="profile-badge-text">Premium Customer</span>
-                    <button className="upgrade-button">
-                      Upgrade account
-                    </button>
+                    <span className="profile-badge-text">
+                      {user.account_type?.type === 'premium' ? 'Premium Customer' : 'Customer'}
+                    </span>
+                    {user.account_type?.type !== 'premium' && (
+                      <button className="upgrade-button">
+                        Upgrade account
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-              <button className="edit-button">
-                Chỉnh sửa
+              <button className="edit-button" onClick={isEditing ? handleSave : handleEdit}>
+                {isEditing ? 'Lưu' : 'Chỉnh sửa'}
               </button>
+              {isEditing && (
+                <button 
+                  className="edit-button" 
+                  onClick={handleCancel}
+                  style={{ marginLeft: '10px', backgroundColor: '#6b7280' }}
+                >
+                  Hủy
+                </button>
+              )}
             </div>
 
             {/* Profile Information Grid */}
@@ -56,17 +154,49 @@ const Profile = () => {
               <div className="profile-column">
                 <div className="profile-field">
                   <label>Tên đầy đủ</label>
-                  <p>Minh Đăng</p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="fullname"
+                      value={editForm.fullname}
+                      onChange={handleInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px'
+                      }}
+                    />
+                  ) : (
+                    <p>{user.fullname || 'Chưa cập nhật'}</p>
+                  )}
                 </div>
 
                 <div className="profile-field">
                   <label>Email</label>
-                  <p>minhmeomeo@gmail.com</p>
+                  <p>{user.email}</p>
                 </div>
 
                 <div className="profile-field">
                   <label>Số điện thoại</label>
-                  <p>0987654321</p>
+                  {isEditing ? (
+                    <input
+                      type="tel"
+                      name="phone_number"
+                      value={editForm.phone_number}
+                      onChange={handleInputChange}
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px'
+                      }}
+                    />
+                  ) : (
+                    <p>{user.phone_number || 'Chưa cập nhật'}</p>
+                  )}
                 </div>
               </div>
 
@@ -74,18 +204,35 @@ const Profile = () => {
               <div className="profile-column">
                 <div className="profile-field">
                   <label>Địa chỉ</label>
-                  <p>Đất thổ cư Hòa Lạc, Thạch Thất, Hà Nội</p>
+                  {isEditing ? (
+                    <textarea
+                      name="address"
+                      value={editForm.address}
+                      onChange={handleInputChange}
+                      rows="3"
+                      style={{
+                        width: '100%',
+                        padding: '12px 16px',
+                        border: '1px solid #d1d5db',
+                        borderRadius: '8px',
+                        fontSize: '16px',
+                        resize: 'vertical'
+                      }}
+                    />
+                  ) : (
+                    <p>{user.address || 'Chưa cập nhật'}</p>
+                  )}
                 </div>
 
                 <div className="profile-field wallet">
                   <label>Wallet</label>
-                  <p>50000 VND</p>
+                  <p>{formatBalance(user.wallet?.balance)}</p>
                 </div>
 
                 <div className="profile-field">
                   <label>Trạng thái tài khoản</label>
                   <span className="status-badge">
-                    Đang hoạt động
+                    {user.isActive ? 'Đang hoạt động' : 'Không hoạt động'}
                   </span>
                 </div>
               </div>
@@ -104,8 +251,8 @@ const Profile = () => {
                     </svg>
                   </div>
                   <div className="delivery-details">
-                    <p>Minh Đăng - 0398826650</p>
-                    <p>Đất thổ cư Hòa Lạc, Thạch Thất, Hà Nội</p>
+                    <p>{user.fullname || user.username} - {user.phone_number || 'Chưa có SĐT'}</p>
+                    <p>{user.address || 'Chưa cập nhật địa chỉ'}</p>
                   </div>
                 </div>
               </div>

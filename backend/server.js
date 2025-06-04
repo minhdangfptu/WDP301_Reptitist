@@ -6,14 +6,31 @@ const morgan = require('morgan');
 var cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./src/config/db.js');
+
 const app = express();
 dotenv.config();
-app.use(cors());
 
+// CORS configuration - QUAN TRỌNG!
+const corsOptions = {
+  origin: [
+    'http://localhost:3000', // React development server
+    'http://localhost:5173', // Vite development server  
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 app.use(morgan('dev'));
 
-//Cônection to MongoDB
+//Connection to MongoDB
 connectDB();
 
 // For parsing application/json

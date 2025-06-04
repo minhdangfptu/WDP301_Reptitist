@@ -16,8 +16,13 @@ const cartItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  subtotal: {
+    type: Number,
+    required: true,
+    min: 0
   }
-}, { _id: false }); 
+}); 
 
 // Schema cho carts
 const cartSchema = new mongoose.Schema({
@@ -34,11 +39,6 @@ const cartSchema = new mongoose.Schema({
 }, {
   collection: 'carts',
   timestamps: true
-});
-
-cartSchema.pre('save', function (next) {
-  this.update_at = new Date();
-  next();
 });
 
 module.exports = mongoose.model('Cart', cartSchema);
