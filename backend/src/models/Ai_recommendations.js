@@ -26,14 +26,6 @@ const aiRecommendationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  created_at: {
-    type: Date,
-    default: Date.now
-  },
-  updated_at: {
-    type: Date,
-    default: Date.now
-  }
 }, {
   collection: 'ai_recommendations',
   timestamps: true

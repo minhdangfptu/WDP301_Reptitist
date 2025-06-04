@@ -113,24 +113,24 @@ const deleteUserReptile = async (req, res) => {
 };
 // Lấy chi tiết bò sát theo _id
 async function findReptileById(id) {
-  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error('Invalid reptile ID');
-  }
-  const reptile = await UserReptile.findById(id);
-  if (!reptile) throw new Error('Reptile not found');
-  return reptile;
-}        
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        throw new Error('Invalid reptile ID');
+    }
+    const reptile = await UserReptile.findById(id);
+    if (!reptile) throw new Error('Reptile not found');
+    return reptile;
+}
 const getReptileById = async (req, res) => {
-  try {
-    const reptile = await findReptileById(req.params.reptileId);
-    res.status(200).json(reptile);
-  } catch (error) {
-    const msg = error.message;
-    if (msg === 'Invalid reptile ID') return res.status(400).json({ message: msg });
-    if (msg === 'Reptile not found') return res.status(404).json({ message: msg });
-    res.status(500).json({ message: 'Failed to fetch reptile', error: msg });
-  }
-};                                                                                                   
+    try {
+        const reptile = await findReptileById(req.params.reptileId);
+        res.status(200).json(reptile);
+    } catch (error) {
+        const msg = error.message;
+        if (msg === 'Invalid reptile ID') return res.status(400).json({ message: msg });
+        if (msg === 'Reptile not found') return res.status(404).json({ message: msg });
+        res.status(500).json({ message: 'Failed to fetch reptile', error: msg });
+    }
+};
 // const getReptileById = async (req, res) => {
 //   try {
 //     const { reptileId } = req.params;
@@ -169,6 +169,75 @@ const updateUserReptile = async (req, res) => {
         res.status(500).json({ message: 'Failed to update reptile!', error: error.message });
     }
 };
+const createTreatmentHistory = async (req, res) => {
+    try {
+        const { reptileId } = req.params;
+        const treatment = req.body;
+
+        if (!treatment) {
+            return res.status(400).json({ message: 'Treatment details are required' });
+        }
+
+        const reptile = await UserReptile.findById(reptileId);
+        if (!reptile) {
+            return res.status(404).json({ message: 'Reptile not found' });
+        }
+
+        reptile.treatment_history.push(treatment);
+        await reptile.save();
+
+        res.status(200).json({ message: 'Treatment history updated successfully!', reptile });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to update treatment history!', error: error.message });
+    }
+}
+
+const createWeight_Sleep_NutritionHistory = async (req, res) => {
+    const { reptileId } = req.params;  // ID của bò sát cần cập nhật
+    const {
+        current_weight,
+        weight_history,
+        sleeping_status,
+        sleeping_history,
+
+        nutrition_history
+    } = req.body;
+
+    try {
+        // Tìm bò sát theo reptileId và cập nhật dữ liệu
+        const updatedReptile = await UserReptile.findByIdAndUpdate(
+            reptileId,  // Tìm bò sát theo ID
+            {
+                $push: {
+                    weight_history: { $each: weight_history },  // Thêm lịch sử cân nặng mới vào mảng
+                    sleeping_status: { $each: sleeping_status },  // Thêm trạng thái ngủ vào mảng
+                    sleeping_history: { $each: sleeping_history },  // Thêm lịch sử giấc ngủ
+                    nutrition_history: { $each: nutrition_history }  // Thêm lịch sử dinh dưỡng
+                },
+                $set: { current_weight }  // Cập nhật cân nặng hiện tại
+            },
+            { new: true }  // Trả về đối tượng đã được cập nhật
+        );
+
+        // Nếu không tìm thấy bò sát với ID này
+        if (!updatedReptile) {
+            return res.status(404).json({ message: 'Reptile not found' });
+        }
+
+        // Trả về dữ liệu đã cập nhật
+        return res.status(200).json({
+            message: 'Reptile data updated successfully',
+            data: updatedReptile
+        });
+    } catch (error) {
+        console.error('Error updating reptile data:', error.message);
+        return res.status(500).json({
+            message: 'Failed to update reptile data',
+            error: error.message
+        });
+    }
+}
 
 module.exports = {
     createUserReptile,
@@ -178,5 +247,7 @@ module.exports = {
     getReptileById,
     deleteUserReptile,
     updateUserReptile,
-    findReptileById
+    findReptileById,
+    createTreatmentHistory,
+    createWeight_Sleep_NutritionHistory
 };
