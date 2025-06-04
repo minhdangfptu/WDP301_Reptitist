@@ -1,6 +1,5 @@
 /* 
-PlanUpgrade.css - Enhanced Design with Dark Green
-Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css 
+PlanUpgrade.css - Enhanced Design with Dark Green + Modal Styles
 */
 
 .plan-upgrade-page {
@@ -128,7 +127,7 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
   transform: scale(1.02) translateY(-4px);
 }
 
-/* Popular Badge - Đồng bộ hiệu ứng hover */
+/* Popular Badge */
 .plan-popular-badge {
   position: absolute;
   top: 20px;
@@ -205,7 +204,7 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
   text-align: center;
 }
 
-/* Plan Button - Đồng bộ hiệu ứng hover cho tất cả button */
+/* Plan Button */
 .plan-button {
   width: 100%;
   padding: 14px 24px;
@@ -259,7 +258,7 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
   box-shadow: none !important;
 }
 
-/* Features List - Đồng bộ hiệu ứng hover cho icons */
+/* Features List */
 .plan-features {
   margin-bottom: 30px;
 }
@@ -353,6 +352,260 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
   text-decoration: underline;
 }
 
+/* MODAL STYLES */
+.plan-detail-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.plan-detail-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: modalSlideUp 0.3s ease-out;
+  position: relative;
+}
+
+.plan-detail-header {
+  padding: 24px 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f7fafc;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.plan-detail-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0;
+}
+
+.plan-detail-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.plan-detail-close:hover {
+  background: #f7fafc;
+  color: #2d3748;
+}
+
+.plan-detail-content {
+  padding: 0 24px 24px;
+}
+
+.plan-detail-info {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.plan-detail-badge {
+  margin-bottom: 16px;
+}
+
+.plan-detail-label {
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.plan-detail-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 12px 0;
+}
+
+.plan-detail-description {
+  font-size: 15px;
+  color: #718096;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.plan-detail-billing {
+  margin-bottom: 32px;
+}
+
+.billing-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.billing-option {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.billing-option:hover {
+  border-color: #48bb78;
+  background: #f0fdf4;
+}
+
+.billing-option.active {
+  border-color: #48bb78;
+  background: #f0fdf4;
+  box-shadow: 0 4px 12px rgba(72, 187, 120, 0.15);
+}
+
+.billing-radio {
+  margin-right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radio-circle {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.radio-circle.selected {
+  border-color: #48bb78;
+  background: #48bb78;
+}
+
+.radio-circle.selected::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+}
+
+.billing-info {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.billing-type {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.billing-details {
+  font-size: 14px;
+  color: #718096;
+  line-height: 1.4;
+}
+
+.billing-price {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.price-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #48bb78;
+  line-height: 1;
+}
+
+.price-period {
+  font-size: 14px;
+  color: #718096;
+  margin-top: 2px;
+}
+
+.plan-detail-footer {
+  border-top: 1px solid #f7fafc;
+  padding-top: 24px;
+}
+
+.plan-detail-purchase-btn {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+.plan-detail-purchase-btn:hover {
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+}
+
+/* Modal Animations */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .plan-plans-grid {
@@ -413,6 +666,51 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
   
   .plan-footer {
     padding: 0 20px 20px;
+  }
+
+  /* Modal responsive */
+  .plan-detail-modal-overlay {
+    padding: 10px;
+  }
+  
+  .plan-detail-modal {
+    max-width: 100%;
+    margin: 0;
+  }
+  
+  .plan-detail-header {
+    padding: 20px 20px 0;
+  }
+  
+  .plan-detail-content {
+    padding: 0 20px 20px;
+  }
+  
+  .billing-option {
+    padding: 16px;
+  }
+  
+  .billing-option {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .billing-radio {
+    margin-right: 0;
+    order: 1;
+  }
+  
+  .billing-info {
+    margin-right: 0;
+    order: 2;
+    width: 100%;
+  }
+  
+  .billing-price {
+    order: 3;
+    align-items: flex-start;
+    width: 100%;
   }
 }
 
@@ -511,6 +809,56 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
   border-top-color: var(--border-color);
 }
 
+.dark-mode .plan-detail-modal {
+  background: var(--card-bg);
+}
+
+.dark-mode .plan-detail-header {
+  border-bottom-color: var(--border-color);
+}
+
+.dark-mode .plan-detail-header h2 {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-detail-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-detail-description {
+  color: var(--text-secondary);
+}
+
+.dark-mode .billing-option {
+  border-color: var(--border-color);
+  background: var(--bg-primary);
+}
+
+.dark-mode .billing-option:hover {
+  border-color: #48bb78;
+  background: rgba(72, 187, 120, 0.1);
+}
+
+.dark-mode .billing-option.active {
+  background: rgba(72, 187, 120, 0.1);
+}
+
+.dark-mode .billing-type {
+  color: var(--text-primary);
+}
+
+.dark-mode .billing-details {
+  color: var(--text-secondary);
+}
+
+.dark-mode .radio-circle {
+  border-color: var(--border-color);
+}
+
+.dark-mode .plan-detail-footer {
+  border-top-color: var(--border-color);
+}
+
 /* Animation enhancements */
 @keyframes planSlideInUp {
   from {
@@ -525,12 +873,16 @@ Thay thế toàn bộ nội dung trong frontend/src/css/PlanUpgrade.css
 
 /* Focus states for accessibility */
 .plan-toggle-btn:focus,
-.plan-button:focus {
+.plan-button:focus,
+.plan-detail-purchase-btn:focus,
+.billing-option:focus {
   outline: 2px solid #48bb78;
   outline-offset: 2px;
 }
 
 .plan-toggle-btn:focus:not(:focus-visible),
-.plan-button:focus:not(:focus-visible) {
+.plan-button:focus:not(:focus-visible),
+.plan-detail-purchase-btn:focus:not(:focus-visible),
+.billing-option:focus:not(:focus-visible) {
   outline: none;
 }

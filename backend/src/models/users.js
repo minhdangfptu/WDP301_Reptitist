@@ -119,7 +119,24 @@ const userSchema = new mongoose.Schema({
   },
   user_imageurl: {
     type: String,
-    default: null
+    default: null,
+    // Support both file paths and base64 data
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Allow null/empty values
+        
+        // If it's a base64 image string
+        if (v.startsWith('data:image/')) {
+          // Basic validation for base64 image format
+          const base64Regex = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/;
+          return base64Regex.test(v);
+        }
+        
+        // If it's a regular file path/URL, allow it
+        return typeof v === 'string';
+      },
+      message: 'Invalid image format. Must be a valid base64 image or file path.'
+    }
   },
   fullname: {
     type: String,
@@ -133,6 +150,20 @@ const userSchema = new mongoose.Schema({
   },
   collection: 'users'
 });
+
+// Add a method to check if user image is base64
+userSchema.methods.isImageBase64 = function() {
+  return this.user_imageurl && this.user_imageurl.startsWith('data:image/');
+};
+
+// Add a method to get image size estimate for base64 images
+userSchema.methods.getImageSizeEstimate = function() {
+  if (this.isImageBase64()) {
+    const base64Data = this.user_imageurl.split(',')[1] || '';
+    return Math.round((base64Data.length * 3) / 4); // Approximate size in bytes
+  }
+  return 0;
+};
 
 // Check if the model exists before creating it
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);

@@ -196,27 +196,51 @@ const Profile = () => {
     navigate('/upgrade-plan');
   };
 
+  // Helper function to convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // Validate image file
+  const validateImageFile = (file) => {
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return { isValid: false, error: 'Vui lòng chọn file ảnh hợp lệ (JPEG, PNG, GIF, WebP)' };
+    }
+
+    // Check file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return { isValid: false, error: 'Kích thước ảnh không được vượt quá 5MB' };
+    }
+
+    return { isValid: true };
+  };
+
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Vui lòng chọn file ảnh hợp lệ');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Kích thước ảnh không được vượt quá 5MB');
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      toast.error(validation.error);
       return;
     }
 
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      // Convert file to base64
+      const base64Data = await fileToBase64(file);
+      
+      console.log('Converting image to base64...');
 
       const token = localStorage.getItem('token');
       if (!token) {
@@ -224,13 +248,16 @@ const Profile = () => {
         return;
       }
 
+      // Send base64 data to backend
       const response = await axios.post(
         'http://localhost:8080/reptitist/auth/upload-avatar',
-        formData,
+        {
+          imageData: base64Data
+        },
         {
           headers: {
             'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         }
       );
@@ -259,6 +286,10 @@ const Profile = () => {
       toast.error(errorMessage);
     } finally {
       setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -268,7 +299,18 @@ const Profile = () => {
 
   const getAvatarUrl = (imageUrl) => {
     if (!imageUrl) return "/api/placeholder/64/64";
-    if (imageUrl.startsWith('http')) return imageUrl;
+    
+    // If it's a base64 string, return as is
+    if (imageUrl.startsWith('data:image/')) {
+      return imageUrl;
+    }
+    
+    // If it's a regular URL, return as is
+    if (imageUrl.startsWith('http')) {
+      return imageUrl;
+    }
+    
+    // If it's a path, construct full URL
     return `http://localhost:8080${imageUrl}`;
   };
 
@@ -340,7 +382,7 @@ const Profile = () => {
             <div className="profile-header">
               <div className="profile-user-info">
                 <div 
-                  className="profile-avatar" 
+                  className={`profile-avatar ${isUploading ? 'uploading' : ''}`}
                   onClick={triggerFileInput} 
                   style={{ cursor: 'pointer' }}
                 >
