@@ -48,7 +48,7 @@ const Footer = () => {
             <ul className="footer-links">
               <li>Email: support@reptitist.com</li>
               <li>Phone: +84 123 456 789</li>
-              <li>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</li>
+              <li>Địa chỉ: Beta, Đại học FPT, Thạch Hòa, Thạch Thất, Hà Nội</li>
             </ul>
           </div>
         </div>

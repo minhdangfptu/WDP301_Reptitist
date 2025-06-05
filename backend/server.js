@@ -33,9 +33,12 @@ app.use(morgan('dev'));
 //Connection to MongoDB
 connectDB();
 
-// For parsing application/json
-app.use(express.json());
-app.use(bodyParser.json());
+// For parsing application/json - Increase limit for base64 images
+app.use(express.json({ limit: '10mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
+
+// For parsing application/x-www-form-urlencoded - Increase limit for base64 images
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/reptitist', router);
 

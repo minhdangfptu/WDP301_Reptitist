@@ -294,11 +294,91 @@ const changePassword = async (req, res) => {
     }
 };
 
+// Helper function to validate base64 image
+const validateBase64Image = (base64String) => {
+    try {
+        // Check if it's a valid base64 string
+        if (!base64String || typeof base64String !== 'string') {
+            return { isValid: false, error: 'Invalid base64 string' };
+        }
+
+        // Extract the data part (remove data:image/...;base64, prefix if present)
+        const base64Data = base64String.includes(',') ? base64String.split(',')[1] : base64String;
+        
+        // Validate base64 format
+        const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+        if (!base64Regex.test(base64Data)) {
+            return { isValid: false, error: 'Invalid base64 format' };
+        }
+
+        // Check file size (limit to 5MB)
+        const sizeInBytes = (base64Data.length * 3) / 4;
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (sizeInBytes > maxSize) {
+            return { isValid: false, error: 'File size too large (max 5MB)' };
+        }
+
+        // Validate image type from header
+        const imageTypeRegex = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/;
+        if (base64String.includes('data:') && !imageTypeRegex.test(base64String)) {
+            return { isValid: false, error: 'Invalid image type. Only JPEG, PNG, GIF, and WebP are allowed' };
+        }
+
+        return { isValid: true };
+    } catch (error) {
+        return { isValid: false, error: 'Error validating image' };
+    }
+};
+
+// Updated upload avatar function to save base64 directly to MongoDB
+const uploadAvatar = async (req, res) => {
+    try {
+        const { imageData } = req.body;
+        const userId = req.user._id;
+
+        // Validate input
+        if (!imageData) {
+            return res.status(400).json({ message: 'No image data provided' });
+        }
+
+        // Validate base64 image
+        const validation = validateBase64Image(imageData);
+        if (!validation.isValid) {
+            return res.status(400).json({ message: validation.error });
+        }
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Save base64 image data directly to user document
+        user.user_imageurl = imageData;
+        await user.save();
+
+        // Return success response
+        res.status(200).json({
+            message: 'Avatar uploaded successfully',
+            imageUrl: imageData
+        });
+
+    } catch (error) {
+        console.error('Avatar upload error:', error);
+        res.status(500).json({ 
+            message: 'Error uploading avatar', 
+            error: error.message 
+        });
+    }
+};
+
 module.exports = {
     signup,
     login, 
     refreshToken,
     logout,
     changePassword,
-    changePasswordWithEmail
+    changePasswordWithEmail,
+    uploadAvatar
 }
