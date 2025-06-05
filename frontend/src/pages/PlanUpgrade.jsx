@@ -1,9 +1,10 @@
 // File: frontend/src/pages/PlanUpgrade.jsx
-// Thay thế hoàn toàn nội dung file hiện tại
+// Updated để tích hợp PlanDetailModal
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import PlanDetailModal from '../components/PlanDetailModal'; // Import component mới
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
@@ -14,7 +15,6 @@ const PlanUpgrade = () => {
   const [activeTab, setActiveTab] = useState('individual');
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedPlanDetail, setSelectedPlanDetail] = useState(null);
-  const [selectedBillingType, setSelectedBillingType] = useState('monthly'); // 'monthly' or 'onetime'
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -43,15 +43,20 @@ const PlanUpgrade = () => {
     }
   };
 
-  const handlePurchase = () => {
-    const planType = selectedBillingType === 'monthly' ? 'định kỳ hàng tháng' : 'thanh toán 1 lần cho cả năm';
-    const price = selectedBillingType === 'monthly' ? selectedPlanDetail.price : selectedPlanDetail.oneTimePrice;
+  const handlePurchase = (purchaseData) => {
+    const { period, price, planName } = purchaseData;
+    const periodText = period === 'monthly' ? 'hàng tháng' : 'hàng năm';
     
-    toast.success(`Bạn đã chọn gói ${selectedPlanDetail.name} - ${planType} với giá ${formatPrice(price)}${selectedBillingType === 'monthly' ? '/tháng' : '/năm'}. Chức năng thanh toán sẽ được cập nhật sớm!`, {
+    toast.success(`Bạn đã chọn gói ${planName} - ${periodText} với giá ${formatPrice(price)}đ. Chức năng thanh toán sẽ được cập nhật sớm!`, {
       position: "top-right",
       autoClose: 5000
     });
     setShowDetailModal(false);
+  };
+
+  const handleCloseModal = () => {
+    setShowDetailModal(false);
+    setSelectedPlanDetail(null);
   };
 
   const individualPlans = {
@@ -140,22 +145,6 @@ const PlanUpgrade = () => {
   const formatPrice = (price) => {
     if (price === 0) return '0';
     return new Intl.NumberFormat('vi-VN').format(price);
-  };
-
-  const getCurrentPrice = () => {
-    if (!selectedPlanDetail) return 0;
-    return selectedBillingType === 'monthly' ? selectedPlanDetail.price : selectedPlanDetail.oneTimePrice;
-  };
-
-  const getCurrentPeriod = () => {
-    return selectedBillingType === 'monthly' ? '/tháng' : '/năm';
-  };
-
-  const getSavingsPercent = () => {
-    if (!selectedPlanDetail || !selectedPlanDetail.oneTimePrice || !selectedPlanDetail.price) return 0;
-    const monthlyYearly = selectedPlanDetail.price * 12;
-    const oneTime = selectedPlanDetail.oneTimePrice;
-    return Math.round(((monthlyYearly - oneTime) / monthlyYearly) * 100);
   };
 
   return (
@@ -266,99 +255,13 @@ const PlanUpgrade = () => {
           </div>
         </div>
 
-        {/* Detail Modal */}
-        {showDetailModal && selectedPlanDetail && (
-          <div className="plan-detail-modal-overlay" onClick={() => setShowDetailModal(false)}>
-            <div className="plan-detail-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="plan-detail-header">
-                <h2>Nâng cấp gói của bạn</h2>
-                <button 
-                  className="plan-detail-close"
-                  onClick={() => setShowDetailModal(false)}
-                >
-                  ×
-                </button>
-              </div>
-
-              <div className="plan-detail-content">
-                <div className="plan-detail-info">
-                  <div className="plan-detail-badge">
-                    <span className="plan-detail-label">Được khuyến nghị</span>
-                  </div>
-                  <h3 className="plan-detail-title">
-                    {selectedPlanDetail.name} {activeTab === 'individual' ? 'cá nhân' : 'đối tác'}
-                  </h3>
-                  <p className="plan-detail-description">{selectedPlanDetail.description}</p>
-                </div>
-
-                <div className="plan-detail-billing">
-                  <div className="billing-options">
-                    <div 
-                      className={`billing-option ${selectedBillingType === 'monthly' ? 'active' : ''}`}
-                      onClick={() => setSelectedBillingType('monthly')}
-                    >
-                      <div className="billing-radio">
-                        <div className={`radio-circle ${selectedBillingType === 'monthly' ? 'selected' : ''}`}></div>
-                      </div>
-                      <div className="billing-info">
-                        <div className="billing-type">Hàng tháng</div>
-                        <div className="billing-details">
-                          Thanh toán hàng tháng. Hủy bất cứ lúc nào.
-                        </div>
-                      </div>
-                      <div className="billing-price">
-                        <span className="price-amount">đ{formatPrice(selectedPlanDetail.price)}</span>
-                        <span className="price-period">/tháng</span>
-                      </div>
-                    </div>
-
-                    <div 
-                      className={`billing-option ${selectedBillingType === 'onetime' ? 'active' : ''}`}
-                      onClick={() => setSelectedBillingType('onetime')}
-                    >
-                      <div className="billing-radio">
-                        <div className={`radio-circle ${selectedBillingType === 'onetime' ? 'selected' : ''}`}></div>
-                      </div>
-                      <div className="billing-info">
-                        <div className="billing-type">
-                          Hàng năm
-                          {getSavingsPercent() > 0 && (
-                            <span style={{ 
-                              marginLeft: '8px', 
-                              fontSize: '12px', 
-                              background: '#22c55e', 
-                              color: 'white', 
-                              padding: '2px 6px', 
-                              borderRadius: '4px' 
-                            }}>
-                              Tiết kiệm {getSavingsPercent()}%
-                            </span>
-                          )}
-                        </div>
-                        <div className="billing-details">
-                          Thanh toán 1 lần cho cả năm. Tiết kiệm hơn.
-                        </div>
-                      </div>
-                      <div className="billing-price">
-                        <span className="price-amount">đ{formatPrice(selectedPlanDetail.oneTimePrice || 99000)}</span>
-                        <span className="price-period">/năm</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="plan-detail-footer">
-                  <button 
-                    className="plan-detail-purchase-btn"
-                    onClick={handlePurchase}
-                  >
-                    Tiếp tục với {selectedPlanDetail.name} - đ{formatPrice(getCurrentPrice())}{getCurrentPeriod()}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Plan Detail Modal */}
+        <PlanDetailModal
+          isOpen={showDetailModal}
+          onClose={handleCloseModal}
+          planData={selectedPlanDetail}
+          onPurchase={handlePurchase}
+        />
       </div>
       <Footer />
     </>
