@@ -1,6 +1,6 @@
-/* PlanDetailModal.css */
+/* Responsive Design *//* PlanDetailModal.css - CSS riêng biệt với prefix plan-modal */
 
-.plan-detail-overlay {
+.plan-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -13,557 +13,413 @@
     z-index: 1000;
     padding: 20px;
     backdrop-filter: blur(4px);
-    animation: fadeIn 0.3s ease-out;
+    animation: plan-modal-fade-in 0.3s ease-out;
   }
   
-  .plan-detail-container {
+  .plan-modal-container {
     background: white;
     border-radius: 20px;
-    max-width: 1000px;
+    max-width: 800px;
     width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-    animation: slideUp 0.3s ease-out;
-    position: relative;
-  }
-  
-  /* Header */
-  .plan-detail-header {
-    padding: 24px 32px;
-    border-bottom: 1px solid #f1f5f9;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-  }
-  
-  .plan-detail-header h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-  }
-  
-  .plan-detail-close {
-    background: none;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-  }
-  
-  .plan-detail-close:hover {
-    background: #f1f5f9;
-    color: #1e293b;
-    transform: scale(1.1);
-  }
-  
-  /* Content */
-  .plan-detail-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    padding: 32px;
-  }
-  
-  /* Left Column */
-  .plan-detail-left {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-  
-  /* Period Selection */
-  .period-selection h3 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 20px 0;
-  }
-  
-  .period-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .period-btn {
-    background: white;
-    border: 2px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: left;
-    width: 100%;
-    position: relative;
+    max-height: 85vh;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
     overflow: hidden;
+    display: flex;
+    animation: plan-modal-slide-up 0.3s ease-out;
+    position: relative;
   }
   
-  .period-btn::before {
-    content: '';
+  .plan-modal-bg-image {
     position: absolute;
     top: 0;
-    left: -100%;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(72, 187, 120, 0.1), transparent);
-    transition: left 0.5s ease;
+    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('/BGLogin.jpg');
+    filter: brightness(0.85);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
   }
   
-  .period-btn:hover::before {
-    left: 100%;
+  .plan-modal-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    background-color: white;
+    width: 100%;
+    height: 100%;
   }
   
-  .period-btn:hover {
-    border-color: #48bb78;
-    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.15);
-    transform: translateY(-2px);
-  }
-  
-  .period-btn.active {
-    border-color: #48bb78;
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.2);
-  }
-  
-  .period-btn-content {
+  /* Left Section */
+  .plan-modal-left-section {
+    flex: 1;
+    padding: 24px;
+    border-right: 1px solid #eee;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    max-height: 85vh;
+  }
+  
+  .plan-modal-header {
+    margin-bottom: 20px;
+  }
+  
+  .plan-modal-back-button {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 16px;
+    cursor: pointer;
+    margin-bottom: 16px;
+    padding: 8px 0;
+    transition: color 0.3s ease;
+  }
+  
+  .plan-modal-back-button:hover {
+    color: #2c3e50;
+  }
+  
+  .plan-modal-back-button::before {
+    content: '←';
+    margin-right: 8px;
+    font-size: 18px;
+  }
+  
+  .plan-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 16px;
+  }
+  
+  .plan-modal-tabs {
+    display: flex;
+    background: #f1f3f4;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
     gap: 4px;
   }
   
-  .period-title {
-    font-size: 18px;
+  .plan-modal-tab {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
     font-weight: 600;
-    color: #1e293b;
-  }
-  
-  .period-subtitle {
     font-size: 14px;
-    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6c757d;
+    position: relative;
   }
   
-  .period-price {
-    font-size: 20px;
-    font-weight: 700;
-    color: #48bb78;
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .plan-modal-tab.active {
+    background: white;
+    color: #2c3e50;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
-  .savings-badge {
-    background: linear-gradient(135deg, #48bb78, #38a169);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
+  .plan-modal-tab.active::before {
+    content: 'Đang lựa chọn';
+    position: absolute;
+    top: -8px;
+    left: 8px;
+    font-size: 10px;
+    color: #00d4aa;
+    font-weight: 500;
   }
   
-  /* Plan Features */
-  .plan-features-detail h3 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 20px 0;
+  .plan-modal-features {
+    margin-bottom: 20px;
   }
   
-  .features-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .feature-item-detail {
+  .plan-modal-feature {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s ease;
+    margin-bottom: 12px;
+    padding: 6px 0;
   }
   
-  .feature-item-detail:hover {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border-color: #48bb78;
-    transform: translateX(4px);
-  }
-  
-  .feature-check {
-    color: #48bb78;
+  .plan-modal-feature-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #00d4aa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
     flex-shrink: 0;
     margin-top: 2px;
   }
   
-  .feature-item-detail span {
-    font-size: 15px;
-    color: #374151;
-    line-height: 1.5;
+  .plan-modal-feature-icon::after {
+    content: '✓';
+    color: white;
+    font-weight: bold;
+    font-size: 10px;
   }
   
-  /* Plan Options */
-  .plan-options h3 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 20px 0;
+  .plan-modal-feature-text {
+    color: #495057;
+    font-size: 14px;
+    line-height: 1.4;
   }
   
-  .option-item {
-    margin-bottom: 16px;
+  .plan-modal-pricing-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
   }
   
-  .option-checkbox {
+  .plan-modal-pricing-card {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    background: white;
     display: flex;
     align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
   }
   
-  .option-checkbox input[type="checkbox"] {
-    display: none;
+  .plan-modal-pricing-card:hover {
+    border-color: #00d4aa;
+    box-shadow: 0 4px 15px rgba(0, 212, 170, 0.1);
   }
   
-  .checkmark {
+  .plan-modal-pricing-card.selected {
+    border-color: #00d4aa;
+    background: #f0fdf4;
+  }
+  
+  .plan-modal-radio-wrapper {
+    margin-right: 16px;
+  }
+  
+  .plan-modal-radio {
     width: 20px;
     height: 20px;
-    border: 2px solid #e2e8f0;
-    border-radius: 4px;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
     position: relative;
     transition: all 0.3s ease;
-    background: white;
   }
   
-  .option-checkbox input[type="checkbox"]:checked + .checkmark {
-    background: linear-gradient(135deg, #48bb78, #38a169);
-    border-color: #48bb78;
+  .plan-modal-pricing-card.selected .plan-modal-radio {
+    border-color: #00d4aa;
+    background: #00d4aa;
   }
   
-  .option-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  .plan-modal-pricing-card.selected .plan-modal-radio::after {
     content: '';
+    width: 6px;
+    height: 6px;
+    background: white;
+    border-radius: 50%;
     position: absolute;
-    top: 2px;
-    left: 6px;
-    width: 4px;
-    height: 8px;
-    border: solid white;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
   
-  .option-text {
-    font-size: 15px;
-    color: #374151;
+  .plan-modal-plan-info {
+    flex: 1;
   }
   
-  /* Continue Button */
-  .continue-btn {
-    background: linear-gradient(135deg, #48bb78, #38a169);
+  .plan-modal-plan-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 2px;
+  }
+  
+  .plan-modal-plan-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #00d4aa;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  
+  .plan-modal-plan-duration {
+    font-size: 12px;
+    color: #6c757d;
+    display: inline-block;
+  }
+  
+  .plan-modal-billing-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  
+  .plan-modal-billing-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .plan-modal-billing-row:last-child {
+    margin-bottom: 0;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
+    font-weight: 600;
+  }
+  
+  .plan-modal-billing-label {
+    color: #6c757d;
+  }
+  
+  .plan-modal-billing-value {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  
+  .plan-modal-free-trial {
+    color: #00d4aa;
+    font-size: 12px;
+  }
+  
+  .plan-modal-cta-button {
+    width: 100%;
+    background: #00d4aa;
     color: white;
     border: none;
-    border-radius: 16px;
-    padding: 16px 24px;
-    font-size: 16px;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: auto;
+  }
+  
+  .plan-modal-cta-button:hover {
+    background: #00b894;
+    transform: translateY(-1px);
+  }
+  
+  /* Right Section */
+  .plan-modal-right-section {
+    flex: 1;
+    padding: 24px;
+    background: #f8f9fa;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    position: relative;
-    overflow: hidden;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 85vh;
   }
   
-  .continue-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-  }
-  
-  .continue-btn:hover::before {
-    left: 100%;
-  }
-  
-  .continue-btn:hover {
-    background: linear-gradient(135deg, #38a169, #2f855a);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
-  }
-  
-  /* Right Column */
-  .plan-detail-right {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid #e2e8f0;
-  }
-  
-  /* Timeline Column */
-  .timeline-column {
-    background: white;
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    width: 100%;
-  }
-  
-  .timeline-column h3 {
-    color: #212529;
-    font-size: 18px;
+  .plan-modal-timeline-header {
     margin-bottom: 20px;
+  }
+  
+  .plan-modal-timeline-title {
+    font-size: 16px;
     font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 6px;
   }
   
-  /* Illustration Column */
-  .illustration-column {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+  .plan-modal-timeline-subtitle {
+    font-size: 13px;
+    color: #6c757d;
   }
   
-  .illustration-column h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0;
-    text-align: center;
-    background: white;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-  }
-  
-  /* Benefits Visual */
-  .benefits-visual {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e2e8f0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .benefit-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-  }
-  
-  .benefit-item:hover {
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.2);
-  }
-  
-  .benefit-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
-  }
-  
-  .benefit-icon.ai {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  }
-  
-  .benefit-icon.library {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  }
-  
-  .benefit-icon.community {
-    background: linear-gradient(135deg, #10b981, #059669);
-  }
-  
-  .benefit-item span {
-    font-size: 14px;
-    font-weight: 500;
-    color: #1e293b;
-  }
-  
-  /* Subscription Stats */
-  .subscription-stats {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e2e8f0;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-  }
-  
-  .stat-item {
-    text-align: center;
-    padding: 8px;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-  }
-  
-  .stat-item:hover {
-    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-    transform: translateY(-2px);
-  }
-  
-  .stat-number {
-    font-size: 20px;
-    font-weight: 700;
-    color: #48bb78;
-    margin-bottom: 4px;
-  }
-  
-  .stat-label {
-    font-size: 11px;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  /* Timeline styles update */
-  .timeline {
+  .plan-modal-timeline {
+    flex: 1;
     position: relative;
-    padding-left: 32px;
-    width: 100%;
   }
   
-  .timeline::before {
+  .plan-modal-timeline::before {
     content: '';
     position: absolute;
-    left: 8px;
+    left: 16px;
     top: 0;
     bottom: 0;
     width: 2px;
     background: #e9ecef;
   }
   
-  .timeline-item {
+  .plan-modal-timeline-item {
     position: relative;
-    padding-bottom: 24px;
-    width: 100%;
+    padding-left: 50px;
+    margin-bottom: 20px;
   }
   
-  .timeline-item:last-child {
-    padding-bottom: 0;
-  }
-  
-  .timeline-marker {
+  .plan-modal-timeline-icon {
     position: absolute;
-    left: -32px;
-    width: 18px;
-    height: 18px;
+    left: 0;
+    top: 0;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
-    border: 2px solid;
-  }
-  
-  .timeline-marker.subscription {
-    border-color: #28a745;
-    color: #28a745;
-  }
-  
-  .timeline-marker.notification {
-    border-color: #ffc107;
-    color: #ffc107;
-  }
-  
-  .timeline-marker.renewal {
-    border-color: #17a2b8;
-    color: #17a2b8;
-  }
-  
-  .timeline-marker.expiry {
-    border-color: #dc3545;
-    color: #dc3545;
-  }
-  
-  .timeline-content {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 16px 20px;
-    border: 1px solid #e9ecef;
-    width: calc(100% - 40px);
-  }
-  
-  .timeline-date {
-    color: #495057;
     font-size: 14px;
-    margin-bottom: 4px;
+    color: white;
+    z-index: 2;
   }
   
-  .timeline-label {
-    color: #212529;
-    font-weight: 600;
-    margin-bottom: 4px;
+  .plan-modal-timeline-item.active .plan-modal-timeline-icon {
+    background: #28a745;
   }
   
-  .timeline-desc {
-    color: #6c757d;
-    font-size: 13px;
+  .plan-modal-timeline-item.pending .plan-modal-timeline-icon {
+    background: #ffc107;
   }
   
-  /* Illustration Section Update */
-  .illustration-section {
-    text-align: center;
+  .plan-modal-timeline-item.future .plan-modal-timeline-icon {
+    background: #dc3545;
+  }
+  
+  .plan-modal-timeline-content {
     background: white;
-    border-radius: 12px;
-    padding: 16px;
-    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   }
   
-  .illustration-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+  .plan-modal-timeline-item.active .plan-modal-timeline-content {
+    border-left: 3px solid #28a745;
   }
   
-  .reptile-illustration {
-    margin-bottom: 8px;
+  .plan-modal-timeline-date {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 3px;
   }
   
-  .illustration-text p {
+  .plan-modal-timeline-label {
     font-size: 12px;
-    color: #64748b;
-    margin: 0;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 3px;
+  }
+  
+  .plan-modal-timeline-description {
+    font-size: 12px;
+    color: #6c757d;
     line-height: 1.4;
-    font-style: italic;
   }
   
   /* Animations */
-  @keyframes fadeIn {
+  @keyframes plan-modal-fade-in {
     from {
       opacity: 0;
     }
@@ -572,7 +428,7 @@
     }
   }
   
-  @keyframes slideUp {
+  @keyframes plan-modal-slide-up {
     from {
       opacity: 0;
       transform: translateY(50px) scale(0.95);
@@ -583,262 +439,99 @@
     }
   }
   
-  /* Responsive Design */
-  @media (max-width: 768px) {
-    .plan-detail-content {
-      grid-template-columns: 1fr;
-      gap: 24px;
-      padding: 20px;
-    }
-    
-    .plan-detail-right {
-      grid-template-columns: 1fr;
-      gap: 16px;
-      padding: 20px;
-    }
-    
-    .timeline-column {
-      padding: 20px;
-    }
-    
-    .timeline-content {
-      padding: 14px 18px;
-      width: calc(100% - 36px);
-    }
-    
-    .subscription-stats {
-      grid-template-columns: 1fr 1fr;
-    }
-    
-    .plan-detail-header {
-      padding: 20px;
-    }
-    
-    .plan-detail-header h2 {
-      font-size: 20px;
-    }
-    
-    .period-buttons {
-      gap: 12px;
-    }
-    
-    .period-btn {
-      padding: 16px;
-    }
-    
-    .timeline {
-      padding-left: 20px;
-    }
-    
-    .timeline-marker {
-      left: -20px;
-      width: 18px;
-      height: 18px;
-    }
-    
-    .timeline::before {
-      left: 6px;
-    }
+  /* Custom scrollbar for both sections */
+  .plan-modal-left-section::-webkit-scrollbar,
+  .plan-modal-right-section::-webkit-scrollbar {
+    width: 6px;
   }
   
-  @media (max-width: 480px) {
-    .plan-detail-overlay {
-      padding: 10px;
+  .plan-modal-left-section::-webkit-scrollbar-track,
+  .plan-modal-right-section::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  .plan-modal-left-section::-webkit-scrollbar-thumb,
+  .plan-modal-right-section::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  .plan-modal-left-section::-webkit-scrollbar-thumb:hover,
+  .plan-modal-right-section::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  @media (max-width: 768px) {
+    .plan-modal-container {
+      flex-direction: column;
+      margin: 10px;
+      max-width: none;
+      max-height: 90vh;
     }
-    
-    .plan-detail-container {
-      max-width: 100%;
-      margin: 0;
-      border-radius: 16px;
-    }
-    
-    .plan-detail-content {
+  
+    .plan-modal-left-section, .plan-modal-right-section {
       padding: 16px;
+      max-height: 45vh;
     }
-    
-    .plan-detail-right {
-      padding: 16px;
+  
+    .plan-modal-left-section {
+      border-right: none;
+      border-bottom: 1px solid #e9ecef;
     }
-    
-    .period-title {
-      font-size: 16px;
+  
+    .plan-modal-right-section {
+      background: white;
     }
-    
-    .period-price {
-      font-size: 18px;
+  
+    .plan-modal-timeline::before {
+      display: none;
     }
-    
-    .subscription-stats {
-      grid-template-columns: 1fr;
+  
+    .plan-modal-timeline-item {
+      padding-left: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
     }
-    
-    .benefit-item {
-      padding: 6px 8px;
-    }
-    
-    .benefit-icon {
+  
+    .plan-modal-timeline-icon {
+      position: static;
       width: 28px;
       height: 28px;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+  
+    .plan-modal-timeline-content {
+      flex: 1;
     }
   }
   
-  /* Dark mode support */
-  .dark-mode .plan-detail-container {
+  /* Dark mode support (optional) */
+  .dark-mode .plan-modal-container {
     background: var(--bg-secondary);
     color: var(--text-primary);
   }
   
-  .dark-mode .plan-detail-header {
-    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-    border-bottom-color: var(--border-color);
+  .dark-mode .plan-modal-left-section {
+    background: var(--bg-secondary);
+    border-right-color: var(--border-color);
   }
   
-  .dark-mode .plan-detail-header h2 {
+  .dark-mode .plan-modal-right-section {
+    background: var(--bg-primary);
+  }
+  
+  .dark-mode .plan-modal-title {
     color: var(--text-primary);
   }
   
-  .dark-mode .plan-detail-close {
-    color: var(--text-secondary);
-  }
-  
-  .dark-mode .plan-detail-close:hover {
-    background: var(--hover-color);
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .period-selection h3,
-  .dark-mode .plan-features-detail h3,
-  .dark-mode .plan-options h3,
-  .dark-mode .timeline-column h3,
-  .dark-mode .illustration-column h3 {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .period-btn {
+  .dark-mode .plan-modal-pricing-card {
     background: var(--card-bg);
     border-color: var(--border-color);
   }
   
-  .dark-mode .period-btn.active {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(72, 187, 120, 0.05));
-  }
-  
-  .dark-mode .period-title {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .period-subtitle {
-    color: var(--text-secondary);
-  }
-  
-  .dark-mode .feature-item-detail {
-    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .feature-item-detail span {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .option-text {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .checkmark {
-    border-color: var(--border-color);
-    background: var(--input-bg);
-  }
-  
-  .dark-mode .plan-detail-right {
-    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .timeline-column {
+  .dark-mode .plan-modal-timeline-content {
     background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .timeline-column h3,
-  .dark-mode .illustration-column h3 {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .benefits-visual {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .benefit-item {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(72, 187, 120, 0.05));
-  }
-  
-  .dark-mode .benefit-item span {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .subscription-stats {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .stat-item {
-    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-  }
-  
-  .dark-mode .stat-item:hover {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(72, 187, 120, 0.05));
-  }
-  
-  .dark-mode .stat-label {
-    color: var(--text-secondary);
-  }
-  
-  .dark-mode .timeline-content {
-    background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .timeline-content:hover {
-    background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(72, 187, 120, 0.05));
-  }
-  
-  .dark-mode .timeline-date {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .timeline-desc {
-    color: var(--text-secondary);
-  }
-  
-  .dark-mode .illustration-section {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .illustration-text p {
-    color: var(--text-secondary);
-  }
-  
-  /* Remaining Time Styles */
-  .remaining-time {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 24px;
-    text-align: center;
-    border: 1px solid #e9ecef;
-  }
-  
-  .remaining-time-label {
-    color: #6c757d;
-    font-size: 14px;
-    margin-bottom: 8px;
-  }
-  
-  .remaining-time-value {
-    color: #212529;
-    font-size: 24px;
-    font-weight: 600;
   }
