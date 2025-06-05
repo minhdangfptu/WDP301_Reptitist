@@ -86,6 +86,23 @@ const updateConversation = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+const getAllHistoryChat = async (req, res) => {
+  try {
+    const { reptileId } = req.params;
+    if (!reptileId) {
+      return res.status(400).json({ message: 'Missing reptileId' });
+    }
+
+    const history = await Ai_history.find({
+      user_reptile_id: reptileId
+    }).sort({ created_at: -1 });
+    return res.status(200).json(history);
+  } catch (error) {
+    console.error('Error fetching AI history:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
 function parseReptileAdvice(data) {
   const sections = data.split(/\*\*(.*?)\*\*/g); // chia theo tiêu đề
   const result = {};
@@ -496,10 +513,10 @@ async function getSummarizeRecommendation(req, res) {
         },
         {
           role: 'user',
-          content: userInput, 
+          content: userInput,
         },
       ],
-      max_tokens: 30, 
+      max_tokens: 30,
     });
 
     const content = completion.choices[0].message.content;
@@ -517,6 +534,7 @@ async function getSummarizeRecommendation(req, res) {
 }
 module.exports = {
   createAiHistory,
+  getAllHistoryChat,
   getReptileExpertResponse,
   updateConversation,
   getHabitatRecommendation,

@@ -1,12 +1,13 @@
 const express= require('express');
 const router =express.Router();
-const { createUserReptile, getReptileById, createTreatmentHistory, createWeight_Sleep_NutritionHistory, getAllUserReptilesByUser } = require("../controllers/userReptileController");
+const { createUserReptile, getReptileById, createTreatmentHistory, createWeight_Sleep_NutritionHistory, getAllUserReptilesByUser, deleteUserReptile } = require("../controllers/userReptileController");
 
 router.post('/', createUserReptile); // Create
 router.get('/:reptileId', getReptileById); // View
 router.get('/get-reptile/:userId', getAllUserReptilesByUser); // View
 router.post('/create-treatment/:reptileId', createTreatmentHistory); // Create treatment history4
 router.put('/updateNormalInfo/:reptileId', createWeight_Sleep_NutritionHistory); // Update normal info
+router.delete('/:reptileId',deleteUserReptile);
 // // router.put('/:id', updateCategory); // Update
 // // router.delete('/:id', deleteCategory); // Delete
 // router.get('/', getAllCategories);

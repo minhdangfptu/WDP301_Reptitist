@@ -46,7 +46,7 @@ const Header = () => {
           <Link to="/">
             <img
             style={{width: '136px', justifyContent: 'center', marginTop: '5px', content: 'center', marginBottom: '0px'}}
-              src="logo1.png"
+              src="/logo1.png"
               className="logo"
               alt="Logo"
             />

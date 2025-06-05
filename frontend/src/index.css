@@ -118,7 +118,7 @@ nav {
 }
 
 .btn:hover {
-  background-color: #004524;
+  background-color: #004a26;
 }
 
 /* Improved hero/banner section for LandingPage */
@@ -169,6 +169,9 @@ nav {
 
 .hero .btn {
   margin-right: 16px;
+  background: var(--primary-color);
+  border-color: #006934;
+  border-width: 0.1px;
   font-size: 1.1rem;
   padding: 12px 28px;
   border-radius: 100px;

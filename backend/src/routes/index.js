@@ -11,7 +11,7 @@ const topicCategoryRoutes = require('./topicCategoryRoutes');
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
-router.use('/info', userReptileRoutes);
+router.use('/pet', userReptileRoutes);
 router.use('/lore', reptileInfoRoute);
 router.use('/library_categories', libraryCategoriesRoute);
 router.use('/library_contents', libraryContentRoute);

@@ -25,7 +25,9 @@ import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
-import UserReptileDetail from './pages/UserReptileDetail';
+import YourPetDetail from './pages/YourPetDetail';
+import CreateNewPet from './pages/CreateNewPetPage';
+import AIChatPage from './pages/AIChatPage';
 // import loadinggif from './public/loading.gif';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -142,11 +144,22 @@ const AppRoutes = () => {
           <Transaction />
         </ProtectedRoute>
       } />
-      <Route path="/your-pet/detail" element={
+      <Route path="/your-pet/detail/:reptileId" element={
         <ProtectedRoute>
-          < UserReptileDetail/>
+          < YourPetDetail/>
         </ProtectedRoute>
       } />
+      <Route path="/your-pet/create" element={
+        <ProtectedRoute>
+          < CreateNewPet/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/ai/:reptileId" element={
+        <ProtectedRoute>
+          < AIChatPage/>
+        </ProtectedRoute>
+      } />
+      
       
       {/* Admin only routes */}
       <Route path="/UserList" element={
