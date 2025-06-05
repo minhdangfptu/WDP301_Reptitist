@@ -57,10 +57,6 @@ const Header = () => {
             <li><Link to="/ShopLandingPage">MUA SẮM</Link></li>
             <li><Link to="/ContactUs">Liên hệ</Link></li>
             {user && <li><Link to="/YourPet">YOUR PET</Link></li>}
-            {/* Admin menu - only show if user is admin */}
-            {hasRole('admin') && <li><Link to="/UserList">QUẢN LÝ</Link></li>}
-            {/* Shop menu - show if user is shop owner or admin */}
-            {hasAnyRole(['shop', 'admin']) && <li><Link to="/ShopManagement">SHOP</Link></li>}
           </ul>
 
           {/* Account menu with dropdown */}
@@ -99,7 +95,6 @@ const Header = () => {
                     {/* Admin specific menu items */}
                     {hasRole('admin') && (
                       <>
-                        <li><Link to="/AdminPanel" onClick={() => setShowAccountMenu(false)}>Quản trị</Link></li>
                         <li><Link to="/UserManagement" onClick={() => setShowAccountMenu(false)}>Quản lý người dùng</Link></li>
                       </>
                     )}

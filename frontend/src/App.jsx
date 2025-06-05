@@ -23,7 +23,7 @@ import Settings from './pages/Settings';
 import Security from './pages/Security';
 import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
-import UserList from './pages/UserList';
+import UserManagement from './pages/UserManagement';
 import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
 
@@ -141,9 +141,9 @@ const AppRoutes = () => {
       } />
       
       {/* Admin only routes */}
-      <Route path="/UserList" element={
+      <Route path="/UserManagement" element={
         <ProtectedRoute requiredRole="admin">
-          <UserList />
+          <UserManagement />
         </ProtectedRoute>
       } />
       
