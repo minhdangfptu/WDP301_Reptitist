@@ -1,5 +1,5 @@
 // File: frontend/src/pages/PlanUpgrade.jsx
-// Updated để tích hợp PlanDetailModal
+// Updated để tích hợp PlanDetailModal cho tất cả gói trừ gói miễn phí
 
 import React, { useState } from 'react';
 import Header from '../components/Header';
@@ -30,15 +30,15 @@ const PlanUpgrade = () => {
       return;
     }
 
-    // Show detail modal for premium plans
-    if (planKey === 'premium') {
+    // Show detail modal for all plans except free plan
+    if (planKey !== 'free') {
       setSelectedPlanDetail(plan);
       setShowDetailModal(true);
     } else {
-      // Direct action for other plans
-      toast.success(`Bạn đã chọn gói ${plan.name}. Chức năng thanh toán sẽ được cập nhật sớm!`, {
+      // Direct action for free plan (shouldn't happen since free is current)
+      toast.info(`Gói ${plan.name} hiện đang được sử dụng`, {
         position: "top-right",
-        autoClose: 5000
+        autoClose: 3000
       });
     }
   };

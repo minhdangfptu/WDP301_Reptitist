@@ -121,19 +121,13 @@
   }
   
   .plan-modal-tab.active {
-    background: white;
-    color: #2c3e50;
+    background: #48bb78;
+    color: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
   
   .plan-modal-tab.active::before {
-    content: 'Đang lựa chọn';
-    position: absolute;
-    top: -8px;
-    left: 8px;
-    font-size: 10px;
-    color: #00d4aa;
-    font-weight: 500;
+    content: '';
   }
   
   .plan-modal-features {
@@ -151,7 +145,7 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #00d4aa;
+    background: #48bb78;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -193,12 +187,12 @@
   }
   
   .plan-modal-pricing-card:hover {
-    border-color: #00d4aa;
-    box-shadow: 0 4px 15px rgba(0, 212, 170, 0.1);
+    border-color: #48bb78;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.1);
   }
   
   .plan-modal-pricing-card.selected {
-    border-color: #00d4aa;
+    border-color: #48bb78;
     background: #f0fdf4;
   }
   
@@ -216,8 +210,8 @@
   }
   
   .plan-modal-pricing-card.selected .plan-modal-radio {
-    border-color: #00d4aa;
-    background: #00d4aa;
+    border-color: #48bb78;
+    background: #48bb78;
   }
   
   .plan-modal-pricing-card.selected .plan-modal-radio::after {
@@ -246,7 +240,7 @@
   .plan-modal-plan-price {
     font-size: 18px;
     font-weight: 700;
-    color: #00d4aa;
+    color: #48bb78;
     display: inline-block;
     margin-right: 8px;
   }
@@ -289,13 +283,13 @@
   }
   
   .plan-modal-free-trial {
-    color: #00d4aa;
+    color: #48bb78;
     font-size: 12px;
   }
   
   .plan-modal-cta-button {
     width: 100%;
-    background: #00d4aa;
+    background: #48bb78;
     color: white;
     border: none;
     border-radius: 10px;
@@ -308,7 +302,7 @@
   }
   
   .plan-modal-cta-button:hover {
-    background: #00b894;
+    background: #38a169;
     transform: translateY(-1px);
   }
   
