@@ -49,6 +49,7 @@ const userReptileSchema = new mongoose.Schema({
   reptile_species: { type: String, required: true },
   name: { type: String },
   description: { type: String },
+  user_reptile_imageurl: { type: String, default: '' },
   age: { type: Number },
   follow_since: { type: Date },
   current_weight: { type: Number },

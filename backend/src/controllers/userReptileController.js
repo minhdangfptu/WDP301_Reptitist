@@ -1,8 +1,6 @@
 const UserReptile = require('../models/User_reptiles');
 const mongoose = require('mongoose');
 
-
-// Tạo mới bò sát
 const createUserReptile = async (req, res) => {
     try {
         const {
@@ -11,6 +9,7 @@ const createUserReptile = async (req, res) => {
             reptile_species,
             name,
             description,
+            user_reptile_imageurl,
             age,
             follow_since,
             current_weight,
@@ -33,6 +32,7 @@ const createUserReptile = async (req, res) => {
             reptile_species,
             name,
             description,
+            user_reptile_imageurl: user_reptile_imageurl || '',
             age,
             follow_since,
             current_weight,
@@ -55,6 +55,7 @@ const createUserReptile = async (req, res) => {
 const getAllUserReptilesByUser = async (req, res) => {
     try {
         const { userId } = req.params;
+        console.log('Fetching reptiles for user:', userId);
         const reptiles = await UserReptile.find({ user_id: userId });
         if (!reptiles.length) {
             return res.status(404).json({ message: 'No reptiles found for this user' });
@@ -84,7 +85,7 @@ const getUserReptilesByName = async (req, res) => {
 // Lấy 10 bò sát mới tạo gần đây
 const getRecentUserReptiles = async (req, res) => {
     try {
-        const reptiles = await UserReptile.find().sort({ createdAt: -1 }).limit(4);
+        const reptiles = await UserReptile.find().sort({ createdAt: -1 }).limit(10);
         if (!reptiles.length) {
             return res.status(404).json({ message: 'No recent reptiles found' });
         }
@@ -131,26 +132,6 @@ const getReptileById = async (req, res) => {
         res.status(500).json({ message: 'Failed to fetch reptile', error: msg });
     }
 };
-// const getReptileById = async (req, res) => {
-//   try {
-//     const { reptileId } = req.params;
-
-//     if (!reptileId || !mongoose.Types.ObjectId.isValid(reptileId)) {
-//       return res.status(400).json({ message: 'Invalid reptile ID' });
-//     }
-
-//     const reptile = await UserReptile.findById(reptileId);
-
-//     if (!reptile) {
-//       return res.status(404).json({ message: 'Reptile not found' });
-//     }
-
-//     res.status(200).json(reptile);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ message: 'Failed to fetch reptile', error: error.message });
-//   }
-// };
 
 
 // Cập nhật bò sát theo _id

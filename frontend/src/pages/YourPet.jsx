@@ -1,30 +1,53 @@
+/* eslint-disable no-console */
 import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../css/YourPet.css";
 
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
+import { useEffect } from "react";
+import { useState } from "react";
+
 const YourPet = () => {
+  const { user, updateUser } = useAuth();
+  const [userPets, setUserPets] = useState([]);
   // Dữ liệu thú cưng của người dùng
-  const userPets = [
-    {
-      id: 1,
-      name: "Mảng Đinh",
-      type: "pet",
-      image: "/prorep1.png",
-    },
-    {
-      id: 2,
-      name: "Mảng Đinh",
-      type: "pet",
-      image: "/prorep2.png",
-    },
-    {
-      id: 3,
-      name: "Mảng Đinh",
-      type: "pet",
-      image: "/prorep3.png",
-    },
-  ];
+  const userId = user ? user.id : null; // Lấy ID người dùng từ context hoặc state
+  
+  // const userPets = [
+   useEffect(() => {
+    if (userId) {
+      // Gọi API để lấy danh sách thú cưng của người dùng
+      axios
+        .get(`http://localhost:8080/reptitist/info/get-reptile/${userId}`)
+        .then((response) => {
+          // Cập nhật danh sách thú cưng
+          setUserPets(response.data); // Giả sử response.data chứa danh sách thú cưng
+        })
+        .catch((error) => {
+          console.error("There was an error fetching the user pets:", error);
+        });
+    }
+  }, [userId]);
+  //     id: 1,
+  //     name: "Mảng Đinh",
+  //     type: "pet",
+  //     image: "/prorep1.png",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Mảng Đinh",
+  //     type: "pet",
+  //     image: "/prorep2.png",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Mảng Đinh",
+  //     type: "pet",
+  //     image: "/prorep3.png",
+  //   },
+  // ];
 
   return (
     <div className="your-pet-page">
@@ -51,7 +74,7 @@ const YourPet = () => {
             {userPets.map(pet => (
               <div key={pet.id} className="pet-card">
                 <div className="pet-image-container">
-                  <img src={pet.image} alt={pet.name} className="pet-image" />
+                  <img src={pet.user_reptile_imageurl} alt={pet.name} className="pet-image" />
                 </div>
                 <h3 className="pet-name">{pet.name}</h3>
               </div>

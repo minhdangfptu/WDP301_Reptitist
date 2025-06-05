@@ -101,7 +101,7 @@ function parseReptileAdvice(data) {
 async function getReptileExpertResponse(userInput) {
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -160,7 +160,7 @@ async function getBehaviourRecommendation(req, res) {
       return res.status(404).json({ message: 'Reptile not found' });
     }
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -216,7 +216,7 @@ async function getHabitatRecommendation(req, res) {
       return res.status(404).json({ message: 'Reptile not found' });
     }
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -291,7 +291,7 @@ async function getNutritionRecommendation(req, res) {
     `;
     console.log('User input:', userInput);
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -334,8 +334,6 @@ async function getTreatmentRecommendation(req, res) {
     if (!reptile) {
       return res.status(404).json({ message: 'Reptile not found' });
     }
-
-    // Kiểm tra nếu có dữ liệu lịch sử điều trị, nếu không thì không đưa vào `userInput`
     let treatmentHistoryData = '';
     if (reptile.treatment_history && reptile.treatment_history.length > 0) {
       treatmentHistoryData = `
@@ -391,10 +389,10 @@ async function getTreatmentRecommendation(req, res) {
 
     Trả lời ngắn gọn, súc tích, không quá 400 từ.
     `;
-    
+
     // Gọi API OpenAI để nhận gợi ý từ mô hình
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-3.5-turbo',
       messages: [
         {
           role: 'system',
@@ -427,10 +425,96 @@ async function getTreatmentRecommendation(req, res) {
   }
 }
 
+async function getSummarizeRecommendation(req, res) {
+  const { reptileId } = req.params;
 
+  try {
+    const reptile = await findReptileById(reptileId);
 
+    if (!reptile) {
+      return res.status(404).json({ message: 'Reptile not found' });
+    }
 
+    let treatmentHistoryData = '';
+    if (reptile.treatment_history && reptile.treatment_history.length > 0) {
+      treatmentHistoryData = `
+      - Lịch sử điều trị: ${JSON.stringify(reptile.treatment_history.map(item => ({
+        disease: item.disease,
+        treatment_date: item.treatment_date,
+        next_treatment_date: item.next_treatment_date,
+        doctor_feedback: item.doctor_feedback,
+        treatment_medicine: item.treatment_medicine,
+        note: item.note
+      })))}
+      `;
+    }
 
+    // Cấu trúc nội dung yêu cầu OpenAI để đánh giá sức khỏe ngắn gọn
+    const userInput = `
+    Tôi cần bạn đóng vai một chuyên gia về dinh dưỡng và chăm sóc bò sát. Hãy tổng hợp và đưa ra đánh giá ngắn gọn về tình trạng sức khỏe của bò sát dưới đây, dựa trên các yếu tố sau:
+
+    - Giống loài: ${reptile.reptile_species}
+    - Tuổi: ${reptile.age} tháng
+    - Cân nặng hiện tại: ${reptile.current_weight} g
+    - Lịch sử cân nặng (7 ngày gần nhất): ${JSON.stringify(reptile.weight_history.map(item => ({
+      date: item.date,
+      weight: item.weight
+    })))}
+    - Trạng thái ngủ hiện tại (7 ngày gần nhất): ${JSON.stringify(reptile.sleeping_status.map(item => ({
+      date: item.date,
+      status: item.status
+    })))}
+    - Lịch sử giấc ngủ trong 7 ngày gần nhất (tính theo số giờ mỗi ngày): ${JSON.stringify(reptile.sleeping_history.map(item => ({
+      date: item.date,
+      hours: item.hours
+    })))}
+    - Lịch sử dinh dưỡng (7 ngày gần nhất): ${JSON.stringify(reptile.nutrition_history.map(item => ({
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+      food_items: item.food_items,
+      food_quantity: item.food_quantity,
+      is_fasting: item.is_fasting,
+      feces_condition: item.feces_condition
+    })))}
+    ${treatmentHistoryData}  <!-- Chỉ bao gồm phần này nếu có dữ liệu lịch sử điều trị -->
+
+    Yêu cầu:
+    1. Tổng hợp và đưa ra đánh giá ngắn gọn về tình trạng sức khỏe hiện tại của bò sát (giảm cân, thừa cân, tình trạng nhịn ăn, phân không bình thường).
+    2. Trả lời ngắn gọn, súc tích, không quá 50 từ.
+    3. Đưa ra 1 từ khóa chính để mô tả tình trạng sức khỏe hiện tại của bò sát.
+
+    Trả lời ngắn gọn, súc tích, không quá 30 từ.
+    `;
+
+    // Gọi API OpenAI để nhận gợi ý từ mô hình
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: `Bạn là chuyên gia về dinh dưỡng và chăm sóc bò sát. Nhiệm vụ của bạn là tổng hợp tình trạng sức khỏe hiện tại của bò sát và đưa ra đánh giá ngắn gọn. Phản hồi cần dễ hiểu, thực tế và súc tích, không quá 50 từ.`,
+        },
+        {
+          role: 'user',
+          content: userInput, 
+        },
+      ],
+      max_tokens: 30, 
+    });
+
+    const content = completion.choices[0].message.content;
+    console.log('Content:', content);
+
+    // Trả về kết quả cho người dùng dưới dạng JSON
+    return res.status(200).json({
+      message: 'Health summary fetched successfully',
+      data: content,
+    });
+  } catch (error) {
+    console.error('Error fetching health summary:', error.message);
+    return res.status(500).json({ message: 'Failed to fetch health summary', error: error.message });
+  }
+}
 module.exports = {
   createAiHistory,
   getReptileExpertResponse,
@@ -438,5 +522,6 @@ module.exports = {
   getHabitatRecommendation,
   getNutritionRecommendation,
   getTreatmentRecommendation,
-  getBehaviourRecommendation
+  getBehaviourRecommendation,
+  getSummarizeRecommendation
 }

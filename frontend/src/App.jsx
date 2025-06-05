@@ -25,6 +25,7 @@ import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
+import UserReptileDetail from './pages/UserReptileDetail';
 // import loadinggif from './public/loading.gif';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -139,6 +140,11 @@ const AppRoutes = () => {
       <Route path="/Transaction" element={
         <ProtectedRoute>
           <Transaction />
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/detail" element={
+        <ProtectedRoute>
+          < UserReptileDetail/>
         </ProtectedRoute>
       } />
       
