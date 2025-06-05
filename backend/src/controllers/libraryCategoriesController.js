@@ -2,11 +2,12 @@ const LibraryCategories = require('../models/Library_category');
 
 exports.createCategory = async (req, res) => {
   try {
-    const { category_content, category_description, category_imageurl } = req.body;
+    const { category_content, category_description, category_imageurl, topic_id } = req.body;
     const newCategory = new LibraryCategories({
       category_content,
       category_description,
       category_imageurl,
+      topic_id,
     });
     await newCategory.save();
     res.status(201).json({ message: 'Tạo danh mục thành công', category: newCategory });

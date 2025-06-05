@@ -29,4 +29,5 @@ router.get('/:id', getCategoryById); // View
 router.put('/:id', updateCategory); // Update
 router.delete('/:id', deleteCategory); // Delete
 router.get('/', getAllCategories);
+
 module.exports = router;
