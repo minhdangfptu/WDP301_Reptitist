@@ -10,3 +10,14 @@ exports.getAllTopics = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+exports.getTopicById = async (req, res) => {
+  try {
+    const topic = await TopicCategory.findById(req.params.id);
+    if (!topic) return res.status(404).json({ message: "Topic không tồn tại" });
+    res.json(topic);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi server", error: error.message });
+  }
+};

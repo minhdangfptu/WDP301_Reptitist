@@ -5,5 +5,5 @@ const topicCategoryController = require('../controllers/topicCategoryController'
 
 // GET /library_topics
 router.get('/library_topics', topicCategoryController.getAllTopics);
-
+router.get('/library_topics/:id', topicCategoryController.getTopicById);
 module.exports = router;
