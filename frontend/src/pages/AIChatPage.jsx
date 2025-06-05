@@ -33,6 +33,8 @@ const AIChatPage = ({ onClose }) => {
   const { user } = useAuth();
   const username = user ? user.username : null;
   const { reptileId } = useParams();
+  const [userMessage, setUserMessage] = useState(null); // Store user message
+  const [aiMessage, setAiMessage] = useState(null); // Store AI response
 
   const tools = [
     {
@@ -74,24 +76,20 @@ const AIChatPage = ({ onClose }) => {
   ];
 
   // Fetch history using the reptileId from the URL parameters
-  useEffect(
-    () => {
-      axios
-        .get(`http://localhost:8080/reptitist/ai/get-ai-history/${reptileId}`)
-        .then((response) => {
-          setChatDataBaseHistory(response.data);
-          setChatHistory(response.data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("There was an error fetching pet details:", error);
-          setError("Could not fetch pet details.");
-          setLoading(false);
-        });
-    },
-    [reptileId],
-    [messageSent]
-  );
+  useEffect(() => {
+    axios
+      .get(`http://localhost:8080/reptitist/ai/get-ai-history/${reptileId}`)
+      .then((response) => {
+        setChatDataBaseHistory(response.data);
+        setChatHistory(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching chat history:", error);
+        setError("Could not fetch chat history.");
+        setLoading(false);
+      });
+  }, [reptileId, messageSent]);
   console.log(">>>Chat history after fetch:", chatHistory);
   if (loading) {
     return (
@@ -121,36 +119,45 @@ const AIChatPage = ({ onClose }) => {
   };
   // Handle sending messages
   const handleSendMessage = async () => {
-    if (message.trim() && chatHistory && chatHistory.length > 0) {
-      const historyId = chatHistory[chatHistory.length - 1]._id; // Lấy historyId của chat mới nhất
-      console.log("Sending message:", message);
+    if (message.trim()) {
+      const newUserMessage = message;
+      setMessage(""); // Clear input field
+
+      // Add user's message immediately to the chat history
+      setChatHistory((prevHistory) => [
+        ...prevHistory,
+        { ai_input: [newUserMessage], ai_response: [] },
+      ]);
+
+      setLoading(true);
 
       try {
-        // Gửi tin nhắn người dùng vào cuộc trò chuyện hiện tại
         const response = await axios.put(
-          `http://localhost:8080/reptitist/ai/update-conversation/${historyId}`,
-          {
-            ai_input: message, // Tin nhắn của người dùng
-          }
+          `http://localhost:8080/reptitist/ai/update-conversation/${
+            chatHistory[0]._id
+          }`,
+          { ai_input: newUserMessage }
         );
         console.log("Message sent:", response.data);
 
-        // Cập nhật lại lịch sử chat sau khi gửi tin nhắn thành công
-        setChatHistory((prevHistory) => [...prevHistory, response.data]);
+        // Update the chat history with the AI response after API returns
+        setChatHistory((prevHistory) => {
+          const updatedHistory = [...prevHistory];
+          updatedHistory[updatedHistory.length - 1] = {
+            ...updatedHistory[updatedHistory.length - 1],
+            ai_response: response.data.ai_response,
+          };
+          return updatedHistory;
+        });
 
-        // Set messageSent to trigger useEffect to fetch new history
-        setMessageSent((prev) => !prev); // Toggle the state to trigger useEffect
-
-        setMessage(""); // Clear message input field
+        setMessageSent((prev) => !prev); // Trigger the useEffect for fetching new history
       } catch (error) {
-        console.error("Error updating conversation:", error);
+        console.error("Error sending message:", error);
+        setLoading(false);
       }
-
-      setMessage(""); // Clear input field
-    } else {
-      console.log("No message to send or chat history is not loaded.");
     }
   };
+
   const handleCreateChat = async () => {
     try {
       const response = await axios.post(
@@ -161,12 +168,10 @@ const AIChatPage = ({ onClose }) => {
       );
       console.log("New chat created:", response.data);
 
-      // Cập nhật chatHistory với cuộc trò chuyện mới
-      setChatHistory((prevHistory) => [...prevHistory, response.data]);
-
-      setNewChatCreated(true); // Đánh dấu là đã tạo cuộc trò chuyện mới
-      setMessage(""); // Clear message input field
-      setMessageSent((prev) => !prev);
+      // Set new chat history
+      setChatHistory([response.data]); // Start with the new conversation
+      setNewChatCreated(true); // Mark that a new chat has been created
+      setMessage(""); // Clear input field
     } catch (error) {
       console.error("Error creating new chat:", error);
     }
@@ -181,10 +186,11 @@ const AIChatPage = ({ onClose }) => {
           height: "90vh",
           paddingTop: "20px",
           paddingBottom: "20px",
+          maxHeight: "90vh",
+          maxWidth: "1200px",
         }}
       >
         <Row className="h-100 g-0">
-          {/* Left Panel - Chat Interface */}
           <Col md={8} className="d-flex flex-column">
             {/* Header with Navigation Tabs */}
             <div
@@ -303,13 +309,14 @@ const AIChatPage = ({ onClose }) => {
               </Nav>
             </div>
 
-            {/* Chat Messages Area */}
+            {/* Chat Messages Area (Only showing the latest 5 messages) */}
             <div
               style={{
                 flex: 1,
                 backgroundColor: "white",
                 padding: "20px",
-                overflowY: "auto",
+                overflowY: "scroll",
+                maxHeight:"500px",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
@@ -317,25 +324,73 @@ const AIChatPage = ({ onClose }) => {
                 color: "#666",
               }}
             >
-              <div style={{ textAlign: "center" }}>
-                <i
-                  className="bi bi-chat-dots"
-                  style={{
-                    fontSize: "48px",
-                    color: "#dee2e6",
-                    marginBottom: "16px",
-                  }}
-                ></i>
+              <div style={{ textAlign: "center", width: "100%" }}>
                 <h5 style={{ color: "#666", marginBottom: "8px" }}>
                   Chào mừng đến với ReptiAI!
                 </h5>
-                <p style={{ fontSize: "14px", color: "#999" }}>
-                  Hãy bắt đầu cuộc trò chuyện về thú cưng bò sát của bạn
-                </p>
+
+                {/* Loop through the chat history and limit to 10 most recent messages */}
+                {chatHistory &&
+                  chatHistory.length > 0 &&
+                  chatHistory.slice(-10).map((chat, index) => (
+                    <div key={index}>
+                      {/* User's message */}
+                      {chat.ai_input && chat.ai_input.length > 0 && (
+                        <div className="d-flex justify-content-start mb-3">
+                          <div
+                            style={{
+                              maxWidth: "70%",
+                              backgroundColor: "#e9ecef",
+                              padding: "10px",
+                              borderRadius: "15px",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {chatHistory[0].ai_input[index]} 
+                            {/* Display the user's message */}
+                                
+                          </div>
+                        </div>
+                      )}
+
+                      {/* AI's response */}
+                      {chat.ai_response && chat.ai_response.length > 0 && (
+                        <div className="d-flex justify-content-end mb-3">
+                          <div
+                            style={{
+                              maxWidth: "70%",
+                              backgroundColor: "#f8f9fa",
+                              padding: "10px",
+                              borderRadius: "15px",
+                              fontSize: "14px",
+                            }}
+                          >
+                            {chatHistory[0].ai_response[index]} 
+                            {/* Display the AI's response */}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                {/* Loading state */}
+                {loading && (
+                  <div className="d-flex justify-content-center mb-3">
+                    <div
+                      style={{
+                        width: "30px",
+                        height: "30px",
+                        borderRadius: "50%",
+                        backgroundColor: "#28a745",
+                        animation: "spin 1s infinite linear",
+                      }}
+                    ></div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Chat Input and New Chat Button */}
+            {/* Input Field */}
             <div
               style={{
                 padding: "15px",
@@ -344,13 +399,24 @@ const AIChatPage = ({ onClose }) => {
               }}
             >
               {newChatCreated ? (
-                <InputGroup style={{ marginBottom: "10px" }}>
+                <InputGroup
+                  style={{
+                    marginBottom: "10px",
+                    outline: "none",
+                    boxShadow: "none",
+                  }}
+                >
                   <Form.Control
                     type="text"
                     placeholder="Hỏi ReptiAI về thú cưng của bạn..."
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
                     style={{
                       border: "1px solid #dee2e6",
                       borderRadius: "20px 0 0 20px",
@@ -674,8 +740,7 @@ const AIChatPage = ({ onClose }) => {
                   </Row>
                 </Card.Body>
               </Card>
-              {/* AIChat History Card  */}
-              {/* AIChat History Card */}
+               {/* AIChat History Card */}
               <Card
                 style={{
                   border: "none",
