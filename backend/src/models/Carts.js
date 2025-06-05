@@ -16,8 +16,13 @@ const cartItemSchema = new mongoose.Schema({
     type: Number,
     required: true,
     min: 0
+  },
+  subtotal: {
+    type: Number,
+    required: true,
+    min: 0
   }
-}, { _id: false }); 
+}); 
 
 // Schema cho carts
 const cartSchema = new mongoose.Schema({
