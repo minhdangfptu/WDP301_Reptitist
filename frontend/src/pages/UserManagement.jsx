@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CreateUserModal from '../components/CreateUserModal';
@@ -8,22 +8,33 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
 
-const UserList = () => {
+const UserManagement = () => {
   const { user, hasRole } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterDate, setFilterDate] = useState('all');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
+  const [stats, setStats] = useState({
+    total: 0,
+    active: 0,
+    inactive: 0,
+    roles: { admin: 0, shop: 0, customer: 0 },
+    recentRegistrations: 0
+  });
+
   const [editForm, setEditForm] = useState({
     username: '',
     email: '',
@@ -41,6 +52,7 @@ const UserList = () => {
       return;
     }
     fetchUsers();
+    fetchStats();
   }, [hasRole]);
 
   // Fetch users from API
@@ -76,7 +88,6 @@ const UserList = () => {
         toast.error('Không thể tải danh sách người dùng. Vui lòng kiểm tra kết nối server.');
       }
       
-      // Set empty array instead of mock data
       setUsers([]);
       setFilteredUsers([]);
     } finally {
@@ -84,16 +95,72 @@ const UserList = () => {
     }
   };
 
-  // Filter and search functionality
+  // Fetch statistics
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get('http://localhost:8080/reptitist/admin/users/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data) {
+        setStats(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  // Filter by date range
+  const filterByDateRange = (users, dateFilter) => {
+    if (dateFilter === 'all') return users;
+
+    const now = new Date();
+    const startDate = new Date();
+
+    switch (dateFilter) {
+      case 'today':
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(now.getMonth() - 1);
+        break;
+      case 'quarter':
+        startDate.setMonth(now.getMonth() - 3);
+        break;
+      case 'year':
+        startDate.setFullYear(now.getFullYear() - 1);
+        break;
+      default:
+        return users;
+    }
+
+    return users.filter(user => {
+      const userDate = new Date(user.created_at);
+      return userDate >= startDate;
+    });
+  };
+
+  // Enhanced filter and search functionality
   useEffect(() => {
     let filtered = [...users];
 
-    // Search filter
+    // Search filter - improved to search in more fields
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(user =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.fullname && user.fullname.toLowerCase().includes(searchTerm.toLowerCase()))
+        user.username.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
+        (user.fullname && user.fullname.toLowerCase().includes(searchLower)) ||
+        user._id.toLowerCase().includes(searchLower) ||
+        (user.phone_number && user.phone_number.includes(searchTerm))
       );
     }
 
@@ -108,6 +175,9 @@ const UserList = () => {
       filtered = filtered.filter(user => user.isActive === isActive);
     }
 
+    // Date filter
+    filtered = filterByDateRange(filtered, filterDate);
+
     // Sort
     filtered.sort((a, b) => {
       let aValue = a[sortField];
@@ -120,6 +190,9 @@ const UserList = () => {
       } else if (sortField === 'balance') {
         aValue = a.wallet?.balance || 0;
         bValue = b.wallet?.balance || 0;
+      } else if (sortField === 'created_at') {
+        aValue = new Date(a.created_at);
+        bValue = new Date(b.created_at);
       }
 
       if (sortDirection === 'asc') {
@@ -130,8 +203,8 @@ const UserList = () => {
     });
 
     setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to first page when filtering
-  }, [users, searchTerm, filterRole, filterStatus, sortField, sortDirection]);
+    setCurrentPage(1);
+  }, [users, searchTerm, filterRole, filterStatus, filterDate, sortField, sortDirection]);
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -147,6 +220,12 @@ const UserList = () => {
       setSortField(field);
       setSortDirection('asc');
     }
+  };
+
+  // Handle view user details
+  const handleViewUserDetails = (userData) => {
+    setSelectedUser(userData);
+    setShowUserDetailModal(true);
   };
 
   // Handle edit user
@@ -192,7 +271,8 @@ const UserList = () => {
 
       if (response.status === 200) {
         toast.success('Cập nhật thông tin người dùng thành công');
-        fetchUsers(); // Refresh the list
+        fetchUsers();
+        fetchStats();
         setShowEditModal(false);
         setSelectedUser(null);
       }
@@ -228,7 +308,8 @@ const UserList = () => {
 
       if (response.status === 200) {
         toast.success('Xóa người dùng thành công');
-        fetchUsers(); // Refresh the list
+        fetchUsers();
+        fetchStats();
         setShowDeleteModal(false);
         setSelectedUser(null);
       }
@@ -261,12 +342,20 @@ const UserList = () => {
 
       if (response.status === 200) {
         toast.success(`${newStatus ? 'Kích hoạt' : 'Vô hiệu hóa'} tài khoản thành công`);
-        fetchUsers(); // Refresh the list
+        fetchUsers();
+        fetchStats();
       }
     } catch (error) {
       console.error('Error toggling user status:', error);
       toast.error('Có lỗi xảy ra khi thay đổi trạng thái tài khoản');
     }
+  };
+
+  // Handle create user success
+  const handleCreateUserSuccess = () => {
+    fetchUsers();
+    fetchStats();
+    setShowCreateModal(false);
   };
 
   // Format date
@@ -275,12 +364,22 @@ const UserList = () => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Format date for display
+  const formatDateOnly = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
       day: '2-digit'
     });
   };
 
-  // Format currency
-  // Handle new user created
   // Format currency
   const formatCurrency = (amount) => {
     if (typeof amount !== 'number') return '0 VNĐ';
@@ -298,6 +397,26 @@ const UserList = () => {
       case 'customer': return 'um-badge-customer';
       default: return 'um-badge-default';
     }
+  };
+
+  // Calculate user activity status
+  const getUserActivityStatus = (user) => {
+    const lastActivity = new Date(user.updated_at || user.created_at);
+    const now = new Date();
+    const daysDiff = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff <= 7) return 'active';
+    if (daysDiff <= 30) return 'recent';
+    return 'inactive';
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterRole('all');
+    setFilterStatus('all');
+    setFilterDate('all');
+    setCurrentPage(1);
   };
 
   // Check admin access
@@ -339,25 +458,25 @@ const UserList = () => {
           <div className="um-page-header-content">
             <div className="um-page-header-text">
               <h1>Quản lý người dùng</h1>
-              <p>Quản lý tất cả người dùng trong hệ thống</p>
+              <p>Quản lý tất cả người dùng trong hệ thống - Tìm kiếm, lọc và theo dõi hoạt động</p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
               className="um-btn um-btn-primary um-create-user-btn"
             >
-              <i className="fas fa-plus"></i>
+              <i className="fas fa-user-plus"></i>
               Tạo người dùng mới
             </button>
           </div>
         </div>
 
-        {/* Filters and Search */}
+        {/* Enhanced Filters and Search */}
         <div className="um-filters-section">
           <div className="um-filters-row">
             <div className="um-search-box">
               <input
                 type="text"
-                placeholder="Tìm kiếm theo tên, email..."
+                placeholder="Tìm kiếm theo tên, email, ID, số điện thoại..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="um-search-input"
@@ -370,6 +489,7 @@ const UserList = () => {
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
                 className="um-filter-select"
+                title="Lọc theo vai trò"
               >
                 <option value="all">Tất cả vai trò</option>
                 <option value="admin">Admin</option>
@@ -381,32 +501,92 @@ const UserList = () => {
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="um-filter-select"
+                title="Lọc theo trạng thái"
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="active">Đang hoạt động</option>
                 <option value="inactive">Đã khóa</option>
               </select>
+
+              <select
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="um-filter-select"
+                title="Lọc theo thời gian đăng ký"
+              >
+                <option value="all">Tất cả thời gian</option>
+                <option value="today">Hôm nay</option>
+                <option value="week">Tuần này</option>
+                <option value="month">Tháng này</option>
+                <option value="quarter">3 tháng qua</option>
+                <option value="year">Năm nay</option>
+              </select>
+
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="um-filter-select"
+                title="Số mục trên trang"
+              >
+                <option value={10}>10/trang</option>
+                <option value={25}>25/trang</option>
+                <option value={50}>50/trang</option>
+                <option value={100}>100/trang</option>
+              </select>
+
+              <button
+                onClick={resetFilters}
+                className="um-btn um-btn-secondary"
+                title="Đặt lại bộ lọc"
+              >
+                <i className="fas fa-undo"></i>
+                Reset
+              </button>
             </div>
           </div>
 
+          {/* Enhanced Statistics */}
           <div className="um-stats-row">
             <div className="um-stat-item">
-              <span className="um-stat-number">{filteredUsers.length}</span>
-              <span className="um-stat-label">Tổng số người dùng</span>
+              <span className="um-stat-number">{stats.total}</span>
+              <span className="um-stat-label">Tổng người dùng</span>
             </div>
             <div className="um-stat-item">
-              <span className="um-stat-number">
-                {filteredUsers.filter(u => u.isActive).length}
-              </span>
+              <span className="um-stat-number">{stats.active}</span>
               <span className="um-stat-label">Đang hoạt động</span>
             </div>
             <div className="um-stat-item">
-              <span className="um-stat-number">
-                {filteredUsers.filter(u => u.role?.role_name === 'shop').length}
-              </span>
+              <span className="um-stat-number">{stats.inactive}</span>
+              <span className="um-stat-label">Đã khóa</span>
+            </div>
+            <div className="um-stat-item">
+              <span className="um-stat-number">{stats.roles.admin}</span>
+              <span className="um-stat-label">Admin</span>
+            </div>
+            <div className="um-stat-item">
+              <span className="um-stat-number">{stats.roles.shop}</span>
               <span className="um-stat-label">Cửa hàng</span>
             </div>
+            <div className="um-stat-item">
+              <span className="um-stat-number">{stats.roles.customer}</span>
+              <span className="um-stat-label">Khách hàng</span>
+            </div>
+            <div className="um-stat-item">
+              <span className="um-stat-number">{stats.recentRegistrations}</span>
+              <span className="um-stat-label">Đăng ký gần đây</span>
+            </div>
           </div>
+
+          {/* Filter Summary */}
+          {(searchTerm || filterRole !== 'all' || filterStatus !== 'all' || filterDate !== 'all') && (
+            <div className="um-filter-summary">
+              <span>Hiển thị {filteredUsers.length} / {users.length} người dùng</span>
+              {searchTerm && <span className="um-filter-tag">Tìm kiếm: "{searchTerm}"</span>}
+              {filterRole !== 'all' && <span className="um-filter-tag">Vai trò: {filterRole}</span>}
+              {filterStatus !== 'all' && <span className="um-filter-tag">Trạng thái: {filterStatus}</span>}
+              {filterDate !== 'all' && <span className="um-filter-tag">Thời gian: {filterDate}</span>}
+            </div>
+          )}
         </div>
 
         {/* Users Table */}
@@ -421,6 +601,9 @@ const UserList = () => {
               <i className="fas fa-users um-empty-icon"></i>
               <h3>Không tìm thấy người dùng</h3>
               <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+              <button onClick={resetFilters} className="um-btn um-btn-primary">
+                Đặt lại bộ lọc
+              </button>
             </div>
           ) : (
             <div className="um-table-container">
@@ -428,20 +611,14 @@ const UserList = () => {
                 <thead>
                   <tr>
                     <th onClick={() => handleSort('username')}>
-                      Tên đăng nhập
+                      Thông tin người dùng
                       {sortField === 'username' && (
                         <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
                       )}
                     </th>
                     <th onClick={() => handleSort('email')}>
-                      Email
+                      Liên hệ
                       {sortField === 'email' && (
-                        <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
-                      )}
-                    </th>
-                    <th onClick={() => handleSort('fullname')}>
-                      Tên đầy đủ
-                      {sortField === 'fullname' && (
                         <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
                       )}
                     </th>
@@ -458,7 +635,7 @@ const UserList = () => {
                       )}
                     </th>
                     <th onClick={() => handleSort('created_at')}>
-                      Ngày tạo
+                      Ngày đăng ký
                       {sortField === 'created_at' && (
                         <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
                       )}
@@ -481,28 +658,73 @@ const UserList = () => {
                               e.target.src = "/api/placeholder/40/40";
                             }}
                           />
-                          <span className="um-username">{userData.username}</span>
+                          <div className="um-user-details">
+                            <span className="um-username">{userData.username}</span>
+                            <small className="um-user-id">ID: {userData._id.slice(-8)}</small>
+                            {userData.fullname && (
+                              <small className="um-fullname">{userData.fullname}</small>
+                            )}
+                          </div>
                         </div>
                       </td>
-                      <td>{userData.email}</td>
-                      <td>{userData.fullname || 'Chưa cập nhật'}</td>
+                      <td>
+                        <div className="um-contact-info">
+                          <div className="um-email">{userData.email}</div>
+                          {userData.phone_number && (
+                            <div className="um-phone">{userData.phone_number}</div>
+                          )}
+                        </div>
+                      </td>
                       <td>
                         <span className={`um-role-badge ${getRoleBadgeColor(userData.role?.role_name)}`}>
                           {userData.role?.role_name || 'N/A'}
                         </span>
                       </td>
-                      <td>{formatCurrency(userData.wallet?.balance || 0)}</td>
-                      <td>{formatDate(userData.created_at)}</td>
+                      <td>
+                        <div className="um-balance-info">
+                          <span className="um-balance">{formatCurrency(userData.wallet?.balance || 0)}</span>
+                          <small className="um-account-type">
+                            {userData.account_type?.level || 'Normal'}
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="um-date-info">
+                          <span className="um-date">{formatDateOnly(userData.created_at)}</span>
+                          <small className="um-activity-status">
+                            Hoạt động: {getUserActivityStatus(userData) === 'active' ? 'Gần đây' : 
+                                     getUserActivityStatus(userData) === 'recent' ? 'Trong tháng' : 'Lâu rồi'}
+                          </small>
+                        </div>
+                      </td>
                       <td>
                         <button
                           onClick={() => toggleUserStatus(userData)}
                           className={`um-status-btn ${userData.isActive ? 'um-status-active' : 'um-status-inactive'}`}
+                          disabled={userData.role?.role_name === 'admin' && userData._id !== user?.id}
                         >
-                          {userData.isActive ? 'Hoạt động' : 'Đã khóa'}
+                          {userData.isActive ? (
+                            <>
+                              <i className="fas fa-check-circle"></i>
+                              Hoạt động
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-ban"></i>
+                              Đã khóa
+                            </>
+                          )}
                         </button>
                       </td>
                       <td>
                         <div className="um-action-buttons">
+                          <button
+                            onClick={() => handleViewUserDetails(userData)}
+                            className="um-btn-action um-btn-view"
+                            title="Xem chi tiết"
+                          >
+                            <i className="fas fa-eye"></i>
+                          </button>
                           <button
                             onClick={() => handleEditUser(userData)}
                             className="um-btn-action um-btn-edit"
@@ -527,215 +749,51 @@ const UserList = () => {
             </div>
           )}
 
-          {/* Pagination */}
+          {/* Enhanced Pagination */}
           {totalPages > 1 && (
             <div className="um-pagination">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="um-pagination-btn"
-              >
-                <i className="fas fa-chevron-left"></i>
-                Trước
-              </button>
-              
-              {[...Array(totalPages)].map((_, index) => {
-                const page = index + 1;
-                if (
-                  page === 1 ||
-                  page === totalPages ||
-                  (page >= currentPage - 2 && page <= currentPage + 2)
-                ) {
-                  return (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`um-pagination-btn ${currentPage === page ? 'active' : ''}`}
-                    >
-                      {page}
-                    </button>
-                  );
-                } else if (
-                  page === currentPage - 3 ||
-                  page === currentPage + 3
-                ) {
-                  return <span key={page} className="um-pagination-dots">...</span>;
-                }
-                return null;
-              })}
-              
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="um-pagination-btn"
-              >
-                Sau
-                <i className="fas fa-chevron-right"></i>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Edit Modal */}
-      {showEditModal && (
-        <div className="um-modal-overlay">
-          <div className="um-modal-content">
-            <div className="um-modal-header">
-              <h3>Chỉnh sửa thông tin người dùng</h3>
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="um-close-btn"
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            
-            <div className="um-modal-body">
-              <div className="um-form-row">
-                <div className="um-form-group">
-                  <label>Tên đăng nhập *</label>
-                  <input
-                    type="text"
-                    value={editForm.username}
-                    onChange={(e) => setEditForm(prev => ({...prev, username: e.target.value}))}
-                    className="um-form-input"
-                  />
-                </div>
-                <div className="um-form-group">
-                  <label>Email *</label>
-                  <input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm(prev => ({...prev, email: e.target.value}))}
-                    className="um-form-input"
-                  />
-                </div>
+              <div className="um-pagination-info">
+                Hiển thị {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredUsers.length)} của {filteredUsers.length} mục
               </div>
               
-              <div className="um-form-row">
-                <div className="um-form-group">
-                  <label>Tên đầy đủ</label>
-                  <input
-                    type="text"
-                    value={editForm.fullname}
-                    onChange={(e) => setEditForm(prev => ({...prev, fullname: e.target.value}))}
-                    className="um-form-input"
-                  />
-                </div>
-                <div className="um-form-group">
-                  <label>Số điện thoại</label>
-                  <input
-                    type="tel"
-                    value={editForm.phone_number}
-                    onChange={(e) => setEditForm(prev => ({...prev, phone_number: e.target.value}))}
-                    className="um-form-input"
-                  />
-                </div>
-              </div>
-              
-              <div className="um-form-group">
-                <label>Địa chỉ</label>
-                <textarea
-                  value={editForm.address}
-                  onChange={(e) => setEditForm(prev => ({...prev, address: e.target.value}))}
-                  className="um-form-input"
-                  rows="3"
-                />
-              </div>
-              
-              <div className="um-form-row">
-                <div className="um-form-group">
-                  <label>Vai trò</label>
-                  <select
-                    value={editForm.role}
-                    onChange={(e) => setEditForm(prev => ({...prev, role: e.target.value}))}
-                    className="um-form-input"
-                  >
-                    <option value="customer">Customer</option>
-                    <option value="shop">Shop</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <div className="um-form-group">
-                  <label>Trạng thái</label>
-                  <select
-                    value={editForm.isActive}
-                    onChange={(e) => setEditForm(prev => ({...prev, isActive: e.target.value === 'true'}))}
-                    className="um-form-input"
-                  >
-                    <option value={true}>Hoạt động</option>
-                    <option value={false}>Đã khóa</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            <div className="um-modal-footer">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="um-btn um-btn-secondary"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                className="um-btn um-btn-primary"
-              >
-                Lưu thay đổi
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <div className="um-modal-overlay">
-          <div className="um-modal-content">
-            <div className="um-modal-header">
-              <h3>Xác nhận xóa người dùng</h3>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="um-close-btn"
-              >
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            
-            <div className="um-modal-body">
-              <div className="um-warning-message">
-                <i className="fas fa-exclamation-triangle um-warning-icon"></i>
-                <p>
-                  Bạn có chắc chắn muốn xóa người dùng <strong>{selectedUser?.username}</strong>?
-                </p>
-                <p className="um-warning-text">
-                  Hành động này không thể hoàn tác và sẽ xóa toàn bộ dữ liệu của người dùng.
-                </p>
-              </div>
-            </div>
-            
-            <div className="um-modal-footer">
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="um-btn um-btn-secondary"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={confirmDelete}
-                className="um-btn um-btn-danger"
-              >
-                Xóa người dùng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <Footer />
-    </>
-  );
-};
-
-export default UserList;
+              <div className="um-pagination-controls">
+                <button
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                  className="um-pagination-btn"
+                  title="Trang đầu"
+                >
+                  <i className="fas fa-angle-double-left"></i>
+                </button>
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="um-pagination-btn"
+                >
+                  <i className="fas fa-chevron-left"></i>
+                  Trước
+                </button>
+                
+                {[...Array(totalPages)].map((_, index) => {
+                  const page = index + 1;
+                  if (
+                    page === 1 ||
+                    page === totalPages ||
+                    (page >= currentPage - 2 && page <= currentPage + 2)
+                  ) {
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`um-pagination-btn ${currentPage === page ? 'active' : ''}`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  } else if (
+                    page === currentPage - 3 ||
+                    page === currentPage + 3
+                  ) {
+                    return <span key={page} className="um-pagination-dots">...</span>;
+                  }
