@@ -19,6 +19,71 @@ function formatDate(dateString) {
 const PetBasicInfo = ({ petInfo }) => {
   
   // console.log("???????????",petInfo);
+  const [weightHistory, setWeightHistory] = useState([]);
+
+  useEffect(() => {
+    if (petInfo && petInfo.weight_history) {
+      setWeightHistory(petInfo.weight_history);
+      console.log(">>>>>>>>>>>>>>>>>>>>>>>weightHistory",weightHistory);
+    }
+  }, [petInfo]);
+
+  // Chart config
+  const chartWidth = 420;
+  const chartHeight = 200;
+  const paddingX = 50; // padding hai bên để label không bị tràn
+  const maxWeight = Math.max(...weightHistory.map(w => w.weight), 300); // lấy max hoặc 300g
+  const minWeight = Math.min(...weightHistory.map(w => w.weight), 0);   // lấy min hoặc 0g
+
+  // Tính điểm cho polyline
+  const points = weightHistory.map((item, idx) => {
+    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
+    const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50); // padding top 20, bottom 30
+    return `${x},${y}`;
+  }).join(" ");
+
+  // Vẽ các điểm tròn
+  const circles = weightHistory.map((item, idx) => {
+    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
+    const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50);
+    return (
+      <circle key={idx} cx={x} cy={y} r="4" fill="#20c997" />
+    );
+  });
+
+  // Vẽ label trục X
+  const xLabels = weightHistory.map((item, idx) => {
+    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
+    const date = new Date(item.date);
+    const label = `${date.getMonth() + 1}/${date.getFullYear()}`;
+    return (
+      <text
+        key={idx}
+        x={x}
+        y={chartHeight - 25}
+        fontSize="11"
+        fill="#9ca3af"
+        textAnchor="middle"
+      >
+        {label}
+      </text>
+    );
+  });
+
+  // Chú thích "Tháng" căn giữa dưới trục X
+  const xAxisLabel = (
+    <text
+      x={chartWidth / 2}
+      y={chartHeight - 5}
+      fontSize="13"
+      fill="#6b7280"
+      textAnchor="middle"
+      fontWeight="bold"
+    >
+      Tháng
+    </text>
+  );
+
   return (
     <>
       <Container fluid>
@@ -105,8 +170,8 @@ const PetBasicInfo = ({ petInfo }) => {
                 <div className="text-center small fw-medium">Năm 2024</div>
               </Card.Header>
               <Card.Body>
-                <div style={{ height: "10rem" }} className="mb-3">
-                  <svg className="w-100 h-100" viewBox="0 0 300 160">
+                <div style={{ height: "13rem" }} className="mb-3">
+                  <svg className="w-100 h-100" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
                     {/* Grid lines */}
                     <defs>
                       <pattern
@@ -126,93 +191,21 @@ const PetBasicInfo = ({ petInfo }) => {
                     <rect width="100%" height="100%" fill="url(#grid)" />
 
                     {/* Y-axis labels */}
-                    <text x="10" y="20" fontSize="8" fill="#9ca3af">
-                      300g
-                    </text>
-                    <text x="10" y="40" fontSize="8" fill="#9ca3af">
-                      250g
-                    </text>
-                    <text x="10" y="60" fontSize="8" fill="#9ca3af">
-                      200g
-                    </text>
-                    <text x="10" y="80" fontSize="8" fill="#9ca3af">
-                      150g
-                    </text>
-                    <text x="10" y="100" fontSize="8" fill="#9ca3af">
-                      100g
-                    </text>
-                    <text x="10" y="120" fontSize="8" fill="#9ca3af">
-                      50g
-                    </text>
-                    <text x="15" y="140" fontSize="8" fill="#9ca3af">
-                      0
-                    </text>
-
+                    {[maxWeight, (maxWeight+minWeight)/2, minWeight].map((val, i) => (
+                      <text key={i} x="10" y={30 + i * ((chartHeight-50)/2)} fontSize="10" fill="#9ca3af">
+                        {Math.round(val)}g
+                      </text>
+                    ))}
                     {/* Line chart */}
                     <polyline
                       fill="none"
                       stroke="#20c997"
                       strokeWidth="2"
-                      points="30,120 55,100 80,90 105,95 130,85 155,80 180,90 205,85 230,75 255,80 280,85 300,80"
+                      points={points}
                     />
-
-                    {/* Data points */}
-                    <circle cx="180" cy="90" r="4" fill="#20c997" />
-                    <circle
-                      cx="180"
-                      cy="90"
-                      r="8"
-                      fill="none"
-                      stroke="#20c997"
-                      strokeWidth="1"
-                      opacity="0.5"
-                    />
-
-                    {/* Current value label */}
-                    <rect
-                      x="165"
-                      y="70"
-                      width="30"
-                      height="15"
-                      fill="black"
-                      rx="2"
-                    />
-                    <text
-                      x="180"
-                      y="80"
-                      fontSize="8"
-                      fill="white"
-                      textAnchor="middle"
-                    >
-                      70g
-                    </text>
-
-                    {/* X-axis labels */}
-                    {[
-                      "T1",
-                      "T2",
-                      "T3",
-                      "T4",
-                      "T5",
-                      "T6",
-                      "T7",
-                      "T8",
-                      "T9",
-                      "T10",
-                      "T11",
-                      "T12",
-                    ].map((month, index) => (
-                      <text
-                        key={month}
-                        x={30 + index * 22.5}
-                        y="155"
-                        fontSize="8"
-                        fill="#9ca3af"
-                        textAnchor="middle"
-                      >
-                        {month}
-                      </text>
-                    ))}
+                    {circles}
+                    {xLabels}
+                    {xAxisLabel}
                   </svg>
                 </div>
                 <div className="d-flex align-items-center">

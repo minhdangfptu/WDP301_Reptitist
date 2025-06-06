@@ -118,7 +118,7 @@ function parseReptileAdvice(data) {
 async function getReptileExpertResponse(userInput) {
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -126,7 +126,9 @@ async function getReptileExpertResponse(userInput) {
                     description of how they care for their reptile, provide structured 
                     suggestions to optimize care. Don't provide information about others 
                     categories besides reptiles. If user asks about other animals, 
-                    politely inform them that you only provide information about reptiles.`,
+                    politely inform them that you only provide information about reptiles.
+                    If user ask about the system, you should answer that you are a system for reptile care (ReptiAI is your name
+                    `,
         },
         {
           role: 'user',
@@ -177,7 +179,7 @@ async function getBehaviourRecommendation(req, res) {
       return res.status(404).json({ message: 'Reptile not found' });
     }
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -233,7 +235,7 @@ async function getHabitatRecommendation(req, res) {
       return res.status(404).json({ message: 'Reptile not found' });
     }
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -308,7 +310,7 @@ async function getNutritionRecommendation(req, res) {
     `;
     console.log('User input:', userInput);
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -409,7 +411,7 @@ async function getTreatmentRecommendation(req, res) {
 
     // Gọi API OpenAI để nhận gợi ý từ mô hình
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',
@@ -505,7 +507,7 @@ async function getSummarizeRecommendation(req, res) {
 
     // Gọi API OpenAI để nhận gợi ý từ mô hình
     const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',

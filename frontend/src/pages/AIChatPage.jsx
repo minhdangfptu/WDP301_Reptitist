@@ -177,16 +177,71 @@ const AIChatPage = ({ onClose }) => {
     }
   };
 
+  const formatAIResponse = (response) => {
+    if (!response) return "";
+
+    // Nếu response có dạng liệt kê số thứ tự và tiêu đề in đậm
+    if (/\d+\.\s+\*\*/.test(response)) {
+      const parts = response.split(/\d+\.\s+\*\*/);
+      return parts.map((part, index) => {
+        if (!part.trim()) return null;
+        const [title, ...content] = part.split("**:");
+        const formattedContent = content.join(":").trim();
+        return (
+          <div key={index} className="mb-2">
+            <h6 className="text-success mb-1" style={{ fontSize: "13px" }}>
+              {title}
+            </h6>
+            <p className="mb-0" style={{ fontSize: "13px", color: "#666" }}>
+              {formattedContent}
+            </p>
+          </div>
+        );
+      }).filter(Boolean);
+    }
+
+    // Nếu response có nhiều dòng, mỗi dòng bắt đầu bằng tiêu đề in đậm (Tiêu đề:** ...)
+    if (/^.+:\*\*/m.test(response)) {
+      // Tách từng dòng
+      const lines = response.split(/\n|\r/).filter(line => line.trim() !== "");
+      return lines.map((line, idx) => {
+        // Nếu có tiêu đề in đậm
+        const match = line.match(/^(.+?):\*\*\s*-?\s*(.*)$/);
+        if (match) {
+          return (
+            <div key={idx} className="mb-2">
+              <h6 className="text-success mb-1" style={{ fontSize: "14px" }}>
+                {match[1]}
+              </h6>
+              <p className="mb-0" style={{ fontSize: "14px", color: "#666" }}>
+                {match[2]}
+              </p>
+            </div>
+          );
+        }
+        // Nếu không có tiêu đề, hiển thị bình thường
+        return (
+          <p key={idx} className="mb-0" style={{ fontSize: "14px", color: "#666" }}>
+            {line}
+          </p>
+        );
+      });
+    }
+
+    // Nếu không phải dạng đặc biệt, trả về nguyên văn
+    return <span style={{ whiteSpace: "pre-line", fontSize: "14px" }}>{response}</span>;
+  };
+
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <Container
         style={{
           fontFamily: "Poppins, sans-serif",
           height: "90vh",
           paddingTop: "20px",
           paddingBottom: "20px",
-          maxHeight: "90vh",
+          maxHeight: "100vh",
           maxWidth: "1200px",
         }}
       >
@@ -219,6 +274,17 @@ const AIChatPage = ({ onClose }) => {
                   </span>
                 </h3>
                 <div style={{ display: "flex", gap: "8px" }}>
+                  {/* Nút tạo mới đoạn chat nếu đã có history */}
+                  {chatHistory && chatHistory.length > 0 && (
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      style={{ borderRadius: "20px", fontSize: "13px", padding: "4px 14px" }}
+                      onClick={handleCreateChat}
+                    >
+                      Tạo mới đoạn chat
+                    </Button>
+                  )}
                   <Button
                     variant="outline-secondary"
                     size="sm"
@@ -316,11 +382,9 @@ const AIChatPage = ({ onClose }) => {
                 backgroundColor: "white",
                 padding: "20px",
                 overflowY: "scroll",
-                maxHeight:"500px",
+                maxHeight: "500px",
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
                 color: "#666",
               }}
             >
@@ -329,13 +393,19 @@ const AIChatPage = ({ onClose }) => {
                   Chào mừng đến với ReptiAI!
                 </h5>
 
-                {/* Loop through the chat history and limit to 10 most recent messages */}
+                
                 {chatHistory &&
                   chatHistory.length > 0 &&
-                  chatHistory.slice(-10).map((chat, index) => (
-                    <div key={index}>
-                      {/* User's message */}
-                      {chat.ai_input && chat.ai_input.length > 0 && (
+                  chatHistory.slice(0, 1)
+                    .flatMap(chat => 
+                      (chat.ai_input || []).map((input, idx) => ({
+                        input,
+                        response: (chat.ai_response && chat.ai_response[idx]) || ""
+                      }))
+                    )
+                    .map((msg, idx) => (
+                      <div key={idx}>
+                        {/* User's message */}
                         <div className="d-flex justify-content-start mb-3">
                           <div
                             style={{
@@ -346,32 +416,27 @@ const AIChatPage = ({ onClose }) => {
                               fontSize: "14px",
                             }}
                           >
-                            {chatHistory[0].ai_input[index]} 
-                            {/* Display the user's message */}
-                                
+                            {msg.input}
                           </div>
                         </div>
-                      )}
-
-                      {/* AI's response */}
-                      {chat.ai_response && chat.ai_response.length > 0 && (
-                        <div className="d-flex justify-content-end mb-3">
-                          <div
-                            style={{
-                              maxWidth: "70%",
-                              backgroundColor: "#f8f9fa",
-                              padding: "10px",
-                              borderRadius: "15px",
-                              fontSize: "14px",
-                            }}
-                          >
-                            {chatHistory[0].ai_response[index]} 
-                            {/* Display the AI's response */}
+                        {/* AI's response */}
+                        {msg.response && (
+                          <div className="d-flex justify-content-end mb-3">
+                            <div
+                              style={{
+                                maxWidth: "70%",
+                                backgroundColor: "#f8f9fa",
+                                padding: "15px",
+                                borderRadius: "15px",
+                                fontSize: "14px",
+                              }}
+                            >
+                              {formatAIResponse(msg.response)}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    ))}
 
                 {/* Loading state */}
                 {loading && (
@@ -398,7 +463,8 @@ const AIChatPage = ({ onClose }) => {
                 borderRadius: "0 0 0 20px",
               }}
             >
-              {newChatCreated ? (
+              {/* Nếu đã có history thì luôn hiển thị input chat */}
+              {chatHistory && chatHistory.length > 0 ? (
                 <InputGroup
                   style={{
                     marginBottom: "10px",
@@ -801,7 +867,7 @@ const AIChatPage = ({ onClose }) => {
           </Col>
         </Row>
       </Container>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

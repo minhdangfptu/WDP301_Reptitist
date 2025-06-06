@@ -8,7 +8,9 @@ import Footer from "../components/Footer";
 import PetBasicInfo from "../components/PetBasicInfo";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-import AIChat from "../components/AIChat";
+import AIChatPage from "./AIChatPage";
+import TrackingHealth from "../components/TrackingHealth";
+import ImproveSuggestion from "../components/ImproveSuggestion";
 
 export default function YourPetDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -18,6 +20,9 @@ export default function YourPetDetail() {
   const [showAIChat, setShowAIChat] = useState(false); // State to control ReptiAI chat modal
   const navigate = useNavigate(); // Hook to navigate programmatically
   const { reptileId } = useParams();
+  const [openSections, setOpenSections] = useState({});
+  const [selectedSection, setSelectedSection] = useState(0); // Section đang chọn
+
   useEffect(() => {
     axios
       .get(`http://localhost:8080/reptitist/pet/${reptileId}`)
@@ -32,6 +37,13 @@ export default function YourPetDetail() {
       });
   }, [reptileId]); // This will run whenever the reptileId changes
   console.log(petDetails); // Log pet details to console for debugging
+
+  const handleToggleSection = (index) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
 
   if (loading) {
     return (
@@ -60,22 +72,19 @@ export default function YourPetDetail() {
         "Tên",
         "Tuổi",
         "Giống loài",
-        "Cân nặng",
-        "Sức khỏe",
-        "Bệnh lý",
-        "Tình trạng hoạt động",
+        "Các thông tin khác"
       ],
     },
     {
       title: "THEO DÕI SỨC KHỎE",
-      items: ["Tăng trưởng", "Chế độ dinh dưỡng", "Lịch sử điều trị"],
+      items: ["Tăng trưởng", "Chế độ dinh dưỡng"],
     },
     {
-      title: "GỢI Ý CẢI THIỆN",
+      title: "REPTIAI GỢI Ý CẢI THIỆN",
       items: ["Nâng cao hoạt động", "Môi trường", "Dinh dưỡng", "Bệnh lý"],
     },
     {
-      title: "REPTIAI",
+      title: "CHAT VỚI REPTIAI",
       items: ["Chat trực tiếp với AI", "Lịch sử trò chuyện", "Ghi chú"],
     },
   ];
@@ -143,15 +152,30 @@ export default function YourPetDetail() {
           <div className="p-3 overflow-auto flex-grow-1" style={{ flex: 1 }}>
             {menuItems.map((section, index) => (
               <div key={index} className="mb-4">
-                <h6 className="fw-semibold text-secondary small mb-2">
+                <Button
+                  className="w-100 text-start mb-2"
+                  style={{
+                    backgroundColor: selectedSection === index ? "var(--primary-color)" : "#fff",
+                    color: selectedSection === index ? "#fff" : "var(--primary-color)",
+                    border: "1px solid var(--primary-color)",
+                    fontWeight: "bold",
+                   
+
+                    transition: "all 0.2s",
+                    padding: "6px 6px",
+                    fontSize: "14px",
+                    borderRadius: "10px",
+                    
+                  }}
+                  onClick={() => setSelectedSection(index)}
+                >
                   {section.title}
-                </h6>
-                <ListGroup variant="flush">
+                </Button>
+                <ListGroup variant="flush" className="mb-3">
                   {section.items.map((item, itemIndex) => (
                     <ListGroup.Item
                       key={itemIndex}
-                      action
-                      className="border-0 py-1 px-2 text-secondary small"
+                      className="border-0 py-1 px-3 text-secondary small"
                       style={{ backgroundColor: "transparent" }}
                     >
                       {item}
@@ -162,12 +186,25 @@ export default function YourPetDetail() {
             ))}
           </div>
         </div>
-        <div className="flex-grow-1 p-4">
-          {/* Basic Information Section */}
-          <PetBasicInfo petInfo={petDetails} />
-
+        <div className="flex-grow-1 p-4 h-100" style={{height: "100%"}}>
+          {/* Hiển thị component theo section được chọn */}
+          {selectedSection === 0 && <PetBasicInfo petInfo={petDetails} />}
+          {selectedSection === 1 && <TrackingHealth petInfo={petDetails} />}
+          {selectedSection === 2 && <ImproveSuggestion petInfo={petDetails} />}
+          {selectedSection === 3 && (
+            <div
+              className="h-100"
+              style={{
+                height: "100%",
+                overflowY: "auto",
+                minHeight: 0, // Đảm bảo flexbox không bị lỗi
+              }}
+            >
+              <AIChatPage petInfo={petDetails} />
+            </div>
+          )}
           {/* AI Chat Button */}
-          <div className="text-center mt-4">
+          {/* <div className="text-center mt-4">
             <Button
               variant="success"
               className="d-flex align-items-center mx-auto px-4 py-2"
@@ -181,7 +218,7 @@ export default function YourPetDetail() {
               <i className="bi bi-robot me-2" style={{ fontSize: "20px" }}></i>
               <span>Chat cùng ReptiAI</span>
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
       <Footer />
