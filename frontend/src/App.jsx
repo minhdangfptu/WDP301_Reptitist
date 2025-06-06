@@ -11,7 +11,7 @@ import LibraryContentCreate from './pages/LibraryCategoryCreate';
 // Import components
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
-import Library from './pages/LibraryTopic';
+import LibraryTopic from './pages/LibraryTopic';
 import LibraryContent from './pages/LibraryContent';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
@@ -91,19 +91,6 @@ const AppRoutes = () => {
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
-      <Route path="/Library" element={<Library />} />
-      <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
-            <Route
-              path="/libraryCategory/create/:categoryId"
-              element={
-                <ProtectedRoute>
-                  <LibraryContentCreate />
-                </ProtectedRoute>
-              }
-            />
-      {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
-      <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
-
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
       <Route path="/ProductDetail" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
@@ -141,6 +128,9 @@ const AppRoutes = () => {
           <Security />
         </ProtectedRoute>
       } />
+       <Route path="/LibraryTopic" element={<LibraryTopic />} />
+       <Route path="/LibraryCategory" element={<LibraryCategory />} />
+       <Route path="/LibraryContent/:id" element={<LibraryContent />} />
       <Route path="/Settings" element={
         <ProtectedRoute>
           <Settings />

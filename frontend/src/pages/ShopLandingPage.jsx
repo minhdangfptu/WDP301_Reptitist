@@ -63,60 +63,60 @@ const ShopLandingPage = () => {
   return (
     <div className="shop-landing-page">
       {/* Header */}
-      <header className="header">
-        <div className="top-header">
-          <div className="top-links">
-            <a href="#" className="top-link">Kênh người bán</a>
-            <a href="#" className="top-link">Trở thành người bán trên Reptisist Shop</a>
-            <a href="#" className="top-link">Kết nối với chúng tôi</a>
-            <div className="social-icons">
-              <a href="#" className="social-icon">
+      <header className="shop-header">
+        <div className="shop-top-header">
+          <div className="shop-top-links">
+            <a href="#" className="shop-top-link">Kênh người bán</a>
+            <a href="#" className="shop-top-link">Trở thành người bán trên Reptisist Shop</a>
+            <a href="#" className="shop-top-link">Kết nối với chúng tôi</a>
+            <div className="shop-social-icons">
+              <a href="#" className="shop-social-icon">
                 <Facebook size={16} />
               </a>
             </div>
           </div>
-          <div className="top-actions">
-            <a href="#" className="top-action">
+          <div className="shop-top-actions">
+            <a href="#" className="shop-top-action">
               <HelpCircle size={16} /> Hỗ trợ
             </a>
-            <a href="#" className="top-action">
+            <a href="#" className="shop-top-action">
               <User size={16} /> Tài khoản
             </a>
           </div>
         </div>
         
-        <div className="main-header">
-          <div className="logo-container">
-            <img src="logo.png" alt="Reptisist Shop" className="logo" />
+        <div className="shop-main-header">
+          <div className="shop-logo-container">
+            <img src="logo.png" alt="Reptisist Shop" className="shop-logo" />
             <h1 className="shop-name">REPTISIST SHOP</h1>
           </div>
           
-          <div className="search-container">
+          <div className="shop-search-container">
             <input 
               type="text" 
               placeholder="Tìm sản phẩm, thương hiệu, hoặc tên shop" 
-              className="search-input"
+              className="shop-search-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="search-button">
+            <button className="shop-search-button">
               <Search size={18} />
             </button>
           </div>
           
-          <div className="cart-container">
-            <a href="#" className="cart-icon">
+          <div className="shop-cart-container">
+            <a href="#" className="shop-cart-icon">
               <ShoppingCart size={22} />
             </a>
           </div>
         </div>
         
-        <nav className="main-nav">
-          <ul className="nav-links">
-            <li><a href="#" className="nav-link">Chuồng & phụ kiện chuồng</a></li>
-            <li><a href="#" className="nav-link">Thiết bị & dụng cụ nuôi</a></li>
-            <li><a href="#" className="nav-link">Thức ăn & Dinh dưỡng</a></li>
-            <li><a href="#" className="nav-link">Sản phẩm vệ sinh & chăm sóc sức khỏe</a></li>
+        <nav className="shop-main-nav">
+          <ul className="shop-nav-links">
+            <li><a href="#" className="shop-nav-link">Chuồng & phụ kiện chuồng</a></li>
+            <li><a href="#" className="shop-nav-link">Thiết bị & dụng cụ nuôi</a></li>
+            <li><a href="#" className="shop-nav-link">Thức ăn & Dinh dưỡng</a></li>
+            <li><a href="#" className="shop-nav-link">Sản phẩm vệ sinh & chăm sóc sức khỏe</a></li>
           </ul>
         </nav>
       </header>

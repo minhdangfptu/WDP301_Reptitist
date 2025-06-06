@@ -36,7 +36,7 @@ const Header = () => {
         <nav className="header__nav">
           <Link to="/">
             <img
-              src="logo1.png"
+              src="/logo1.png"
               className="header__logo"
               alt="Logo"
             />
@@ -44,7 +44,7 @@ const Header = () => {
           <ul className="header__nav-links">
             <li><Link to="/" className="header__nav-link">TRANG CHỦ</Link></li>
             <li><Link to="/Community" className="header__nav-link">CỘNG ĐỒNG</Link></li>
-            <li><Link to="/Library" className="header__nav-link">THƯ VIỆN</Link></li>
+            <li><Link to="/LibraryTopic" className="header__nav-link">THƯ VIỆN</Link></li>
             <li><Link to="/ShopLandingPage" className="header__nav-link">MUA SẮM</Link></li>
             <li><Link to="/ContactUs" className="header__nav-link">Liên hệ</Link></li>
             {user && <li><Link to="/YourPet" className="header__nav-link">YOUR PET</Link></li>}

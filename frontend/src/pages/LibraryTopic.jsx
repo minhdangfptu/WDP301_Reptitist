@@ -1,26 +1,47 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import axios from "axios";
-import { Link } from "react-router-dom";
 
-const Library = () => {
-  const [topics, setTopics] = useState([]);
-  const [openIndex, setOpenIndex] = useState(null);
+const menuData = [
+  {
+    title: "Hướng dẫn chăm sóc",
+    submenu: [
+      "Khái quát về bò sát",
+      "Kỹ thuật nuôi dưỡng",
+      "Môi trường sống",
+      "Thức ăn và dinh dưỡng",
+    ],
+  },
+  {
+    title: "Bài viết y học",
+    submenu: ["Sơ cứu cơ bản", "Thuốc và liều lượng", "Các nghiên cứu mới"],
+  },
+  {
+    title: "Bò sát phổ biến",
+    submenu: ["Rồng Úc", "Rắn", "Thằn lằn", "Tắc kè", "Rùa"],
+  },
+  {
+    title: "Bệnh lý thường gặp tại VN",
+    submenu: ["Bệnh về da", "Bệnh về hô hấp", "Bệnh về tiêu hóa", "Ký sinh trùng"],
+  },
+  {
+    title: "Cách điều trị",
+    submenu: ["Phương pháp tự nhiên", "Dùng thuốc", "Thủ thuật phẫu thuật"],
+  },
+  {
+    title: "Trang bị & Phụ kiện",
+    submenu: ["Bể nuôi và lồng", "Hệ thống sưởi và ánh sáng", "Đồ trang trí", "Dụng cụ cho ăn"],
+  },
+];
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:8080/reptitist/library_topics")
-      .then((response) => {
-        setTopics(response.data);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy danh sách chủ đề:", error);
-      });
-  }, []);
+const LibraryTopic = () => {
+  const [openIndexes, setOpenIndexes] = useState({});
 
-  const toggleTopic = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
+  const toggleSubmenu = (index) => {
+    setOpenIndexes((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
   return (
@@ -35,74 +56,55 @@ const Library = () => {
 
       <div className="container">
         <div className="breadcrumb">
-          <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right"></i>{" "}
-          <span>Thư viện kiến thức</span>
+          <a href="/LandingPage">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/LibraryTopic">Thư viện kiến thức</a>
         </div>
       </div>
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content d-flex">
+          <div className="library-content">
             {/* Sidebar */}
-            <div className="sidebar me-5" style={{ width: "250px" }}>
-              <h2 className="sidebar-title">Chủ đề thư viện</h2>
-              <ul className="sidebar-menu list-unstyled">
-                {topics.map((topic, idx) => (
-                  <li key={topic._id} style={{ marginBottom: "10px" }}>
-                    <div
-                      onClick={() => toggleTopic(idx)}
-                      style={{
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span>{topic.topic_title}</span>
+            <div className="sidebar">
+              <h2 className="sidebar-title">Thư viện kiến thức</h2>
+              <ul className="sidebar-menu">
+                {menuData.map((item, idx) => (
+                  <li key={idx}>
+                    <div className="menu-item" onClick={() => toggleSubmenu(idx)} style={{ cursor: "pointer", userSelect: "none" }}>
+                      <a href="#" className="menu-link">{item.title}</a>
                       <span
-                        style={{
-                          transform: openIndex === idx ? "rotate(90deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                          display: "inline-block",
-                        }}
-                      >
-                        
-                      </span>
+                        className={`caret ${openIndexes[idx] ? "caret-up" : "caret-down"}`}
+                        aria-hidden="true"
+                      ></span>
                     </div>
-
-                    {openIndex === idx && (
-                      <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
-                        <li>
-                          <Link to={`/libraryCategory/${topic._id}`}>
-                            {topic.topic_description || "Chưa có mô tả"}
-                          </Link>
+                    <ul
+                      className="submenu"
+                      style={{ display: openIndexes[idx] ? "block" : "none" }}
+                    >
+                      {item.submenu.map((sub, i) => (
+                        <li key={i}>
+                          <a href={sub === "Khái quát về bò sát" ? "/LibraryCategory" : "#"}>
+                            {sub}
+                          </a>
                         </li>
-                      </ul>
-                    )}
+                      ))}
+                    </ul>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Content Grid */}
-            <div className="content-grid d-flex flex-wrap gap-4">
-              {topics.map((topic) => (
-                <div
-                  className="category-card border rounded p-3 text-center"
-                  key={topic._id}
-                  style={{ width: "250px" }}
-                >
-                  <div className="card-image mb-2">
+            <div className="content-grid">
+              {menuData.map((item, idx) => (
+                <div className="category-card" key={idx}>
+                  <div className="card-image">
                     <img
-                      src={topic.topic_imageurl[0] || "/default.jpg"}
-                      alt={topic.topic_title}
-                      style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                      src="/api/placeholder/400/180"
+                      alt={item.title}
                     />
                   </div>
-                  <div className="card-title fw-bold">{topic.topic_title}</div>
-                  {/* <p>{topic.topic_description}</p>
-                  <Link to={`/library/${topic._id}`}>Xem chi tiết</Link> */}
+                  <div className="card-title">{item.title}</div>
                 </div>
               ))}
             </div>
@@ -115,4 +117,4 @@ const Library = () => {
   );
 };
 
-export default Library;
+export default LibraryTopic;

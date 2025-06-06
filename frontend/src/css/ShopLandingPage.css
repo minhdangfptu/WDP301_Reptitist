@@ -38,22 +38,17 @@
   .shop-landing-page {
     max-width: 100%;
     margin: 0 auto;
-    padding-top: 180px; /* Adjust this value based on your header height */
+    padding-top: 0; /* Remove the top padding since header is no longer fixed */
   }
   
   /* Header Styles */
-  .header {
+  .shop-header {
     background-color: var(--primary-color);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
     width: 100%;
   }
   
-  .top-header {
+  .shop-top-header {
     background-color: rgba(0, 0, 0, 0.1);
     padding: 8px 50px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -62,12 +57,12 @@
     align-items: center;
   }
   
-  .top-links {
+  .shop-top-links {
     display: flex;
     align-items: center;
   }
   
-  .top-link {
+  .shop-top-link {
     margin-right: 20px;
     color: var(--white-color);
     opacity: 0.9;
@@ -75,30 +70,30 @@
     font-size: 0.85rem;
   }
   
-  .top-link:hover {
+  .shop-top-link:hover {
     opacity: 1;
   }
   
-  .social-icons {
+  .shop-social-icons {
     display: flex;
   }
   
-  .social-icon {
+  .shop-social-icon {
     margin-left: 10px;
     color: var(--white-color);
     opacity: 0.9;
     transition: opacity 0.2s;
   }
   
-  .social-icon:hover {
+  .shop-social-icon:hover {
     opacity: 1;
   }
   
-  .top-actions {
+  .shop-top-actions {
     display: flex;
   }
   
-  .top-action {
+  .shop-top-action {
     margin-left: 20px;
     display: flex;
     align-items: center;
@@ -108,11 +103,11 @@
     font-size: 0.85rem;
   }
   
-  .top-action:hover {
+  .shop-top-action:hover {
     opacity: 1;
   }
   
-  .main-header {
+  .shop-main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -120,12 +115,12 @@
     background-color: var(--primary-color);
   }
   
-  .logo-container {
+  .shop-logo-container {
     display: flex;
     align-items: center;
   }
   
-  .logo {
+  .shop-logo {
     width: 50px;
     height: 50px;
     margin-right: 10px;
@@ -138,14 +133,14 @@
     color: var(--white-color);
   }
   
-  .search-container {
+  .shop-search-container {
     display: flex;
     flex: 1;
     max-width: 600px;
     margin: 0 30px;
   }
   
-  .search-input {
+  .shop-search-input {
     flex: 1;
     padding: 10px 15px;
     border: none;
@@ -154,7 +149,7 @@
     background-color: var(--white-color);
   }
   
-  .search-button {
+  .shop-search-button {
     background-color: var(--white-color);
     border: none;
     padding: 0 15px;
@@ -163,21 +158,21 @@
     color: var(--primary-color);
   }
   
-  .cart-container {
+  .shop-cart-container {
     font-size: 1.5rem;
     color: var(--white-color);
   }
   
-  .main-nav {
+  .shop-main-nav {
     background-color: rgba(0, 0, 0, 0.1);
     padding: 0 50px 10px;
   }
   
-  .nav-links {
+  .shop-nav-links {
     display: flex;
   }
   
-  .nav-link {
+  .shop-nav-link {
     color: var(--white-color);
     padding: 8px 15px;
     opacity: 0.85;
@@ -185,7 +180,7 @@
     font-size: 0.9rem;
   }
   
-  .nav-link:hover {
+  .shop-nav-link:hover {
     opacity: 1;
   }
   
@@ -691,9 +686,9 @@
   }
   
   @media (max-width: 992px) {
-    .top-header,
-    .main-header,
-    .main-nav,
+    .shop-top-header,
+    .shop-main-header,
+    .shop-main-nav,
     .hero-section,
     .shop-features,
     .categories-section,
@@ -728,27 +723,27 @@
   }
   
   @media (max-width: 768px) {
-    .top-header {
+    .shop-top-header {
       flex-direction: column;
       gap: 10px;
     }
     
-    .main-header {
+    .shop-main-header {
       flex-wrap: wrap;
       gap: 15px;
     }
     
-    .logo-container {
+    .shop-logo-container {
       flex: 1 1 100%;
       justify-content: center;
     }
     
-    .search-container {
+    .shop-search-container {
       flex: 1 1 100%;
       margin: 0;
     }
     
-    .cart-container {
+    .shop-cart-container {
       margin-left: auto;
     }
     
@@ -778,11 +773,11 @@
       grid-template-columns: repeat(2, 1fr);
     }
     
-    .nav-links {
+    .shop-nav-links {
       flex-wrap: wrap;
     }
     
-    .nav-link {
+    .shop-nav-link {
       flex: 1 1 50%;
       text-align: center;
     }
