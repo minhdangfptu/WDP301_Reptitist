@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Row, Col, Table, Badge, Spinner } from "react-bootstrap";
+import { Card, Row, Col, Table, Badge, Spinner, Button } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 const chartWidth = 420;
 const chartHeight = 200;
@@ -11,6 +12,7 @@ function formatDate(dateString) {
 }
 
 export default function TrackingHealth({ petInfo }) {
+  const navigate = useNavigate();
   if (!petInfo) {
     return (
       <div className="text-center py-5">
@@ -68,7 +70,35 @@ export default function TrackingHealth({ petInfo }) {
 
   return (
     <div>
-      <h2 className="text-center fw-bold mb-4">THEO DÕI SỨC KHỎE</h2>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2 className="text-center fw-bold mb-4" style={{ marginBottom: 0 }}>THEO DÕI SỨC KHỎE</h2>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          style={{
+            borderRadius: "20px",
+            fontSize: "13px",
+            marginLeft: "16px",
+            color: "#20c997",
+            borderColor: "#20c997",
+            backgroundColor: "white",
+            transition: "all 0.2s"
+          }}
+          onClick={() => navigate(`/create-health-tracking/${petInfo.id || petInfo.reptileId}`)}
+          onMouseOver={e => {
+            e.target.style.backgroundColor = "#20c997";
+            e.target.style.color = "#fff";
+            e.target.style.borderColor = "#20c997";
+          }}
+          onMouseOut={e => {
+            e.target.style.backgroundColor = "white";
+            e.target.style.color = "#20c997";
+            e.target.style.borderColor = "#20c997";
+          }}
+        >
+          Thêm dữ liệu theo dõi sức khỏe
+        </Button>
+      </div>
       <Row className="g-4">
         {/* Biểu đồ cân nặng */}
         <Col xs={12} md={6} lg={5}>
