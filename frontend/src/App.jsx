@@ -24,8 +24,17 @@ import YourPet from './pages/YourPet';
 import Profile from './pages/Profile';
 import Security from './pages/Security';
 import Transaction from './pages/Transaction';
+<<<<<<< Updated upstream
 import Settings from './pages/Settings';
 import SignUp2 from './pages/SignUp2';
+=======
+import UserList from './pages/UserList';
+import ShopLandingPage from './pages/ShopLandingPage';
+import PlanUpgrade from './pages/PlanUpgrade';
+import LibraryCategory from './pages/LibraryCategory';
+import ProductsByCategory from "./pages/ProductsByCategory"; 
+
+>>>>>>> Stashed changes
 
 <<<<<<< Updated upstream
 function App() {
@@ -84,6 +93,10 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+<<<<<<< Updated upstream
+=======
+      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+>>>>>>> Stashed changes
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
