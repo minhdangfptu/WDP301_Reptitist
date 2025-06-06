@@ -12,7 +12,6 @@ import LibraryContentCreate from './pages/LibraryCategoryCreate';
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
 import Library from './pages/LibraryTopic';
-import LibraryDetail from './pages/LibraryCategory';
 import LibraryContent from './pages/LibraryContent';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
@@ -27,8 +26,9 @@ import UserManagement from './pages/UserManagement';
 import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
-import ProductsByCategory from "./pages/ProductsByCategory"; 
+import ProductsByCategory from "./pages/ProductsByCategory";
 import AddProduct from "./pages/AddProduct";
+import ProductDetail from "./pages/ProductDetail";
 
 
 // Loading component
@@ -105,6 +105,7 @@ const AppRoutes = () => {
       <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
 
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+      <Route path="/ProductDetail" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
       {/* Auth routes - redirect if already logged in */}
