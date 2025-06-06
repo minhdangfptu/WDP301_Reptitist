@@ -7,13 +7,13 @@ import { store } from './app/store';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-
+import LibraryContentCreate from './pages/LibraryCategoryCreate';
 // Import components
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
-import Library from './pages/Library';
-import LibraryDetail from './pages/LibraryDetail';
-import LibraryDetail2 from './pages/LibraryDetail2';
+import Library from './pages/LibraryTopic';
+import LibraryDetail from './pages/LibraryCategory';
+import LibraryContent from './pages/LibraryContent';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SignUp2 from './pages/SignUp2';
@@ -26,6 +26,10 @@ import Transaction from './pages/Transaction';
 import UserManagement from './pages/UserManagement';
 import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
+import LibraryCategory from './pages/LibraryCategory';
+import ProductsByCategory from "./pages/ProductsByCategory"; 
+import AddProduct from "./pages/AddProduct";
+
 
 // Loading component
 const LoadingSpinner = () => (
@@ -81,13 +85,25 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+      <Route path="/products/create" element={<AddProduct />} />
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
       <Route path="/Library" element={<Library />} />
-      <Route path="/LibraryDetail" element={<LibraryDetail />} />
-      <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} />
+      <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
+            <Route
+              path="/libraryCategory/create/:categoryId"
+              element={
+                <ProtectedRoute>
+                  <LibraryContentCreate />
+                </ProtectedRoute>
+              }
+            />
+      {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
+      <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
+
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
