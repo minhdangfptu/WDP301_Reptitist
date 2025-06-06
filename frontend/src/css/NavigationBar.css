@@ -10,11 +10,12 @@
   top: 64px;
   z-index: 40;
   transition: transform 0.3s ease-in-out;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--primary-color);
 }
 
 .navigation-content {
   padding: 16px;
+  margin-top: 100px;
 }
 
 .navigation-menu {
@@ -31,21 +32,22 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  text-decoration: none;
   color: var(--text-primary);
   width: 100%;
   text-align: left;
   background: none;
+  border: none;
+  text-decoration: none;
 }
 
 .menu-item:hover {
-  background-color: var(--hover-color);
+  background-color: rgba(0, 132, 61, 0.1);
   transform: translateX(2px);
   color: var(--text-primary);
 }
 
 .menu-item.active {
-  background-color: var(--hover-color);
+  background-color: rgba(0, 132, 61, 0.1);
   color: var(--text-primary);
   font-weight: 500;
 }
@@ -74,8 +76,8 @@
 .menu-text {
   font-size: 16px;
   font-weight: 400;
-  text-decoration: none;
   color: var(--text-primary);
+  pointer-events: none; /* Prevent text from capturing clicks */
 }
 
 .menu-item.active .menu-text {
@@ -103,7 +105,7 @@
 }
 
 .navigation-container::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--primary-color);
   border-radius: 2px;
 }
 
@@ -135,7 +137,7 @@
 /* Dark mode overrides */
 .dark-mode .navigation-container {
   background: var(--bg-secondary);
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--primary-color);
 }
 
 .dark-mode .menu-item,
@@ -146,5 +148,5 @@
 .dark-mode .menu-item:hover,
 .dark-mode .menu-item.active {
   color: var(--text-primary) !important;
-  background-color: var(--hover-color);
+  background-color: rgba(0, 132, 61, 0.1);
 }

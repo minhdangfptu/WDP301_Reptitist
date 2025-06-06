@@ -2,11 +2,12 @@ const LibraryCategories = require('../models/Library_category');
 
 exports.createCategory = async (req, res) => {
   try {
-    const { category_content, category_description, category_imageurl } = req.body;
+    const { category_content, category_description, category_imageurl, topic_id } = req.body;
     const newCategory = new LibraryCategories({
       category_content,
       category_description,
       category_imageurl,
+      topic_id,
     });
     await newCategory.save();
     res.status(201).json({ message: 'Tạo danh mục thành công', category: newCategory });
@@ -56,5 +57,15 @@ exports.deleteCategory = async (req, res) => {
     res.status(200).json({ message: 'Xóa danh mục thành công' });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi xóa danh mục', error: error.message });
+  }
+};
+
+
+exports.getAllCategories = async (req, res) => {
+  try {
+    const categories = await LibraryCategories.find();
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh mục', error: error.message });
   }
 };
