@@ -10,10 +10,10 @@ const adminRoute = require('./adminRouter.js');
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
-router.use('/info', reptileRoutes);
+router.use('/reptile', reptileRoutes);
 router.use('/library_categories', libraryCategoriesRoute);
 router.use('/library_contents', libraryContentRoute);
-router.use('/', topicCategoryRoutes);
+router.use('/reptitist', topicCategoryRoutes);
 router.use('/admin', adminRoute); 
 
 module.exports= router;

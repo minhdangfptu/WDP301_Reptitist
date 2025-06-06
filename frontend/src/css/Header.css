@@ -48,6 +48,23 @@ nav {
 .account-menu-wrapper {
   position: relative;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.account-menu-wrapper::after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid var(--text-color);
+  transition: transform 0.3s ease;
+}
+
+.account-menu-wrapper:hover::after {
+  transform: rotate(180deg);
 }
 
 .account-dropdown {
@@ -56,29 +73,39 @@ nav {
   right: 0;
   background-color: var(--white);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  min-width: 150px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
   z-index: 1000;
-  margin-top: 5px;
-  max-height: 200px;
+  margin-top: 10px;
+  max-height: 3000px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: #888 #f1f1f1;
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.account-menu-wrapper:hover .account-dropdown {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 .account-dropdown::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .account-dropdown::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .account-dropdown::-webkit-scrollbar-thumb {
   background: #888;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .account-dropdown::-webkit-scrollbar-thumb:hover {
@@ -86,19 +113,47 @@ nav {
 }
 
 .account-dropdown li {
-  padding: 10px 15px;
+  padding: 0;
   list-style: none;
+}
+
+.account-dropdown li:last-child {
+  border-bottom: none;
 }
 
 .account-dropdown li a {
   color: var(--text-color);
   text-decoration: none;
   display: block;
-  transition: color 0.3s ease;
+  padding: 12px 20px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .account-dropdown li a:hover {
   color: var(--primary-color);
+  background-color: rgba(0, 0, 0, 0.03);
+  padding-left: 25px;
+}
+
+.account-dropdown li a::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.account-dropdown li a:hover::before {
+  opacity: 1;
+  left: 15px;
 }
 
 /* Dark mode styles */
@@ -114,10 +169,19 @@ nav {
 .dark-mode .account-dropdown {
   background-color: var(--bg-secondary);
   border-color: var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.dark-mode .account-dropdown li a {
-  color: var(--text-primary);
+.dark-mode .account-dropdown li {
+  border-bottom-color: var(--border-color);
+}
+
+.dark-mode .account-dropdown li a:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .account-menu-wrapper::after {
+  border-top-color: var(--text-primary);
 }
 
 /* Mobile responsiveness */

@@ -521,80 +521,6 @@ footer {
   align-items: center;
 }
 
-/* Đặt lại margin và padding để tránh thừa */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Arial, sans-serif;
-}
-
-body {
-  background-color: #f5f5f5;
-  color: #333;
-  line-height: 1.6;
-}
-
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 15px;
-}
-
-/* Header */
-header {
-  background-color: white;
-  padding: 15px 0;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo img {
-  height: 60px;
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-}
-
-.nav-links li {
-  margin-left: 25px;
-}
-
-.nav-links a {
-  text-decoration: none;
-  color: #333;
-  font-size: 18px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.nav-links a:hover {
-  color: #06a13d;
-}
-
-.btn-login {
-  background-color: #06a13d;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.3s;
-}
-
-.btn-login:hover {
-  background-color: #048632;
-}
-
 /* Page Title */
 .page-title {
   background-color: #0fa958;
@@ -893,57 +819,6 @@ footer {
 }
 
 /* Account Menu */
-
-.account-menu-wrapper {
-  position: relative;
-}
-
-.account-dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: white;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  border-radius: 8px;
-  padding: 10px 0;
-  list-style: none;
-  width: 150px;
-  z-index: 1000;
-}
-
-.account-dropdown li a {
-  display: block;
-  padding: 10px 20px;
-  color: #333;
-  text-decoration: none;
-}
-
-.account-dropdown li a:hover {
-  background-color: #f0f0f0;
-}
-
-.caret {
-  display: inline-block;
-  width: 0; 
-  height: 0; 
-  margin-left: 6px;
-  vertical-align: middle;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.caret-down {
-  border-top: 6px solid #333; /* Mũi tên xuống */
-  transform: rotate(0deg);
-}
-
-.caret-up {
-  border-bottom: 6px solid #333; /* Mũi tên lên */
-  transform: rotate(180deg);
-}
-
 /*---Sellerproduct---*/
 
 /* BestsellingProducts.css */

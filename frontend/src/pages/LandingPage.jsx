@@ -19,7 +19,7 @@ const LandingPage = () => {
               Website chăm sóc bò sát cung cấp Chatbot AI 24/7, thư viện kiến thức phong phú, hồ sơ cá nhân hóa, và kết nối cộng đồng giúp bạn chăm sóc bò sát dễ dàng. Hệ sinh thái toàn diện hỗ trợ khám bệnh và mua sắm sản phẩm chất lượng. Chăm sóc bò sát chưa bao giờ dễ dàng hơn!
             </p>
             <div className="hero-buttons">
-              <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY!</a>
+              <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY</a>
               <a href="/PlanUpgrade" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
             </div>
           </div>
