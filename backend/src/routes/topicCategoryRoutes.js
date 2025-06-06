@@ -1,0 +1,9 @@
+const express = require('express');
+const router = express.Router();
+
+const topicCategoryController = require('../controllers/topicCategoryController');
+
+// GET /library_topics
+router.get('/library_topics', topicCategoryController.getAllTopics);
+
+module.exports = router;

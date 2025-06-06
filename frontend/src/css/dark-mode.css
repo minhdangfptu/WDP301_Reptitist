@@ -1,0 +1,341 @@
+/* Dark mode styles */
+.dark-mode {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --border-color: #404040;
+  --hover-color: #404040;
+  --card-bg: #2d2d2d;
+  --input-bg: #333333;
+  --input-border: #404040;
+  --button-bg: #404040;
+  --button-hover: #505050;
+}
+
+.dark-mode body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Header and Navigation */
+.dark-mode header {
+  background-color: var(--bg-secondary);
+  border-bottom-color: var(--border-color);
+}
+
+.dark-mode .nav-links a {
+  color: var(--text-primary);
+}
+
+.dark-mode .nav-links a:hover {
+  color: #10b981;
+}
+
+/* Profile and Settings */
+.dark-mode .profile-container {
+  background-color: var(--bg-primary);
+}
+
+.dark-mode .profile-section,
+.dark-mode .welcome-header,
+.dark-mode .billing-section,
+.dark-mode .transactions-section {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .welcome-content h1,
+.dark-mode .welcome-content p,
+.dark-mode .profile-user-details h2,
+.dark-mode .profile-field label,
+.dark-mode .profile-field p,
+.dark-mode .billing-label,
+.dark-mode .billing-value,
+.dark-mode .company-name,
+.dark-mode .transaction-date,
+.dark-mode .settings-section-title,
+.dark-mode .settings-item-title,
+.dark-mode .settings-item-description {
+  color: var(--text-primary);
+}
+
+.dark-mode .profile-field p,
+.dark-mode .security-field p {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+  color: var(--text-primary);
+}
+
+/* Menu and Navigation */
+.dark-mode .menu-item {
+  color: var(--text-primary);
+}
+
+.dark-mode .menu-item:hover {
+  background-color: var(--hover-color);
+}
+
+.dark-mode .navigation-container {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+/* Form Elements */
+.dark-mode .toggle-switch {
+  background-color: var(--input-bg);
+}
+
+.dark-mode .toggle-slider {
+  background-color: var(--button-bg);
+}
+
+.dark-mode .toggle-switch input:checked + .toggle-slider {
+  background-color: #10b981;
+}
+
+.dark-mode .settings-section {
+  border-color: var(--border-color);
+}
+
+.dark-mode .settings-select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--input-border);
+}
+
+/* Buttons */
+.dark-mode .delete-button {
+  background-color: #dc2626;
+  color: white;
+}
+
+.dark-mode .delete-button:hover {
+  background-color: #b91c1c;
+}
+
+/* Modal */
+.dark-mode .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.dark-mode .modal-content {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-mode .cancel-button {
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+}
+
+.dark-mode .cancel-button:hover {
+  background-color: var(--button-hover);
+}
+
+/* Library and Content */
+.dark-mode .category-card {
+  background-color: var(--bg-secondary);
+}
+
+.dark-mode .card-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .sidebar-title {
+  color: #10b981;
+}
+
+.dark-mode .sidebar-menu .menu-item {
+  color: var(--text-primary);
+}
+
+.dark-mode .sidebar-menu .menu-link {
+  color: var(--text-primary);
+}
+
+.dark-mode .sidebar-menu .submenu a {
+  color: var(--text-secondary);
+}
+
+/* Footer */
+.dark-mode footer {
+  background-color: var(--bg-secondary);
+}
+
+.dark-mode .footer-links a {
+  color: var(--text-primary);
+}
+
+.dark-mode .footer-contact p {
+  color: var(--text-primary);
+}
+
+/* Product List */
+.dark-mode .product-name {
+  color: var(--text-primary);
+}
+
+.dark-mode .product-price {
+  color: #10b981;
+}
+
+/* Account Menu */
+.dark-mode .account-dropdown {
+  background-color: var(--bg-secondary);
+}
+
+.dark-mode .account-dropdown li a {
+  color: var(--text-primary);
+}
+
+.dark-mode .account-dropdown li a:hover {
+  background-color: var(--hover-color);
+}
+
+.dark-mode .caret-down {
+  border-top-color: var(--text-primary);
+}
+
+.dark-mode .caret-up {
+  border-bottom-color: var(--text-primary);
+}
+
+/* YourPet Page */
+.dark-mode .pet-container {
+  background-color: var(--bg-primary);
+}
+
+.dark-mode .pet-card {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .pet-name,
+.dark-mode .pet-species,
+.dark-mode .pet-age,
+.dark-mode .pet-description,
+.dark-mode .pet-info-label,
+.dark-mode .pet-info-value {
+  color: var(--text-primary);
+}
+
+.dark-mode .pet-card:hover {
+  border-color: #10b981;
+}
+
+/* LibraryDetail and LibraryDetail2 Pages */
+.dark-mode .library-detail-container {
+  background-color: var(--bg-primary);
+}
+
+.dark-mode .library-detail-content {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .library-detail-title,
+.dark-mode .library-detail-description,
+.dark-mode .library-detail-info,
+.dark-mode .library-detail-price,
+.dark-mode .library-detail-label,
+.dark-mode .library-detail-value {
+  color: var(--text-primary);
+}
+
+.dark-mode .library-detail-image {
+  border-color: var(--border-color);
+}
+
+.dark-mode .library-detail-button {
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .library-detail-button:hover {
+  background-color: var(--button-hover);
+}
+
+.dark-mode .library-detail-section {
+  border-color: var(--border-color);
+}
+
+.dark-mode .library-detail-tabs {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .library-detail-tab {
+  color: var(--text-primary);
+}
+
+.dark-mode .library-detail-tab.active {
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+}
+
+.dark-mode .library-detail-tab:hover {
+  background-color: var(--hover-color);
+}
+
+.dark-mode .library-detail-review {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .review-author,
+.dark-mode .review-date,
+.dark-mode .review-content {
+  color: var(--text-primary);
+}
+
+.dark-mode .library-detail-related {
+  background-color: var(--bg-secondary);
+}
+
+.dark-mode .related-item {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.dark-mode .related-item-title,
+.dark-mode .related-item-price {
+  color: var(--text-primary);
+}
+
+.dark-mode .related-item:hover {
+  border-color: #10b981;
+}
+
+/* Form elements in these pages */
+.dark-mode .library-detail-input,
+.dark-mode .library-detail-textarea {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border-color: var(--input-border);
+}
+
+.dark-mode .library-detail-input:focus,
+.dark-mode .library-detail-textarea:focus {
+  border-color: #10b981;
+}
+
+/* Modal styles for these pages */
+.dark-mode .library-detail-modal {
+  background-color: var(--bg-secondary);
+}
+
+.dark-mode .library-detail-modal-title,
+.dark-mode .library-detail-modal-content {
+  color: var(--text-primary);
+}
+
+.dark-mode .library-detail-modal-button {
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+}
+
+.dark-mode .library-detail-modal-button:hover {
+  background-color: var(--button-hover);
+} 
