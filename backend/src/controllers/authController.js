@@ -120,7 +120,7 @@ const login = async (req, res) => {
                 id: existUser._id,
                 username: existUser.username,
                 email: existUser.email,
-                role: existUser.role_id ? existUser.role_id.role_name : 'customer'
+                role: existUser.role_id ? existUser.role_id.role_name : 'user'
             }
         });
     } catch (error) {

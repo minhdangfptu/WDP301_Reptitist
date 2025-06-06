@@ -25,6 +25,7 @@ import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
+import AuthCallback from './pages/AuthCallback';
 
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -148,6 +149,9 @@ const AppRoutes = () => {
           <UserList />
         </ProtectedRoute>
       } />
+      
+      {/* Auth callback route */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
       
       {/* Catch all route - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

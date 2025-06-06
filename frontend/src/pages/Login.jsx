@@ -12,7 +12,7 @@ const Login = () => {
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { login } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
     const navigate = useNavigate();
 
     const togglePassword = () => setShowPassword(prev => !prev);
@@ -91,6 +91,11 @@ const Login = () => {
             setIsLoading(false);
         }
     }
+
+    const handleGoogleLogin = (e) => {
+        e.preventDefault();
+        loginWithGoogle();
+    };
 
     return (
         <div className="login-body">
@@ -232,7 +237,7 @@ const Login = () => {
 
                         <div className="divider">HOẶC</div>
 
-                        <a href="#" className="social-login-btn">
+                        <a href="#" className="social-login-btn" onClick={handleGoogleLogin}>
                             <span className="google-icon">
                                 <img
                                     src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
