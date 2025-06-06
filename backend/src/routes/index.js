@@ -2,6 +2,7 @@ const express= require('express');
 const router =express.Router();
 const authRoute=require('./authRoute.js')
 const shopRoute=require('./shopRoute.js')
+const adminRoute=require('./adminRouter.js')
 const userReptileRoutes = require('./userReptileRoute.js');
 const reptileInfoRoute = require('./reptileInfoRoute.js');
 const aiRoute = require('./aiRoute.js');

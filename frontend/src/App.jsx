@@ -28,6 +28,9 @@ import YourPetDetail from './pages/YourPetDetail';
 import CreateNewPet from './pages/CreateNewPetPage';
 import AIChatPage from './pages/AIChatPage';
 import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
+import ProductDetail from './pages/ProductDetail';
+import PlanUpgrade from './pages/PlanUpgrade';
+import LibraryCategory from './pages/LibraryCategory';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
@@ -86,8 +89,6 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
-      <Route path="/products/create" element={<AddProduct />} />
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
@@ -168,26 +169,6 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      <Route path="/your-pet/detail/:reptileId" element={
-        <ProtectedRoute>
-          < YourPetDetail/>
-        </ProtectedRoute>
-      } />
-      <Route path="/your-pet/create" element={
-        <ProtectedRoute>
-          < CreateNewPet/>
-        </ProtectedRoute>
-      } />
-      <Route path="/your-pet/ai/:reptileId" element={
-        <ProtectedRoute>
-          < AIChatPage/>
-        </ProtectedRoute>
-      } />
-      <Route path="/create-health-tracking/:reptileId" element={
-        <ProtectedRoute>
-          < CreateTrackingHealthPage/>
-        </ProtectedRoute>
-      } />
       {/* Admin only routes */}
       <Route path="/UserManagement" element={
         <ProtectedRoute requiredRole="admin">
