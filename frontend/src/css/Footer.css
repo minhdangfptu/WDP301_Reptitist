@@ -14,8 +14,8 @@ footer {
 
 .footer-logo {
   margin-bottom: 15px;
-  width: 250px;
-  height: 140px;
+  width: 200px;
+  height: 80px;
   object-fit: contain;
 }
 
@@ -61,7 +61,7 @@ footer {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background-color: var(--white);
+  background-color: var(--primary-color);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -69,7 +69,8 @@ footer {
 }
 
 .social-icon:hover {
-  background-color: var(--primary-color);
+  background-color: #095c35; /* Màu đậm hơn màu var(--primary-color) */
+  cursor: pointer; /* Thêm con trỏ tay cho cảm giác click được */
 }
 
 /* Dark mode styles */

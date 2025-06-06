@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-grid">
           <div className="footer-column">
-            <img src="logo1.png" alt="Logo" className="footer-logo" />
+            <img src="/logo1_conen-01-01.png" alt="Logo" className="footer-logo" />
             <p>Chăm sóc thú cưng bò sát của bạn một cách tốt nhất</p>
             <div className="social-icons">
               <a href="#" className="social-icon">
@@ -48,13 +48,13 @@ const Footer = () => {
             <ul className="footer-links">
               <li>Email: support@reptitist.com</li>
               <li>Phone: +84 123 456 789</li>
-              <li>Địa chỉ: Beta, Đại học FPT, Thạch Hòa, Thạch Thất, Hà Nội</li>
+              <li>Địa chỉ: DELTA, FPTUniversity, Hoa Lac High - Tech Park, Thach That, Ha Noi, Viet Nam</li>
             </ul>
           </div>
         </div>
         
         <div className="footer-bottom">
-          <p>&copy; 2024 Reptitist. All rights reserved.</p>
+          <p>&copy; 2025 Reptitist. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -36,8 +36,9 @@ const Header = () => {
         <nav className="header__nav">
           <Link to="/">
             <img
+            style={{width: '136px', justifyContent: 'center', marginTop: '5px', content: 'center', marginBottom: '0px'}}
               src="/logo1.png"
-              className="header__logo"
+              className="logo"
               alt="Logo"
             />
           </Link>

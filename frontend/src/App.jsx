@@ -24,35 +24,26 @@ import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
 import UserManagement from './pages/UserManagement';
 import ShopLandingPage from './pages/ShopLandingPage';
-import PlanUpgrade from './pages/PlanUpgrade';
-import LibraryCategory from './pages/LibraryCategory';
-import ProductsByCategory from "./pages/ProductsByCategory";
-import AddProduct from "./pages/AddProduct";
-import ProductDetail from "./pages/ProductDetail";
-
-
-// Loading component
-const LoadingSpinner = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh',
-    fontSize: '18px',
-    flexDirection: 'column',
-    gap: '16px'
-  }}>
-    <div className="spinner"></div>
-    <div>Đang tải...</div>
-  </div>
-);
-
+import YourPetDetail from './pages/YourPetDetail';
+import CreateNewPet from './pages/CreateNewPetPage';
+import AIChatPage from './pages/AIChatPage';
+import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Đang tải...
+      </div>
+    );
   }
 
   if (!user) {
@@ -71,7 +62,17 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Đang tải...
+      </div>
+    );
   }
 
   // If user is already logged in and we should redirect
@@ -146,7 +147,47 @@ const AppRoutes = () => {
           <Transaction />
         </ProtectedRoute>
       } />
+      <Route path="/your-pet/detail/:reptileId" element={
+        <ProtectedRoute>
+          < YourPetDetail/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/create" element={
+        <ProtectedRoute>
+          < CreateNewPet/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/ai/:reptileId" element={
+        <ProtectedRoute>
+          < AIChatPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-health-tracking/:reptileId" element={
+        <ProtectedRoute>
+          < CreateTrackingHealthPage/>
+        </ProtectedRoute>
+      } />
       
+      <Route path="/your-pet/detail/:reptileId" element={
+        <ProtectedRoute>
+          < YourPetDetail/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/create" element={
+        <ProtectedRoute>
+          < CreateNewPet/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/ai/:reptileId" element={
+        <ProtectedRoute>
+          < AIChatPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-health-tracking/:reptileId" element={
+        <ProtectedRoute>
+          < CreateTrackingHealthPage/>
+        </ProtectedRoute>
+      } />
       {/* Admin only routes */}
       <Route path="/UserManagement" element={
         <ProtectedRoute requiredRole="admin">
@@ -166,9 +207,7 @@ const App = () => {
       <ThemeProvider>
         <AuthProvider>
           <Router>
-            <div className="app">
-              <AppRoutes />
-            </div>
+            <AppRoutes />
           </Router>
         </AuthProvider>
       </ThemeProvider>
