@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 const menuData = [
   {
     title: "Hướng dẫn chăm sóc",
+    imageUrl: "/prorep3.png",
     submenu: [
       "Khái quát về bò sát",
       "Kỹ thuật nuôi dưỡng",
@@ -14,22 +15,27 @@ const menuData = [
   },
   {
     title: "Bài viết y học",
+    imageUrl: "/prorep3.png",
     submenu: ["Sơ cứu cơ bản", "Thuốc và liều lượng", "Các nghiên cứu mới"],
   },
   {
     title: "Bò sát phổ biến",
+    imageUrl: "/prorep3.png",
     submenu: ["Rồng Úc", "Rắn", "Thằn lằn", "Tắc kè", "Rùa"],
   },
   {
     title: "Bệnh lý thường gặp tại VN",
+    imageUrl: "/prorep3.png",
     submenu: ["Bệnh về da", "Bệnh về hô hấp", "Bệnh về tiêu hóa", "Ký sinh trùng"],
   },
   {
     title: "Cách điều trị",
+    imageUrl: "/prorep3.png",
     submenu: ["Phương pháp tự nhiên", "Dùng thuốc", "Thủ thuật phẫu thuật"],
   },
   {
     title: "Trang bị & Phụ kiện",
+    imageUrl: "/prorep3.png",
     submenu: ["Bể nuôi và lồng", "Hệ thống sưởi và ánh sáng", "Đồ trang trí", "Dụng cụ cho ăn"],
   },
 ];
@@ -100,7 +106,7 @@ const LibraryTopic = () => {
                 <div className="category-card" key={idx}>
                   <div className="card-image">
                     <img
-                      src="/api/placeholder/400/180"
+                      src={item.imageUrl}
                       alt={item.title}
                     />
                   </div>

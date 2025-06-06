@@ -15,25 +15,25 @@ const LibraryCategory = () => {
       id: 1,
       title: "Loài bò sát có vỏ đa dạng hoạt tiết",
       description: "Khám phá thế giới đa dạng của các loài bò sát có vỏ với nhiều hoạt tiết tuyệt đẹp, từ rùa cạn đến rùa biển, rùa vàng và nhiều loài rùa khác. Tìm hiểu về đặc tính và môi trường sống.",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep2.png"
     },
     {
       id: 2,
       title: "Loài bò sát có vỏ đa dạng hoạt tiết",
       description: "Các loài rùa với những đặc tính khác nhau và môi trường sống đa dạng. Tìm hiểu về chế độ ăn, sinh sản và cách chăm sóc rùa đúng cách trong môi trường nuôi nhốt.",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep2.png"
     },
     {
       id: 3, 
       title: "Loài bò sát không vỏ đặc sắc",
       description: "Tìm hiểu về các loài bò sát không vỏ như rắn, thằn lằn, tắc kè và kỳ đà. Khám phá đặc điểm sinh học, tập tính và nhu cầu của chúng để xây dựng môi trường sống phù hợp.",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep2.png"
     },
     {
       id: 4,
       title: "Loài bò sát có vỏ đa dạng hoạt tiết",
       description: "Phân loại giữa các loài rùa nước ngọt, rùa cạn và cách nhận biết. Tìm hiểu về sức khỏe và dinh dưỡng của loài bò sát có vỏ và các bệnh thường gặp trong quá trình nuôi.",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep2.png"
     }
   ];
 

@@ -21,11 +21,11 @@ const ProductDetail = () => {
     sold: 1200,
     stock: 48,
     images: [
-      '/api/placeholder/500/500',
-      '/api/placeholder/500/500',
-      '/api/placeholder/500/500',
-      '/api/placeholder/500/500',
-      '/api/placeholder/500/500'
+      '/product1.png',
+      '/product1.png',
+      '/product1.png',
+      '/product1.png',
+      '/product1.png'
     ],
     variants: [
       { name: 'Kích thước', options: ['60x40x40cm', '80x50x50cm', '100x60x60cm'] },
@@ -64,7 +64,7 @@ const ProductDetail = () => {
       rating: 5,
       date: '2024-03-15',
       comment: 'Sản phẩm rất tốt, chất lượng như mô tả. Đóng gói cẩn thận.',
-      images: ['/api/placeholder/100/100', '/api/placeholder/100/100']
+      images: ['/product1.png', '/product1.png']
     },
     {
       id: 2,
@@ -77,10 +77,14 @@ const ProductDetail = () => {
   ];
 
   const relatedProducts = [
-    { id: 2, name: 'Đèn sưởi bò sát UVB 26W', price: 450000, image: '/api/placeholder/200/200' },
-    { id: 3, name: 'Thức ăn khô cho rồng râu', price: 180000, image: '/api/placeholder/200/200' },
-    { id: 4, name: 'Máy phun sương tự động', price: 680000, image: '/api/placeholder/200/200' },
-    { id: 5, name: 'Bát đựng nước gốm cao cấp', price: 120000, image: '/api/placeholder/200/200' }
+    { id: 2, name: 'Đèn sưởi bò sát UVB 26W', price: 450000, image: '/product1.png' },
+    { id: 3, name: 'Thức ăn khô cho rồng râu', price: 180000, image: '/product1.png' },
+    { id: 4, name: 'Máy phun sương tự động', price: 680000, image: '/product1.png' },
+    { id: 5, name: 'Bát đựng nước gốm cao cấp', price: 120000, image: '/product1.png' },
+    { id: 6, name: 'Đèn sưởi bò sát UVB 26W', price: 450000, image: '/product1.png' },
+    { id: 7, name: 'Thức ăn khô cho rồng râu', price: 180000, image: '/product1.png' },
+    { id: 8, name: 'Máy phun sương tự động', price: 680000, image: '/product1.png' },
+    { id: 9, name: 'Bát đựng nước gốm cao cấp', price: 120000, image: '/product1.png' }
   ];
 
   const handleQuantityChange = (change) => {
@@ -99,83 +103,81 @@ const ProductDetail = () => {
   };
 
   return (
-    <div className="product-detail-page">
-      {/* Header */}
-      <header className="header">
-        <div className="top-header">
-          <div className="top-links">
-            <a href="#" className="top-link">Kênh người bán</a>
-            <a href="#" className="top-link">Trở thành người bán trên Reptisist Shop</a>
-            <a href="#" className="top-link">Kết nối với chúng tôi</a>
-            <div className="social-icons">
-              <a href="#" className="social-icon">
+    <div className="pd-page">
+      {/* Header - Using shop- classes to match CSS */}
+      <header className="pd-header">
+        <div className="pd-top-header">
+          <div className="pd-top-links">
+            <a href="#" className="pd-top-link">Kênh người bán</a>
+            <a href="#" className="pd-top-link">Trở thành người bán trên Reptisist Shop</a>
+            <a href="#" className="pd-top-link">Kết nối với chúng tôi</a>
+            <div className="pd-social-icons">
+              <a href="#" className="pd-social-icon">
                 <Facebook size={16} />
               </a>
             </div>
           </div>
-          <div className="top-actions">
-            <a href="#" className="top-action">
+          <div className="pd-top-actions">
+            <a href="#" className="pd-top-action">
               <HelpCircle size={16} /> Hỗ trợ
             </a>
-            <a href="#" className="top-action">
+            <a href="#" className="pd-top-action">
               <User size={16} /> Tài khoản
             </a>
           </div>
         </div>
         
-        <div className="main-header">
-          <div className="logo-container">
-            <img src="logo.png" alt="Reptisist Shop" className="logo" />
-            <h1 className="shop-name">REPTISIST SHOP</h1>
+        <div className="pd-main-header">
+          <div className="pd-logo-container">
+            <img src="/logo1.png" alt="Reptisist Shop" className="pd-logo" />
+            <h1 className="pd-shop-name">REPTISIST SHOP</h1>
           </div>
           
-          <div className="search-container">
+          <div className="pd-search-container">
             <input 
               type="text" 
               placeholder="Tìm sản phẩm, thương hiệu, hoặc tên shop" 
-              className="search-input"
+              className="pd-search-input"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="search-button">
+            <button className="pd-search-button">
               <Search size={18} />
             </button>
           </div>
           
-          <div className="cart-container">
-            <a href="#" className="cart-icon">
+          <div className="pd-cart-container">
+            <a href="#" className="pd-cart-icon">
               <ShoppingCart size={22} />
             </a>
           </div>
         </div>
         
-        <nav className="main-nav">
-          <ul className="nav-links">
-            <li><a href="#" className="nav-link">Chuồng & phụ kiện chuồng</a></li>
-            <li><a href="#" className="nav-link">Thiết bị & dụng cụ nuôi</a></li>
-            <li><a href="#" className="nav-link">Thức ăn & Dinh dưỡng</a></li>
-            <li><a href="#" className="nav-link">Sản phẩm vệ sinh & chăm sóc sức khỏe</a></li>
+        <nav className="pd-main-nav">
+          <ul className="pd-nav-links">
+            <li><a href="#" className="pd-nav-link">Chuồng & phụ kiện chuồng</a></li>
+            <li><a href="#" className="pd-nav-link">Thiết bị & dụng cụ nuôi</a></li>
+            <li><a href="#" className="pd-nav-link">Thức ăn & Dinh dưỡng</a></li>
+            <li><a href="#" className="pd-nav-link">Sản phẩm vệ sinh & chăm sóc sức khỏe</a></li>
           </ul>
         </nav>
       </header>
 
       {/* Breadcrumb */}
       <div className="product-detail-breadcrumb">
-        <div className="container">
-          <nav className="product-detail-nav">
-            <a href="/">Trang chủ</a>
-            <span>/</span>
-            <a href="/shop">Shop</a>
-            <span>/</span>
-            <a href="/category">Chuồng nuôi</a>
-            <span>/</span>
-            <span>{product.name}</span>
-          </nav>
-        </div>
+        <nav className="product-detail-nav">
+          <a href="/">Trang chủ</a>
+          <span>/</span>
+          <a href="/shop">Shop</a>
+          <span>/</span>
+          <a href="/category">Chuồng nuôi</a>
+          <span>/</span>
+          <span>{product.name}</span>
+        </nav>
       </div>
 
       {/* Product Main */}
-      <div className="container">
+      <div className="pd-container">
         <div className="product-detail-main">
           {/* Product Images */}
           <div className="product-detail-images">
