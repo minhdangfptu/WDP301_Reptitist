@@ -23,7 +23,6 @@ const SignUp3 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Redirect if not verified or no email
   useEffect(() => {
     console.log("SignUp3 - Email:", email, "Verified:", isVerified); // Debug log
     
