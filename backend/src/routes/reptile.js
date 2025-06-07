@@ -1,100 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const Reptile = require('../models/Reptiles');
-const { successResponse } = require('../../utils/APIResponse');
-const UserReptiles = require('../models/User_reptiles');
-const LibraryContents = require('../models/Library_contents');
-const Carts = require('../models/Carts');
-// GET all reptiles
-router.get('/get-all', async (req, res) => {
-  try {
-    const reptiles = await Reptile.find();
-    res.json(successResponse(reptiles));
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 
-router.get('/get-reptile-by-id', async (req, res) => {
-   try {
-    const { reptile_id } = req.query;
-    if (!reptile_id) {
-      return res.status(400).json({ message: 'Missing reptile_id query parameter' });
-    }
-    const reptile = await Reptile.findOne({ reptile_id: reptile_id });
-    if (!reptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
-    }
-    res.json(successResponse(reptile));
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-router.post('/create-reptile', async (req, res) => {
-  try {
-    const lastReptile = await Reptile.findOne().sort({ reptile_id: -1 }).limit(1);
-    const nextId = lastReptile ? lastReptile.reptile_id + 1 : 1;
-    const newReptile = new Reptile({
-      ...req.body,
-      reptile_id: nextId
-    });
+const reptileController = require('../controllers/reptileController');
+const authMiddleware1 = require('../middleware/authMiddlewareModify')
+const roleMiddleware = require('../middleware/roleMiddleware');
 
-    const savedReptile = await newReptile.save();
-    res.json(successResponse(savedReptile, code));
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-router.put('/update-reptile-by-id', async (req, res) => {
-  try {
-    const { reptile_id } = req.query;
+//Api create repltile infomation: Chỉ admin mới có quyền thực hiện api này
+router.post(
+  '/create-reptile',
+  authMiddleware1,
+  roleMiddleware('admin'),         // Kiểm tra quyền admin
+  reptileController.createReptile // Hàm callback cho việc tạo reptile
+);
 
-    if (!reptile_id) {
-      return res.status(400).json({ message: 'Missing reptile_id query parameter' });
-    }
+//Api lấy ra tất cả reptile infomation: Tất cả mọi người đều có quyền thực hiện api này
+router.get(
+  '/get-all-reptile',
+  reptileController.getAllReptiles
+);
 
-    const updateData = req.body;
+//Api cập nhật reptile infomation: Chỉ admin mới có quyền thực hiện api này
+router.put(
+  '/update-reptile',
+authMiddleware1,
+roleMiddleware('admin'),  
+  reptileController.updateReptileById
+);
 
-    const updatedReptile = await Reptile.findOneAndUpdate(
-      { reptile_id: reptile_id },
-      updateData,
-      { new: true }
-    );
+//Api xóa reptile infomation: Chỉ admin mới có quyền thực hiện api này
+router.delete(
+  '/delete-reptile',
+roleMiddleware('admin'),  
+  reptileController.deleteReptileById
+);
 
-    if (!updatedReptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
-    }
+//Api lấy ra reptile infomation theo user đang đăng nhập
+router.get('/my-reptiles', reptileController.getReptilesByUser);
 
-    res.json(successResponse(updatedReptile));
-  } catch (err) {
-    console.error('Error updating reptile:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-router.delete('/delete-reptile-by-id', async (req, res) => {
-  try {
-    const { reptile_id } = req.query;
-
-    if (!reptile_id) {
-      return res.status(400).json({ message: 'Missing reptile_id query parameter' });
-    }
-    const deleted = await Reptile.findOneAndDelete({ reptile_id: reptile_id });
-
-    if (!deleted) {
-      return res.status(404).json({ message: 'Reptile not found' });
-    }
-    await Promise.all([
-      UserReptiles.updateMany({ reptile_id }, { $set: { reptile_id: null } }),
-      LibraryContents.updateMany({ reptile_id }, { $set: { reptile_id: null } }),
-      Carts.updateMany({ reptile_id }, { $set: { reptile_id: null } })
-    ]);
-
-    res.json(successResponse({ deleted_id: reptile_id }));
-  } catch (err) {
-    console.error('Delete error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-});``
+//Api lấy ra reptile infomation theo id: Tất cả mọi người đều có quyền thực hiện api này
+router.get(
+  '/get-reptile-by-id',
+  reptileController.getReptileById
+);
 
 module.exports = router;

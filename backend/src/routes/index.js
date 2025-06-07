@@ -7,6 +7,8 @@ const libraryCategoriesRoute = require('./libraryCategoriesRoute');
 const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
 
+const orderRoute = require('./orderRoute');
+const adminRoute = require('./adminRoute'); // Uncomment if you have admin routes
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
@@ -14,4 +16,7 @@ router.use('/info', reptileRoutes);
 router.use('/library_categories', libraryCategoriesRoute);
 router.use('/library_contents', libraryContentRoute);
 router.use('/', topicCategoryRoutes);
+router.use('/order', orderRoute);
+router.use('/admin', adminRoute);
+
 module.exports= router;
