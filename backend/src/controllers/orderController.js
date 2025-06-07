@@ -95,7 +95,7 @@ exports.getOrderById = async (req, res) => {
 
 exports.updateOrderStatus = async (req, res) => {
   try {
-    const { id, status } = req.params;
+    const { id, status } = req.query;
 
     if (!id || !status) {
       return res.status(400).json({ message: 'Missing id or status parameter' });
@@ -152,10 +152,12 @@ exports.getAllOrdersByShop = async (req, res) => {
 };
 exports.markOrderAsShippedByShop = async (req, res) => {
   try {
-    const { id } = req.params; 
-
+    const { id } = req.query;  
+    if (!id) {
+      return res.status(400).json({ message: 'Missing id query parameter' });
+    }
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid order ID format' });
+      return res.status(400).json({ message: 'Invalid id format' });
     }
 
     const order = await Order.findOne({ _id: id, shop_id: req.user._id });
