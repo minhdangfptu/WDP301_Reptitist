@@ -31,6 +31,9 @@ import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
 import ProductDetail from './pages/ProductDetail';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
+import ProductForm from './pages/ProductForm';
+import ProductManagement from './pages/ProductManagement';
+
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
@@ -173,6 +176,21 @@ const AppRoutes = () => {
       <Route path="/UserManagement" element={
         <ProtectedRoute requiredRole="admin">
           <UserManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/ProductManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products/create" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductForm />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products/edit/:productId" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductForm />
         </ProtectedRoute>
       } />
       
