@@ -160,9 +160,9 @@ export default function TrackingHealth({ petInfo }) {
         {/* Lịch sử ngủ */}
         <Col xs={12} md={6} lg={7}>
           <Card className="h-100 border-0 shadow-sm mb-3">
-            <Card.Header className="bg-white border-0 pb-0">
+            <Card.Header className="bg-white border-0 pb-0 d-flex justify-content-between align-items-center">
               <span className="fw-semibold">Lịch sử giấc ngủ</span>
-              <Badge bg="info" style={{marginLeft: "510px"}}>Ngủ</Badge>
+              <Badge bg="info">Ngủ</Badge>
             </Card.Header>
             <Card.Body>
               <Table size="sm" responsive hover>
@@ -192,7 +192,7 @@ export default function TrackingHealth({ petInfo }) {
       </Row>
       <Row className="g-4 mt-2">
         {/* Lịch sử điều trị */}
-        <Col xs={12} md={6}>
+        <Col xs={12}>
           <Card className="h-100 border-0 shadow-sm mb-3">
             <Card.Header className="bg-white border-0 pb-0">
               <span className="fw-semibold">Lịch sử điều trị</span>
@@ -224,8 +224,10 @@ export default function TrackingHealth({ petInfo }) {
             </Card.Body>
           </Card>
         </Col>
+      </Row>
+      <Row className="g-4 mt-2">
         {/* Lịch sử dinh dưỡng */}
-        <Col xs={12} md={6}>
+        <Col xs={12}>
           <Card className="h-100 border-0 shadow-sm mb-3">
             <Card.Header className="bg-white border-0 pb-0">
               <span className="fw-semibold">Lịch sử dinh dưỡng</span>

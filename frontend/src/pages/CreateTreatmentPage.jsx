@@ -188,18 +188,22 @@ function CreateTreatmentPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = {
-      disease: disease,
-      treatment_date: treatment_date,
-      next_treatment_date: next_treatment_date,
-      doctor_feedback: doctor_feedback,
-      treatment_medicine: treatment_medicine,
-      note: note,
-    };
+
+    // Kiểm tra dữ liệu bắt buộc
+    const hasEmptyRequiredFields = treatmentHistory.some(
+      (record) =>
+        !record.disease || !record.treatment_date || !record.treatment_medicine
+    );
+
+    if (hasEmptyRequiredFields) {
+      toast.error("Vui lòng điền đầy đủ thông tin bắt buộc!");
+      return;
+    }
+
     try {
       await axios.put(
         `http://localhost:8080/reptitist/pet/create-treatment/${reptileId}`,
-        data
+        { treatment_records: treatmentHistory }
       );
       toast.success("Đã lưu dữ liệu điều trị!");
       navigate(-1);
@@ -211,6 +215,7 @@ function CreateTreatmentPage() {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={2000} />
       <Header />
       <Container className="py-4">
         <div className="d-flex justify-content-between align-items-center mb-4">

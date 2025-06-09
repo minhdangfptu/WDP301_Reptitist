@@ -1,6 +1,7 @@
 const Ai_history = require("../models/Ai_history");
 const OpenAI = require("openai");
 const { findReptileById } = require("./userReptileController");
+const Ai_recommendations = require("../models/Ai_recommendations");
 require('dotenv').config();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -174,10 +175,11 @@ async function getBehaviourRecommendation(req, res) {
     - Nhận xét và đề xuất điều chỉnh hành vi
     Trả lời ngắn gọn, súc tích, không quá 400 từ.
     `;
-    // console.log('User input:', userInput);
+
     if (!reptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
+      throw new Error('Reptile not found');
     }
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -197,16 +199,14 @@ async function getBehaviourRecommendation(req, res) {
         },
       ],
       max_tokens: 500
-    })
+    });
 
-    const content = completion.choices[0].message.content
+    const content = completion.choices[0].message.content;
     const parsed = parseReptileAdvice(content);
-    // console.log(parsed)
-    // return parsed; 
-    return res.status(200).json(parsed);
+    return parsed;
   } catch (error) {
     console.error('Error fetching behaviour recommendation:', error.message);
-    throw new Error('Failed to fetch behaviour recommendation');
+    throw error;
   }
 }
 async function getHabitatRecommendation(req, res) {
@@ -534,6 +534,86 @@ async function getSummarizeRecommendation(req, res) {
     return res.status(500).json({ message: 'Failed to fetch health summary', error: error.message });
   }
 }
+const createAIRecommendation = async (req, res) => {
+  const { reptileId } = req.params;
+  const { recommendation_summary, recommendation_detail_habitat, recommendation_detail_behavior, recommendation_detail_treatment, recommendation_detail_nutrition } = req.body;
+
+  try {
+    const reptile = await findReptileById(reptileId);
+    if (!reptile) {
+      return res.status(404).json({ message: 'Reptile not found' });
+    }
+    const aiRecommendation = new Ai_recommendations({
+      user_reptile_id: reptileId,
+      recommendation_summary,
+      recommendation_detail_habitat,
+      recommendation_detail_behavior,
+      recommendation_detail_treatment,
+      recommendation_detail_nutrition
+    });
+    await aiRecommendation.save();
+    return res.status(200).json({ message: 'AI recommendation created successfully', data: aiRecommendation });
+    
+  } catch (error) {
+    console.error('Error creating AI recommendation:', error.message);
+    return res.status(500).json({ message: 'Failed to create AI recommendation', error: error.message });
+  }
+
+}
+
+const getAllRecommendationsAndSave = async (req, res) => {
+  const { reptileId } = req.params;
+
+  try {
+    // Kiểm tra reptile có tồn tại không
+    const reptile = await findReptileById(reptileId);
+    if (!reptile) {
+      return res.status(404).json({ message: 'Reptile not found' });
+    }
+
+    // Gọi 5 API cùng lúc
+    const [
+      behaviourData,
+      habitatData,
+      nutritionData,
+      treatmentData,
+      summaryData
+    ] = await Promise.all([
+      getBehaviourRecommendation({ params: { reptileId } }),
+      getHabitatRecommendation({ params: { reptileId } }),
+      getNutritionRecommendation({ params: { reptileId } }),
+      getTreatmentRecommendation({ params: { reptileId } }),
+      getSummarizeRecommendation({ params: { reptileId } })
+    ]);
+
+    // Chuẩn bị dữ liệu để lưu
+    const recommendationData = {
+      user_reptile_id: reptileId,
+      recommendation_summary: summaryData,
+      recommendation_detail_habitat: habitatData,
+      recommendation_detail_behavior: behaviourData,
+      recommendation_detail_treatment: treatmentData,
+      recommendation_detail_nutrition: nutritionData
+    };
+
+    // Tạo bản ghi mới trong database
+    const newRecommendation = new Ai_recommendations(recommendationData);
+    await newRecommendation.save();
+
+    return res.status(200).json({
+      message: 'All recommendations fetched and saved successfully',
+      data: newRecommendation
+    });
+
+  } catch (error) {
+    console.error('Error in getAllRecommendationsAndSave:', error);
+    return res.status(500).json({
+      message: 'Failed to fetch and save recommendations',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createAiHistory,
   getAllHistoryChat,
@@ -543,5 +623,7 @@ module.exports = {
   getNutritionRecommendation,
   getTreatmentRecommendation,
   getBehaviourRecommendation,
-  getSummarizeRecommendation
+  getSummarizeRecommendation,
+  createAIRecommendation,
+  getAllRecommendationsAndSave
 }

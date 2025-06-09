@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Container, Button } from 'react-bootstrap';
-// import axios from 'axios';
-// import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 // Dummy data mẫu
 const dummyData = [
@@ -14,36 +15,75 @@ const dummyData = [
   }
 ];
 
-// function ImproveSuggestion({ userReptileId: propUserReptileId }) {
-//   const { reptileId } = useParams();
-//   const userReptileId = propUserReptileId || reptileId;
-//   const [data, setData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
-
-//   useEffect(() => {
-//     setLoading(true);
-//     setError(null);
-//     // Nếu có userReptileId thì fetch theo id, không thì fetch tất cả
-//     const url = userReptileId
-//       ? `http://localhost:8080/reptitist/ai-recommendation/history/${userReptileId}`
-//       : `http://localhost:8080/reptitist/ai-recommendation/history`;
-//     axios.get(url)
-//       .then(res => {
-//         setData(res.data);
-//         setLoading(false);
-//       })
-//       .catch(err => {
-//         setError('Không thể tải lịch sử gợi ý cải thiện.');
-//         setLoading(false);
-//       });
-//   }, [userReptileId]);
-
-//   if (loading) return <div className="text-center py-4"><Spinner animation="border" variant="success" /></div>;
-//   if (error) return <Alert variant="danger">{error}</Alert>;
-//   if (!data || data.length === 0) return <Alert variant="info">Chưa có gợi ý cải thiện nào.</Alert>;
-
 function ImproveSuggestion() {
+  const { reptileId } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [recommendations, setRecommendations] = useState({
+    behaviour: null,
+    habitat: null,
+    nutrition: null,
+    treatment: null,
+    summary: null
+  });
+
+  const handleGetRecommendations = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Gọi 5 API cùng lúc
+      const [
+        behaviourRes,
+        habitatRes,
+        nutritionRes,
+        treatmentRes,
+        summaryRes
+      ] = await Promise.all([
+        axios.get(`http://localhost:8080/reptitist/ai/get-behaviour/${reptileId}`),
+        axios.get(`http://localhost:8080/reptitist/ai/get-habitat/${reptileId}`),
+        axios.get(`http://localhost:8080/reptitist/ai/get-nutrition/${reptileId}`),
+        axios.get(`http://localhost:8080/reptitist/ai/get-treatment/${reptileId}`),
+        axios.get(`http://localhost:8080/reptitist/ai/get-summarize/${reptileId}`)
+      ]);
+
+      // Cập nhật state với dữ liệu mới
+      setRecommendations({
+        behaviour: behaviourRes.data,
+        habitat: habitatRes.data,
+        nutrition: nutritionRes.data,
+        treatment: treatmentRes.data,
+        summary: summaryRes.data
+      });
+
+      // Chuẩn bị dữ liệu để lưu vào database
+      const recommendationData = {
+        recommendation_summary: summaryRes.data.data,
+        recommendation_detail_habitat: habitatRes.data.data,
+        recommendation_detail_behavior: behaviourRes.data,
+        recommendation_detail_treatment: treatmentRes.data.data,
+        recommendation_detail_nutrition: nutritionRes.data.data
+      };
+
+      // Lưu vào database
+      await axios.post(
+        `http://localhost:8080/reptitist/ai/create-recommendation/${reptileId}`,
+        recommendationData
+      );
+
+      toast.success("Đã lưu gợi ý cải thiện thành công!");
+    } catch (err) {
+      setError('Không thể tải hoặc lưu dữ liệu gợi ý. Vui lòng thử lại sau.');
+      console.error('Error fetching or saving recommendations:', err);
+      toast.error("Có lỗi xảy ra khi lưu gợi ý cải thiện!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleGetRecommendations();
+  }, [reptileId]);
+
   const data = dummyData;
   return (
     <Container fluid>
@@ -63,7 +103,7 @@ function ImproveSuggestion() {
             backgroundColor: "white",
             transition: "all 0.2s"
           }}
-          // onClick={() => ...}
+          onClick={handleGetRecommendations}
           onMouseOver={e => {
             e.target.style.backgroundColor = "#006934";
             e.target.style.color = "#fff";

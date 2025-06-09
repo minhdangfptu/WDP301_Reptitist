@@ -150,20 +150,51 @@ const updateUserReptile = async (req, res) => {
         res.status(500).json({ message: 'Failed to update reptile!', error: error.message });
     }
 };
-const updateTreatmentHistory = async (req, res) => {
+const createTreatmentHistory = async (req, res) => {
     const { reptileId } = req.params;
-    const  treatment_history  = req.body;
+    const { treatment_records } = req.body;
+
     try {
-        const reptile = await UserReptile.findById(reptileId);
-        if (!reptile) {
+        // Kiểm tra xem treatment_records có phải là mảng không
+        if (!Array.isArray(treatment_records)) {
+            return res.status(400).json({
+                message: 'Invalid data format. Expected an array of treatment records.'
+            });
+        }
+
+        // Kiểm tra các trường bắt buộc cho mỗi bản ghi
+        for (const record of treatment_records) {
+            if (!record.disease || !record.treatment_date || !record.treatment_medicine) {
+                return res.status(400).json({
+                    message: 'Missing required fields in one or more records: disease, treatment_date, or treatment_medicine'
+                });
+            }
+        }
+
+        const updatedReptile = await UserReptile.findByIdAndUpdate(
+            reptileId,
+            {
+                $push: {
+                    treatment_history: { $each: treatment_records }
+                }
+            },
+            { new: true }
+        );
+
+        if (!updatedReptile) {
             return res.status(404).json({ message: 'Reptile not found' });
         }
-        reptile.treatment_history.push(treatment_history);
-        await reptile.save();
-        return res.status(200).json({ message: 'Treatment history updated successfully!', reptile });
+
+        return res.status(200).json({
+            message: 'Treatment history updated successfully',
+            data: updatedReptile
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to update treatment history!', error: error.message });
+        console.error('Error updating treatment history:', error.message);
+        return res.status(500).json({
+            message: 'Failed to update treatment history',
+            error: error.message
+        });
     }
 };
 
@@ -227,6 +258,6 @@ module.exports = {
     deleteUserReptile,
     updateUserReptile,
     findReptileById,
-    updateTreatmentHistory,
+    createTreatmentHistory,
     createHealthHistory
 };
