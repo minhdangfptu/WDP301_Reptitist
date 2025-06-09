@@ -29,6 +29,7 @@ import YourPetDetail from './pages/YourPetDetail';
 import CreateNewPet from './pages/CreateNewPetPage';
 import AIChatPage from './pages/AIChatPage';
 import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
+import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -163,6 +164,11 @@ const AppRoutes = () => {
       <Route path="/create-health-tracking/:reptileId" element={
         <ProtectedRoute>
           < CreateTrackingHealthPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-treatment/:reptileId" element={
+        <ProtectedRoute>
+          < CreateTreatmentPage/>
         </ProtectedRoute>
       } />
       

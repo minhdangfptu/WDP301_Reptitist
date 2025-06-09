@@ -40,7 +40,7 @@ export default function YourPetDetail() {
 
   const handleToggleSection = (index) => {
     setOpenSections((prev) => ({
-      ...prev,
+      ...prev, 
       [index]: !prev[index],
     }));
   };

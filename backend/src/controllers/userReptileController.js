@@ -150,58 +150,56 @@ const updateUserReptile = async (req, res) => {
         res.status(500).json({ message: 'Failed to update reptile!', error: error.message });
     }
 };
-const createTreatmentHistory = async (req, res) => {
+const updateTreatmentHistory = async (req, res) => {
+    const { reptileId } = req.params;
+    const  treatment_history  = req.body;
     try {
-        const { reptileId } = req.params;
-        const treatment = req.body;
-
-        if (!treatment) {
-            return res.status(400).json({ message: 'Treatment details are required' });
-        }
-
         const reptile = await UserReptile.findById(reptileId);
         if (!reptile) {
             return res.status(404).json({ message: 'Reptile not found' });
         }
-
-        reptile.treatment_history.push(treatment);
+        reptile.treatment_history.push(treatment_history);
         await reptile.save();
-
-        res.status(200).json({ message: 'Treatment history updated successfully!', reptile });
+        return res.status(200).json({ message: 'Treatment history updated successfully!', reptile });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to update treatment history!', error: error.message });
     }
-}
+};
 
-const createWeight_Sleep_NutritionHistory = async (req, res) => {
-    const { reptileId } = req.params;  // ID của bò sát cần cập nhật
+
+
+  
+
+
+const createHealthHistory = async (req, res) => {
+    const { reptileId } = req.params;  
     const {
         current_weight,
         weight_history,
         sleeping_status,
         sleeping_history,
-
+        treatment_history,
         nutrition_history
     } = req.body;
 
     try {
-        // Tìm bò sát theo reptileId và cập nhật dữ liệu
+        
         const updatedReptile = await UserReptile.findByIdAndUpdate(
             reptileId,  // Tìm bò sát theo ID
             {
                 $push: {
-                    weight_history: { $each: weight_history },  // Thêm lịch sử cân nặng mới vào mảng
-                    sleeping_status: { $each: sleeping_status },  // Thêm trạng thái ngủ vào mảng
-                    sleeping_history: { $each: sleeping_history },  // Thêm lịch sử giấc ngủ
-                    nutrition_history: { $each: nutrition_history }  // Thêm lịch sử dinh dưỡng
+                    weight_history: { $each: weight_history },  
+                    sleeping_status: { $each: sleeping_status },  
+                    sleeping_history: { $each: sleeping_history },  
+                    treatment_history: { $each: treatment_history },
+                    nutrition_history: { $each: nutrition_history }  
                 },
-                $set: { current_weight }  // Cập nhật cân nặng hiện tại
+                $set: { current_weight } 
             },
-            { new: true }  // Trả về đối tượng đã được cập nhật
+            { new: true }  
         );
 
-        // Nếu không tìm thấy bò sát với ID này
         if (!updatedReptile) {
             return res.status(404).json({ message: 'Reptile not found' });
         }
@@ -229,6 +227,6 @@ module.exports = {
     deleteUserReptile,
     updateUserReptile,
     findReptileById,
-    createTreatmentHistory,
-    createWeight_Sleep_NutritionHistory
+    updateTreatmentHistory,
+    createHealthHistory
 };

@@ -269,6 +269,7 @@ function ReptileHealthTrackingPage() {
   const [nutritionHistory, setNutritionHistory] = useState([
     { created_at: "", food_items: "", food_quantity: "", is_fasting: false, feces_condition: "" },
   ])
+  const [noTreatment, setNoTreatment] = useState(false);
 
   // Handle adding/removing rows for tables
   const handleAddRow = (setter, row) => setter((prev) => [...prev, row])
@@ -283,7 +284,7 @@ function ReptileHealthTrackingPage() {
       weight_history: weightHistory,
       sleeping_status: sleepingStatus,
       sleeping_history: sleepingHistory,
-      treatment_history: treatmentHistory,
+      treatment_history: noTreatment ? [] : treatmentHistory,
       nutrition_history: nutritionHistory,
     }
     // TODO: Send data to backend
@@ -344,106 +345,6 @@ function ReptileHealthTrackingPage() {
                   />
                 </Form.Group>
               </div>
-            </Card.Body>
-          </Card>
-
-          {/* Weight History */}
-          <Card style={styles.sectionCard}>
-            <div style={styles.sectionHeader}>
-              <h3 style={styles.sectionTitle}>
-                <ScaleIcon color="#9333ea" />
-                Lịch sử cân nặng
-              </h3>
-            </div>
-            <Card.Body style={styles.sectionContent}>
-              <div style={styles.tableContainer}>
-                <Table responsive className="mb-0">
-                  <thead style={styles.tableHeader}>
-                    <tr>
-                      <th style={styles.tableHeaderCell}>Ngày</th>
-                      <th style={styles.tableHeaderCell}>Cân nặng (g)</th>
-                      <th style={{ ...styles.tableHeaderCell, width: "60px" }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {weightHistory.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        style={styles.tableRow}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(249, 250, 251, 0.5)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      >
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            type="date"
-                            value={row.date}
-                            onChange={(e) =>
-                              setWeightHistory((h) => h.map((r, i) => (i === idx ? { ...r, date: e.target.value } : r)))
-                            }
-                            style={styles.formInput}
-                            required
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            type="number"
-                            value={row.weight}
-                            onChange={(e) =>
-                              setWeightHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, weight: e.target.value } : r)),
-                              )
-                            }
-                            placeholder="Cân nặng..."
-                            style={styles.formInput}
-                            required
-                            min={0}
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveRow(setWeightHistory, idx)}
-                            disabled={weightHistory.length === 1}
-                            style={{
-                              ...styles.removeButton,
-                              opacity: weightHistory.length === 1 ? 0.5 : 1,
-                              cursor: weightHistory.length === 1 ? "not-allowed" : "pointer",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (weightHistory.length > 1) {
-                                e.target.style.backgroundColor = "#fef2f2"
-                                e.target.style.borderColor = "#fecaca"
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = "transparent"
-                              e.target.style.borderColor = "transparent"
-                            }}
-                          >
-                            <MinusIcon />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleAddRow(setWeightHistory, { date: "", weight: "" })}
-                style={styles.addButton}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = "#f0fdf4"
-                  e.target.style.borderColor = "#16a34a"
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = "#ffffff"
-                  e.target.style.borderColor = "#d1d5db"
-                }}
-              >
-                <PlusIcon />
-                Thêm dòng
-              </button>
             </Card.Body>
           </Card>
 
@@ -552,7 +453,7 @@ function ReptileHealthTrackingPage() {
             <div style={styles.sectionHeader}>
               <h3 style={styles.sectionTitle}>
                 <MoonIcon color="#475569" />
-                Lịch sử ngủ
+                Dữ liệu giấc ngủ
               </h3>
             </div>
             <Card.Body style={styles.sectionContent}>
@@ -654,161 +555,174 @@ function ReptileHealthTrackingPage() {
             <div style={styles.sectionHeader}>
               <h3 style={styles.sectionTitle}>
                 <StethoscopeIcon color="#dc2626" />
-                Lịch sử điều trị
+                Thông tin điều trị
               </h3>
             </div>
             <Card.Body style={styles.sectionContent}>
-              <div style={{ ...styles.tableContainer, ...styles.wideTable }}>
-                <Table responsive className="mb-0">
-                  <thead style={styles.tableHeader}>
-                    <tr>
-                      <th style={{ ...styles.tableHeaderCell, minWidth: "120px" }}>Bệnh</th>
-                      <th style={{ ...styles.tableHeaderCell, minWidth: "150px" }}>Ngày điều trị</th>
-                      <th style={{ ...styles.tableHeaderCell, minWidth: "150px" }}>Ngày tái khám</th>
-                      <th style={{ ...styles.tableHeaderCell, minWidth: "120px" }}>Thuốc</th>
-                      <th style={{ ...styles.tableHeaderCell, minWidth: "150px" }}>Phản hồi bác sĩ</th>
-                      <th style={{ ...styles.tableHeaderCell, minWidth: "120px" }}>Ghi chú</th>
-                      <th style={{ ...styles.tableHeaderCell, width: "60px" }}></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {treatmentHistory.map((row, idx) => (
-                      <tr
-                        key={idx}
-                        style={styles.tableRow}
-                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(249, 250, 251, 0.5)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-                      >
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            value={row.disease}
-                            onChange={(e) =>
-                              setTreatmentHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, disease: e.target.value } : r)),
-                              )
-                            }
-                            placeholder="Tên bệnh..."
-                            style={styles.formInput}
-                            required
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            type="date"
-                            value={row.treatment_date}
-                            onChange={(e) =>
-                              setTreatmentHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, treatment_date: e.target.value } : r)),
-                              )
-                            }
-                            style={styles.formInput}
-                            required
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            type="date"
-                            value={row.next_treatment_date}
-                            onChange={(e) =>
-                              setTreatmentHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, next_treatment_date: e.target.value } : r)),
-                              )
-                            }
-                            style={styles.formInput}
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            value={row.treatment_medicine}
-                            onChange={(e) =>
-                              setTreatmentHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, treatment_medicine: e.target.value } : r)),
-                              )
-                            }
-                            placeholder="Thuốc..."
-                            style={styles.formInput}
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            as="textarea"
-                            value={row.doctor_feedback}
-                            onChange={(e) =>
-                              setTreatmentHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, doctor_feedback: e.target.value } : r)),
-                              )
-                            }
-                            placeholder="Phản hồi..."
-                            style={{ ...styles.formInput, ...styles.textarea }}
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <Form.Control
-                            as="textarea"
-                            value={row.note}
-                            onChange={(e) =>
-                              setTreatmentHistory((h) =>
-                                h.map((r, i) => (i === idx ? { ...r, note: e.target.value } : r)),
-                              )
-                            }
-                            placeholder="Ghi chú..."
-                            style={{ ...styles.formInput, ...styles.textarea }}
-                          />
-                        </td>
-                        <td style={styles.tableCell}>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveRow(setTreatmentHistory, idx)}
-                            disabled={treatmentHistory.length === 1}
-                            style={{
-                              ...styles.removeButton,
-                              opacity: treatmentHistory.length === 1 ? 0.5 : 1,
-                              cursor: treatmentHistory.length === 1 ? "not-allowed" : "pointer",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (treatmentHistory.length > 1) {
-                                e.target.style.backgroundColor = "#fef2f2"
-                                e.target.style.borderColor = "#fecaca"
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.backgroundColor = "transparent"
-                              e.target.style.borderColor = "transparent"
-                            }}
+              {/* Nếu chưa từng điều trị thì ẩn bảng */}
+              {!noTreatment && (
+                <>
+                  <div style={{ ...styles.tableContainer, ...styles.wideTable }}>
+                    <Table responsive className="mb-0">
+                      <thead style={styles.tableHeader}>
+                        <tr>
+                          <th style={{ ...styles.tableHeaderCell, minWidth: "120px" }}>Bệnh</th>
+                          <th style={{ ...styles.tableHeaderCell, minWidth: "150px" }}>Ngày điều trị</th>
+                          <th style={{ ...styles.tableHeaderCell, minWidth: "150px" }}>Ngày tái khám</th>
+                          <th style={{ ...styles.tableHeaderCell, minWidth: "120px" }}>Thuốc</th>
+                          <th style={{ ...styles.tableHeaderCell, minWidth: "150px" }}>Phản hồi bác sĩ</th>
+                          <th style={{ ...styles.tableHeaderCell, minWidth: "120px" }}>Ghi chú</th>
+                          <th style={{ ...styles.tableHeaderCell, width: "60px" }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {treatmentHistory.map((row, idx) => (
+                          <tr
+                            key={idx}
+                            style={styles.tableRow}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(249, 250, 251, 0.5)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                           >
-                            <MinusIcon />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  handleAddRow(setTreatmentHistory, {
+                            <td style={styles.tableCell}>
+                              <Form.Control
+                                value={row.disease}
+                                onChange={(e) =>
+                                  setTreatmentHistory((h) =>
+                                    h.map((r, i) => (i === idx ? { ...r, disease: e.target.value } : r)),
+                                  )
+                                }
+                                placeholder="Tên bệnh..."
+                                style={styles.formInput}
+                                required
+                              />
+                            </td>
+                            <td style={styles.tableCell}>
+                              <Form.Control
+                                type="date"
+                                value={row.treatment_date}
+                                onChange={(e) =>
+                                  setTreatmentHistory((h) =>
+                                    h.map((r, i) => (i === idx ? { ...r, treatment_date: e.target.value } : r)),
+                                  )
+                                }
+                                style={styles.formInput}
+                                required
+                              />
+                            </td>
+                            <td style={styles.tableCell}>
+                              <Form.Control
+                                type="date"
+                                value={row.next_treatment_date}
+                                onChange={(e) =>
+                                  setTreatmentHistory((h) =>
+                                    h.map((r, i) => (i === idx ? { ...r, next_treatment_date: e.target.value } : r)),
+                                  )
+                                }
+                                style={styles.formInput}
+                              />
+                            </td>
+                            <td style={styles.tableCell}>
+                              <Form.Control
+                                value={row.treatment_medicine}
+                                onChange={(e) =>
+                                  setTreatmentHistory((h) =>
+                                    h.map((r, i) => (i === idx ? { ...r, treatment_medicine: e.target.value } : r)),
+                                  )
+                                }
+                                placeholder="Thuốc..."
+                                style={styles.formInput}
+                              />
+                            </td>
+                            <td style={styles.tableCell}>
+                              <Form.Control
+                                as="textarea"
+                                value={row.doctor_feedback}
+                                onChange={(e) =>
+                                  setTreatmentHistory((h) =>
+                                    h.map((r, i) => (i === idx ? { ...r, doctor_feedback: e.target.value } : r)),
+                                  )
+                                }
+                                placeholder="Phản hồi..."
+                                style={{ ...styles.formInput, ...styles.textarea }}
+                              />
+                            </td>
+                            <td style={styles.tableCell}>
+                              <Form.Control
+                                as="textarea"
+                                value={row.note}
+                                onChange={(e) =>
+                                  setTreatmentHistory((h) =>
+                                    h.map((r, i) => (i === idx ? { ...r, note: e.target.value } : r)),
+                                  )
+                                }
+                                placeholder="Ghi chú..."
+                                style={{ ...styles.formInput, ...styles.textarea }}
+                              />
+                            </td>
+                            <td style={styles.tableCell}>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveRow(setTreatmentHistory, idx)}
+                                disabled={treatmentHistory.length === 1}
+                                style={{
+                                  ...styles.removeButton,
+                                  opacity: treatmentHistory.length === 1 ? 0.5 : 1,
+                                  cursor: treatmentHistory.length === 1 ? "not-allowed" : "pointer",
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (treatmentHistory.length > 1) {
+                                    e.target.style.backgroundColor = "#fef2f2"
+                                    e.target.style.borderColor = "#fecaca"
+                                  }
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.backgroundColor = "transparent"
+                                  e.target.style.borderColor = "transparent"
+                                }}
+                              >
+                                <MinusIcon />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                </>
+              )}
+              <div className="d-flex align-items-center gap-3 mt-3">
+                <button
+                  type="button"
+                  onClick={() => handleAddRow(setTreatmentHistory, {
                     disease: "",
                     treatment_date: "",
                     next_treatment_date: "",
                     doctor_feedback: "",
                     treatment_medicine: "",
                     note: "",
-                  })
-                }
-                style={styles.addButton}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = "#f0fdf4"
-                  e.target.style.borderColor = "#16a34a"
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = "#ffffff"
-                  e.target.style.borderColor = "#d1d5db"
-                }}
-              >
-                <PlusIcon />
-                Thêm dòng
-              </button>
+                  })}
+                  style={styles.addButton}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = "#f0fdf4"
+                    e.target.style.borderColor = "#16a34a"
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = "#ffffff"
+                    e.target.style.borderColor = "#d1d5db"
+                  }}
+                  disabled={noTreatment}
+                >
+                  <PlusIcon />
+                  Thêm dòng
+                </button>
+                <Form.Check
+                  type="checkbox"
+                  label="Chưa từng điều trị"
+                  checked={noTreatment}
+                  onChange={e => setNoTreatment(e.target.checked)}
+                  style={{ fontWeight: 500, color: "#dc2626", marginLeft: "8px" }}
+                />
+              </div>
             </Card.Body>
           </Card>
 
@@ -817,7 +731,7 @@ function ReptileHealthTrackingPage() {
             <div style={styles.sectionHeader}>
               <h3 style={styles.sectionTitle}>
                 <AppleIcon color="#ea580c" />
-                Lịch sử dinh dưỡng
+                Thông tin dinh dưỡng
               </h3>
             </div>
             <Card.Body style={styles.sectionContent}>
