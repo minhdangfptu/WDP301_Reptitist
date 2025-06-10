@@ -33,7 +33,7 @@ import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
 import ProductForm from './pages/ProductForm';
 import ProductManagement from './pages/ProductManagement';
-
+import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';import PlanUpgrade from './pages/PlanUpgrade';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
@@ -55,6 +55,7 @@ const LoadingSpinner = () => (
     <div>Đang tải...</div>
   </div>
 );
+
 
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
@@ -229,6 +230,9 @@ const AppRoutes = () => {
           <ProductForm />
         </ProtectedRoute>
       } />
+      
+      {/* Auth callback route */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
       
       {/* Catch all route - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

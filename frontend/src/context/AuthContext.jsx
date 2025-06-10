@@ -192,6 +192,19 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      debugLog('Initiating Google login...');
+      window.location.href = `${API_BASE_URL}/auth/google`;
+    } catch (error) {
+      debugLog('Google login failed:', error);
+      return {
+        success: false,
+        message: 'Đăng nhập Google thất bại'
+      };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -202,7 +215,8 @@ export const AuthProvider = ({ children }) => {
     refreshUserData,
     hasRole,
     hasAnyRole,
-    checkAuthStatus
+    checkAuthStatus,
+    loginWithGoogle
   };
 
   debugLog('AuthProvider rendering with user:', user ? user.username : 'null');
