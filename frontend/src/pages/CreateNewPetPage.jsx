@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 import { Form, Button, Container, Card, Row, Col, InputGroup, } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";  
@@ -10,6 +10,10 @@ import Footer from "../components/Footer";
 const CreateNewPet = () => {
   const { user } = useAuth();
   const user_id = user ? user.id : null;
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
+  
   const [petData, setPetData] = useState({
     user_id: user_id,
     reptile_name: "",
@@ -29,7 +33,73 @@ const CreateNewPet = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState({ success: false, message: "" });
-  const navigate = useNavigate();  // Khởi tạo useNavigate từ React Router
+  const navigate = useNavigate();
+
+  // Helper function to convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // Validate image file
+  const validateImageFile = (file) => {
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      return { isValid: false, error: 'Vui lòng chọn file ảnh hợp lệ (JPEG, PNG, GIF, WebP)' };
+    }
+
+    // Check file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      return { isValid: false, error: 'Kích thước ảnh không được vượt quá 5MB' };
+    }
+
+    return { isValid: true };
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      toast.error(validation.error);
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Convert file to base64
+      const base64Data = await fileToBase64(file);
+      
+      // Update form data with base64 image
+      setPetData(prev => ({
+        ...prev,
+        user_reptile_imageurl: base64Data
+      }));
+      
+      // Set preview image
+      setPreviewImage(base64Data);
+      
+      toast.success('Ảnh đã được tải lên thành công!');
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error('Có lỗi xảy ra khi tải lên ảnh');
+    } finally {
+      setIsUploading(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,13 +142,14 @@ const CreateNewPet = () => {
         treatment_history: [],
         nutrition_history: [],
       });
+      setPreviewImage('');
     } catch (error) {
       console.error("Error creating pet", error);
       setSubmitResult({
         success: false,
         message: "Có lỗi xảy ra khi tạo thú cưng. Vui lòng thử lại.",
       });
-      toast.error("Có lỗi xảy ra, vui lòng thử lại.");  // Hiển thị thông báo lỗi
+      toast.error("Có lỗi xảy ra, vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -186,21 +257,37 @@ const CreateNewPet = () => {
 
                     <Form.Group className="mb-3" controlId="user_reptile_imageurl">
                       <Form.Label className="fw-medium">Hình ảnh</Form.Label>
-                      <InputGroup>
-                        <InputGroup.Text className="bg-white">
-                          <i className="bi bi-image"></i>
-                        </InputGroup.Text>
-                        <Form.Control
-                          type="text"
-                          placeholder="Nhập URL hình ảnh"
-                          name="user_reptile_imageurl"
-                          value={petData.user_reptile_imageurl}
-                          onChange={handleChange}
-                        />
-                      </InputGroup>
-                      <Form.Text className="text-muted">
-                        Nhập URL hình ảnh hoặc để trống để sử dụng hình ảnh mặc định
-                      </Form.Text>
+                      <div className="mb-3">
+                        {previewImage && (
+                          <div className="text-center mb-3">
+                            <img 
+                              src={previewImage} 
+                              alt="Preview" 
+                              style={{ 
+                                maxWidth: '100%', 
+                                maxHeight: '200px', 
+                                objectFit: 'cover',
+                                borderRadius: '8px'
+                              }} 
+                            />
+                          </div>
+                        )}
+                        <InputGroup>
+                          <InputGroup.Text className="bg-white">
+                            <i className="bi bi-image"></i>
+                          </InputGroup.Text>
+                          <Form.Control
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            ref={fileInputRef}
+                            disabled={isUploading}
+                          />
+                        </InputGroup>
+                        <Form.Text className="text-muted">
+                          Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB.
+                        </Form.Text>
+                      </div>
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="age">

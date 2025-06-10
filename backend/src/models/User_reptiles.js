@@ -49,7 +49,26 @@ const userReptileSchema = new mongoose.Schema({
   reptile_species: { type: String, required: true },
   name: { type: String },
   description: { type: String },
-  user_reptile_imageurl: { type: String, default: '' },
+  user_reptile_imageurl: { 
+    type: String, 
+    default: '',
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Allow empty values
+        
+        // If it's a base64 image string
+        if (v.startsWith('data:image/')) {
+          // Basic validation for base64 image format
+          const base64Regex = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/;
+          return base64Regex.test(v);
+        }
+        
+        // If it's a regular file path/URL, allow it
+        return typeof v === 'string';
+      },
+      message: 'Invalid image format. Must be a valid base64 image or file path.'
+    }
+  },
   age: { type: Number },
   follow_since: { type: Date },
   current_weight: { type: Number },
