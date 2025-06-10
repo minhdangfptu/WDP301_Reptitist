@@ -2,15 +2,12 @@ const express= require('express');
 const router =express.Router();
 const authRoute=require('./authRoute.js')
 const shopRoute=require('./shopRoute.js')
-const adminRoute=require('./adminRouter.js')
 const userReptileRoutes = require('./userReptileRoute.js');
 const reptileInfoRoute = require('./reptileInfoRoute.js');
 const aiRoute = require('./aiRoute.js');
 const libraryCategoriesRoute = require('./libraryCategoriesRoute');
 const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
-const orderRoute = require('./orderRoute');
-
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRoute'); // Uncomment if you have admin routes
 
@@ -25,9 +22,6 @@ router.use('/order', orderRoute);
 router.use('/admin', adminRoute);
 router.use('/ai', aiRoute);
 router.use('/reptitist', topicCategoryRoutes);
-router.use('/admin', adminRoute); 
-
-router.use('/order', orderRoute);
 
 
 module.exports= router;
