@@ -126,9 +126,12 @@ export default function YourPetDetail() {
           className="bg-white shadow d-none d-lg-flex flex-column"
           style={{
             width: "15rem",
-            height: "100%",
+            height: "100%", // Chiều cao cố định
             position: "sticky",
             top: 0,
+            left: 0,
+            zIndex: 10,
+            
           }}
         >
           {/* Sidebar Header */}

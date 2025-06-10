@@ -152,6 +152,10 @@ async function getBehaviourRecommendation(req, res) {
 
   try {
     const reptile = await findReptileById(reptileId);
+    if (!reptile) {
+      throw new Error('Reptile not found');
+    }
+
     const userInput = `
     Tôi cần bạn đóng vai một chuyên gia về hành vi và chăm sóc bò sát. Hãy phân tích và đưa ra gợi ý về thời gian ngủ nghỉ và ăn uống hợp lý cho con bò sát dưới đây, dựa trên các yếu tố sau:
 
@@ -176,10 +180,6 @@ async function getBehaviourRecommendation(req, res) {
     Trả lời ngắn gọn, súc tích, không quá 400 từ.
     `;
 
-    if (!reptile) {
-      throw new Error('Reptile not found');
-    }
-
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -202,18 +202,22 @@ async function getBehaviourRecommendation(req, res) {
     });
 
     const content = completion.choices[0].message.content;
-    const parsed = parseReptileAdvice(content);
-    return parsed;
+    return content;
   } catch (error) {
     console.error('Error fetching behaviour recommendation:', error.message);
     throw error;
   }
 }
+
 async function getHabitatRecommendation(req, res) {
   const { reptileId } = req.params;
 
   try {
     const reptile = await findReptileById(reptileId);
+    if (!reptile) {
+      throw new Error('Reptile not found');
+    }
+
     const userInput = `
     Tôi cần bạn đóng vai một chuyên gia về hành vi và chăm sóc bò sát. Hãy phân tích và đưa ra gợi ý về môi trường sống phù hợp cho con bò sát dưới đây, dựa trên các yếu tố sau:
 
@@ -230,10 +234,7 @@ async function getHabitatRecommendation(req, res) {
     - Gợi ý về môi trường sống (nhiệt độ, độ ẩm, ánh sáng, không gian sống)
     - Đề xuất điều chỉnh nếu môi trường không phù hợp
     `;
-    // console.log('User input:', userInput);
-    if (!reptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
-    }
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -253,27 +254,20 @@ async function getHabitatRecommendation(req, res) {
       max_tokens: 500,
     });
 
-    const content = completion.choices[0].message.content
-    const parsed = parseReptileAdvice(content);
-    // console.log(parsed)
-    return res.status(200).json({
-      message: 'Habitat recommendation fetched successfully',
-      data: parsed
-    })
-    // return parsed;
+    const content = completion.choices[0].message.content;
+    return content;
   } catch (error) {
-    console.error('Error fetching behaviour recommendation:', error.message);
-    throw new Error('Failed to fetch behaviour recommendation');
+    console.error('Error fetching habitat recommendation:', error.message);
+    throw error;
   }
 }
+
 async function getNutritionRecommendation(req, res) {
   const { reptileId } = req.params;
   try {
-
     const reptile = await findReptileById(reptileId);
-
     if (!reptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
+      throw new Error('Reptile not found');
     }
 
     const userInput = `
@@ -308,7 +302,7 @@ async function getNutritionRecommendation(req, res) {
     - Nhận xét và đề xuất điều chỉnh chế độ ăn nếu có dấu hiệu bất thường (giảm cân, thừa cân)
     Trả lời ngắn gọn, súc tích, không quá 400 từ.
     `;
-    console.log('User input:', userInput);
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -323,36 +317,29 @@ async function getNutritionRecommendation(req, res) {
         },
         {
           role: 'user',
-          content: userInput, // Gửi yêu cầu dinh dưỡng
+          content: userInput,
         },
       ],
       max_tokens: 500,
     });
 
-    // Lấy kết quả trả về từ OpenAI
     const content = completion.choices[0].message.content;
-    const parsed = parseReptileAdvice(content);
-    // console.log(parsed)
-    // return parsed;
-    return res.status(200).json({
-      message: 'Nutrition recommendation fetched successfully',
-      data: parsed,
-    });
+    return content;
   } catch (error) {
-    // Xử lý lỗi nếu có
     console.error('Error fetching nutrition recommendation:', error.message);
-    return res.status(500).json({ message: 'Failed to fetch nutrition recommendation', error: error.message });
+    throw error;
   }
 }
+
 async function getTreatmentRecommendation(req, res) {
   const { reptileId } = req.params;
 
   try {
     const reptile = await findReptileById(reptileId);
-
     if (!reptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
+      throw new Error('Reptile not found');
     }
+
     let treatmentHistoryData = '';
     if (reptile.treatment_history && reptile.treatment_history.length > 0) {
       treatmentHistoryData = `
@@ -367,7 +354,6 @@ async function getTreatmentRecommendation(req, res) {
       `;
     }
 
-    // Cấu trúc nội dung yêu cầu OpenAI, bao gồm thông tin cân nặng, lịch sử ngủ, lịch sử dinh dưỡng, và lịch sử điều trị (nếu có)
     const userInput = `
     Tôi cần bạn đóng vai một chuyên gia về dinh dưỡng và chăm sóc bò sát. Hãy phân tích tình trạng sức khỏe và chế độ dinh dưỡng hợp lý cho con bò sát dưới đây, dựa trên các yếu tố sau:
 
@@ -394,7 +380,7 @@ async function getTreatmentRecommendation(req, res) {
       is_fasting: item.is_fasting,
       feces_condition: item.feces_condition
     })))}
-    ${treatmentHistoryData}  <!-- Chỉ bao gồm phần này nếu có dữ liệu lịch sử điều trị -->
+    ${treatmentHistoryData}
 
     Yêu cầu:
     1. Đánh giá tình trạng sức khỏe hiện tại của bò sát dựa trên các dấu hiệu bất thường (ví dụ: giảm cân, thừa cân, tình trạng nhịn ăn, phân không bình thường).
@@ -409,7 +395,6 @@ async function getTreatmentRecommendation(req, res) {
     Trả lời ngắn gọn, súc tích, không quá 400 từ.
     `;
 
-    // Gọi API OpenAI để nhận gợi ý từ mô hình
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -422,25 +407,18 @@ async function getTreatmentRecommendation(req, res) {
         },
         {
           role: 'user',
-          content: userInput, // Gửi yêu cầu dinh dưỡng và điều trị
+          content: userInput,
         },
       ],
       max_tokens: 500,
     });
 
-    // Lấy kết quả trả về từ OpenAI
     const content = completion.choices[0].message.content;
-    const parsed = parseReptileAdvice(content);
-
-    // Trả về kết quả cho người dùng dưới dạng JSON
-    return res.status(200).json({
-      message: 'Treatment and nutrition recommendation fetched successfully',
-      data: parsed,
-    });
+    // const parsed = parseReptileAdvice(content);
+    return content;
   } catch (error) {
-    // Xử lý lỗi nếu có
     console.error('Error fetching treatment recommendation:', error.message);
-    return res.status(500).json({ message: 'Failed to fetch treatment recommendation', error: error.message });
+    throw error;
   }
 }
 
@@ -449,9 +427,8 @@ async function getSummarizeRecommendation(req, res) {
 
   try {
     const reptile = await findReptileById(reptileId);
-
     if (!reptile) {
-      return res.status(404).json({ message: 'Reptile not found' });
+      throw new Error('Reptile not found');
     }
 
     let treatmentHistoryData = '';
@@ -468,7 +445,6 @@ async function getSummarizeRecommendation(req, res) {
       `;
     }
 
-    // Cấu trúc nội dung yêu cầu OpenAI để đánh giá sức khỏe ngắn gọn
     const userInput = `
     Tôi cần bạn đóng vai một chuyên gia về dinh dưỡng và chăm sóc bò sát. Hãy tổng hợp và đưa ra đánh giá ngắn gọn về tình trạng sức khỏe của bò sát dưới đây, dựa trên các yếu tố sau:
 
@@ -495,7 +471,7 @@ async function getSummarizeRecommendation(req, res) {
       is_fasting: item.is_fasting,
       feces_condition: item.feces_condition
     })))}
-    ${treatmentHistoryData}  <!-- Chỉ bao gồm phần này nếu có dữ liệu lịch sử điều trị -->
+    ${treatmentHistoryData}
 
     Yêu cầu:
     1. Tổng hợp và đưa ra đánh giá ngắn gọn về tình trạng sức khỏe hiện tại của bò sát (giảm cân, thừa cân, tình trạng nhịn ăn, phân không bình thường).
@@ -505,7 +481,6 @@ async function getSummarizeRecommendation(req, res) {
     Trả lời ngắn gọn, súc tích, không quá 30 từ.
     `;
 
-    // Gọi API OpenAI để nhận gợi ý từ mô hình
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -522,16 +497,10 @@ async function getSummarizeRecommendation(req, res) {
     });
 
     const content = completion.choices[0].message.content;
-    console.log('Content:', content);
-
-    // Trả về kết quả cho người dùng dưới dạng JSON
-    return res.status(200).json({
-      message: 'Health summary fetched successfully',
-      data: content,
-    });
+    return content;
   } catch (error) {
     console.error('Error fetching health summary:', error.message);
-    return res.status(500).json({ message: 'Failed to fetch health summary', error: error.message });
+    throw error;
   }
 }
 const createAIRecommendation = async (req, res) => {
@@ -589,11 +558,11 @@ const getAllRecommendationsAndSave = async (req, res) => {
     // Chuẩn bị dữ liệu để lưu
     const recommendationData = {
       user_reptile_id: reptileId,
-      recommendation_summary: summaryData,
-      recommendation_detail_habitat: habitatData,
-      recommendation_detail_behavior: behaviourData,
-      recommendation_detail_treatment: treatmentData,
-      recommendation_detail_nutrition: nutritionData
+      recommendation_summary: JSON.stringify(summaryData),
+      recommendation_detail_habitat: JSON.stringify(habitatData),
+      recommendation_detail_behavior: JSON.stringify(behaviourData),
+      recommendation_detail_treatment: JSON.stringify(treatmentData),
+      recommendation_detail_nutrition: JSON.stringify(nutritionData)
     };
 
     // Tạo bản ghi mới trong database
@@ -614,6 +583,21 @@ const getAllRecommendationsAndSave = async (req, res) => {
   }
 };
 
+const getAllRecommendations = async (req, res) => {
+  const { reptileId } = req.params;
+  try {
+    const reptile = await findReptileById(reptileId);
+    if (!reptile) {
+      return res.status(404).json({ message: 'Reptile not found' });
+    }
+    const recommendations = await Ai_recommendations.find({ user_reptile_id: reptileId });
+    return res.status(200).json({ message: 'Recommendations fetched successfully', data: recommendations });
+  } catch (error) {
+    console.error('Error in getAllRecommendations:', error);
+    return res.status(500).json({ message: 'Failed to fetch recommendations', error: error.message });
+  }
+}
+
 module.exports = {
   createAiHistory,
   getAllHistoryChat,
@@ -625,5 +609,6 @@ module.exports = {
   getBehaviourRecommendation,
   getSummarizeRecommendation,
   createAIRecommendation,
-  getAllRecommendationsAndSave
+  getAllRecommendationsAndSave,
+  getAllRecommendations
 }
