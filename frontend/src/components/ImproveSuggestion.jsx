@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { useState, useEffect } from "react";
 import { Card, Button, Spinner, Container } from "react-bootstrap";
 import axios from "axios";
@@ -74,7 +75,10 @@ const renderSection = (title, value, color) => {
       );
     }
     displayValue = parsed;
-  } catch (e) {}
+  } catch (e) {
+    // Nếu không parse được, giữ nguyên giá trị ban đầu
+    console.warn("Không thể parse giá trị:", value);
+  }
 
   const lines = displayValue
     .split("\n")
@@ -276,7 +280,8 @@ function ImproveSuggestion() {
           </Card>
         ))
       )}
-    </div>
+    </Container>
+    
   );
 }
 

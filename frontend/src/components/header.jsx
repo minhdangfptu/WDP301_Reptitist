@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/Header.css";
 import "../css/common.css";
-import "../css/common.css";
 
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -32,13 +31,12 @@ const Header = () => {
   };
 
   return (
-    <header style={{position: 'static', width: '100%', zIndex: '1000'}} className="header">
+    <header style={{ position: 'static', width: '100%', zIndex: '1000' }} className="header">
       <div className="container">
-        <nav className="header__nav">
         <nav className="header__nav">
           <Link to="/">
             <img
-            style={{width: '135px',height: 'auto',  justifyContent: 'center', content: 'center', marginBottom: '0px', marginTop: '0px'}}
+              style={{ width: '135px', height: 'auto', justifyContent: 'center', marginBottom: '0px', marginTop: '0px' }}
               src="/logo1.png"
               className="header__logo"
               alt="Logo"
@@ -55,9 +53,7 @@ const Header = () => {
 
           <div
             className="header__account-menu"
-            className="header__account-menu"
             ref={accountRef}
-            onClick={() => setShowAccountMenu(!showAccountMenu)}
             onClick={() => setShowAccountMenu(!showAccountMenu)}
           >
             <div className="header__account-menu-text">
@@ -66,24 +62,11 @@ const Header = () => {
                 ▼
               </span>
             </div>
-            <div className="header__account-menu-text">
-              <span>{user ? (user.fullname || user.username) : 'Tài khoản'}</span>
-              <span className={`header__caret ${showAccountMenu ? 'header__caret--up' : ''}`}>
-                ▼
-              </span>
-            </div>
-            
+
             {showAccountMenu && (
-              <div className="header__dropdown">
               <div className="header__dropdown">
                 {!user ? (
                   <>
-                    <Link to="/Login" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                      Đăng nhập
-                    </Link>
-                    <Link to="/SignUp" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                      Đăng ký
-                    </Link>
                     <Link to="/Login" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                       Đăng nhập
                     </Link>
@@ -108,32 +91,11 @@ const Header = () => {
                     <Link to="/Transaction" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                       Giao dịch
                     </Link>
-                    
-                    <div className="header__dropdown-header">
-                      Xin chào, {user.fullname || user.username}!
-                    </div>
-                    <Link to="/Profile" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                      Hồ sơ
-                    </Link>
-                    <Link to="/Security" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                      Bảo mật
-                    </Link>
-                    <Link to="/Settings" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                      Cài đặt
-                    </Link>
-                    <Link to="/Transaction" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                      Giao dịch
-                    </Link>
-                    
                     {hasRole('admin') && (
                       <Link to="/UserManagement" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                         Quản lý người dùng
                       </Link>
-                      <Link to="/UserManagement" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                        Quản lý người dùng
-                      </Link>
                     )}
-                    
                     {hasAnyRole(['shop', 'admin']) && (
                       <>
                         <Link to="/ShopDashboard" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
@@ -144,8 +106,7 @@ const Header = () => {
                         </Link>
                       </>
                     )}
-                    
-                    <div 
+                    <div
                       className="header__dropdown-logout"
                       onClick={() => {
                         handleLogout();

@@ -112,7 +112,7 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 
   return children;
 };
-}
+
 
 const AppRoutes = () => {
   return (

@@ -407,6 +407,7 @@ const PetBasicInfo = ({ petInfo }) => {
         </Col>
       </Row>
     </Container>
+    </>
   );
 };
 
