@@ -1,9 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import authService from '../services/authService';
 
 const AuthContext = createContext(null);
-
-const API_BASE_URL = 'http://localhost:8080/reptitist';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -17,6 +15,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     debugLog('AuthProvider mounted, checking authentication...');
     checkAuthStatus();
+
+    // Listen for logout events from axios interceptor
+    const handleLogout = () => {
+      debugLog('Received logout event from axios interceptor');
+      setUser(null);
+    };
+
+    window.addEventListener('auth:logout', handleLogout);
+
+    return () => {
+      window.removeEventListener('auth:logout', handleLogout);
+    };
   }, []);
 
   const checkAuthStatus = async () => {
@@ -33,25 +43,19 @@ export const AuthProvider = ({ children }) => {
       debugLog('Token found, verifying with server...');
       
       // Verify token and get user data
-      const response = await axios.get(`${API_BASE_URL}/auth/profile`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const userData = await authService.verifyToken();
       
-      debugLog('Profile fetched successfully:', response.data);
-      setUser(response.data);
+      debugLog('Token verification successful:', userData);
+      setUser(userData);
       
       // Update localStorage with fresh user data
-      localStorage.setItem('user', JSON.stringify(response.data));
+      localStorage.setItem('user', JSON.stringify(userData));
       
     } catch (error) {
-      debugLog('Auth verification failed:', error.response?.data || error.message);
+      debugLog('Auth verification failed:', error.message);
       
       // Clear invalid auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      authService.clearTokens();
       setUser(null);
     } finally {
       setLoading(false);
@@ -62,31 +66,24 @@ export const AuthProvider = ({ children }) => {
     try {
       debugLog('Login attempt for username:', username);
       
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-        username,
-        password
-      });
+      const result = await authService.login(username, password);
       
-      const { access_token, refresh_token, user: userData } = response.data;
-      
-      debugLog('Login successful:', userData);
-      
-      // Store tokens and user data
-      localStorage.setItem('token', access_token);
-      localStorage.setItem('refreshToken', refresh_token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Update state immediately
-      setUser(userData);
-      
-      debugLog('User state updated in context');
-      
-      return { success: true };
+      if (result.success) {
+        debugLog('Login successful:', result.user);
+        // Ensure we have complete user data
+        const userData = await authService.verifyToken();
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+        return { success: true };
+      } else {
+        debugLog('Login failed:', result.message);
+        return { success: false, message: result.message };
+      }
     } catch (error) {
-      debugLog('Login failed:', error.response?.data || error.message);
+      debugLog('Login error:', error.message);
       return {
         success: false,
-        message: error.response?.data?.message || 'Đăng nhập thất bại'
+        message: error.message || 'Đăng nhập thất bại'
       };
     }
   };
@@ -95,20 +92,15 @@ export const AuthProvider = ({ children }) => {
     try {
       debugLog('Registration attempt for:', userData.email);
       
-      const response = await axios.post(`${API_BASE_URL}/auth/signup`, {
-        username: userData.username,
-        email: userData.email,
-        password: userData.password
-      });
+      const result = await authService.register(userData);
       
-      debugLog('Registration successful:', response.data);
-      
-      return { success: true, message: response.data.message };
+      debugLog('Registration result:', result.success ? 'success' : result.message);
+      return result;
     } catch (error) {
-      debugLog('Registration failed:', error.response?.data || error.message);
+      debugLog('Registration error:', error.message);
       return {
         success: false,
-        message: error.response?.data?.message || 'Đăng ký thất bại'
+        message: error.message || 'Đăng ký thất bại'
       };
     }
   };
@@ -117,34 +109,65 @@ export const AuthProvider = ({ children }) => {
     try {
       debugLog('Logout attempt...');
       
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        await axios.post(`${API_BASE_URL}/auth/logout`, {
-          refresh_token: refreshToken
-        });
-      }
+      await authService.logout();
       
       debugLog('Logout successful');
     } catch (error) {
       debugLog('Logout error:', error.message);
     } finally {
       // Always clear local data regardless of server response
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
       setUser(null);
       debugLog('User state cleared');
     }
   };
 
+  // Fixed updateUser function
   const updateUser = (updatedUserData) => {
     debugLog('Updating user data:', updatedUserData);
     
-    const newUserData = { ...user, ...updatedUserData };
-    setUser(newUserData);
-    localStorage.setItem('user', JSON.stringify(newUserData));
-    
-    debugLog('User data updated successfully');
+    try {
+      // Merge new data with existing user data
+      const newUserData = { 
+        ...user, 
+        ...updatedUserData,
+        // Ensure we don't lose important fields
+        id: user?.id || updatedUserData?.id,
+        username: user?.username || updatedUserData?.username,
+        email: user?.email || updatedUserData?.email,
+        role: user?.role || updatedUserData?.role
+      };
+      
+      // Update state
+      setUser(newUserData);
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(newUserData));
+      
+      debugLog('User data updated successfully:', newUserData);
+      
+      return { success: true, user: newUserData };
+    } catch (error) {
+      debugLog('Error updating user data:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  // Function to refresh user data from server
+  const refreshUserData = async () => {
+    try {
+      debugLog('Refreshing user data from server...');
+      
+      const userData = await authService.verifyToken();
+      
+      debugLog('User data refreshed successfully:', userData);
+      setUser(userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return { success: true, user: userData };
+    } catch (error) {
+      debugLog('Error refreshing user data:', error.message);
+      return { success: false, error: error.message };
+    }
   };
 
   // Check if user has required role
@@ -176,9 +199,10 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
+    refreshUserData,
     hasRole,
     hasAnyRole,
-    checkAuthStatus // Expose for manual refresh
+    checkAuthStatus
   };
 
   debugLog('AuthProvider rendering with user:', user ? user.username : 'null');

@@ -7,13 +7,12 @@ import { store } from './app/store';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-
+import LibraryContentCreate from './pages/LibraryCategoryCreate';
 // Import components
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
-import Library from './pages/Library';
-import LibraryDetail from './pages/LibraryDetail';
-import LibraryDetail2 from './pages/LibraryDetail2';
+import LibraryTopic from './pages/LibraryTopic';
+import LibraryContent from './pages/LibraryContent';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SignUp2 from './pages/SignUp2';
@@ -23,12 +22,18 @@ import Settings from './pages/Settings';
 import Security from './pages/Security';
 import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
-import UserList from './pages/UserList';
+import UserManagement from './pages/UserManagement';
 import ShopLandingPage from './pages/ShopLandingPage';
 import YourPetDetail from './pages/YourPetDetail';
 import CreateNewPet from './pages/CreateNewPetPage';
 import AIChatPage from './pages/AIChatPage';
 import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
+import ProductDetail from './pages/ProductDetail';
+import PlanUpgrade from './pages/PlanUpgrade';
+import LibraryCategory from './pages/LibraryCategory';
+import ProductForm from './pages/ProductForm';
+import ProductManagement from './pages/ProductManagement';
+
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';
 // Protected Route component
@@ -44,13 +49,13 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
         height: '100vh',
         fontSize: '18px'
       }}>
-        <img src="/loading.gif" alt="loading" />
+        Đang tải...
       </div>
     );
   }
 
   if (!user) {
-    return <Navigate to="/Login" replace />;
+    return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
@@ -61,7 +66,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 // Public Route component (redirect to home if already logged in)
-const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -73,13 +78,13 @@ const PublicRoute = ({ children }) => {
         height: '100vh',
         fontSize: '18px'
       }}>
-       <img src="/loading.gif" alt="loading" />
+        Đang tải...
       </div>
     );
   }
 
-  // If user is already logged in, redirect to home
-  if (user) {
+  // If user is already logged in and we should redirect
+  if (user && redirectIfAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
@@ -89,14 +94,13 @@ const PublicRoute = ({ children }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public routes */}
+      {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
-      <Route path="/Library" element={<Library />} />
-      <Route path="/LibraryDetail" element={<LibraryDetail />} />
-      <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} />
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+      <Route path="/ProductDetail" element={<ProductDetail />} />
+      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
       {/* Auth routes - redirect if already logged in */}
       <Route path="/Login" element={
@@ -131,6 +135,9 @@ const AppRoutes = () => {
           <Security />
         </ProtectedRoute>
       } />
+       <Route path="/LibraryTopic" element={<LibraryTopic />} />
+       <Route path="/LibraryCategory" element={<LibraryCategory />} />
+       <Route path="/LibraryContent/:id" element={<LibraryContent />} />
       <Route path="/Settings" element={
         <ProtectedRoute>
           <Settings />
@@ -172,11 +179,25 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      
       {/* Admin only routes */}
-      <Route path="/UserList" element={
+      <Route path="/UserManagement" element={
         <ProtectedRoute requiredRole="admin">
-          <UserList />
+          <UserManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/ProductManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products/create" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductForm />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products/edit/:productId" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductForm />
         </ProtectedRoute>
       } />
       

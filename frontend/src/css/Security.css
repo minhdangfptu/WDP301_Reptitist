@@ -37,21 +37,46 @@
 .security-field label {
   display: block;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .security-field p {
   color: #1f2937;
   margin: 0;
   font-size: 16px;
-  background-color: #f3f4f6;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  transition: border-color 0.2s ease;
-  min-height: 20px;
+  background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.security-field p::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.05), transparent);
+  transition: left 0.5s ease;
+}
+
+.security-field:hover p::before {
+  left: 100%;
+}
+
+.security-field:hover p {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #f0fdf4, #f3f4f6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
 .security-field p:hover {
@@ -69,22 +94,41 @@
 
 /* Main password change button */
 .change-password-button {
-  background-color: #10b981;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
   padding: 12px 32px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 200px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.change-password-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.change-password-button:hover::before {
+  left: 100%;
 }
 
 .change-password-button:hover:not(:disabled) {
-  background-color: #059669;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
 .change-password-button:active {
@@ -111,27 +155,38 @@
 .verification-email-field label {
   display: block;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .verification-email-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   font-size: 16px;
-  background-color: #f9fafb;
+  background: linear-gradient(135deg, #f9fafb, #f3f4f6);
   color: #6b7280;
   cursor: not-allowed;
+  transition: all 0.3s ease;
 }
 
 .verification-email-success {
   font-size: 12px;
   color: #059669;
-  margin-top: 4px;
-  font-weight: 500;
+  margin-top: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.verification-email-success::before {
+  content: '✓';
+  font-weight: bold;
 }
 
 /* Code verification field */
@@ -142,31 +197,34 @@
 .verification-code-field label {
   display: block;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .verification-code-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   font-size: 16px;
   background-color: #ffffff;
-  transition: border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .verification-code-input:focus {
   outline: none;
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
 }
 
 .verification-code-help {
   font-size: 12px;
   color: #6b7280;
-  margin-top: 4px;
+  margin-top: 8px;
   line-height: 1.4;
 }
 
@@ -181,17 +239,37 @@
 
 .verification-button {
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 120px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.verification-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.verification-button:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .verification-button:hover:not(:disabled) {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .verification-button:active {
@@ -206,35 +284,35 @@
 
 /* Primary verification button (default) */
 .verification-button:not(.secondary):not(.danger) {
-  background-color: #10b981;
+  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
 }
 
 .verification-button:not(.secondary):not(.danger):hover:not(:disabled) {
-  background-color: #059669;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
 /* Secondary verification button */
 .verification-button.secondary {
-  background-color: #6b7280;
+  background: linear-gradient(135deg, #6b7280, #4b5563);
   color: white;
 }
 
 .verification-button.secondary:hover:not(:disabled) {
-  background-color: #4b5563;
-  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+  background: linear-gradient(135deg, #4b5563, #374151);
+  box-shadow: 0 8px 25px rgba(107, 114, 128, 0.4);
 }
 
 /* Danger verification button */
 .verification-button.danger {
-  background-color: #ef4444;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
 }
 
 .verification-button.danger:hover:not(:disabled) {
-  background-color: #dc2626;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
 }
 
 /* Password field */
@@ -245,9 +323,11 @@
 .password-field label {
   display: block;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .password-input-wrapper {
@@ -256,27 +336,30 @@
 
 .password-input {
   width: 100%;
-  padding: 12px 16px;
+  padding: 16px 20px;
   padding-right: 50px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
   font-size: 16px;
-  transition: border-color 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff, #f9fafb);
 }
 
 .password-input:focus {
   outline: none;
   border-color: #10b981;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  transform: translateY(-1px);
 }
 
 .password-input.error {
   border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
 
 .password-toggle {
   position: absolute;
-  right: 12px;
+  right: 15px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -284,13 +367,14 @@
   cursor: pointer;
   color: #6b7280;
   font-size: 18px;
-  padding: 4px;
-  border-radius: 4px;
-  transition: color 0.2s ease;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
 .password-toggle:hover:not(:disabled) {
   color: #374151;
+  background-color: rgba(16, 185, 129, 0.1);
 }
 
 .password-toggle:disabled {
@@ -302,39 +386,69 @@
 .error-message {
   color: #ef4444;
   font-size: 12px;
-  margin-top: 4px;
-  font-weight: 500;
+  margin-top: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.error-message::before {
+  content: '⚠️';
+  font-size: 14px;
 }
 
 .submit-error {
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
+  background: linear-gradient(135deg, #fef2f2, #fee2e2);
+  border: 2px solid #fecaca;
   color: #dc2626;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border-radius: 12px;
   margin: 16px 0;
   font-size: 14px;
   text-align: center;
+  font-weight: 500;
 }
 
 /* Success message */
 .success-message {
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 2px solid #bbf7d0;
   color: #059669;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border-radius: 12px;
   margin: 16px 0;
   font-size: 14px;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.success-message::before {
+  content: '✅';
+  font-size: 16px;
 }
 
 /* Security info section */
 .security-info-section {
   margin-top: 40px;
-  padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  padding-top: 32px;
+  border-top: 2px solid #e5e7eb;
+  position: relative;
+}
+
+.security-info-section::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 2px;
 }
 
 /* Mobile responsiveness */
@@ -394,7 +508,7 @@
 
 .dark-mode .security-field p {
   color: var(--text-primary);
-  background-color: var(--input-bg);
+  background: linear-gradient(135deg, var(--input-bg), var(--bg-primary));
   border-color: var(--input-border);
 }
 
@@ -409,7 +523,7 @@
 .dark-mode .verification-email-input,
 .dark-mode .verification-code-input,
 .dark-mode .password-input {
-  background-color: var(--input-bg);
+  background: linear-gradient(135deg, var(--input-bg), var(--bg-primary));
   border-color: var(--input-border);
   color: var(--text-primary);
 }
@@ -433,17 +547,191 @@
 }
 
 .dark-mode .submit-error {
-  background-color: #2d1a1a;
+  background: linear-gradient(135deg, #2d1a1a, #3d1f1f);
   border-color: #5c2626;
   color: #f87171;
 }
 
 .dark-mode .success-message {
-  background-color: #1a2e1f;
+  background: linear-gradient(135deg, #1a2e1f, #1f3426);
   border-color: #2d5a3d;
   color: #34d399;
 }
 
 .dark-mode .security-info-section {
   border-top: 1px solid var(--border-color);
+}
+
+/* Security page specific styles */
+.security-button {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.security-button:hover {
+  background-color: #4338ca;
+}
+
+.security-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.verification-section {
+  width: 100%;
+}
+
+.verification-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.verification-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.verification-button {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.verification-button {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.verification-button.secondary {
+  background-color: #6b7280;
+  color: white;
+}
+
+.verification-button:hover {
+  opacity: 0.9;
+}
+
+.verification-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.password-form {
+  width: 100%;
+}
+
+.password-input-group {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.password-input-group input {
+  width: 100%;
+  padding: 12px 16px;
+  padding-right: 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.password-input-group input.error {
+  border-color: #ef4444;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.password-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.password-submit,
+.password-cancel {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.password-submit {
+  background-color: #4f46e5;
+  color: white;
+}
+
+.password-cancel {
+  background-color: #6b7280;
+  color: white;
+}
+
+.password-submit:hover,
+.password-cancel:hover {
+  opacity: 0.9;
+}
+
+.password-submit:disabled,
+.password-cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.success-message {
+  padding: 12px 16px;
+  background-color: #10b981;
+  color: white;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+
+/* Inherit styles from Profile.css */
+.profile-layout,
+.profile-container,
+.welcome-header,
+.profile-section,
+.profile-header,
+.profile-user-info,
+.profile-avatar,
+.profile-user-details,
+.profile-badge-container,
+.profile-badge-text,
+.upgrade-button,
+.profile-grid,
+.profile-column,
+.profile-field {
+  /* These styles are inherited from Profile.css */
 }

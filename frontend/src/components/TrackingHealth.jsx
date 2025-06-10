@@ -13,6 +13,7 @@ function formatDate(dateString) {
 
 export default function TrackingHealth({ petInfo }) {
   const navigate = useNavigate();
+  
   if (!petInfo) {
     return (
       <div className="text-center py-5">
@@ -70,8 +71,8 @@ export default function TrackingHealth({ petInfo }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center">
-        <h2 className="text-center fw-bold mb-4" style={{ marginBottom: 0 }}>THEO DÕI SỨC KHỎE</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2 className="fw-bold mb-0" style={{ fontSize: '2rem' }}>THEO DÕI SỨC KHỎE</h2>
         <div className="d-flex gap-2">
           <Button
             variant="outline-primary"
@@ -126,6 +127,7 @@ export default function TrackingHealth({ petInfo }) {
           </Button>
         </div>
       </div>
+      
       <Row className="g-4">
         {/* Biểu đồ cân nặng */}
         <Col xs={12} md={6} lg={5}>
@@ -190,6 +192,7 @@ export default function TrackingHealth({ petInfo }) {
           </Card>
         </Col>
       </Row>
+      
       <Row className="g-4 mt-2">
         {/* Lịch sử điều trị */}
         <Col xs={12}>
@@ -225,6 +228,7 @@ export default function TrackingHealth({ petInfo }) {
           </Card>
         </Col>
       </Row>
+      
       <Row className="g-4 mt-2">
         {/* Lịch sử dinh dưỡng */}
         <Col xs={12}>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Container, Button, Spinner } from 'react-bootstrap';
+import { Card, Button, Spinner } from 'react-bootstrap';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { toast } from 'react-toastify'  ;
+import { toast } from 'react-toastify';
 
 // Hàm format ngày giờ
 const formatDate = (dateString) => {
@@ -152,24 +152,22 @@ function ImproveSuggestion() {
 
   if (loading) {
     return (
-      <Container fluid className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
         <img src={'/loading.gif'} alt="Loading" />
-      </Container>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Container fluid>
-        <div className="alert alert-danger" role="alert">
-          {error}
-        </div>
-      </Container>
+      <div className="alert alert-danger" role="alert">
+        {error}
+      </div>
     );
   }
 
   return (
-    <Container fluid>
+    <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2 className="fw-bold mb-0" style={{ fontSize: '2rem' }}>
           LỊCH SỬ GỢI Ý CẢI THIỆN
@@ -188,7 +186,6 @@ function ImproveSuggestion() {
             size="sm"
             style={{
               borderRadius: "50px",
-              
               fontSize: "13px",
               marginLeft: "8px",
               color: "#006934",
@@ -234,7 +231,7 @@ function ImproveSuggestion() {
           </Card>
         ))
       )}
-    </Container>
+    </div>
   );
 }
 

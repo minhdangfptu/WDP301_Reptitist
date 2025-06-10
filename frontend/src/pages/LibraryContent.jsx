@@ -6,7 +6,7 @@ import SellProduct from "../components/SellProduct";
 import { bestsellingProducts } from "../data/productData";
 import "../css/LibraryDetail2.css";
 
-const LibraryDetail2 = () => {
+const LibraryContent = () => {
   const { categoryId } = useParams();
   const [mainImage, setMainImage] = useState("/Gecko1.png");
 
@@ -30,25 +30,25 @@ const LibraryDetail2 = () => {
       id: 1,
       title: "Loài bò sát có vỏ đa dạng hoạt tiết",
       description: "Khám phá thế giới đa dạng của các loài bò sát có vỏ với nhiều hoạt tiết tuyệt đẹp, từ rùa cạn đến rùa biển, rùa vàng và nhiều loài rùa khác...",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep1.png"
     },
     {
       id: 2,
       title: "Loài bò sát có vỏ đa dạng hoạt tiết",
       description: "Các loài rùa với những đặc tính khác nhau và môi trường sống đa dạng. Tìm hiểu về chế độ ăn, sinh sản và cách chăm sóc rùa đúng cách...",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep1.png"
     },
     {
       id: 3, 
       title: "Loài bò sát không vỏ đặc sắc",
       description: "Tìm hiểu về các loài bò sát không vỏ như rắn, thằn lằn, tắc kè và kỳ đà. Khám phá đặc điểm sinh học, tập tính và nhu cầu của chúng...",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep1.png"
     },
     {
       id: 4,
       title: "Loài bò sát có vỏ đa dạng hoạt tiết",
       description: "Phân loại giữa các loài rùa nước ngọt, rùa cạn và cách nhận biết. Tìm hiểu về sức khỏe và dinh dưỡng của loài bò sát có vỏ và các bệnh thường gặp...",
-      imageUrl: "/api/placeholder/250/150"
+      imageUrl: "/prorep1.png"
     }
   ];
 
@@ -76,7 +76,7 @@ const LibraryDetail2 = () => {
       <div className="container">
         {/* Breadcrumb */}
         <div className="breadcrumb">
-          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/Library">Thư viện kiến thức</a> &gt; <a href="/LibraryDetail">Bò sát phổ biến ở Việt Nam</a> &gt; <span>Thằn lằn da báo</span>
+          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/LibraryTopic">Thư viện kiến thức</a> &gt; <a href="/LibraryCategory">Bò sát phổ biến ở Việt Nam</a> &gt; <span>Thằn lằn da báo</span>
         </div>
         
         <div className="content-wrapper">
@@ -200,4 +200,4 @@ const LibraryDetail2 = () => {
   );
 };
 
-export default LibraryDetail2;
+export default LibraryContent;
