@@ -104,6 +104,24 @@ const getAllHistoryChat = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 }
+
+const getAIChatHistoryById = async (req, res) => {
+  try {
+    const { historyId } = req.params;
+    if (!historyId) {
+      return res.status(400).json({ message: 'Missing historyId' });
+    }
+
+    const history = await Ai_history.findById({
+      _id: historyId
+    });
+    return res.status(200).json(history);
+  } catch (error) {
+    console.error('Error fetching AI history:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 function parseReptileAdvice(data) {
   const sections = data.split(/\*\*(.*?)\*\*/g); // chia theo tiêu đề
   const result = {};
@@ -610,5 +628,6 @@ module.exports = {
   getSummarizeRecommendation,
   createAIRecommendation,
   getAllRecommendationsAndSave,
-  getAllRecommendations
+  getAllRecommendations,
+  getAIChatHistoryById
 }

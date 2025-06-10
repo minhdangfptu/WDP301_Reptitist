@@ -232,6 +232,39 @@ const AIChatPage = ({ onClose }) => {
     return <span style={{ whiteSpace: "pre-line", fontSize: "14px" }}>{response}</span>;
   };
 
+  // Thêm hàm xử lý click vào lịch sử chat
+  const handleHistoryClick = async (historyId) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://localhost:8080/reptitist/ai/get-history/${historyId}`);
+      if (response.data) {
+        setChatHistory([response.data]); // Cập nhật chatHistory với dữ liệu mới
+      }
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+      setError("Không thể tải lịch sử chat.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Thêm hàm format date an toàn
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return ''; // Kiểm tra date hợp lệ
+      return date.toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '';
+    }
+  };
+
   return (
     <>
       {/* <Header /> */}
@@ -252,7 +285,7 @@ const AIChatPage = ({ onClose }) => {
               style={{
                 padding: "15px 15px 0",
                 backgroundColor: "white",
-                borderRadius: "15px 0 0 0",
+                borderRadius: "15px",
               }}
             >
               <div className="d-flex justify-content-between align-items-center mb-3">
@@ -324,7 +357,7 @@ const AIChatPage = ({ onClose }) => {
                         activeTab === "chat" ? "#28a745" : "transparent",
                     }}
                   >
-                    Giao tiếp
+                    Tất cả
                   </Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
@@ -369,7 +402,7 @@ const AIChatPage = ({ onClose }) => {
                         activeTab === "all" ? "#28a745" : "transparent",
                     }}
                   >
-                    Tất cả
+                    Giao tiếp
                   </Nav.Link>
                 </Nav.Item>
               </Nav>
@@ -833,33 +866,39 @@ const AIChatPage = ({ onClose }) => {
 
                   {/* Map qua dữ liệu chatHistory, chỉ lấy tối đa 5 mục */}
                   <ListGroup variant="flush" style={{ fontSize: "12px" }}>
-                    {chatDataBaseHistory.slice(0, 5).map((chat, index) =>
-                      chat.ai_input && chat.ai_input.length > 0 ? ( // Kiểm tra nếu ai_input không rỗng
-                        <ListGroup.Item
-                          key={index}
-                          action
-                          className="border-bottom py-2 px-0"
-                          style={{ backgroundColor: "transparent" }}
-                        >
-                          <div className="d-flex justify-content-between align-items-center">
-                            <div
-                              className="text-truncate"
-                              style={{ maxWidth: "80%" }}
-                            >
-                              {/* Hiển thị phần tử đầu tiên trong ai_input */}
-                              {chat.ai_input[0]}
+                    {chatDataBaseHistory
+                      .sort((a, b) => {
+                        const dateA = new Date(a.updated_at || a.created_at);
+                        const dateB = new Date(b.updated_at || b.created_at);
+                        return dateB - dateA;
+                      })
+                      .slice(0, 5)
+                      .map((chat, index) =>
+                        chat.ai_input && chat.ai_input.length > 0 ? (
+                          <ListGroup.Item
+                            key={index}
+                            action
+                            className="border-bottom py-2 px-0"
+                            style={{ backgroundColor: "transparent" }}
+                            onClick={() => handleHistoryClick(chat._id)}
+                          >
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div
+                                className="text-truncate"
+                                style={{ maxWidth: "80%" }}
+                              >
+                                {chat.ai_input[0]}
+                              </div>
+                              <small
+                                className="text-muted"
+                                style={{ fontSize: "10px" }}
+                              >
+                                {formatDate(chat.updated_at || chat.created_at)}
+                              </small>
                             </div>
-                            <small
-                              className="text-muted"
-                              style={{ fontSize: "10px" }}
-                            >
-                              {new Date(chat.created_at).toLocaleDateString()}{" "}
-                              {/* Hiển thị ngày tháng */}
-                            </small>
-                          </div>
-                        </ListGroup.Item>
-                      ) : null
-                    )}
+                          </ListGroup.Item>
+                        ) : null
+                      )}
                   </ListGroup>
                 </Card.Body>
               </Card>
