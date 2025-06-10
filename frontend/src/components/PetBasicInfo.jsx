@@ -4,15 +4,14 @@ import {
   Col,
   Row,
   Badge,
-  ProgressBar,
-  Container,
   Button,
+  Container,
 } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
 function formatDate(dateString) {
-  const date = new Date(dateString); //
+  const date = new Date(dateString);
   const options = { year: "numeric", month: "long", day: "numeric" };
   return date.toLocaleDateString("vi-VN", options);
 }
@@ -20,32 +19,22 @@ function formatDate(dateString) {
 const PetBasicInfo = ({ petInfo }) => {
   const [weightHistory, setWeightHistory] = useState([]);
   const [recommendSummary, setRecommendSummary] = useState("");
+  const [recommendDetails, setRecommendDetails] = useState({
+    behavior: "",
+    habitat: "",
+    treatment: "",
+    nutrition: "",
+  });
   const { reptileId } = useParams();
 
   useEffect(() => {
     if (petInfo && petInfo.weight_history) {
       setWeightHistory(petInfo.weight_history);
-      // console.log(">>>>>>>>>>>>>>>>>>>>>>>weightHistory",weightHistory);
+      // console.log(">>>>>>>>>>>>>>>>>>>>>>>weightHistory", weightHistory);
     }
   }, [petInfo]);
 
   // Fetch recommendation_summary từ API
-  // useEffect(() => {
-  //   if (reptileId) {
-  //     axios.get(`http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`)
-  //       .then(res => {
-  //         const data = res.data.data;
-  //         if (Array.isArray(data) && data.length > 0) {
-  //           setRecommendSummary(data[data.length - 1].recommendation_summary);
-  //         } else {
-  //           setRecommendSummary('Không có dữ liệu gợi ý sức khỏe');
-  //         }
-  //       })
-  //       .catch(err => {
-  //         setRecommendSummary('Không thể lấy dữ liệu gợi ý sức khỏe');
-  //       });
-  //   }
-  // }, [reptileId]);
   useEffect(() => {
     if (reptileId) {
       axios
@@ -104,12 +93,7 @@ const PetBasicInfo = ({ petInfo }) => {
   const paddingX = 50; // padding hai bên để label không bị tràn
   const maxWeight = Math.max(...weightHistory.map((w) => w.weight), 300); // lấy max hoặc 300g
   const minWeight = Math.min(...weightHistory.map((w) => w.weight), 0); // lấy min hoặc 0g
-  const [recommendDetails, setRecommendDetails] = useState({
-    behavior: "",
-    habitat: "",
-    treatment: "",
-    nutrition: "",
-  });
+
   // Tính điểm cho polyline
   const points = weightHistory
     .map((item, idx) => {
@@ -238,190 +222,191 @@ const PetBasicInfo = ({ petInfo }) => {
           </Row>
         </div>
 
-        <Row className="g-4">
-          {/* Weight Chart */}
-          <Col xs={12} md={4}>
-            <Card className="h-100 border-0 shadow-sm">
-              <Card.Header className="bg-white border-0 pb-0">
-                <div className="d-flex justify-content-between align-items-center">
-                  <Badge bg="success">Tháng</Badge>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="text-secondary p-0"
-                  >
-                    <i className="bi bi-three-dots"></i>
-                  </Button>
-                </div>
-                <div className="text-center small fw-medium">Năm 2024</div>
-              </Card.Header>
-              <Card.Body>
-                <div style={{ height: "13rem" }} className="mb-3">
-                  <svg
-                    className="w-100 h-100"
-                    viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                  >
-                    {/* Grid lines */}
-                    <defs>
-                      <pattern
-                        id="grid"
-                        width="25"
-                        height="20"
-                        patternUnits="userSpaceOnUse"
+      <Row className="g-4">
+        {/* Weight Chart */}
+        <Col xs={12} md={4}>
+          <Card className="h-100 border-0 shadow-sm">
+            <Card.Header className="bg-white border-0 pb-0">
+              <div className="d-flex justify-content-between align-items-center">
+                <Badge bg="success">Tháng</Badge>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="text-secondary p-0"
+                >
+                  <i className="bi bi-three-dots"></i>
+                </Button>
+              </div>
+              <div className="text-center small fw-medium">Năm 2024</div>
+            </Card.Header>
+            <Card.Body>
+              <div style={{ height: "13rem" }} className="mb-3">
+                <svg
+                  className="w-100 h-100"
+                  viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                >
+                  {/* Grid lines */}
+                  <defs>
+                    <pattern
+                      id="grid"
+                      width="25"
+                      height="20"
+                      patternUnits="userSpaceOnUse"
+                    >
+                      <path
+                        d="M 25 0 L 0 0 0 20"
+                        fill="none"
+                        stroke="#e5e7eb"
+                        strokeWidth="0.5"
+                      />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+
+                  {/* Y-axis labels */}
+                  {[maxWeight, (maxWeight + minWeight) / 2, minWeight].map(
+                    (val, i) => (
+                      <text
+                        key={i}
+                        x="10"
+                        y={30 + i * ((chartHeight - 50) / 2)}
+                        fontSize="10"
+                        fill="#9ca3af"
                       >
-                        <path
-                          d="M 25 0 L 0 0 0 20"
-                          fill="none"
-                          stroke="#e5e7eb"
-                          strokeWidth="0.5"
-                        />
-                      </pattern>
-                    </defs>
-                    <rect width="100%" height="100%" fill="url(#grid)" />
-
-                    {/* Y-axis labels */}
-                    {[maxWeight, (maxWeight + minWeight) / 2, minWeight].map(
-                      (val, i) => (
-                        <text
-                          key={i}
-                          x="10"
-                          y={30 + i * ((chartHeight - 50) / 2)}
-                          fontSize="10"
-                          fill="#9ca3af"
-                        >
-                          {Math.round(val)}g
-                        </text>
-                      )
-                    )}
-                    {/* Line chart */}
-                    <polyline
-                      fill="none"
-                      stroke="#20c997"
-                      strokeWidth="2"
-                      points={points}
-                    />
-                    {circles}
-                    {xLabels}
-                    {xAxisLabel}
-                  </svg>
-                </div>
-                <div className="d-flex align-items-center">
-                  <div
-                    className="rounded-circle bg-success me-2"
-                    style={{ width: "0.75rem", height: "0.75rem" }}
-                  ></div>
-                  <span className="small">Cân nặng</span>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          {/* Health Status */}
-          <Col xs={12} md={4}>
-            <Card className="h-100 border-0 shadow-sm">
-              <Card.Header className="bg-white border-0 pb-0">
-                <div className="d-flex justify-content-between align-items-center">
-                  <Badge bg="primary">Sức khỏe</Badge>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="text-secondary p-0"
-                  >
-                    <i className="bi bi-three-dots"></i>
-                  </Button>
-                </div>
-              </Card.Header>
-              <Card.Body className="d-flex flex-column align-items-center justify-content-center">
-                <div className="text-center mb-3">
-                  <div
-                    className="fw-medium text-success"
-                    style={{ fontSize: "16px" }}
-                  >
-                    Gợi ý sức khỏe từ AI
-                  </div>
-                  <div
-                    className="text-secondary small"
-                    style={{
-                      whiteSpace: "pre-line",
-                      maxHeight: 120,
-                      overflowY: "auto",
-                    }}
-                  >
-                    {recommendSummary || "Đang tải..."}
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-
-          {/* Sleep Chart */}
-          <Col xs={12} md={4}>
-            <Card className="h-100 border-0 shadow-sm">
-              <Card.Header className="bg-white border-0 pb-0">
-                <div className="d-flex justify-content-between align-items-center">
-                  <Badge bg="success">Góp ý gần nhất</Badge>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="text-secondary p-0"
-                  >
-                    <i className="bi bi-three-dots"></i>
-                  </Button>
-                </div>
-              </Card.Header>
-              <Card.Body>
-                {/* Analysis section */}
+                        {Math.round(val)}g
+                      </text>
+                    )
+                  )}
+                  {/* Line chart */}
+                  <polyline
+                    fill="none"
+                    stroke="#20c997"
+                    strokeWidth="2"
+                    points={points}
+                  />
+                  {circles}
+                  {xLabels}
+                  {xAxisLabel}
+                </svg>
+              </div>
+              <div className="d-flex align-items-center">
                 <div
-                  style={{ marginBottom: "20px" }}
-                  className="bg-light rounded p-3 small"
-                >
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-medium">Hành vi</span>
-                  </div>
-                  <p className="text-secondary mb-2">
-                    {recommendDetails.behavior || "Đang tải..."}
-                  </p>
-                </div>
+                  className="rounded-circle bg-success me-2"
+                  style={{ width: "0.75rem", height: "0.75rem" }}
+                ></div>
+                <span className="small">Cân nặng</span>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
 
-                <div
-                  style={{ marginBottom: "20px" }}
-                  className="bg-light rounded p-3 small"
+        {/* Health Status */}
+        <Col xs={12} md={4}>
+          <Card className="h-100 border-0 shadow-sm">
+            <Card.Header className="bg-white border-0 pb-0">
+              <div className="d-flex justify-content-between align-items-center">
+                <Badge bg="primary">Sức khỏe</Badge>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="text-secondary p-0"
                 >
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-medium">Môi trường sống</span>
-                  </div>
-                  <p className="text-secondary mb-2">
-                    {recommendDetails.habitat || "Đang tải..."}
-                  </p>
+                  <i className="bi bi-three-dots"></i>
+                </Button>
+              </div>
+            </Card.Header>
+            <Card.Body className="d-flex flex-column align-items-center justify-content-center">
+              <div className="text-center mb-3">
+                <div
+                  className="fw-medium text-success"
+                  style={{ fontSize: "16px" }}
+                >
+                  Gợi ý sức khỏe từ AI
                 </div>
                 <div
-                  style={{ marginBottom: "20px" }}
-                  className="bg-light rounded p-3 small"
+                  className="text-secondary small"
+                  style={{
+                    whiteSpace: "pre-line",
+                    maxHeight: 120,
+                    overflowY: "auto",
+                  }}
                 >
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-medium">Điều trị</span>
-                  </div>
-                  <p className="text-secondary mb-2">
-                    {recommendDetails.treatment || "Đang tải..."}
-                  </p>
+                  {recommendSummary || "Đang tải..."}
                 </div>
-                <div
-                  style={{ marginBottom: "20px" }}
-                  className="bg-light rounded p-3 small"
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        {/* Recommendation Details */}
+        <Col xs={12} md={4}>
+          <Card className="h-100 border-0 shadow-sm">
+            <Card.Header className="bg-white border-0 pb-0">
+              <div className="d-flex justify-content-between align-items-center">
+                <Badge bg="success">Góp ý gần nhất</Badge>
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="text-secondary p-0"
                 >
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="fw-medium">Dinh dưỡng</span>
-                  </div>
-                  <p className="text-secondary mb-2">
-                    {recommendDetails.nutrition || "Đang tải..."}
-                  </p>
+                  <i className="bi bi-three-dots"></i>
+                </Button>
+              </div>
+            </Card.Header>
+            <Card.Body>
+              {/* Analysis section */}
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Hành vi</span>
                 </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.behavior || "Đang tải..."}
+                </p>
+              </div>
+
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Môi trường sống</span>
+                </div>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.habitat || "Đang tải..."}
+                </p>
+              </div>
+
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Điều trị</span>
+                </div>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.treatment || "Đang tải..."}
+                </p>
+              </div>
+
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Dinh dưỡng</span>
+                </div>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.nutrition || "Đang tải..."}
+                </p>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

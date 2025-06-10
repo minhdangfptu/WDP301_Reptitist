@@ -3,6 +3,7 @@ const router =express.Router();
 const authRoute=require('./authRoute.js')
 const shopRoute=require('./shopRoute.js')
 const adminRoute=require('./adminRouter.js')
+const adminRoute=require('./adminRouter.js')
 const userReptileRoutes = require('./userReptileRoute.js');
 const reptileInfoRoute = require('./reptileInfoRoute.js');
 const aiRoute = require('./aiRoute.js');
@@ -23,6 +24,6 @@ router.use('/order', orderRoute);
 router.use('/admin', adminRoute);
 router.use('/ai', aiRoute);
 router.use('/reptitist', topicCategoryRoutes);
-
+router.use('/admin', adminRoute); 
 
 module.exports= router;

@@ -276,7 +276,7 @@ function ImproveSuggestion() {
           </Card>
         ))
       )}
-    </Container>
+    </div>
   );
 }
 

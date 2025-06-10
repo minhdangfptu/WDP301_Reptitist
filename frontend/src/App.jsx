@@ -61,7 +61,17 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Đang tải...
+      </div>
+    );
   }
 
   if (!user) {
@@ -77,15 +87,24 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 // Public Route component (redirect to home if already logged in)
+
 const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Đang tải...
+      </div>
+    );
   }
 
-  // If user is already logged in and we should redirect
-  if (user && redirectIfAuthenticated) {
   // If user is already logged in and we should redirect
   if (user && redirectIfAuthenticated) {
     return <Navigate to="/" replace />;
@@ -101,11 +120,14 @@ const AppRoutes = () => {
       <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
       <Route path="/products/create" element={<AddProduct />} />
       {/* Public routes - accessible to everyone */}
+      {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
 
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+      <Route path="/ProductDetail" element={<ProductDetail />} />
+      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       <Route path="/ProductDetail" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
