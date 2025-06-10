@@ -131,7 +131,7 @@ export default function YourPetDetail() {
             top: 0,
             left: 0,
             zIndex: 10,
-            
+            overflow: "auto"
           }}
         >
           {/* Sidebar Header */}
@@ -196,32 +196,19 @@ export default function YourPetDetail() {
           {selectedSection === 2 && <ImproveSuggestion petInfo={petDetails} />}
           {selectedSection === 3 && (
             <div
+              
               className="h-100"
               style={{
+                paddingBottom: "50px",
                 height: "100%",
                 overflowY: "auto",
-                minHeight: 0, // Đảm bảo flexbox không bị lỗi
+                minHeight: 0, 
               }}
             >
               <AIChatPage petInfo={petDetails} />
             </div>
           )}
-          {/* AI Chat Button */}
-          {/* <div className="text-center mt-4">
-            <Button
-              variant="success"
-              className="d-flex align-items-center mx-auto px-4 py-2"
-              onClick={handleAIClick}
-              style={{
-                borderRadius: "50px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                fontSize: "16px",
-              }}
-            >
-              <i className="bi bi-robot me-2" style={{ fontSize: "20px" }}></i>
-              <span>Chat cùng ReptiAI</span>
-            </Button>
-          </div> */}
+          
         </div>
       </div>
       <Footer />

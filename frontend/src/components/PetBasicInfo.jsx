@@ -4,6 +4,8 @@ import {
   Col,
   Row,
   Badge,
+  ProgressBar,
+  Container,
   Button,
 } from "react-bootstrap";
 import axios from "axios";
@@ -14,7 +16,6 @@ function formatDate(dateString) {
   const options = { year: "numeric", month: "long", day: "numeric" };
   return date.toLocaleDateString("vi-VN", options);
 }
-
 
 const PetBasicInfo = ({ petInfo }) => {
   const [weightHistory, setWeightHistory] = useState([]);
@@ -107,7 +108,7 @@ const PetBasicInfo = ({ petInfo }) => {
     behavior: "",
     habitat: "",
     treatment: "",
-    nutrition: "",  
+    nutrition: "",
   });
   // Tính điểm cho polyline
   const points = weightHistory
@@ -173,137 +174,147 @@ const PetBasicInfo = ({ petInfo }) => {
   );
 
   return (
-    <Container>
-      <div className="mb-5">
-        <h2 className="text-center fw-bold mb-4" style={{ fontSize: '2rem' }}>THÔNG TIN CƠ BẢN</h2>
-        <Row className="g-4">
-          {/* Profile Picture */}
-          <Col xs={12} md={4} className="text-center">
-            <Card className="border-0 shadow-sm">
-              <Card.Img
-                variant="top"
-                src={
-                  petInfo.user_reptile_imageurl || "/default-pet-image.jpg"
-                } // Fallback image
-                alt={petInfo.reptile_name || "Pet Image"} // Fallback alt text
-                style={{ objectFit: "cover", height: "200px" }}
-              />
-            </Card>
-          </Col>
-          {/* Basic Information Table */}
-          <Col xs={12} md={8}>
-            <Card className="border-0 shadow-sm" style={{ height: "100%" }}>
-              <Card.Body>
-                <Row>
-                  <Col xs={12} md={6}>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Tên bò sát</span>
-                      <span>{petInfo.reptile_name}</span>
-                    </div>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Giống loài</span>
-                      <span>{petInfo.reptile_species}</span>
-                    </div>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Tên thường gọi</span>
-                      <span>{petInfo.name} </span>
-                    </div>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <div className="mb-3 d-flex justify-content-between align-items-center">
-                      <span className="fw-medium">Tuổi</span>
-                      <div className="d-flex align-items-center">
-                        <span>{petInfo.age} tháng</span>
+    <>
+      <Container maxWidth="xl">
+        <div className="mb-5">
+          <h2 className="text-center fw-bold mb-4">THÔNG TIN CƠ BẢN</h2>
+          <Row className="g-4">
+            {/* Profile Picture */}
+            <Col xs={12} md={4} className="text-center">
+              <Card className="border-0 shadow-sm">
+                <Card.Img
+                  variant="top"
+                  src={
+                    petInfo.user_reptile_imageurl || "/default-pet-image.jpg"
+                  } // Fallback image
+                  alt={petInfo.reptile_name || "Pet Image"} // Fallback alt text
+                  style={{ objectFit: "cover", height: "200px" }}
+                />
+              </Card>
+            </Col>
+            {/* Basic Information Table */}
+            <Col xs={12} md={8}>
+              <Card className="border-0 shadow-sm" style={{ height: "100%" }}>
+                <Card.Body>
+                  <Row>
+                    <Col xs={12} md={6}>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Tên bò sát</span>
+                        <span>{petInfo.reptile_name}</span>
                       </div>
-                    </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Giống loài</span>
+                        <span>{petInfo.reptile_species}</span>
+                      </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Tên thường gọi</span>
+                        <span>{petInfo.name} </span>
+                      </div>
+                    </Col>
+                    <Col xs={12} md={6}>
+                      <div className="mb-3 d-flex justify-content-between align-items-center">
+                        <span className="fw-medium">Tuổi</span>
+                        <div className="d-flex align-items-center">
+                          <span>{petInfo.age} tháng</span>
+                        </div>
+                      </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Theo dõi từ</span>
+                        <span>{formatDate(petInfo.follow_since)}</span>
+                      </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Cân nặng hiện tại</span>
+                        <span>{petInfo.current_weight} gam</span>
+                      </div>
+                    </Col>
                     <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Theo dõi từ</span>
-                      <span>{formatDate(petInfo.follow_since)}</span>
+                      <span className="fw-medium">Miêu tả</span>
+                      <span>{petInfo.description}</span>
                     </div>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Cân nặng hiện tại</span>
-                      <span>{petInfo.current_weight} gam</span>
-                    </div>
-                  </Col>
-                  <div className="mb-3 d-flex justify-content-between">
-                    <span className="fw-medium">Miêu tả</span>
-                    <span>
-                      {petInfo.description}
-                    </span>
-                  </div>
-                </Row>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+
+        <Row className="g-4">
+          {/* Weight Chart */}
+          <Col xs={12} md={4}>
+            <Card className="h-100 border-0 shadow-sm">
+              <Card.Header className="bg-white border-0 pb-0">
+                <div className="d-flex justify-content-between align-items-center">
+                  <Badge bg="success">Tháng</Badge>
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="text-secondary p-0"
+                  >
+                    <i className="bi bi-three-dots"></i>
+                  </Button>
+                </div>
+                <div className="text-center small fw-medium">Năm 2024</div>
+              </Card.Header>
+              <Card.Body>
+                <div style={{ height: "13rem" }} className="mb-3">
+                  <svg
+                    className="w-100 h-100"
+                    viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                  >
+                    {/* Grid lines */}
+                    <defs>
+                      <pattern
+                        id="grid"
+                        width="25"
+                        height="20"
+                        patternUnits="userSpaceOnUse"
+                      >
+                        <path
+                          d="M 25 0 L 0 0 0 20"
+                          fill="none"
+                          stroke="#e5e7eb"
+                          strokeWidth="0.5"
+                        />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+
+                    {/* Y-axis labels */}
+                    {[maxWeight, (maxWeight + minWeight) / 2, minWeight].map(
+                      (val, i) => (
+                        <text
+                          key={i}
+                          x="10"
+                          y={30 + i * ((chartHeight - 50) / 2)}
+                          fontSize="10"
+                          fill="#9ca3af"
+                        >
+                          {Math.round(val)}g
+                        </text>
+                      )
+                    )}
+                    {/* Line chart */}
+                    <polyline
+                      fill="none"
+                      stroke="#20c997"
+                      strokeWidth="2"
+                      points={points}
+                    />
+                    {circles}
+                    {xLabels}
+                    {xAxisLabel}
+                  </svg>
+                </div>
+                <div className="d-flex align-items-center">
+                  <div
+                    className="rounded-circle bg-success me-2"
+                    style={{ width: "0.75rem", height: "0.75rem" }}
+                  ></div>
+                  <span className="small">Cân nặng</span>
+                </div>
               </Card.Body>
             </Card>
           </Col>
-        </Row>
-      </div>
-
-      <Row className="g-4">
-        {/* Weight Chart */}
-        <Col xs={12} md={4}>
-          <Card className="h-100 border-0 shadow-sm">
-            <Card.Header className="bg-white border-0 pb-0">
-              <div className="d-flex justify-content-between align-items-center">
-                <Badge bg="success">Tháng</Badge>
-                <Button
-                  variant="link"
-                  size="sm"
-                  className="text-secondary p-0"
-                >
-                  <i className="bi bi-three-dots"></i>
-                </Button>
-              </div>
-              <div className="text-center small fw-medium">Năm 2024</div>
-            </Card.Header>
-            <Card.Body>
-              <div style={{ height: "13rem" }} className="mb-3">
-                <svg className="w-100 h-100" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-                  {/* Grid lines */}
-                  <defs>
-                    <pattern
-                      id="grid"
-                      width="25"
-                      height="20"
-                      patternUnits="userSpaceOnUse"
-                    >
-                      <path
-                        d="M 25 0 L 0 0 0 20"
-                        fill="none"
-                        stroke="#e5e7eb"
-                        strokeWidth="0.5"
-                      />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-
-                  {/* Y-axis labels */}
-                  {[maxWeight, (maxWeight+minWeight)/2, minWeight].map((val, i) => (
-                    <text key={i} x="10" y={30 + i * ((chartHeight-50)/2)} fontSize="10" fill="#9ca3af">
-                      {Math.round(val)}g
-                    </text>
-                  ))}
-                  {/* Line chart */}
-                  <polyline
-                    fill="none"
-                    stroke="#20c997"
-                    strokeWidth="2"
-                    points={points}
-                  />
-                  {circles}
-                  {xLabels}
-                  {xAxisLabel}
-                </svg>
-              </div>
-              <div className="d-flex align-items-center">
-                <div
-                  className="rounded-circle bg-success me-2"
-                  style={{ width: "0.75rem", height: "0.75rem" }}
-                ></div>
-                <span className="small">Cân nặng</span>
-              </div>
-            </Card.Body>
-          </Card>
-        </Col>
 
           {/* Health Status */}
           <Col xs={12} md={4}>
@@ -410,7 +421,7 @@ const PetBasicInfo = ({ petInfo }) => {
           </Col>
         </Row>
       </Container>
-    </div>
+    </>
   );
 };
 

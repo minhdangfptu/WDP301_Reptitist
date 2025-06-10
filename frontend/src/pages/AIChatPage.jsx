@@ -571,13 +571,14 @@ const AIChatPage = ({ onClose }) => {
                 margin: "15px",
               }}
             >
-              <Card.Body style={{ padding: "12px" }}>
+              <Card.Body style={{ padding: "0px" }}>
                 <h6
                   style={{
                     color: "#28a745",
                     fontWeight: "600",
                     marginBottom: "12px",
                     fontSize: "14px",
+                    
                   }}
                 >
                   Công cụ
@@ -635,9 +636,10 @@ const AIChatPage = ({ onClose }) => {
             </Card>
 
             {/* Features Section */}
-            <div style={{ padding: "0 15px 15px", flex: 1, overflowY: "auto" }}>
+            <div style={{ padding: "0 15px 15px", overflowY: "auto" }}>
               <Card
                 style={{
+                  padding: "0px",
                   border: "none",
                   boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                   marginBottom: "12px",
@@ -646,6 +648,7 @@ const AIChatPage = ({ onClose }) => {
                 <Card.Body style={{ padding: "12px" }}>
                   <h6
                     style={{
+                      padding: "0px",
                       color: "#28a745",
                       fontWeight: "600",
                       marginBottom: "10px",
@@ -793,7 +796,7 @@ const AIChatPage = ({ onClose }) => {
                   boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
                 }}
               >
-                <Card.Body style={{ padding: "12px" }}>
+                <Card.Body style={{ padding: "0px"}}>
                   <Row>
                     <Col xs={9}>
                       <h6
@@ -811,12 +814,12 @@ const AIChatPage = ({ onClose }) => {
                         <img
                           src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/2560px-Google_Play_Store_badge_EN.svg.png"
                           alt="Google Play"
-                          style={{ height: "35px", borderRadius: "3px" }}
+                          style={{ height: "30px", borderRadius: "3px" }}
                         />
                         <img
                           src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Download_on_the_App_Store_Badge.svg/2560px-Download_on_the_App_Store_Badge.svg.png"
                           alt="App Store"
-                          style={{ height: "35px", borderRadius: "3px" }}
+                          style={{ height: "30px", borderRadius: "3px" }}
                         />
                       </div>
                     </Col>
@@ -847,7 +850,7 @@ const AIChatPage = ({ onClose }) => {
                   marginTop: "12px",
                 }}
               >
-                <Card.Body style={{ padding: "12px" }}>
+                <Card.Body style={{ padding: "0px" }}>
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <h6
                       style={{

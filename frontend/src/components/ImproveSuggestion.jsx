@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Button, Spinner } from 'react-bootstrap';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import { Card, Button, Spinner, Container } from "react-bootstrap";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 // Hàm format ngày giờ
 const formatDate = (dateString) => {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = new Date(dateString);
-  return date.toLocaleString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
+  return date.toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
   });
 };
 
@@ -22,8 +22,8 @@ const formatDate = (dateString) => {
 const renderSection = (title, value, color) => {
   if (
     !value ||
-    value === '{}' ||
-    (typeof value === 'object' && Object.keys(value).length === 0)
+    value === "{}" ||
+    (typeof value === "object" && Object.keys(value).length === 0)
   ) {
     return (
       <div className="mb-3">
@@ -33,13 +33,15 @@ const renderSection = (title, value, color) => {
     );
   }
 
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return (
       <div className="mb-3">
         <strong className={`text-${color}`}>{title}:</strong>
         <ul className="mb-0 ps-3">
           {Object.entries(value).map(([k, v], idx) => (
-            <li key={idx}><b>{k}:</b> {v}</li>
+            <li key={idx}>
+              <b>{k}:</b> {v}
+            </li>
           ))}
         </ul>
       </div>
@@ -49,7 +51,7 @@ const renderSection = (title, value, color) => {
   let displayValue = value;
   try {
     const parsed = JSON.parse(value);
-    if (typeof parsed === 'object' && Object.keys(parsed).length === 0) {
+    if (typeof parsed === "object" && Object.keys(parsed).length === 0) {
       return (
         <div className="mb-3">
           <strong className={`text-${color}`}>{title}:</strong>
@@ -57,13 +59,15 @@ const renderSection = (title, value, color) => {
         </div>
       );
     }
-    if (typeof parsed === 'object') {
+    if (typeof parsed === "object") {
       return (
         <div className="mb-3">
           <strong className={`text-${color}`}>{title}:</strong>
           <ul className="mb-0 ps-3">
             {Object.entries(parsed).map(([k, v], idx) => (
-              <li key={idx}><b>{k}:</b> {v}</li>
+              <li key={idx}>
+                <b>{k}:</b> {v}
+              </li>
             ))}
           </ul>
         </div>
@@ -72,7 +76,10 @@ const renderSection = (title, value, color) => {
     displayValue = parsed;
   } catch (e) {}
 
-  const lines = displayValue.split('\n').map(line => line.trim()).filter(Boolean);
+  const lines = displayValue
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
 
   return (
     <div className="mb-3">
@@ -85,7 +92,8 @@ const renderSection = (title, value, color) => {
             if (match) {
               return (
                 <li key={idx}>
-                  <b>{match[1]}</b>{match[2]}
+                  <b>{match[1]}</b>
+                  {match[2]}
                 </li>
               );
             }
@@ -93,7 +101,7 @@ const renderSection = (title, value, color) => {
           })}
         </ul>
       ) : (
-        <div style={{ whiteSpace: 'pre-line' }}>{displayValue}</div>
+        <div style={{ whiteSpace: "pre-line" }}>{displayValue}</div>
       )}
     </div>
   );
@@ -110,12 +118,14 @@ function ImproveSuggestion() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`);
+      const response = await axios.get(
+        `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+      );
       setRecommendations(response.data.data);
       toast.success("Đã tải gợi ý cải thiện thành công!");
     } catch (err) {
-      setError('Không thể tải dữ liệu gợi ý. Vui lòng thử lại sau.');
-      console.error('Error fetching recommendations:', err);
+      setError("Không thể tải dữ liệu gợi ý. Vui lòng thử lại sau.");
+      console.error("Error fetching recommendations:", err);
       toast.error("Có lỗi xảy ra khi tải gợi ý cải thiện!");
     } finally {
       setLoading(false);
@@ -126,12 +136,14 @@ function ImproveSuggestion() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.post(`http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`);
+      const response = await axios.post(
+        `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+      );
       setRecommendations([response.data.data, ...recommendations]);
       toast.success("Đã tạo gợi ý cải thiện mới thành công!");
     } catch (err) {
-      setError('Không thể tạo gợi ý mới. Vui lòng thử lại sau.');
-      console.error('Error creating new recommendations:', err);
+      setError("Không thể tạo gợi ý mới. Vui lòng thử lại sau.");
+      console.error("Error creating new recommendations:", err);
       toast.error("Có lỗi xảy ra khi tạo gợi ý cải thiện mới!");
     } finally {
       setLoading(false);
@@ -152,8 +164,11 @@ function ImproveSuggestion() {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '200px' }}>
-        <img src={'/loading.gif'} alt="Loading" />
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "200px" }}
+      >
+        <img src={"/loading.gif"} alt="Loading" />
       </div>
     );
   }
@@ -167,9 +182,9 @@ function ImproveSuggestion() {
   }
 
   return (
-    <div>
+    <Container maxWidth="xl">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold mb-0" style={{ fontSize: '2rem' }}>
+        <h2 className="fw-bold mb-0" style={{ fontSize: "2rem" }}>
           LỊCH SỬ GỢI Ý CẢI THIỆN
         </h2>
         <div>
@@ -191,22 +206,24 @@ function ImproveSuggestion() {
               color: "#006934",
               borderColor: "#006934",
               backgroundColor: "white",
-              transition: "all 0.2s"
+              transition: "all 0.2s",
             }}
             onClick={handleGetNewRecommendations}
             disabled={loading}
-            onMouseOver={e => {
+            onMouseOver={(e) => {
               e.target.style.backgroundColor = "#006934";
               e.target.style.color = "#fff";
               e.target.style.borderColor = "#006934";
             }}
-            onMouseOut={e => {
+            onMouseOut={(e) => {
               e.target.style.backgroundColor = "white";
               e.target.style.color = "#006934";
               e.target.style.borderColor = "#006934";
             }}
           >
-            {loading ? 'Đang xử lý...' : 'Để ReptiAI đề xuất chăm sóc sức khỏe cho thú cưng của bạn'}
+            {loading
+              ? "Đang xử lý..."
+              : "Để ReptiAI đề xuất chăm sóc sức khỏe cho thú cưng của bạn"}
           </Button>
         </div>
       </div>
@@ -218,20 +235,48 @@ function ImproveSuggestion() {
       ) : (
         sortedRecommendations.map((rec, idx) => (
           <Card className="mb-4" key={rec._id}>
-            <Card.Header className="bg-light fw-bold" style={{ fontSize: '17px', color: '#20c997' }}>
-              Gợi ý #{sortedRecommendations.length - idx} ({formatDate(rec.createdAt)})
+            <Card.Header
+              className="bg-light fw-bold"
+              style={{ fontSize: "17px", color: "#20c997" }}
+            >
+              Gợi ý #{sortedRecommendations.length - idx} (
+              {formatDate(rec.createdAt)})
             </Card.Header>
-            <Card.Body>
-              {renderSection('Tóm tắt', rec.recommendation_summary, 'success')}
-              {renderSection('Môi trường sống', rec.recommendation_detail_habitat, 'info')}
-              {renderSection('Hành vi', rec.recommendation_detail_behavior, 'warning')}
-              {renderSection('Điều trị', rec.recommendation_detail_treatment, 'danger')}
-              {renderSection('Dinh dưỡng', rec.recommendation_detail_nutrition, 'primary')}
+            <Card.Body
+              style={{
+                wordWrap: "break-word", // Chắc chắn dòng sẽ tự xuống khi quá dài
+                overflowWrap: "break-word",
+                whiteSpace: "pre-line",
+                maxHeight: '500px',
+                overflowY: 'auto',
+              }}
+            >
+              {renderSection("Tóm tắt", rec.recommendation_summary, "success")}
+              {renderSection(
+                "Môi trường sống",
+                rec.recommendation_detail_habitat,
+                "info"
+              )}
+              {renderSection(
+                "Hành vi",
+                rec.recommendation_detail_behavior,
+                "warning"
+              )}
+              {renderSection(
+                "Điều trị",
+                rec.recommendation_detail_treatment,
+                "danger"
+              )}
+              {renderSection(
+                "Dinh dưỡng",
+                rec.recommendation_detail_nutrition,
+                "primary"
+              )}
             </Card.Body>
           </Card>
         ))
       )}
-    </div>
+    </Container>
   );
 }
 
