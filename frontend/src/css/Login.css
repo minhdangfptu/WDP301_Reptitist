@@ -1,3 +1,4 @@
+/* Reset default styles */
 * {
   margin: 0;
   padding: 0;
@@ -37,7 +38,6 @@
   z-index: 1;
 }
 
-
 .login-content {
   position: relative;
   z-index: 2;
@@ -62,15 +62,14 @@
   flex-direction: column;
 }
 
-.logo {
+.login-logo {
   display: flex;
   align-items: center;
   margin-bottom: 30px;
 }
 
-.logo img {
-  height: 30px;
-  margin-top: 60px;
+.login-logo img {
+  height: 60px;
 }
 
 .logo-text {
@@ -175,42 +174,45 @@
   text-align: center;
 }
 
-.input-group {
+/* ĐÓNG TÊN CLASSES CHÍNH - TRÁNH XUNG ĐỘT */
+.login-input-group {
   position: relative;
   margin-bottom: 15px;
 }
 
-.input-icon {
+.login-input-icon {
   position: absolute;
-  left: 12px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   background-color: #06a13d;
-  border-radius: 50%;
+  border-radius: 50%; /* Hình tròn hoàn toàn */
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
-  font-size: 12px;
+  font-size: 14px;
+  z-index: 2;
 }
 
-.form-input {
+.login-form-input {
   width: 100%;
-  padding: 12px 15px 12px 55px;
+  padding: 12px 15px 12px 60px;
   border: 1px solid #e0e0e0;
-  border-radius: 50px;
+  border-radius: 50px; /* Bo tròn 50px cho input */
   font-size: 14px;
   outline: none;
   transition: border-color 0.3s;
+  background-color: white;
 }
 
-.form-input:focus {
+.login-form-input:focus {
   border-color: #06a13d;
 }
 
-.password-toggle {
+.login-password-toggle {
   position: absolute;
   right: 15px;
   top: 50%;
@@ -242,14 +244,13 @@
   cursor: pointer;
   transition: background-color 0.3s;
   margin-bottom: 15px;
-
 }
 
 .login-btn:hover {
   background-color: #048632;
 }
 
-.divider {
+.login-divider {
   display: flex;
   align-items: center;
   margin: 15px 0;
@@ -257,19 +258,19 @@
   font-size: 12px;
 }
 
-.divider::before,
-.divider::after {
+.login-divider::before,
+.login-divider::after {
   content: "";
   flex: 1;
   height: 1px;
   background-color: #e0e0e0;
 }
 
-.divider::before {
+.login-divider::before {
   margin-right: 15px;
 }
 
-.divider::after {
+.login-divider::after {
   margin-left: 15px;
 }
 
@@ -294,28 +295,28 @@
   background-color: #f8f8f8;
 }
 
-.google-icon,
-.facebook-icon {
+.login-google-icon,
+.login-facebook-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 10px;
 }
 
-.google-icon img,
-.facebook-icon img {
+.login-google-icon img,
+.login-facebook-icon img {
   width: 18px;
   height: 18px;
 }
 
-.terms {
+.login-terms {
   margin-top: 15px;
   font-size: 12px;
   color: #666;
   line-height: 1.4;
 }
 
-.terms a {
+.login-terms a {
   color: #06a13d;
   text-decoration: none;
 }

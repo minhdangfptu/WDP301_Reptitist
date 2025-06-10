@@ -112,7 +112,7 @@ const Login = () => {
                 <div className="login-content">
                     {/* Phần đăng nhập gần đây */}
                     <div className="recent-logins">
-                        <div className="logo">
+                        <div className="login-logo">
                             <img
                                 src="../public/logo1.png"
                                 alt="Reptisist Logo"
@@ -168,13 +168,13 @@ const Login = () => {
                             </div>
                         )}
 
-                        <div className="input-group">
-                            <span className="input-icon">
+                        <div className="login-input-group">
+                            <span className="login-input-icon">
                                 <i className="fa-solid fa-user"></i>
                             </span>
                             <input
                                 type="text"
-                                className="form-input"
+                                className="login-form-input"
                                 placeholder="Nhập tên đăng nhập"
                                 required
                                 value={userName}
@@ -186,13 +186,13 @@ const Login = () => {
                             />
                         </div>
 
-                        <div className="input-group">
-                            <span className="input-icon">
+                        <div className="login-input-group">
+                            <span className="login-input-icon">
                                 <i className="fa-solid fa-lock"></i>
                             </span>
                             <input
                                 type={showPassword ? 'text' : 'password'}
-                                className="form-input"
+                                className="login-form-input"
                                 placeholder="Nhập mật khẩu"
                                 required
                                 value={password}
@@ -203,7 +203,7 @@ const Login = () => {
                                 disabled={isLoading}
                             />
                             <i
-                                className={`password-toggle fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'
+                                className={`login-password-toggle fa-regular ${showPassword ? 'fa-eye-slash' : 'fa-eye'
                                     }`}
                                 onClick={togglePassword}
                                 style={{ 
@@ -230,10 +230,10 @@ const Login = () => {
                             {isLoading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP'}
                         </button>
 
-                        <div className="divider">HOẶC</div>
+                        <div className="login-divider">HOẶC</div>
 
                         <a href="#" className="social-login-btn">
-                            <span className="google-icon">
+                            <span className="login-google-icon">
                                 <img
                                     src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
                                     alt="Google"
@@ -243,7 +243,7 @@ const Login = () => {
                         </a>
 
                         <a href="#" className="social-login-btn">
-                            <span className="facebook-icon">
+                            <span className="login-facebook-icon">
                                 <img
                                     src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
                                     alt="Facebook"
@@ -252,7 +252,7 @@ const Login = () => {
                             Đăng nhập sử dụng Facebook
                         </a>
 
-                        <div className="terms">
+                        <div className="login-terms">
                             Bằng cách tiếp tục, bạn đồng ý với{' '}
                             <a href="#">Điều khoản sử dụng</a> và{' '}
                             <a href="#">Chính sách bảo mật</a>, bao gồm việc sử dụng{' '}
