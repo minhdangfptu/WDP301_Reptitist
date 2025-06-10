@@ -35,7 +35,7 @@ export default function TrackingHealth({ petInfo }) {
     const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
     const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50);
     return (
-      <circle key={idx} cx={x} cy={y} r="4" fill="#20c997" />
+      <circle key={idx} cx={x} cy={y} r="4" fill="#006934" />
     );
   });
   const xLabels = weightHistory.map((item, idx) => {
@@ -70,34 +70,61 @@ export default function TrackingHealth({ petInfo }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
+      <div className="d-flex justify-content-between align-items-center">
         <h2 className="text-center fw-bold mb-4" style={{ marginBottom: 0 }}>THEO DÕI SỨC KHỎE</h2>
-        <Button
-          variant="outline-primary"
-          size="sm"
-          style={{
-            borderRadius: "20px",
-            fontSize: "13px",
-            marginLeft: "16px",
-            color: "#20c997",
-            borderColor: "#20c997",
-            backgroundColor: "white",
-            transition: "all 0.2s"
-          }}
-          onClick={() => navigate(`/create-health-tracking/${petInfo.id || petInfo.reptileId}`)}
-          onMouseOver={e => {
-            e.target.style.backgroundColor = "#20c997";
-            e.target.style.color = "#fff";
-            e.target.style.borderColor = "#20c997";
-          }}
-          onMouseOut={e => {
-            e.target.style.backgroundColor = "white";
-            e.target.style.color = "#20c997";
-            e.target.style.borderColor = "#20c997";
-          }}
-        >
-          Thêm dữ liệu theo dõi sức khỏe
-        </Button>
+        <div className="d-flex gap-2">
+          <Button
+            variant="outline-primary"
+            size="sm"
+            style={{
+              borderRadius: "20px",
+              fontSize: "13px",
+              marginLeft: "16px",
+              color: "#006934",
+              borderColor: "#006934",
+              backgroundColor: "white",
+              transition: "all 0.2s"
+            }}
+            onClick={() => navigate(`/create-health-tracking/${petInfo._id}`)}
+            onMouseOver={e => {
+              e.target.style.backgroundColor = "#006934";
+              e.target.style.color = "#fff";
+              e.target.style.borderColor = "#006934";
+            }}
+            onMouseOut={e => {
+              e.target.style.backgroundColor = "white";
+              e.target.style.color = "#006934";
+              e.target.style.borderColor = "#006934";
+            }}
+          >
+            Thêm dữ liệu theo dõi sức khỏe
+          </Button>
+          <Button
+            variant="outline-danger"
+            size="sm"
+            style={{
+              borderRadius: "20px",
+              fontSize: "13px",
+              color: "#dc2626",
+              borderColor: "#dc2626",
+              backgroundColor: "white",
+              transition: "all 0.2s"
+            }}
+            onClick={() => navigate(`/create-treatment/${petInfo._id}`)}
+            onMouseOver={e => {
+              e.target.style.backgroundColor = "#dc2626";
+              e.target.style.color = "#fff";
+              e.target.style.borderColor = "#dc2626";
+            }}
+            onMouseOut={e => {
+              e.target.style.backgroundColor = "white";
+              e.target.style.color = "#dc2626";
+              e.target.style.borderColor = "#dc2626";
+            }}
+          >
+            Thêm dữ liệu điều trị
+          </Button>
+        </div>
       </div>
       <Row className="g-4">
         {/* Biểu đồ cân nặng */}
@@ -121,7 +148,7 @@ export default function TrackingHealth({ petInfo }) {
                   {[maxWeight, (maxWeight+minWeight)/2, minWeight].map((val, i) => (
                     <text key={i} x="10" y={30 + i * ((chartHeight-50)/2)} fontSize="10" fill="#9ca3af">{Math.round(val)}g</text>
                   ))}
-                  <polyline fill="none" stroke="#20c997" strokeWidth="2" points={points} />
+                  <polyline fill="none" stroke="#006934" strokeWidth="2" points={points} />
                   {circles}
                   {xLabels}
                   {xAxisLabel}
@@ -133,9 +160,9 @@ export default function TrackingHealth({ petInfo }) {
         {/* Lịch sử ngủ */}
         <Col xs={12} md={6} lg={7}>
           <Card className="h-100 border-0 shadow-sm mb-3">
-            <Card.Header className="bg-white border-0 pb-0">
+            <Card.Header className="bg-white border-0 pb-0 d-flex justify-content-between align-items-center">
               <span className="fw-semibold">Lịch sử giấc ngủ</span>
-              <Badge bg="info" style={{marginLeft: "510px"}}>Ngủ</Badge>
+              <Badge bg="info">Ngủ</Badge>
             </Card.Header>
             <Card.Body>
               <Table size="sm" responsive hover>
@@ -165,7 +192,7 @@ export default function TrackingHealth({ petInfo }) {
       </Row>
       <Row className="g-4 mt-2">
         {/* Lịch sử điều trị */}
-        <Col xs={12} md={6}>
+        <Col xs={12}>
           <Card className="h-100 border-0 shadow-sm mb-3">
             <Card.Header className="bg-white border-0 pb-0">
               <span className="fw-semibold">Lịch sử điều trị</span>
@@ -197,8 +224,10 @@ export default function TrackingHealth({ petInfo }) {
             </Card.Body>
           </Card>
         </Col>
+      </Row>
+      <Row className="g-4 mt-2">
         {/* Lịch sử dinh dưỡng */}
-        <Col xs={12} md={6}>
+        <Col xs={12}>
           <Card className="h-100 border-0 shadow-sm mb-3">
             <Card.Header className="bg-white border-0 pb-0">
               <span className="fw-semibold">Lịch sử dinh dưỡng</span>

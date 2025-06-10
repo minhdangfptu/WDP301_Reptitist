@@ -34,6 +34,8 @@ import LibraryCategory from './pages/LibraryCategory';
 import ProductForm from './pages/ProductForm';
 import ProductManagement from './pages/ProductManagement';
 
+import CreateTreatmentPage from './pages/CreateTreatmentPage';
+// import loadinggif from './public/loading.gif';
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
@@ -169,6 +171,11 @@ const AppRoutes = () => {
       <Route path="/create-health-tracking/:reptileId" element={
         <ProtectedRoute>
           < CreateTrackingHealthPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-treatment/:reptileId" element={
+        <ProtectedRoute>
+          < CreateTreatmentPage/>
         </ProtectedRoute>
       } />
       
