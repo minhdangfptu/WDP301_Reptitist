@@ -103,10 +103,10 @@ const LandingPage = () => {
               "MUA SẮM THỎA THÍCH",
             ].map((title, i) => {
               const images = [
-                "landing_library.jpg",
-                "landing_ai.webp",
-                "landing_consult.webp",
-                "landing_shop.jpg",
+                "/landing_library.jpg",
+                "/landing_ai.webp",
+                "/landing_consult.webp",
+                "/landing_shop.jpg",
               ];
               return (
                 <div className="feature-card" key={i}>

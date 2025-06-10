@@ -5,52 +5,128 @@ import {
   Row,
   Badge,
   Button,
+  Container,
 } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
 function formatDate(dateString) {
   const date = new Date(dateString);
-  const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('vi-VN', options);
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return date.toLocaleDateString("vi-VN", options);
 }
 
 const PetBasicInfo = ({ petInfo }) => {
   const [weightHistory, setWeightHistory] = useState([]);
+  const [recommendSummary, setRecommendSummary] = useState("");
+  const [recommendDetails, setRecommendDetails] = useState({
+    behavior: "",
+    habitat: "",
+    treatment: "",
+    nutrition: "",
+  });
+  const { reptileId } = useParams();
 
   useEffect(() => {
     if (petInfo && petInfo.weight_history) {
       setWeightHistory(petInfo.weight_history);
-      console.log(">>>>>>>>>>>>>>>>>>>>>>>weightHistory", weightHistory);
+      // console.log(">>>>>>>>>>>>>>>>>>>>>>>weightHistory", weightHistory);
     }
   }, [petInfo]);
+
+  // Fetch recommendation_summary từ API
+  useEffect(() => {
+    if (reptileId) {
+      axios
+        .get(
+          `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+        )
+        .then((res) => {
+          const data = res.data.data;
+          if (Array.isArray(data) && data.length > 0) {
+            const latest = data[data.length - 1]; // lấy bản gợi ý mới nhất
+
+            setRecommendSummary(latest.recommendation_summary || "");
+
+            const extractFirstSentence = (text) => {
+              if (!text) return "";
+              try {
+                const parsed = JSON.parse(text); // nếu text là object stringified
+                if (typeof parsed === "string") {
+                  return parsed.split(/[.?!]/)[0] + "."; // lấy câu đầu tiên
+                } else {
+                  return Object.values(parsed)[0]?.split(/[.?!]/)[0] + ".";
+                }
+              } catch {
+                // nếu không phải JSON
+                return text.replace(/^"|"$/g, "").split(/[.?!]/)[0] + ".";
+              }
+            };
+
+            setRecommendDetails({
+              behavior: extractFirstSentence(
+                latest.recommendation_detail_behavior
+              ),
+              habitat: extractFirstSentence(
+                latest.recommendation_detail_habitat
+              ),
+              treatment: extractFirstSentence(
+                latest.recommendation_detail_treatment
+              ),
+              nutrition: extractFirstSentence(
+                latest.recommendation_detail_nutrition
+              ),
+            });
+          } else {
+            setRecommendSummary("Không có dữ liệu gợi ý sức khỏe");
+          }
+        })
+        .catch((err) => {
+          setRecommendSummary("Không thể lấy dữ liệu gợi ý sức khỏe");
+        });
+    }
+  }, [reptileId]);
 
   // Chart config
   const chartWidth = 420;
   const chartHeight = 200;
   const paddingX = 50; // padding hai bên để label không bị tràn
-  const maxWeight = Math.max(...weightHistory.map(w => w.weight), 300); // lấy max hoặc 300g
-  const minWeight = Math.min(...weightHistory.map(w => w.weight), 0);   // lấy min hoặc 0g
+  const maxWeight = Math.max(...weightHistory.map((w) => w.weight), 300); // lấy max hoặc 300g
+  const minWeight = Math.min(...weightHistory.map((w) => w.weight), 0); // lấy min hoặc 0g
 
   // Tính điểm cho polyline
-  const points = weightHistory.map((item, idx) => {
-    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
-    const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50); // padding top 20, bottom 30
-    return `${x},${y}`;
-  }).join(" ");
+  const points = weightHistory
+    .map((item, idx) => {
+      const x =
+        paddingX +
+        idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
+      const y =
+        chartHeight -
+        30 -
+        ((item.weight - minWeight) / (maxWeight - minWeight || 1)) *
+          (chartHeight - 50); // padding top 20, bottom 30
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   // Vẽ các điểm tròn
   const circles = weightHistory.map((item, idx) => {
-    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
-    const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50);
-    return (
-      <circle key={idx} cx={x} cy={y} r="4" fill="#20c997" />
-    );
+    const x =
+      paddingX +
+      idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
+    const y =
+      chartHeight -
+      30 -
+      ((item.weight - minWeight) / (maxWeight - minWeight || 1)) *
+        (chartHeight - 50);
+    return <circle key={idx} cx={x} cy={y} r="4" fill="#20c997" />;
   });
 
   // Vẽ label trục X
   const xLabels = weightHistory.map((item, idx) => {
-    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
+    const x =
+      paddingX +
+      idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
     const date = new Date(item.date);
     const label = `${date.getMonth() + 1}/${date.getFullYear()}`;
     return (
@@ -82,9 +158,11 @@ const PetBasicInfo = ({ petInfo }) => {
   );
 
   return (
-    <div>
+    <Container fluid>
       <div className="mb-5">
-        <h2 className="text-center fw-bold mb-4" style={{ fontSize: '2rem' }}>THÔNG TIN CƠ BẢN</h2>
+        <h2 className="text-center fw-bold mb-4" style={{ fontSize: '2rem' }}>
+          THÔNG TIN CƠ BẢN
+        </h2>
         <Row className="g-4">
           {/* Profile Picture */}
           <Col xs={12} md={4} className="text-center">
@@ -136,9 +214,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   </Col>
                   <div className="mb-3 d-flex justify-content-between">
                     <span className="fw-medium">Miêu tả</span>
-                    <span>
-                      {petInfo.description}
-                    </span>
+                    <span>{petInfo.description}</span>
                   </div>
                 </Row>
               </Card.Body>
@@ -166,7 +242,10 @@ const PetBasicInfo = ({ petInfo }) => {
             </Card.Header>
             <Card.Body>
               <div style={{ height: "13rem" }} className="mb-3">
-                <svg className="w-100 h-100" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+                <svg
+                  className="w-100 h-100"
+                  viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                >
                   {/* Grid lines */}
                   <defs>
                     <pattern
@@ -186,11 +265,19 @@ const PetBasicInfo = ({ petInfo }) => {
                   <rect width="100%" height="100%" fill="url(#grid)" />
 
                   {/* Y-axis labels */}
-                  {[maxWeight, (maxWeight+minWeight)/2, minWeight].map((val, i) => (
-                    <text key={i} x="10" y={30 + i * ((chartHeight-50)/2)} fontSize="10" fill="#9ca3af">
-                      {Math.round(val)}g
-                    </text>
-                  ))}
+                  {[maxWeight, (maxWeight + minWeight) / 2, minWeight].map(
+                    (val, i) => (
+                      <text
+                        key={i}
+                        x="10"
+                        y={30 + i * ((chartHeight - 50) / 2)}
+                        fontSize="10"
+                        fill="#9ca3af"
+                      >
+                        {Math.round(val)}g
+                      </text>
+                    )
+                  )}
                   {/* Line chart */}
                   <polyline
                     fill="none"
@@ -231,27 +318,33 @@ const PetBasicInfo = ({ petInfo }) => {
             </Card.Header>
             <Card.Body className="d-flex flex-column align-items-center justify-content-center">
               <div className="text-center mb-3">
-                <div className="display-5 fw-light text-secondary">65</div>
-                <div className="d-flex align-items-center justify-content-center">
-                  <i className="bi bi-arrow-down text-danger me-1"></i>
-                  <span className="text-danger small">8%</span>
+                <div
+                  className="fw-medium text-success"
+                  style={{ fontSize: "16px" }}
+                >
+                  Gợi ý sức khỏe từ AI
                 </div>
-              </div>
-              <div className="text-center mt-3">
-                <div className="small">
-                  Bệnh lý: <span className="fw-medium">Không có</span>
+                <div
+                  className="text-secondary small"
+                  style={{
+                    whiteSpace: "pre-line",
+                    maxHeight: 120,
+                    overflowY: "auto",
+                  }}
+                >
+                  {recommendSummary || "Đang tải..."}
                 </div>
               </div>
             </Card.Body>
           </Card>
         </Col>
 
-        {/* Sleep Chart */}
+        {/* Recommendation Details */}
         <Col xs={12} md={4}>
           <Card className="h-100 border-0 shadow-sm">
             <Card.Header className="bg-white border-0 pb-0">
               <div className="d-flex justify-content-between align-items-center">
-                <Badge bg="success">Tháng</Badge>
+                <Badge bg="success">Góp ý gần nhất</Badge>
                 <Button
                   variant="link"
                   size="sm"
@@ -262,81 +355,59 @@ const PetBasicInfo = ({ petInfo }) => {
               </div>
             </Card.Header>
             <Card.Body>
-              <div style={{ height: "8rem" }} className="mb-3">
-                <svg className="w-100 h-100" viewBox="0 0 200 120">
-                  {/* Y-axis labels */}
-                  <text x="10" y="15" fontSize="8" fill="#9ca3af">
-                    3h
-                  </text>
-                  <text x="10" y="35" fontSize="8" fill="#9ca3af">
-                    2h
-                  </text>
-                  <text x="10" y="55" fontSize="8" fill="#9ca3af">
-                    1h
-                  </text>
-                  <text x="10" y="75" fontSize="8" fill="#9ca3af">
-                    30p
-                  </text>
-                  <text x="10" y="95" fontSize="8" fill="#9ca3af">
-                    20p
-                  </text>
-
-                  {/* Bar chart - Yesterday (gray bars) */}
-                  <rect x="30" y="60" width="8" height="40" fill="#d1d5db" />
-                  <rect x="60" y="40" width="8" height="60" fill="#d1d5db" />
-                  <rect x="90" y="50" width="8" height="50" fill="#d1d5db" />
-                  <rect x="120" y="30" width="8" height="70" fill="#d1d5db" />
-
-                  {/* Bar chart - Today (green bars) */}
-                  <rect x="40" y="50" width="8" height="50" fill="#20c997" />
-                  <rect x="70" y="20" width="8" height="80" fill="#20c997" />
-                  <rect x="100" y="40" width="8" height="60" fill="#20c997" />
-                  <rect x="130" y="25" width="8" height="75" fill="#20c997" />
-                </svg>
-              </div>
-
-              {/* Time labels */}
-              <Row className="text-center small text-secondary mb-3">
-                <Col xs={3}>Sáng</Col>
-                <Col xs={3}>Trưa</Col>
-                <Col xs={3}>Chiều</Col>
-                <Col xs={3}>Tối</Col>
-              </Row>
-
               {/* Analysis section */}
-              <div className="bg-light rounded p-3 small">
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
                 <div className="d-flex justify-content-between align-items-center mb-2">
-                  <span className="fw-medium">Phân hồi</span>
-                  <div className="d-flex align-items-center">
-                    <i className="bi bi-arrow-down text-danger me-1"></i>
-                    <span className="text-danger">8%</span>
-                  </div>
+                  <span className="fw-medium">Hành vi</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  Hoạt động ít hơn rõ rệt, cần thiết phải vận động nhiều hơn
+                  {recommendDetails.behavior || "Đang tải..."}
                 </p>
-                <div className="d-flex align-items-center">
-                  <div className="d-flex align-items-center me-3">
-                    <div
-                      className="rounded-circle bg-secondary me-1"
-                      style={{ width: "0.5rem", height: "0.5rem" }}
-                    ></div>
-                    <span>Hôm qua</span>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    <div
-                      className="rounded-circle bg-success me-1"
-                      style={{ width: "0.5rem", height: "0.5rem" }}
-                    ></div>
-                    <span>Hôm nay</span>
-                  </div>
+              </div>
+
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Môi trường sống</span>
                 </div>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.habitat || "Đang tải..."}
+                </p>
+              </div>
+
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Điều trị</span>
+                </div>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.treatment || "Đang tải..."}
+                </p>
+              </div>
+
+              <div
+                style={{ marginBottom: "20px" }}
+                className="bg-light rounded p-3 small"
+              >
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <span className="fw-medium">Dinh dưỡng</span>
+                </div>
+                <p className="text-secondary mb-2">
+                  {recommendDetails.nutrition || "Đang tải..."}
+                </p>
               </div>
             </Card.Body>
           </Card>
         </Col>
       </Row>
-    </div>
+    </Container>
   );
 };
 
