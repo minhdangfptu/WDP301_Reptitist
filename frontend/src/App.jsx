@@ -35,27 +35,38 @@ import ProductForm from './pages/ProductForm';
 import ProductManagement from './pages/ProductManagement';
 
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
-// import loadinggif from './public/loading.gif';
+// import loadinggif from './public/loading.gif';import PlanUpgrade from './pages/PlanUpgrade';
+import ProductsByCategory from "./pages/ProductsByCategory"; 
+import AddProduct from "./pages/AddProduct";
+
+
+// Loading component
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '18px',
+    flexDirection: 'column',
+    gap: '16px'
+  }}>
+    <div className="spinner"></div>
+    <div>Đang tải...</div>
+  </div>
+);
+
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px'
-      }}>
-        Đang tải...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!user) {
     return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
+
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
@@ -70,19 +81,11 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px'
-      }}>
-        Đang tải...
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
+  // If user is already logged in and we should redirect
+  if (user && redirectIfAuthenticated) {
   // If user is already logged in and we should redirect
   if (user && redirectIfAuthenticated) {
     return <Navigate to="/" replace />;
@@ -90,14 +93,18 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 
   return children;
 };
+}
 
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+      <Route path="/products/create" element={<AddProduct />} />
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
+
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
       <Route path="/ProductDetail" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
@@ -213,7 +220,9 @@ const App = () => {
       <ThemeProvider>
         <AuthProvider>
           <Router>
-            <AppRoutes />
+            <div className="app">
+              <AppRoutes />
+            </div>
           </Router>
         </AuthProvider>
       </ThemeProvider>

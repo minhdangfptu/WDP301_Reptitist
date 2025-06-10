@@ -3,7 +3,7 @@ import { ShoppingCart, Search, User, HelpCircle, Facebook } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import '../css/ShopLandingPage.css';
 import Footer from '../components/Footer';
-
+import ProductCategories from './ProductCategories';
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
