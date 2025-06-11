@@ -126,7 +126,7 @@ const ShopLandingPage = () => {
       <section className="hero-section">
         <div className="hero-container">
           <div className="hero-main">
-            <img src="hero-banner.png" alt="Reptisist - Your Reptile Care Partners" className="hero-image" />
+            <img src="product1.png" alt="Reptisist - Your Reptile Care Partners" className="hero-image" />
             <div className="hero-content">
               <h2>Your REPTILE CARE PARTNERS!</h2>
               <ul className="hero-features">
@@ -138,10 +138,10 @@ const ShopLandingPage = () => {
           </div>
           <div className="hero-side">
             <div className="hero-small">
-              <img src="hero-small-1.png" alt="Reptile Care" className="hero-small-image" />
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
             <div className="hero-small">
-              <img src="hero-small-2.png" alt="Reptile Care" className="hero-small-image" />
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
           </div>
         </div>

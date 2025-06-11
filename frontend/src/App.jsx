@@ -33,6 +33,7 @@ import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
 import ProductForm from './pages/ProductForm';
 import ProductManagement from './pages/ProductManagement';
+import LibraryManagement from './pages/LibraryManagement';
 
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';
@@ -188,6 +189,11 @@ const AppRoutes = () => {
       <Route path="/ProductManagement" element={
         <ProtectedRoute requiredRole="admin">
           <ProductManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/LibraryManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <LibraryManagement />
         </ProtectedRoute>
       } />
       <Route path="/admin/products/create" element={
