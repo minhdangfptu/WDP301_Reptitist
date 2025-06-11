@@ -39,6 +39,7 @@ import CreateTreatmentPage from './pages/CreateTreatmentPage';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
 import AddProduct from "./pages/AddProduct";
 import UnderDevPage from './pages/UnderDevPage';
+import ListProductPage from './pages/ListProductPage';
 
 
 // Loading component
@@ -123,12 +124,12 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+      {/* <Route path="/products/category/:categoryId" element={<ProductsByCategory />} /> */}
       <Route path="/products/create" element={<AddProduct />} />
       {/* Public routes - accessible to everyone */}
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/LandingPage" element={<LandingPage />} />
+      {/* <Route path="/LandingPage" element={<LandingPage />} /> */}
       <Route path="/ContactUs" element={<ContactUs />} />
 
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
@@ -157,6 +158,26 @@ const AppRoutes = () => {
       <Route path="/SignUp3" element={
         <PublicRoute>
           <SignUp3 />
+        </PublicRoute>
+      } />
+      <Route path="/list-product/" element={
+        <PublicRoute>
+          <ListProductPage />
+        </PublicRoute>
+      } />
+      <Route path="/products/search/:productName" element={
+        <PublicRoute>
+          <ListProductPage />
+        </PublicRoute>
+      } />
+      <Route path="/products/category/:categoryId" element={
+        <PublicRoute>
+          <ListProductPage />
+        </PublicRoute>
+      } />
+      <Route path="/products" element={
+        <PublicRoute>
+          <ListProductPage />
         </PublicRoute>
       } />
       

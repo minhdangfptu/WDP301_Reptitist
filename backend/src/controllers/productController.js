@@ -66,7 +66,8 @@ const createProduct = async (req, res) => {
 const getAllProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const products = await Product.find({ product_category_id: categoryId });
+    const products = await Product.find({ product_category_id: categoryId })
+      .populate('user_id', 'address');
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'No products found for this category' });
     }
@@ -83,7 +84,8 @@ const getAllProductsByCategory = async (req, res) => {
 const getAllProductByName = async (req, res) => {
   try {
     const { productName } = req.params;
-    const products = await Product.find({ product_name: { $regex: productName, $options: 'i' } }); //ignore any case
+    const products = await Product.find({ product_name: { $regex: productName, $options: 'i' } })
+      .populate('user_id', 'address');
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'No products found with this name' });
     }

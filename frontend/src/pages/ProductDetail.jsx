@@ -234,7 +234,7 @@ const ProductDetail = () => {
           <span>/</span>
           <a href="/shop">Shop</a>
           <span>/</span>
-          <span>{product.product_name}</span>
+          <span>{product?.product_name}</span>
         </nav>
       </div>
 
@@ -282,12 +282,12 @@ const ProductDetail = () => {
 
           {/* Product Info */}
           <div className="product-detail-info">
-            <h1 className="product-detail-title">{product.product_name}</h1>
+            <h1 className="product-detail-title">{product?.product_name}</h1>
 
             <div className="product-detail-rating">
               <div className="product-detail-rating-stars">
                 <span className="product-detail-rating-number">
-                  {product.average_rating}
+                  {product?.average_rating}
                 </span>
                 <div className="product-detail-stars">
                   {[...Array(5)].map((_, i) => (
@@ -295,7 +295,7 @@ const ProductDetail = () => {
                       key={i}
                       size={16}
                       className={
-                        i < Math.floor(product.average_rating)
+                        i < Math.floor(product?.average_rating)
                           ? "product-detail-star-filled"
                           : "product-detail-star-empty"
                       }
@@ -367,18 +367,18 @@ const ProductDetail = () => {
                   }
                   className="product-detail-quantity-input"
                   min="1"
-                  max={product.product_quantity}
+                  max={product?.product_quantity}
                 />
                 <button
                   className="product-detail-quantity-btn"
                   onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= product.product_quantity}
+                  disabled={quantity >= product?.product_quantity}
                 >
                   <Plus size={16} />
                 </button>
               </div>
               <span className="product-detail-stock-info">
-                {product.product_quantity} sản phẩm có sẵn
+                {product?.product_quantity} sản phẩm có sẵn
               </span>
             </div>
 
@@ -451,7 +451,7 @@ const ProductDetail = () => {
               <div className="description-content">
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: product.product_description.replace(/\n/g, "<br>"),
+                    __html: product?.product_description.replace(/\n/g, "<br>"),
                   }}
                 />
               </div>
@@ -485,7 +485,7 @@ const ProductDetail = () => {
                 <div className="reviews-summary">
                   <div className="overall-rating">
                     <div className="rating-big">
-                      😍 {product.average_rating} ⭐😍
+                      😍 {product?.average_rating} ⭐😍
                     </div>
 
                     <div className="total-reviews">{reviewsCount} đánh giá</div>
