@@ -1,11 +1,25 @@
+<<<<<<< Updated upstream
 const mongoose = require('mongoose');
 const LibraryCategory = require('../models/library_category'); // đảm bảo đúng tên file và tên biến
 
 // Tạo danh mục mới
+=======
+const LibraryCategories = require('../models/Library_category');
+const LibraryTopic = require('../models/Library_topics');
+>>>>>>> Stashed changes
 exports.createCategory = async (req, res) => {
   try {
+    const { topicId } = req.params;
     const { category_content, category_description, category_imageurl, topic_id } = req.body;
+<<<<<<< Updated upstream
     const newCategory = new LibraryCategory({
+=======
+    const topic = await LibraryTopic.findById(topicId);
+    if (!topic) {
+      return res.status(404).json({ error: "Không tìm thấy chủ đề" });
+    }
+    const newCategory = new LibraryCategories({
+>>>>>>> Stashed changes
       category_content,
       category_description,
       category_imageurl,
@@ -108,5 +122,24 @@ exports.getAllCategories = async (req, res) => {
     res.status(500).json({ message: 'Lỗi khi lấy danh mục', error: error.message });
   }
 };
+<<<<<<< Updated upstream
 =======
+>>>>>>> Stashed changes
+=======
+
+
+
+
+exports.getCategoriesByTopicId = async (req, res) => {
+  try {
+    const { topicId } = req.params;
+    const categories = await LibraryCategories.find({ topic_id: topicId });
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy danh mục cho chủ đề này' });
+    }
+    res.status(200).json(categories);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi lấy danh mục theo chủ đề', error: error.message });
+  }
+};
 >>>>>>> Stashed changes

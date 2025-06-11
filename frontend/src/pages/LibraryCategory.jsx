@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< Updated upstream
 import { useParams, Link } from "react-router-dom";
+=======
+import { useNavigate, useParams, Link } from "react-router-dom";
+>>>>>>> Stashed changes
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -11,6 +15,7 @@ const LibraryCategory = () => {
   const [category, setCategory] = useState(null);
 =======
   const [allCategories, setAllCategories] = useState([]);
+<<<<<<< Updated upstream
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
 >>>>>>> Stashed changes
@@ -88,19 +93,73 @@ const LibraryCategory = () => {
     );
   }
 >>>>>>> Stashed changes
+=======
+  const [topic, setTopic] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const topicId = id;
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/reptitist/library_categories/topic/${topicId}`);
+        setAllCategories(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải danh sách danh mục");
+      }
+    };
+
+    const fetchTopic = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/reptitist/library_topics/${topicId}`);
+        setTopic(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải thông tin chủ đề");
+      }
+    };
+
+    Promise.all([fetchCategories(), fetchTopic()]).then(() => {
+      setLoading(false);
+    });
+  }, [topicId]);
+
+  const handleDelete = async (categoryId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
+      try {
+        await axios.delete(`http://localhost:8080/reptitist/library_categories/${categoryId}`);
+        setAllCategories(allCategories.filter((cat) => cat._id !== categoryId));
+      } catch (error) {
+        alert("Lỗi khi xoá danh mục.");
+      }
+    }
+  };
+
+  if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
+  if (error) return <div className="text-danger text-center my-5">{error}</div>;
+>>>>>>> Stashed changes
 
   return (
     <>
       <Header />
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       <div className="page-title">
         <div className="container">
           <h1>Chi tiết danh mục</h1>
+=======
+
+      <div className="page-title">
+        <div className="container">
+          <h1>THƯ VIỆN KIẾN THỨC</h1>
+>>>>>>> Stashed changes
         </div>
       </div>
 
       <div className="container">
         <div className="breadcrumb">
+<<<<<<< Updated upstream
           <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right"></i>{" "}
           <Link to="/library">Thư viện kiến thức</Link> <i className="fas fa-angle-right"></i>{" "}
           <span>{category.category_content}</span>
@@ -166,12 +225,145 @@ const LibraryCategory = () => {
                     </button>
                   </div>
                 ))
+=======
+          <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/LibraryTopic">Thư viện kiến thức</a> <i className="fas fa-angle-right"></i>{" "}
+          <span>{topic?.topic_title || "Chủ đề không xác định"}</span>
+        </div>
+
+        <div style={{ textAlign: "right", marginBottom: "20px" }}>
+          <Link to={`/library_categories/create/${topicId}`}>
+            <button
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#28a745",
+                color: "#fff",
+                border: "none",
+                borderRadius: "5px",
+              }}
+            >
+              + Tạo danh mục
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      <section className="library-section">
+        <div className="container">
+          <div className="library-content">
+            {/* Sidebar */}
+            <div className="sidebar">
+              <h2 className="sidebar-title">Chuyên mục bài viết</h2>
+              <ul className="sidebar-menu">
+                {allCategories.length > 0 ? (
+                  allCategories.map((cat) => (
+                    <li key={cat._id}>
+                      <div className="menu-item">
+                        <a
+                          href={`/librarycontent/${cat._id}`}
+                          className="menu-link"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            navigate(`/librarycontent/${cat._id}`);
+                          }}
+                        >
+                          {cat.category_content}
+                        </a>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li>
+                    <div className="menu-item">
+                      <a href="#" className="menu-link">
+                        Chưa có bài viết
+                      </a>
+                    </div>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* Content Grid */}
+            <div className="content-grid" style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+              {allCategories.map((cat) => (
+                <div
+                  className="category-card"
+                  key={cat._id}
+                  style={{
+                    width: "220px",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    position: "relative",
+                  }}
+                >
+                  <div
+                    className="card-image"
+                    onClick={() => navigate(`/librarycontent/${cat._id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <img
+                      src={cat.category_imageurl || "/default.jpg"}
+                      alt={cat.category_content}
+                      style={{
+                        width: "100%",
+                        height: "180px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                  <div className="card-title" style={{ padding: "10px", fontWeight: "bold" }}>
+                    {cat.category_description}
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: "0 10px 10px",
+                    }}
+                  >
+                    <Link to={`/library_categories/update/${cat._id}`}>
+                      <button
+                        style={{
+                          backgroundColor: "#ffc107",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Cập nhật
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(cat._id)}
+                      style={{
+                        backgroundColor: "#dc3545",
+                        color: "#fff",
+                        border: "none",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                      }}
+                    >
+                      Xoá
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {allCategories.length === 0 && (
+                <div className="text-center" style={{ width: "100%" }}>
+                  <p>Không có danh mục nào để hiển thị.</p>
+                </div>
+>>>>>>> Stashed changes
               )}
             </div>
           </div>
         </div>
       </section>
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
       <Footer />
     </>

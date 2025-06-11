@@ -33,6 +33,15 @@ import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
+<<<<<<< Updated upstream
+=======
+import AddProduct from "./pages/AddProduct";
+import CreateLibraryTopic from "./pages/LibraryTopicCreate";
+import UpdateLibraryTopic from "./pages/LibraryTopicUpdate";
+import CreateCategory from "./pages/CreateCategory";
+import UpdateCategory from "./pages/UpdateCategory";
+
+>>>>>>> Stashed changes
 
 >>>>>>> Stashed changes
 
@@ -94,7 +103,15 @@ const AppRoutes = () => {
   return (
     <Routes>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+      <Route path="/library_topics/create" element={<CreateLibraryTopic />} />
+      <Route path="/library_topics/update/:id" element={<UpdateLibraryTopic />} />
+
+      <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
+        <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
+>>>>>>> Stashed changes
       <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
 >>>>>>> Stashed changes
       {/* Public routes - accessible to everyone */}
