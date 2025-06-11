@@ -16,11 +16,15 @@ import {
   HelpCircle,
   Facebook,
 } from "lucide-react";
+import { FiEdit } from "react-icons/fi";
+import { RiDeleteBinLine } from "react-icons/ri";
 import "../css/ProductDetail.css";
 import Footer from "../components/Footer";
 import { useParams } from "react-router-dom";
 import { useEffect } from "react";
 import axios from "axios";
+import { createFeedbackAndRating } from "../services/feedbackService";
+import { toast } from "react-toastify";
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -33,8 +37,15 @@ const ProductDetail = () => {
   const [selectedVariant, setSelectedVariant] = useState("");
   const [activeTab, setActiveTab] = useState("description");
   const [searchTerm, setSearchTerm] = useState("");
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState("");
+  // const [newImages, setNewImages] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingReview, setEditingReview] = useState(null)
+  const [editRating, setEditRating] = useState(0)
+  const [editComment, setEditComment] = useState("")
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -112,6 +123,79 @@ const ProductDetail = () => {
       variant: selectedVariant,
     });
   };
+  const handleImageUpload = (event) => {
+    const files = Array.from(event.target.files);
+
+  }
+  const handleRemoveImage = (index) => {
+    setNewImages((prevImages) => prevImages.filter((_, i) => i !== index));
+  };
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    if (submitting) return; // Prevent multiple submissions
+    if (newRating == 0) {
+      alert("Vui lòng chọn chọn số sao đánh giá");
+      return;
+    }
+    if (!newComment.trim()) {
+      alert("Vui lòng nhập bình luận đánh giá");
+      return;
+    }
+    setSubmitting(true);
+    try {
+
+      const response = await createFeedbackAndRatingApi(
+        productId,
+        newRating,
+        newComment);
+      setReviews((prevReviews) => [
+        ...prevReviews,
+        {
+          rating: newRating,
+          comment: newComment,
+          // images: newImages,
+          user_id: { username: "Bạn" }, // Mock user data
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+      setReviewsCount((prevCount) => prevCount + 1);
+      setNewRating(0);
+      setNewComment("");
+      setNewImages([]);
+      setSubmitting(false);
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      if (error.response?.status === 400) {
+        alert("Vui lòng điền đầy đủ thông tin đánh giá");
+      }
+      else if (error.response?.status === 500) {
+        alert("Đã có lỗi xảy ra, vui lòng thử lại sau");
+      }
+      else if (error.response?.status === 401) {
+        alert("Bạn cần đăng nhập để đánh giá sản phẩm");
+      }
+      else if (error.response?.status === 404) {
+        alert("Sản phẩm không tồn tại hoặc đã bị xóa");
+      }
+      setError("Failed to submit feedback");
+
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateFeedback = async () => {
+    toast.info("Cập nhật đánh giá...");
+  }
+  const handleDeleteFeedback = async (reviewId) => {
+  }
+
+  const handleCancelEdit = () => {
+    setEditingReview(null);
+    setEditRating(0);
+    setEditComment("");
+  };
+
   if (loading) {
     return (
       <div
@@ -266,9 +350,8 @@ const ProductDetail = () => {
                 product.product_imageurl.map((image, index) => (
                   <div
                     key={index}
-                    className={`product-detail-thumbnail ${
-                      selectedImage === index ? "active" : ""
-                    }`}
+                    className={`product-detail-thumbnail ${selectedImage === index ? "active" : ""
+                      }`}
                     onClick={() => setSelectedImage(index)}
                   >
                     <img src={image} alt={`${product.name} ${index + 1}`} />
@@ -336,9 +419,8 @@ const ProductDetail = () => {
                       {variant.options.map((option, optionIndex) => (
                         <button
                           key={optionIndex}
-                          className={`product-detail-variant-option ${
-                            selectedVariant === option ? "selected" : ""
-                          }`}
+                          className={`product-detail-variant-option ${selectedVariant === option ? "selected" : ""
+                            }`}
                           onClick={() => setSelectedVariant(option)}
                         >
                           {option}
@@ -431,9 +513,8 @@ const ProductDetail = () => {
               Mô tả sản phẩm
             </button>
             <button
-              className={`tab ${
-                activeTab === "specifications" ? "active" : ""
-              }`}
+              className={`tab ${activeTab === "specifications" ? "active" : ""
+                }`}
               onClick={() => setActiveTab("specifications")}
             >
               Thông số kỹ thuật
@@ -487,7 +568,6 @@ const ProductDetail = () => {
                     <div className="rating-big">
                       😍 {product.average_rating} ⭐😍
                     </div>
-
                     <div className="total-reviews">{reviewsCount} đánh giá</div>
                   </div>
                 </div>
@@ -496,49 +576,98 @@ const ProductDetail = () => {
                   {reviews.length > 0 ? (
                     reviews.map((review) => (
                       <div key={review._id} className="review-item">
-                        <div className="review-header">
-                          <div className="reviewer-info">
-                            {/* Handle missing user information */}
-                            <span className="reviewer-name">
-                              {review.user_id
-                                ? review.user_id.username
-                                : "Anonymous"}
-                            </span>
-                            <div className="review-rating">
-                              {/* Render the rating stars */}
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  size={14}
-                                  className={
-                                    i < review.rating
-                                      ? "star-filled"
-                                      : "star-empty"
-                                  }
-                                />
-                              ))}
+                        {editingReview === review._id ? (
+                          // Edit form
+                          <div className="edit-review-form">
+                            <div className="feedback-rating">
+                              <label>Đánh giá của bạn:</label>
+                              <div className="star-rating-select">
+                                {[...Array(5)].map((_, index) => (
+                                  <Star
+                                    key={index}
+                                    size={20}
+                                    className={
+                                      index < (editRating || 0) ? "star-filled clickable" : "star-empty clickable"
+                                    }
+                                    onClick={() => setEditRating(index + 1)}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="feedback-comment">
+                              <textarea
+                                rows={3}
+                                value={editComment}
+                                onChange={(e) => setEditComment(e.target.value)}
+                                placeholder="Nhập nhận xét của bạn..."
+                              ></textarea>
+                            </div>
+
+                            <div className="edit-actions">
+                              <button className="save-edit-btn" onClick={handleUpdateFeedback} disabled={submitting}>
+                                Lưu
+                              </button>
+                              <button className="cancel-edit-btn" onClick={handleCancelEdit}>
+                                Hủy
+                              </button>
                             </div>
                           </div>
-
-                          <span className="review-date">
-                            {new Date(review.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <div className="review-content">
-                          <p>{review.comment}</p>
-                          {/* If the review has images, display them */}
-                          {review.images && review.images.length > 0 && (
-                            <div className="review-images">
-                              {review.images.map((image, index) => (
-                                <img
-                                  key={index}
-                                  src={image}
-                                  alt={`Review ${index + 1}`}
-                                />
-                              ))}
+                        ) : (
+                          <>
+                            <div className="review-header">
+                              <div className="reviewer-info">
+                                <span className="reviewer-name">
+                                  {review.user_id ? review.user_id.username : "Anonymous"}
+                                </span>
+                                <div className="review-rating">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      size={14}
+                                      className={i < review.rating ? "star-filled" : "star-empty"}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="review-actions">
+                                <span className="review-date">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                {/* Chỉ hiển thị nút edit/delete cho review của user hiện tại */}
+                                {/* Bạn cần thêm logic kiểm tra user_id === current_user_id */}
+                                <div className="review-buttons">
+                                  <button
+                                    className="edit-review-btn"
+                                    onClick={() => handleUpdateFeedback(review)}
+                                    title="Sửa đánh giá"
+                                  >
+                                    <FiEdit size={16} color="blue"/>
+                                  </button>
+                                  <button
+                                    className="delete-review-btn"
+                                    onClick={() => handleDeleteFeedback(review._id)}
+                                    title="Xóa đánh giá"
+                                  >
+                                    <RiDeleteBinLine size={16} color="red"/>
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          )}
-                        </div>
+                            <div className="review-content">
+                              <p>{review.comment}</p>
+                              {review.images && review.images.length > 0 && (
+                                <div className="review-images">
+                                  {review.images.map((image, index) => (
+                                    <img
+                                      key={index}
+                                      src={image}
+                                      alt={`Review ${index + 1}`}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))
                   ) : (
@@ -549,6 +678,7 @@ const ProductDetail = () => {
             )}
           </div>
         </div>
+
 
         {/* Related Products */}
         <div className="related-products">

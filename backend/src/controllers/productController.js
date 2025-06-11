@@ -201,8 +201,9 @@ const updateProductStatus = async (req, res) => {
 
 const createFeedbackAndRating = async (req, res) => {
   try {
+    const user_id = req.userId; // lấy từ jwt sau
     const { productId } = req.params;
-    const { user_id, rating, comment } = req.body;
+    const { rating, comment } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) {

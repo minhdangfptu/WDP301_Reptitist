@@ -20,7 +20,7 @@ router.put('/product-status/:productId',updateProductStatus)
 router.post('/products/create', createProduct);
 router.get('/products/top-rated', getTopRatedProducts);
 
-router.post('/products-feedbacks/:productId', createFeedbackAndRating);
+router.post('/products-feedbacks/:productId',authUserIdOnly, createFeedbackAndRating);
 router.get('/products-feedbacks/:productId', viewFeedbackAndRating);
 router.put('/products-feedbacks/:feedbackId',authUserIdOnly, editFeedbackAndRating);
 router.delete('/products-feedbacks/:feedbackId',authUserIdOnly, deleteFeedbackAndRating);
