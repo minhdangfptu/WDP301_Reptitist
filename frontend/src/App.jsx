@@ -38,6 +38,7 @@ import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';import PlanUpgrade from './pages/PlanUpgrade';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
 import AddProduct from "./pages/AddProduct";
+import UnderDevPage from './pages/UnderDevPage';
 
 
 // Loading component
@@ -52,7 +53,9 @@ const LoadingSpinner = () => (
     gap: '16px'
   }}>
     <div className="spinner"></div>
-    <div>Đang tải...</div>
+    <div>Đang tải...
+
+    </div>
   </div>
 );
 
@@ -71,6 +74,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
         fontSize: '18px'
       }}>
         Đang tải...
+        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
       </div>
     );
   }
@@ -101,6 +105,7 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
         height: '100vh',
         fontSize: '18px'
       }}>
+        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
         Đang tải...
       </div>
     );
@@ -127,12 +132,13 @@ const AppRoutes = () => {
       <Route path="/ContactUs" element={<ContactUs />} />
 
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-      <Route path="/ProductDetail" element={<ProductDetail />} />
+      <Route path="/product-detail/:productId" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
-      <Route path="/ProductDetail" element={<ProductDetail />} />
+      
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
       {/* Auth routes - redirect if already logged in */}
+      
       <Route path="/Login" element={
         <PublicRoute>
           <Login />
@@ -234,8 +240,12 @@ const AppRoutes = () => {
       {/* Auth callback route */}
       <Route path="/auth/callback" element={<AuthCallback />} />
       
-      {/* Catch all route - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Route catch-all cho các đường dẫn không tồn tại */}
+      <Route path="*" element={
+        <PublicRoute>
+          <UnderDevPage />
+        </PublicRoute>
+      } />
     </Routes>
   );
 };

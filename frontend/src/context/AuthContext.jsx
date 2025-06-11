@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-console */
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
 

@@ -101,7 +101,7 @@ const LandingPage = () => {
               const images = [
                 "/landing_library.jpg",
                 "/landing_ai.webp",
-                "/landing_consult.webp",
+                "/landing_axo.jpg",
                 "/landing_shop.jpg",
               ];
               return (
@@ -128,7 +128,7 @@ const LandingPage = () => {
           <div className="news-grid">
             <div className="featured-news">
               <div className="featured-news-image">
-                <img src="/api/placeholder/400/300" alt="Tắc kè hoa" />
+                <img src="/landing_rua.jpg" alt="Tắc kè hoa" />
               </div>
               <div className="featured-news-content">
                 <h3 className="news-title">CÓ NÊN TẮM CHO RÙA VÀO MÙA ĐÔNG?</h3>
@@ -140,7 +140,7 @@ const LandingPage = () => {
                   tắm quá lạnh hoặc không thích hợp với nhiệt độ cơ thể của
                   chúng
                 </p>
-                <a href="#" className="btn">
+                <a href="#" className="btn btn-primary" style={{backgroundColor: "#0fa958", borderRadius:"30px"}}>
                   Xem thêm
                 </a>
               </div>
@@ -155,7 +155,7 @@ const LandingPage = () => {
               ].map((title, i) => (
                 <div className="news-item" key={i}>
                   <div className="news-item-image">
-                    <img src="/api/placeholder/80/80" alt="Bò sát" />
+                    <img src="/landing_bosat.jpg" alt="Bò sát" />
                   </div>
                   <div>
                     <h4 className="news-item-title">{title}</h4>
