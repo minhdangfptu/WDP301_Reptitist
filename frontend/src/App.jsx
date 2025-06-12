@@ -7,14 +7,10 @@ import { store } from './app/store';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'react-toastify/dist/ReactToastify.css';
-import LibraryContentCreate from './pages/LibraryCategoryCreate';
-// Import components
+
+// Pages
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
-<<<<<<< HEAD
-import Library from './pages/LibraryTopic';
-import LibraryDetail from './pages/LibraryCategory';
-import LibraryContent from './pages/LibraryContent';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SignUp2 from './pages/SignUp2';
@@ -24,54 +20,23 @@ import Settings from './pages/Settings';
 import Security from './pages/Security';
 import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
-=======
-<<<<<<< Updated upstream
-import Library from './pages/Library';
-=======
-import Library from './pages/LibraryTopic';
-import LibraryCategory from './pages/LibraryCategory';
-import LibraryDetail2 from './pages/LibraryDetail2';
->>>>>>> Stashed changes
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
-import LibraryDetail from './pages/LibraryDetail';
-import LibraryDetail2 from './pages/LibraryDetail2';
-import YourPet from './pages/YourPet';
-import Profile from './pages/Profile';
-import Security from './pages/Security';
-import Transaction from './pages/Transaction';
-<<<<<<< Updated upstream
-import Settings from './pages/Settings';
-import SignUp2 from './pages/SignUp2';
-=======
->>>>>>> origin/Tien
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
+
+import Library from './pages/LibraryTopic';
 import LibraryCategory from './pages/LibraryCategory';
-import ProductsByCategory from "./pages/ProductsByCategory"; 
-<<<<<<< HEAD
-import AddProduct from "./pages/AddProduct";
+import LibraryContent from './pages/LibraryContent';
+import LibraryContentCreate from './pages/LibraryCategoryCreate';
+import CreateLibraryTopic from './pages/LibraryTopicCreate';
+import UpdateLibraryTopic from './pages/LibraryTopicUpdate';
+import CreateCategory from './pages/CreateCategory';
+import UpdateCategory from './pages/UpdateCategory';
 
+import ProductsByCategory from './pages/ProductsByCategory';
+import AddProduct from './pages/AddProduct';
 
-=======
-<<<<<<< Updated upstream
-=======
-import AddProduct from "./pages/AddProduct";
-import CreateLibraryTopic from "./pages/LibraryTopicCreate";
-import UpdateLibraryTopic from "./pages/LibraryTopicUpdate";
-import CreateCategory from "./pages/CreateCategory";
-import UpdateCategory from "./pages/UpdateCategory";
-
->>>>>>> Stashed changes
-
->>>>>>> Stashed changes
-
-<<<<<<< Updated upstream
-function App() {
-=======
->>>>>>> origin/Tien
-// Loading component
+// Loading spinner
 const LoadingSpinner = () => (
   <div style={{ 
     display: 'flex', 
@@ -87,165 +52,88 @@ const LoadingSpinner = () => (
   </div>
 );
 
-// Protected Route component
+// Protected route
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!user) {
-    return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
-  }
-
-  if (requiredRole && !hasRole(requiredRole)) {
-    return <Navigate to="/" replace />;
-  }
-
+  if (loading) return <LoadingSpinner />;
+  if (!user) return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
+  if (requiredRole && !hasRole(requiredRole)) return <Navigate to="/" replace />;
+  
   return children;
 };
 
-// Public Route component (redirect to home if already logged in)
+// Public route
 const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
-  // If user is already logged in and we should redirect
-  if (user && redirectIfAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
+  if (loading) return <LoadingSpinner />;
+  if (user && redirectIfAuthenticated) return <Navigate to="/" replace />;
+  
   return children;
 };
 
-const AppRoutes = () => {
-  return (
-    <Routes>
-<<<<<<< HEAD
-      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
-      <Route path="/products/create" element={<AddProduct />} />
-=======
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
-      <Route path="/library_topics/create" element={<CreateLibraryTopic />} />
-      <Route path="/library_topics/update/:id" element={<UpdateLibraryTopic />} />
+const AppRoutes = () => (
+  <Routes>
+    {/* Public */}
+    <Route path="/" element={<LandingPage />} />
+    <Route path="/LandingPage" element={<LandingPage />} />
+    <Route path="/ContactUs" element={<ContactUs />} />
+    <Route path="/Login" element={<PublicRoute><Login /></PublicRoute>} />
+    <Route path="/SignUp" element={<PublicRoute><SignUp /></PublicRoute>} />
+    <Route path="/SignUp2" element={<PublicRoute><SignUp2 /></PublicRoute>} />
+    <Route path="/SignUp3" element={<PublicRoute><SignUp3 /></PublicRoute>} />
 
-      <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
-        <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
->>>>>>> Stashed changes
-      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
->>>>>>> Stashed changes
->>>>>>> origin/Tien
-      {/* Public routes - accessible to everyone */}
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/LandingPage" element={<LandingPage />} />
-      <Route path="/ContactUs" element={<ContactUs />} />
-      <Route path="/Library" element={<Library />} />
-      <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
-<<<<<<< HEAD
-            <Route
-              path="/libraryCategory/create/:categoryId"
-              element={
-                <ProtectedRoute>
-                  <LibraryContentCreate />
-                </ProtectedRoute>
-              }
-            />
-      {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
-      <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
+    {/* Library */}
+    <Route path="/Library" element={<Library />} />
+    <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
+    <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
+    <Route
+      path="/libraryCategory/create/:categoryId"
+      element={<ProtectedRoute><LibraryContentCreate /></ProtectedRoute>}
+    />
 
-=======
-      {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
->>>>>>> origin/Tien
-      <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
-      
-      {/* Auth routes - redirect if already logged in */}
-      <Route path="/Login" element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      } />
-      <Route path="/SignUp" element={
-        <PublicRoute>
-          <SignUp />
-        </PublicRoute>
-      } />
-      <Route path="/SignUp2" element={
-        <PublicRoute>
-          <SignUp2 />
-        </PublicRoute>
-      } />
-      <Route path="/SignUp3" element={
-        <PublicRoute>
-          <SignUp3 />
-        </PublicRoute>
-      } />
-      
-      {/* Protected routes - require login */}
-      <Route path="/Profile" element={
-        <ProtectedRoute>
-          <Profile />
-        </ProtectedRoute>
-      } />
-      <Route path="/Security" element={
-        <ProtectedRoute>
-          <Security />
-        </ProtectedRoute>
-      } />
-      <Route path="/Settings" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
-      } />
-      <Route path="/YourPet" element={
-        <ProtectedRoute>
-          <YourPet />
-        </ProtectedRoute>
-      } />
-      <Route path="/Transaction" element={
-        <ProtectedRoute>
-          <Transaction />
-        </ProtectedRoute>
-      } />
-      
-      {/* Admin only routes */}
-      <Route path="/UserList" element={
-        <ProtectedRoute requiredRole="admin">
-          <UserList />
-        </ProtectedRoute>
-      } />
-      
-      {/* Catch all route - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-};
+    {/* Library topic/category management (admin/editor only) */}
+    <Route path="/library_topics/create" element={<ProtectedRoute requiredRole="admin"><CreateLibraryTopic /></ProtectedRoute>} />
+    <Route path="/library_topics/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateLibraryTopic /></ProtectedRoute>} />
+    <Route path="/library_categories/create/:topicId" element={<ProtectedRoute requiredRole="admin"><CreateCategory /></ProtectedRoute>} />
+    <Route path="/library_categories/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateCategory /></ProtectedRoute>} />
 
-const App = () => {
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> origin/Tien
-  return (
-    <Provider store={store}>
-      <ThemeProvider>
-        <AuthProvider>
-          <Router>
-            <div className="app">
-              <AppRoutes />
-            </div>
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
-    </Provider>
-  );
-};
+    {/* Product routes */}
+    <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+    <Route path="/products/create" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+
+    {/* Shop */}
+    <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+    <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+
+    {/* Protected - user logged in */}
+    <Route path="/Profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+    <Route path="/Security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
+    <Route path="/Settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+    <Route path="/YourPet" element={<ProtectedRoute><YourPet /></ProtectedRoute>} />
+    <Route path="/Transaction" element={<ProtectedRoute><Transaction /></ProtectedRoute>} />
+
+    {/* Admin only */}
+    <Route path="/UserList" element={<ProtectedRoute requiredRole="admin"><UserList /></ProtectedRoute>} />
+
+    {/* Catch-all */}
+    <Route path="*" element={<Navigate to="/" replace />} />
+  </Routes>
+);
+
+const App = () => (
+  <Provider store={store}>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="app">
+            <AppRoutes />
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
+  </Provider>
+);
 
 export default App;

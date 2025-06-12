@@ -2,20 +2,13 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
-<<<<<<< HEAD
-import { Link } from "react-router-dom";
-=======
 import { Link, useNavigate } from "react-router-dom";
->>>>>>> origin/Tien
 
 const Library = () => {
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
-<<<<<<< HEAD
-=======
   const navigate = useNavigate();
->>>>>>> origin/Tien
-
+  
   useEffect(() => {
     axios
       .get("http://localhost:8080/reptitist/library_topics")
@@ -31,20 +24,6 @@ const Library = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-<<<<<<< HEAD
-=======
-  const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xoá chủ đề này không?")) {
-      try {
-        await axios.delete(`http://localhost:8080/reptitist/library_topics/${id}`);
-        setTopics(topics.filter((topic) => topic._id !== id));
-      } catch (error) {
-        console.error("Lỗi khi xoá chủ đề:", error);
-      }
-    }
-  };
-
->>>>>>> origin/Tien
   return (
     <>
       <Header />
@@ -57,19 +36,13 @@ const Library = () => {
 
       <div className="container">
         <div className="breadcrumb">
-<<<<<<< HEAD
           <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right"></i>{" "}
           <span>Thư viện kiến thức</span>
-=======
-          <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
-          <a href="/Library">Thư viện kiến thức</a>
->>>>>>> origin/Tien
         </div>
       </div>
 
       <section className="library-section">
         <div className="container">
-<<<<<<< HEAD
           <div className="library-content d-flex">
             {/* Sidebar */}
             <div className="sidebar me-5" style={{ width: "250px" }}>
@@ -108,8 +81,7 @@ const Library = () => {
                         </li>
                       </ul>
                     )}
-=======
-          <div className="library-content">
+                    <div className="library-content">
             {/* Sidebar */}
             <div className="sidebar">
               <h2 className="sidebar-title">Thư viện kiến thức</h2>
@@ -139,13 +111,11 @@ const Library = () => {
                         </a>
                       </li>
                     </ul>
->>>>>>> origin/Tien
                   </li>
                 ))}
               </ul>
             </div>
 
-<<<<<<< HEAD
             {/* Content Grid */}
             <div className="content-grid d-flex flex-wrap gap-4">
               {topics.map((topic) => (
@@ -166,9 +136,7 @@ const Library = () => {
                   <Link to={`/library/${topic._id}`}>Xem chi tiết</Link> */}
                 </div>
               ))}
-=======
-            {/* Main Content */}
-            <div style={{ flex: 1 }}>
+              <div style={{ flex: 1 }}>
               <div style={{ textAlign: "right", marginBottom: "20px" }}>
                 <Link to="/library_topics/create">
                   <button
@@ -254,7 +222,6 @@ const Library = () => {
                   </div>
                 ))}
               </div>
->>>>>>> origin/Tien
             </div>
           </div>
         </div>
@@ -265,8 +232,4 @@ const Library = () => {
   );
 };
 
-<<<<<<< HEAD
 export default Library;
-=======
-export default Library;
->>>>>>> origin/Tien
