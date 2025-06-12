@@ -41,6 +41,26 @@ const UserManagement = () => {
 
   const searchInputRef = useRef(null);
 
+  // Get role display text
+  const getRoleDisplayText = (role) => {
+    switch (role) {
+      case 'admin': return 'Quản trị viên';
+      case 'shop': return 'Cửa hàng';
+      case 'customer': return 'Khách hàng';
+      default: return 'Chưa xác định';
+    }
+  };
+
+  // Get role badge color
+  const getRoleBadgeColor = (role) => {
+    switch (role) {
+      case 'admin': return 'um-badge-admin';
+      case 'shop': return 'um-badge-shop';
+      case 'customer': return 'um-badge-customer';
+      default: return 'um-badge-default';
+    }
+  };
+
   // Check admin permission
   useEffect(() => {
     if (!hasRole('admin')) {
@@ -282,16 +302,6 @@ const UserManagement = () => {
     }).format(amount);
   };
 
-  // Get role badge color
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case 'admin': return 'um-badge-admin';
-      case 'shop': return 'um-badge-shop';
-      case 'customer': return 'um-badge-customer';
-      default: return 'um-badge-default';
-    }
-  };
-
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -411,7 +421,7 @@ const UserManagement = () => {
               </div>
               <div className="um-stat-content">
                 <span className="um-stat-number">{stats.roles?.admin || 0}</span>
-                <span className="um-stat-label">Admin</span>
+                <span className="um-stat-label">Quản trị viên</span>
               </div>
             </div>
 
@@ -421,7 +431,7 @@ const UserManagement = () => {
               </div>
               <div className="um-stat-content">
                 <span className="um-stat-number">{stats.roles?.shop || 0}</span>
-                <span className="um-stat-label">Shop</span>
+                <span className="um-stat-label">Cửa hàng</span>
               </div>
             </div>
 
@@ -460,8 +470,8 @@ const UserManagement = () => {
                 className="um-filter-select"
               >
                 <option value="all">Tất cả vai trò</option>
-                <option value="admin">Admin</option>
-                <option value="shop">Shop</option>
+                <option value="admin">Quản trị viên</option>
+                <option value="shop">Cửa hàng</option>
                 <option value="customer">Khách hàng</option>
               </select>
             </div>
@@ -534,7 +544,7 @@ const UserManagement = () => {
                 {filterRole !== 'all' && (
                   <span className="um-filter-tag">
                     <i className="fas fa-user-tag"></i>
-                    {filterRole}
+                    {getRoleDisplayText(filterRole)}
                     <button onClick={() => setFilterRole('all')}>×</button>
                   </span>
                 )}
@@ -636,9 +646,7 @@ const UserManagement = () => {
                         
                         <td>
                           <span className={`um-role-badge ${getRoleBadgeColor(userData.role_id?.role_name)}`}>
-                            {userData.role_id?.role_name === 'admin' ? 'Admin' :
-                             userData.role_id?.role_name === 'shop' ? 'Shop' :
-                             userData.role_id?.role_name === 'customer' ? 'Khách hàng' : 'N/A'}
+                            {getRoleDisplayText(userData.role_id?.role_name)}
                           </span>
                         </td>
                         
@@ -774,9 +782,7 @@ const UserManagement = () => {
                       <h4>{selectedUser.username}</h4>
                       <p className="um-user-email">{selectedUser.email}</p>
                       <span className={`um-role-badge ${getRoleBadgeColor(selectedUser.role_id?.role_name)}`}>
-                        {selectedUser.role_id?.role_name === 'admin' ? 'Admin' :
-                         selectedUser.role_id?.role_name === 'shop' ? 'Shop' :
-                         selectedUser.role_id?.role_name === 'customer' ? 'Khách hàng' : 'N/A'}
+                        {getRoleDisplayText(selectedUser.role_id?.role_name)}
                       </span>
                     </div>
                   </div>

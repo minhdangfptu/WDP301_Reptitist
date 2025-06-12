@@ -1,4 +1,3 @@
-// components/PaymentProcessing.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -8,11 +7,12 @@ import { toast, ToastContainer } from 'react-toastify';
 import { ArrowLeft, CheckCircle, Copy, Clock, CreditCard } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/PaymentProcessing.css';
+import axios from 'axios';
 
 const PaymentProcessing = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, updateUserRole } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 phút = 900 giây
   const [paymentCompleted, setPaymentCompleted] = useState(false);
@@ -82,57 +82,86 @@ const PaymentProcessing = () => {
     setIsProcessing(true);
     
     try {
-      // Xác định role mới dựa trên planType
-      let newRole = 'customer';
-      let accountType = {
-        type: 'customer',
-        level: 'normal'
-      };
-
-      if (planType === 'partner') {
-        newRole = 'shop';
-        accountType = {
-          type: 'shop',
-          level: 'normal',
-          activated_at: new Date(),
-          expires_at: period === 'monthly' ? 
-            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
-            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
-        };
-      } else if (planType === 'individual' && planName === 'Premium') {
-        accountType = {
-          type: 'customer',
-          level: 'premium',
-          activated_at: new Date(),
-          expires_at: period === 'monthly' ? 
-            new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
-            new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
-        };
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setIsProcessing(false);
+        return;
       }
 
-      // Cập nhật role và account type trong context
-      if (updateUserRole) {
-        const result = await updateUserRole({
-          role: newRole,
-          account_type: accountType
-        });
+      // Call backend API to update user role and account type
+      const updateData = {
+        fullname: user.fullname,
+        phone_number: user.phone_number,
+        address: user.address
+      };
 
-        if (!result.success) {
-          throw new Error('Failed to update user role');
+      // Determine role and account type based on planType
+      if (planType === 'partner') {
+        // Call admin API to update role to shop
+        const adminResponse = await axios.put(
+          `http://localhost:8080/reptitist/admin/users/${user.id}`,
+          {
+            username: user.username,
+            email: user.email,
+            fullname: user.fullname || '',
+            phone_number: user.phone_number || '',
+            address: user.address || '',
+            isActive: true,
+            role: 'shop'
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (adminResponse.status === 200) {
+          // Update local user data
+          const updatedUser = {
+            ...user,
+            role: 'shop',
+            account_type: {
+              type: 'shop',
+              level: 'normal',
+              activated_at: new Date(),
+              expires_at: period === 'monthly' ? 
+                new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
+                new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
+            }
+          };
+
+          updateUser(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
         }
+      } else if (planType === 'individual' && planName === 'Premium') {
+        // Update account type to premium for individual plan
+        const updatedUser = {
+          ...user,
+          account_type: {
+            type: 'customer',
+            level: 'premium',
+            activated_at: new Date(),
+            expires_at: period === 'monthly' ? 
+              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
+              new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
+          }
+        };
 
-        // Đợi một chút để đảm bảo state được cập nhật
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        updateUser(updatedUser);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
       }
 
       setPaymentCompleted(true);
       toast.success('Thanh toán thành công! Tài khoản của bạn đã được nâng cấp.');
       
       setTimeout(() => {
-        if (newRole === 'shop') {
-          navigate('/dashboard/shop'); // Redirect đến dashboard shop
+        if (planType === 'partner') {
+          navigate('/dashboard'); // Redirect to dashboard
         } else {
-          navigate('/dashboard'); // Redirect đến dashboard thường
+          navigate('/dashboard'); // Redirect to dashboard thường
         }
       }, 3000);
 
