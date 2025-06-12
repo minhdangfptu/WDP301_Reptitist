@@ -897,11 +897,11 @@ const AdminShopManagement = () => {
                           <div className="um-user-info">
                             <div className="um-user-avatar-container">
                               <img
-                                src={report.product_id?.product_imageurl?.[0] || '/default-product.png'}
+                                src={report.product_id?.product_imageurl?.[0] || '/images/default-product.png'}
                                 alt={report.product_id?.product_name}
                                 className="um-user-avatar"
                                 onError={(e) => {
-                                  e.target.src = '/default-product.png';
+                                  e.target.src = '/images/default-product.png';
                                 }}
                               />
                             </div>
@@ -1038,10 +1038,10 @@ const AdminShopManagement = () => {
                   <div className="um-detail-header">
                     <div className="um-user-avatar-large">
                       <img
-                        src={selectedShop.user_imageurl || '/default-avatar.png'}
+                        src={selectedShop.user_imageurl || '/images/default-avatar.png'}
                         alt={selectedShop.username}
                         onError={(e) => {
-                          e.target.src = '/default-avatar.png';
+                          e.target.src = '/images/default-avatar.png';
                         }}
                       />
                     </div>
@@ -1207,11 +1207,11 @@ const AdminShopManagement = () => {
                               <div className="um-user-info">
                                 <div className="um-user-avatar-container">
                                   <img
-                                    src={product.product_imageurl?.[0] || '/default-product.png'}
+                                    src={product.product_imageurl?.[0] || '/images/default-product.png'}
                                     alt={product.product_name}
                                     className="um-user-avatar"
                                     onError={(e) => {
-                                      e.target.src = '/default-product.png';
+                                      e.target.src = '/images/default-product.png';
                                     }}
                                   />
                                 </div>

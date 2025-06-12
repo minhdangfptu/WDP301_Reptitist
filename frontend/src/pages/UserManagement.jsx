@@ -593,95 +593,77 @@ const UserManagement = () => {
                 <table className="um-users-table">
                   <thead>
                     <tr>
-                      <th>Thông tin người dùng</th>
-                      <th>Liên hệ</th>
+                      <th>Người dùng</th>
+                      <th>Email</th>
                       <th>Vai trò</th>
-                      <th>Ngày đăng ký</th>
+                      <th>Loại tài khoản</th>
                       <th>Trạng thái</th>
+                      <th>Ngày tạo</th>
                       <th>Hành động</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {currentUsers.map(userData => (
-                      <tr key={userData._id} className="um-table-row">
+                    {currentUsers.map(user => (
+                      <tr key={user._id} className="um-table-row">
                         <td>
                           <div className="um-user-info">
                             <div className="um-user-avatar-container">
                               <img
-                                src={userData.user_imageurl || '/images/default-avatar.png'}
-                                alt={userData.username}
+                                src={user.user_imageurl || '/default-avatar.png'}
+                                alt={user.username}
                                 className="um-user-avatar"
-                                loading="lazy"
                                 onError={(e) => {
-                                  e.target.onerror = null; // Prevent infinite loop
-                                  e.target.src = '/images/default-avatar.png';
+                                  e.target.src = '/default-avatar.png';
                                 }}
                               />
-                              <div className={`um-status-dot ${userData.isActive ? 'active' : 'inactive'}`}></div>
                             </div>
                             <div className="um-user-details">
-                              <span className="um-username">{userData.username}</span>
-                              <small className="um-user-id">ID: {userData._id.slice(-8)}</small>
-                              {userData.fullname && (
-                                <small className="um-fullname">{userData.fullname}</small>
-                              )}
+                              <span className="um-username">{user.username}</span>
+                              <small className="um-user-id">ID: {user._id.slice(-8)}</small>
                             </div>
                           </div>
                         </td>
-                        
                         <td>
-                          <div className="um-contact-info">
-                            <div className="um-email">
-                              <i className="fas fa-envelope"></i>
-                              {userData.email}
-                            </div>
-                            {userData.phone_number && (
-                              <div className="um-phone">
-                                <i className="fas fa-phone"></i>
-                                {userData.phone_number}
-                              </div>
+                          <span className="um-email">{user.email}</span>
+                        </td>
+                        <td>
+                          <span className={`um-role-badge um-badge-${user.role_id?.role_name || 'default'}`}>
+                            {user.role_id?.role_name || 'N/A'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="um-account-type">
+                            <span className={`um-role-badge um-badge-${user.account_type?.type || 'default'}`}>
+                              {user.account_type?.type || 'customer'}
+                            </span>
+                            {user.account_type?.level === 'premium' && (
+                              <span className="um-role-badge um-badge-premium">
+                                Premium
+                              </span>
                             )}
                           </div>
                         </td>
-                        
                         <td>
-                          <span className={`um-role-badge ${getRoleBadgeColor(userData.role_id?.role_name)}`}>
-                            {getRoleDisplayText(userData.role_id?.role_name)}
-                          </span>
+                          <button
+                            onClick={() => toggleUserStatus(user)}
+                            className={`um-status-btn ${user.isActive ? 'um-status-active' : 'um-status-inactive'}`}
+                          >
+                            <i className={`fas ${user.isActive ? 'fa-check-circle' : 'fa-ban'}`}></i>
+                            {user.isActive ? 'Đang hoạt động' : 'Đã khóa'}
+                          </button>
                         </td>
-                        
                         <td>
                           <div className="um-date-info">
                             <span className="um-date">
-                              {formatDate(userData.created_at)}
+                              {new Date(user.created_at).toLocaleDateString('vi-VN')}
                             </span>
                           </div>
                         </td>
-                        
-                        <td>
-                          <button
-                            onClick={() => toggleUserStatus(userData)}
-                            className={`um-status-btn ${userData.isActive ? 'um-status-active' : 'um-status-inactive'}`}
-                          >
-                            {userData.isActive ? (
-                              <>
-                                <i className="fas fa-check-circle"></i>
-                                Hoạt động
-                              </>
-                            ) : (
-                              <>
-                                <i className="fas fa-ban"></i>
-                                Đã khóa
-                              </>
-                            )}
-                          </button>
-                        </td>
-                        
                         <td>
                           <div className="um-action-buttons">
                             <button
                               onClick={() => {
-                                setSelectedUser(userData);
+                                setSelectedUser(user);
                                 setShowUserDetailModal(true);
                               }}
                               className="um-btn-action um-btn-view"
@@ -689,12 +671,13 @@ const UserManagement = () => {
                             >
                               <i className="fas fa-eye"></i>
                             </button>
-                            
                             <button
-                              onClick={() => handleDeleteUser(userData)}
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setShowDeleteModal(true);
+                              }}
                               className="um-btn-action um-btn-delete"
-                              title="Xóa người dùng"
-                              disabled={userData._id === user._id}
+                              title="Xóa"
                             >
                               <i className="fas fa-trash"></i>
                             </button>

@@ -7,7 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/ProductManagement.css';
 
-const ShopProductManagement = () => {
+const ProductManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   
@@ -27,39 +27,46 @@ const ShopProductManagement = () => {
   
   // Modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showProductDetailModal, setShowProductDetailModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  
+  // Category form
+  const [categoryForm, setCategoryForm] = useState({
+    product_category_name: '',
+    product_category_imageurl: ''
+  });
+  const [categoryLoading, setCategoryLoading] = useState(false);
   
   // Statistics
   const [stats, setStats] = useState({
     total: 0,
     available: 0,
-    reported: 0,
+    pending: 0,
     notAvailable: 0,
-    outOfStock: 0,
-    inventoryValue: 0
+    categories: 0,
+    outOfStock: 0
   });
 
   const searchInputRef = useRef(null);
 
-  // Check shop permission
+  // Check admin permission
   useEffect(() => {
-    if (!hasRole('shop') || user?.account_type?.type !== 'shop') {
+    if (!hasRole('admin')) {
       toast.error('Bạn không có quyền truy cập trang này');
       navigate('/');
       return;
     }
     initializeData();
-  }, [hasRole, navigate, user]);
+  }, [hasRole, navigate]);
 
   // Initialize all data
   const initializeData = async () => {
     try {
       setLoading(true);
       await Promise.all([
-        fetchMyProducts(),
-        fetchCategories(),
-        fetchMyStats()
+        fetchProducts(),
+        fetchCategories()
       ]);
     } catch (error) {
       console.error('Error initializing data:', error);
@@ -69,36 +76,44 @@ const ShopProductManagement = () => {
     }
   };
 
-  // Fetch my products from API
-  const fetchMyProducts = useCallback(async () => {
+  // Fetch products from API
+  const fetchProducts = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
-        return;
-      }
-
-      const response = await axios.get('http://localhost:8080/reptitist/shop/my-products', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      // First get all categories
+      const categoriesResponse = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const allCategories = categoriesResponse.data || [];
+      
+      // Then fetch products from each category
+      const allProducts = [];
+      
+      for (const category of allCategories) {
+        try {
+          const productsResponse = await axios.get(
+            `http://localhost:8080/reptitist/shop/products/category/${category._id}`
+          );
+          if (productsResponse.data && Array.isArray(productsResponse.data)) {
+            allProducts.push(...productsResponse.data);
+          }
+        } catch (error) {
+          // Skip if no products in category
+          console.log(`No products found for category ${category.product_category_name}`);
         }
-      });
-
-      if (response.data?.products) {
-        setProducts(response.data.products);
-        setFilteredProducts(response.data.products);
       }
+
+      // Remove duplicates based on _id
+      const uniqueProducts = allProducts.filter((product, index, self) => 
+        index === self.findIndex(p => p._id === product._id)
+      );
+
+      setProducts(uniqueProducts);
+      setFilteredProducts(uniqueProducts);
+      
+      // Calculate stats
+      calculateStats(uniqueProducts, allCategories);
+      
     } catch (error) {
       console.error('Error fetching products:', error);
-      
-      if (error.response?.status === 403) {
-        toast.error('Bạn không có quyền truy cập');
-      } else if (error.response?.status === 401) {
-        toast.error('Phiên đăng nhập đã hết hạn');
-      } else {
-        toast.error('Không thể tải danh sách sản phẩm của bạn');
-      }
-      
+      toast.error('Không thể tải danh sách sản phẩm');
       setProducts([]);
       setFilteredProducts([]);
     }
@@ -111,28 +126,27 @@ const ShopProductManagement = () => {
       setCategories(response.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast.error('Không thể tải danh sách danh mục');
       setCategories([]);
     }
   }, []);
 
-  // Fetch my statistics
-  const fetchMyStats = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+  // Calculate statistics
+  const calculateStats = useCallback((productsList, categoriesList) => {
+    const total = productsList.length;
+    const available = productsList.filter(p => p.product_status === 'available').length;
+    const pending = productsList.filter(p => p.product_status === 'pending').length;
+    const notAvailable = productsList.filter(p => p.product_status === 'not_available').length;
+    const outOfStock = productsList.filter(p => p.product_quantity === 0).length;
 
-      const response = await axios.get('http://localhost:8080/reptitist/shop/my-stats', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.data) {
-        setStats(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
+    setStats({
+      total,
+      available,
+      pending,
+      notAvailable,
+      categories: categoriesList.length,
+      outOfStock
+    });
   }, []);
 
   // Filter by date range
@@ -184,7 +198,7 @@ const ShopProductManagement = () => {
 
     // Category filter
     if (filterCategory !== 'all') {
-      filtered = filtered.filter(product => product.product_category_id?._id === filterCategory);
+      filtered = filtered.filter(product => product.product_category_id === filterCategory);
     }
 
     // Status filter
@@ -252,25 +266,13 @@ const ShopProductManagement = () => {
     if (!selectedProduct) return;
 
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
-        return;
-      }
-
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/shop/my-products/${selectedProduct._id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
+        `http://localhost:8080/reptitist/shop/products/${selectedProduct._id}`
       );
 
       if (response.status === 200) {
         toast.success('Xóa sản phẩm thành công');
-        await fetchMyProducts();
-        await fetchMyStats();
+        await fetchProducts(); // Refresh products
         setShowDeleteModal(false);
         setSelectedProduct(null);
       }
@@ -283,18 +285,11 @@ const ShopProductManagement = () => {
   // Handle update product status
   const updateProductStatus = async (productId, newStatus) => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
-        return;
-      }
-
       const response = await axios.put(
-        `http://localhost:8080/reptitist/shop/my-products/${productId}`,
+        `http://localhost:8080/reptitist/shop/product-status/${productId}`,
         { product_status: newStatus },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         }
@@ -302,12 +297,67 @@ const ShopProductManagement = () => {
 
       if (response.status === 200) {
         toast.success('Cập nhật trạng thái sản phẩm thành công');
-        await fetchMyProducts();
-        await fetchMyStats();
+        await fetchProducts(); // Refresh products
       }
     } catch (error) {
       console.error('Error updating product status:', error);
       toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
+    }
+  };
+
+  // Handle create category
+  const handleCreateCategory = async () => {
+    if (!categoryForm.product_category_name.trim()) {
+      toast.error('Vui lòng nhập tên danh mục');
+      return;
+    }
+
+    try {
+      setCategoryLoading(true);
+      const response = await axios.post(
+        'http://localhost:8080/reptitist/shop/create-category',
+        categoryForm,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 201) {
+        toast.success('Tạo danh mục thành công');
+        await fetchCategories(); // Refresh categories
+        setCategoryForm({
+          product_category_name: '',
+          product_category_imageurl: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error creating category:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tạo danh mục');
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  // Handle delete category
+  const handleDeleteCategory = async (categoryId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/reptitist/shop/category/${categoryId}`
+      );
+
+      if (response.status === 200) {
+        toast.success('Xóa danh mục thành công');
+        await fetchCategories(); // Refresh categories
+      }
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa danh mục');
     }
   };
 
@@ -340,19 +390,16 @@ const ShopProductManagement = () => {
   const getStatusBadgeColor = (status) => {
     switch (status) {
       case 'available': return 'pm-badge-available';
-      case 'reported': return 'pm-badge-pending';
+      case 'pending': return 'pm-badge-pending';
       case 'not_available': return 'pm-badge-not-available';
       default: return 'pm-badge-default';
     }
   };
 
   // Get category name
-  const getCategoryName = (category) => {
-    if (category && typeof category === 'object') {
-      return category.product_category_name || 'N/A';
-    }
-    const cat = categories.find(c => c._id === category);
-    return cat ? cat.product_category_name : 'N/A';
+  const getCategoryName = (categoryId) => {
+    const category = categories.find(cat => cat._id === categoryId);
+    return category ? category.product_category_name : 'N/A';
   };
 
   // Reset filters
@@ -431,8 +478,8 @@ const ShopProductManagement = () => {
     return pages;
   };
 
-  // Check shop access
-  if (!hasRole('shop')) {
+  // Check admin access
+  if (!hasRole('admin')) {
     return (
       <>
         <Header />
@@ -440,7 +487,7 @@ const ShopProductManagement = () => {
           <div className="pm-no-access">
             <i className="fas fa-exclamation-triangle pm-warning-icon"></i>
             <h2>Không có quyền truy cập</h2>
-            <p>Bạn không có quyền xem trang này. Chỉ có Shop mới có thể truy cập.</p>
+            <p>Bạn không có quyền xem trang này. Chỉ có Admin mới có thể truy cập.</p>
             <Link to="/" className="pm-btn pm-btn-primary">
               <i className="fas fa-home"></i>
               Về trang chủ
@@ -474,10 +521,10 @@ const ShopProductManagement = () => {
           <div className="pm-page-header-content">
             <div className="pm-page-header-text">
               <h1>
-                <i className="fas fa-store"></i>
-                Quản lý sản phẩm của tôi
+                <i className="fas fa-box"></i>
+                Quản lý sản phẩm
               </h1>
-              <p>Quản lý tất cả sản phẩm trong cửa hàng của bạn</p>
+              <p>Quản lý tất cả sản phẩm và danh mục trong hệ thống</p>
               <div className="pm-header-breadcrumb">
                 <Link to="/">Trang chủ</Link>
                 <i className="fas fa-chevron-right"></i>
@@ -485,10 +532,17 @@ const ShopProductManagement = () => {
               </div>
             </div>
             <div className="pm-header-actions">
-              <Link to="/shop/products/create" className="pm-btn pm-btn-primary">
+              <Link to="/admin/products/create" className="pm-btn pm-btn-primary">
                 <i className="fas fa-plus"></i>
                 Thêm sản phẩm
               </Link>
+              <button 
+                onClick={() => setShowCategoryModal(true)}
+                className="pm-btn pm-btn-secondary"
+              >
+                <i className="fas fa-tags"></i>
+                Quản lý danh mục
+              </button>
             </div>
           </div>
         </div>
@@ -501,7 +555,7 @@ const ShopProductManagement = () => {
                 <i className="fas fa-box"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.totalProducts}</span>
+                <span className="pm-stat-number">{stats.total}</span>
                 <span className="pm-stat-label">Tổng sản phẩm</span>
               </div>
             </div>
@@ -511,24 +565,44 @@ const ShopProductManagement = () => {
                 <i className="fas fa-check-circle"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.availableProducts}</span>
+                <span className="pm-stat-number">{stats.available}</span>
                 <span className="pm-stat-label">Đang bán</span>
                 <span className="pm-stat-percentage">
-                  {stats.totalProducts ? Math.round((stats.availableProducts / stats.totalProducts) * 100) : 0}%
+                  {stats.total ? Math.round((stats.available / stats.total) * 100) : 0}%
                 </span>
               </div>
             </div>
 
             <div className="pm-stat-card pm-stat-pending">
               <div className="pm-stat-icon">
+                <i className="fas fa-clock"></i>
+              </div>
+              <div className="pm-stat-content">
+                <span className="pm-stat-number">{stats.pending}</span>
+                <span className="pm-stat-label">Chờ duyệt</span>
+                <span className="pm-stat-percentage">
+                  {stats.total ? Math.round((stats.pending / stats.total) * 100) : 0}%
+                </span>
+              </div>
+            </div>
+
+            <div className="pm-stat-card pm-stat-categories">
+              <div className="pm-stat-icon">
+                <i className="fas fa-tags"></i>
+              </div>
+              <div className="pm-stat-content">
+                <span className="pm-stat-number">{stats.categories}</span>
+                <span className="pm-stat-label">Danh mục</span>
+              </div>
+            </div>
+
+            <div className="pm-stat-card pm-stat-out-of-stock">
+              <div className="pm-stat-icon">
                 <i className="fas fa-exclamation-triangle"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.reportedProducts}</span>
-                <span className="pm-stat-label">Bị báo cáo</span>
-                <span className="pm-stat-percentage">
-                  {stats.totalProducts ? Math.round((stats.reportedProducts / stats.totalProducts) * 100) : 0}%
-                </span>
+                <span className="pm-stat-number">{stats.outOfStock}</span>
+                <span className="pm-stat-label">Hết hàng</span>
               </div>
             </div>
 
@@ -537,28 +611,8 @@ const ShopProductManagement = () => {
                 <i className="fas fa-ban"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.notAvailableProducts}</span>
+                <span className="pm-stat-number">{stats.notAvailable}</span>
                 <span className="pm-stat-label">Ngừng bán</span>
-              </div>
-            </div>
-
-            <div className="pm-stat-card pm-stat-out-of-stock">
-              <div className="pm-stat-icon">
-                <i className="fas fa-times-circle"></i>
-              </div>
-              <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.outOfStock}</span>
-                <span className="pm-stat-label">Hết hàng</span>
-              </div>
-            </div>
-
-            <div className="pm-stat-card pm-stat-categories">
-              <div className="pm-stat-icon">
-                <i className="fas fa-wallet"></i>
-              </div>
-              <div className="pm-stat-content">
-                <span className="pm-stat-number">{formatCurrency(stats.inventoryValue)}</span>
-                <span className="pm-stat-label">Giá trị kho hàng</span>
               </div>
             </div>
           </div>
@@ -604,7 +658,7 @@ const ShopProductManagement = () => {
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="available">Đang bán</option>
-                <option value="reported">Bị báo cáo</option>
+                <option value="pending">Chờ duyệt</option>
                 <option value="not_available">Ngừng bán</option>
               </select>
             </div>
@@ -674,7 +728,7 @@ const ShopProductManagement = () => {
                   <span className="pm-filter-tag">
                     <i className="fas fa-toggle-on"></i>
                     {filterStatus === 'available' ? 'Đang bán' : 
-                     filterStatus === 'reported' ? 'Bị báo cáo' : 'Ngừng bán'}
+                     filterStatus === 'pending' ? 'Chờ duyệt' : 'Ngừng bán'}
                     <button onClick={() => setFilterStatus('all')}>×</button>
                   </span>
                 )}
@@ -704,7 +758,7 @@ const ShopProductManagement = () => {
               <h3>Không tìm thấy sản phẩm</h3>
               <p>
                 {filteredProducts.length === 0 && products.length === 0 
-                  ? 'Bạn chưa có sản phẩm nào' 
+                  ? 'Chưa có sản phẩm nào trong hệ thống' 
                   : 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm'
                 }
               </p>
@@ -714,7 +768,7 @@ const ShopProductManagement = () => {
                   Đặt lại bộ lọc
                 </button>
               ) : (
-                <Link to="/shop/products/create" className="pm-btn pm-btn-primary">
+                <Link to="/admin/products/create" className="pm-btn pm-btn-primary">
                   <i className="fas fa-plus"></i>
                   Thêm sản phẩm đầu tiên
                 </Link>
@@ -725,11 +779,11 @@ const ShopProductManagement = () => {
               <div className="pm-table-header">
                 <h3>
                   <i className="fas fa-table"></i>
-                  Sản phẩm của tôi ({filteredProducts.length})
+                  Danh sách sản phẩm ({filteredProducts.length})
                 </h3>
                 <div className="pm-table-actions">
                   <button 
-                    onClick={() => fetchMyProducts()} 
+                    onClick={() => fetchProducts()} 
                     className="pm-btn pm-btn-secondary"
                     title="Làm mới dữ liệu"
                     disabled={loading}
@@ -824,22 +878,21 @@ const ShopProductManagement = () => {
                           <div className="pm-status-container">
                             <span className={`pm-status-badge ${getStatusBadgeColor(product.product_status)}`}>
                               {product.product_status === 'available' ? 'Đang bán' :
-                               product.product_status === 'reported' ? 'Bị báo cáo' :
+                               product.product_status === 'pending' ? 'Chờ duyệt' :
                                product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
                             </span>
-                            {product.product_status !== 'reported' && (
-                              <div className="pm-status-actions">
-                                <select
-                                  value={product.product_status}
-                                  onChange={(e) => updateProductStatus(product._id, e.target.value)}
-                                  className="pm-status-select"
-                                  title="Thay đổi trạng thái"
-                                >
-                                  <option value="available">Đang bán</option>
-                                  <option value="not_available">Ngừng bán</option>
-                                </select>
-                              </div>
-                            )}
+                            <div className="pm-status-actions">
+                              <select
+                                value={product.product_status}
+                                onChange={(e) => updateProductStatus(product._id, e.target.value)}
+                                className="pm-status-select"
+                                title="Thay đổi trạng thái"
+                              >
+                                <option value="available">Đang bán</option>
+                                <option value="pending">Chờ duyệt</option>
+                                <option value="not_available">Ngừng bán</option>
+                              </select>
+                            </div>
                           </div>
                         </td>
                         
@@ -867,7 +920,7 @@ const ShopProductManagement = () => {
                             </button>
                             
                             <Link
-                              to={`/shop/products/edit/${product._id}`}
+                              to={`/admin/products/edit/${product._id}`}
                               className="pm-btn pm-btn-icon pm-btn-edit"
                               title="Chỉnh sửa"
                             >
@@ -878,7 +931,6 @@ const ShopProductManagement = () => {
                               onClick={() => handleDeleteProduct(product)}
                               className="pm-btn pm-btn-icon pm-btn-delete"
                               title="Xóa sản phẩm"
-                              disabled={product.product_status === 'reported'}
                             >
                               <i className="fas fa-trash"></i>
                             </button>
@@ -1047,7 +1099,7 @@ const ShopProductManagement = () => {
                         <label>Trạng thái:</label>
                         <span className={`pm-status-badge ${getStatusBadgeColor(selectedProduct.product_status)}`}>
                           {selectedProduct.product_status === 'available' ? 'Đang bán' :
-                           selectedProduct.product_status === 'reported' ? 'Bị báo cáo' :
+                           selectedProduct.product_status === 'pending' ? 'Chờ duyệt' :
                            selectedProduct.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
                         </span>
                       </div>
@@ -1077,7 +1129,7 @@ const ShopProductManagement = () => {
               
               <div className="pm-modal-footer">
                 <Link
-                  to={`/shop/products/edit/${selectedProduct._id}`}
+                  to={`/admin/products/edit/${selectedProduct._id}`}
                   className="pm-btn pm-btn-primary"
                 >
                   <i className="fas fa-edit"></i>
@@ -1094,6 +1146,143 @@ const ShopProductManagement = () => {
             </div>
           </div>
         )}
+
+        {/* Category Management Modal */}
+        {showCategoryModal && (
+          <div className="pm-modal-overlay" onClick={() => setShowCategoryModal(false)}>
+            <div className="pm-modal pm-category-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="pm-modal-header">
+                <h3>
+                  <i className="fas fa-tags"></i>
+                  Quản lý danh mục
+                </h3>
+                <button 
+                  onClick={() => setShowCategoryModal(false)}
+                  className="pm-modal-close"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              
+              <div className="pm-modal-body">
+                {/* Create Category Form */}
+                <div className="pm-category-form">
+                  <h4>Thêm danh mục mới</h4>
+                  <div className="pm-form-group">
+                    <label>Tên danh mục:</label>
+                    <input
+                      type="text"
+                      value={categoryForm.product_category_name}
+                      onChange={(e) => setCategoryForm({
+                        ...categoryForm,
+                        product_category_name: e.target.value
+                      })}
+                      placeholder="Nhập tên danh mục..."
+                      className="pm-form-input"
+                    />
+                  </div>
+                  
+                  <div className="pm-form-group">
+                    <label>URL hình ảnh:</label>
+                    <input
+                      type="url"
+                      value={categoryForm.product_category_imageurl}
+                      onChange={(e) => setCategoryForm({
+                        ...categoryForm,
+                        product_category_imageurl: e.target.value
+                      })}
+                      placeholder="https://example.com/image.jpg"
+                      className="pm-form-input"
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={handleCreateCategory}
+                    disabled={categoryLoading || !categoryForm.product_category_name.trim()}
+                    className="pm-btn pm-btn-primary"
+                  >
+                    {categoryLoading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        Đang tạo...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-plus"></i>
+                        Thêm danh mục
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Categories List */}
+                <div className="pm-categories-list">
+                  <h4>Danh sách danh mục ({categories.length})</h4>
+                  {categories.length === 0 ? (
+                    <div className="pm-empty-categories">
+                      <i className="fas fa-tags"></i>
+                      <p>Chưa có danh mục nào</p>
+                    </div>
+                  ) : (
+                    <div className="pm-categories-grid">
+                      {categories.map(category => {
+                        const productCount = products.filter(p => p.product_category_id === category._id).length;
+                        
+                        return (
+                          <div key={category._id} className="pm-category-card">
+                            <div className="pm-category-image">
+                              <img
+                                src={category.product_category_imageurl || '/default-category.png'}
+                                alt={category.product_category_name}
+                                onError={(e) => {
+                                  e.target.src = '/default-category.png';
+                                }}
+                              />
+                            </div>
+                            
+                            <div className="pm-category-info">
+                              <h5>{category.product_category_name}</h5>
+                              <p>{productCount} sản phẩm</p>
+                              <small>ID: {category._id}</small>
+                            </div>
+                            
+                            <div className="pm-category-actions">
+                              <button
+                                onClick={() => handleDeleteCategory(category._id)}
+                                className="pm-btn pm-btn-icon pm-btn-delete"
+                                title="Xóa danh mục"
+                                disabled={productCount > 0}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
+                            
+                            {productCount > 0 && (
+                              <div className="pm-category-warning">
+                                <i className="fas fa-info-circle"></i>
+                                Không thể xóa do còn {productCount} sản phẩm
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="pm-modal-footer">
+                <button 
+                  onClick={() => setShowCategoryModal(false)}
+                  className="pm-btn pm-btn-secondary"
+                >
+                  <i className="fas fa-times"></i>
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       <Footer />
@@ -1101,4 +1290,4 @@ const ShopProductManagement = () => {
   );
 };
 
-export default ShopProductManagement;
+export default ProductManagement;

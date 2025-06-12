@@ -108,7 +108,15 @@ const PaymentProcessing = () => {
             phone_number: user.phone_number || '',
             address: user.address || '',
             isActive: true,
-            role: 'shop'
+            role: 'shop',
+            account_type: {
+              type: 'shop',
+              level: 'normal',
+              activated_at: new Date(),
+              expires_at: period === 'monthly' ? 
+                new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
+                new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
+            }
           },
           {
             headers: {
@@ -150,8 +158,58 @@ const PaymentProcessing = () => {
           }
         };
 
-        updateUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        // Call API to update user role and account type
+        const response = await axios.put(
+          `${process.env.REACT_APP_API_URL}/auth/update-role`,
+          {
+            role: user.role,
+            account_type: updatedUser.account_type
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (response.status === 200) {
+          // Update local user data
+          const updatedUserData = response.data;
+          updateUser(updatedUserData);
+          localStorage.setItem('user', JSON.stringify(updatedUserData));
+        } else {
+          throw new Error('Failed to update account type');
+        }
+      }
+
+      // Create transaction record
+      const transactionResponse = await axios.post(
+        'http://localhost:8080/reptitist/transactions',
+        {
+          amount: price,
+          net_amount: price,
+          transaction_type: planType === 'partner' ? 'shop_upgrade' : 'premium_upgrade',
+          status: 'completed',
+          description: `Thanh toán nâng cấp ${planName} ${period === 'monthly' ? 'hàng tháng' : 'hàng năm'}`,
+          items: JSON.stringify({
+            plan_name: planName,
+            plan_type: planType,
+            period: period,
+            price: price
+          }),
+          user_id: user.id
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!transactionResponse.data || !transactionResponse.data.transaction) {
+        throw new Error('Failed to create transaction record');
       }
 
       setPaymentCompleted(true);
@@ -167,7 +225,20 @@ const PaymentProcessing = () => {
 
     } catch (error) {
       console.error('Payment processing error:', error);
-      toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error('Error response:', error.response.data);
+        toast.error(error.response.data.message || 'Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+        toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet của bạn.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error('Error message:', error.message);
+        toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
+      }
     } finally {
       setIsProcessing(false);
     }

@@ -98,11 +98,11 @@ const Settings = () => {
               <div className="profile-user-info">
                 <div className="profile-avatar">
                   <img
-                    src={user.user_imageurl || "/default-avatar.png"}
+                    src={user.user_imageurl || "/images/default-avatar.png"}
                     alt="Profile"
                     onError={(e) => {
                       e.target.onerror = null;
-                      e.target.src = "/default-avatar.png";
+                      e.target.src = "/images/default-avatar.png";
                     }}
                   />
                 </div>

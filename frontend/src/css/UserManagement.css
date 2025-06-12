@@ -589,11 +589,33 @@
 }
 
 .um-account-type {
-  font-size: 0.8rem;
-  color: var(--um-text-muted);
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 0.25rem;
+}
+
+.um-badge-premium {
+  background: #fef3c7;
+  color: #d97706;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-weight: 500;
+}
+
+.um-badge-customer {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.um-badge-shop {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.um-badge-default {
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 /* Date Info */

@@ -38,7 +38,7 @@ const signup = async (req, res) => {
             email,
             password_hashed: hashedPassword,
             role_id: role._id,
-            user_imageurl: '/images/default-avatar.png' // Sửa thành đường dẫn đúng
+            user_imageurl: '/default-avatar.png' // Updated to use PNG file
         });
         
         await user.save();

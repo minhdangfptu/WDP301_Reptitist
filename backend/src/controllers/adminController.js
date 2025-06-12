@@ -509,6 +509,16 @@ const updateUser = async (req, res) => {
             updateData.role_id = roleId;
         }
 
+        // Handle account_type update if provided
+        if (req.body.account_type) {
+            updateData.account_type = {
+                type: req.body.account_type.type || 'customer',
+                level: req.body.account_type.level || 'normal',
+                activated_at: req.body.account_type.activated_at || new Date(),
+                expires_at: req.body.account_type.expires_at || null
+            };
+        }
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             updateData,
