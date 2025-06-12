@@ -20,6 +20,7 @@
     "bootstrap": "^5.3.6",
     "bootstrap-icons": "^1.13.1",
     "emailjs-com": "^3.2.0",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.10",

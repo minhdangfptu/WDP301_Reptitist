@@ -78,19 +78,11 @@ class AuthService {
     }
   }
 
-  async loginWithGoogle(googleToken) {
+  async loginWithGoogle() {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/google`, {
-        token: googleToken
-      });
-      
-      const { access_token, refresh_token, user: userData } = response.data;
-      
-      // Store tokens and user data
-      this.setTokens(access_token, refresh_token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      return { success: true, user: userData };
+      // Redirect to Google OAuth endpoint
+      window.location.href = `${API_BASE_URL}/auth/google`;
+      return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Google login failed';
       return { success: false, message };

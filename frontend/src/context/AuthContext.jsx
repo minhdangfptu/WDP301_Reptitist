@@ -197,7 +197,15 @@ export const AuthProvider = ({ children }) => {
   const loginWithGoogle = async () => {
     try {
       debugLog('Initiating Google login...');
-      window.location.href = `${API_BASE_URL}/auth/google`;
+      const response = await authService.loginWithGoogle();
+      if (response.success) {
+        debugLog('Google login successful');
+        await checkAuthStatus();
+        return { success: true };
+      } else {
+        debugLog('Google login failed:', response.message);
+        return { success: false, message: response.message };
+      }
     } catch (error) {
       debugLog('Google login failed:', error);
       return {
