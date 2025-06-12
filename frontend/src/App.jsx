@@ -11,6 +11,7 @@ import LibraryContentCreate from './pages/LibraryCategoryCreate';
 // Import components
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
+<<<<<<< HEAD
 import Library from './pages/LibraryTopic';
 import LibraryDetail from './pages/LibraryCategory';
 import LibraryContent from './pages/LibraryContent';
@@ -23,14 +24,53 @@ import Settings from './pages/Settings';
 import Security from './pages/Security';
 import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
+=======
+<<<<<<< Updated upstream
+import Library from './pages/Library';
+=======
+import Library from './pages/LibraryTopic';
+import LibraryCategory from './pages/LibraryCategory';
+import LibraryDetail2 from './pages/LibraryDetail2';
+>>>>>>> Stashed changes
+import Login from './pages/Login';
+import SignUp from './pages/SignUp';
+import LibraryDetail from './pages/LibraryDetail';
+import LibraryDetail2 from './pages/LibraryDetail2';
+import YourPet from './pages/YourPet';
+import Profile from './pages/Profile';
+import Security from './pages/Security';
+import Transaction from './pages/Transaction';
+<<<<<<< Updated upstream
+import Settings from './pages/Settings';
+import SignUp2 from './pages/SignUp2';
+=======
+>>>>>>> origin/Tien
 import UserList from './pages/UserList';
 import ShopLandingPage from './pages/ShopLandingPage';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
+<<<<<<< HEAD
 import AddProduct from "./pages/AddProduct";
 
 
+=======
+<<<<<<< Updated upstream
+=======
+import AddProduct from "./pages/AddProduct";
+import CreateLibraryTopic from "./pages/LibraryTopicCreate";
+import UpdateLibraryTopic from "./pages/LibraryTopicUpdate";
+import CreateCategory from "./pages/CreateCategory";
+import UpdateCategory from "./pages/UpdateCategory";
+
+>>>>>>> Stashed changes
+
+>>>>>>> Stashed changes
+
+<<<<<<< Updated upstream
+function App() {
+=======
+>>>>>>> origin/Tien
 // Loading component
 const LoadingSpinner = () => (
   <div style={{ 
@@ -85,14 +125,30 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AppRoutes = () => {
   return (
     <Routes>
+<<<<<<< HEAD
       <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
       <Route path="/products/create" element={<AddProduct />} />
+=======
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+=======
+      <Route path="/library_topics/create" element={<CreateLibraryTopic />} />
+      <Route path="/library_topics/update/:id" element={<UpdateLibraryTopic />} />
+
+      <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
+        <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
+>>>>>>> Stashed changes
+      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+>>>>>>> Stashed changes
+>>>>>>> origin/Tien
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
       <Route path="/Library" element={<Library />} />
       <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
+<<<<<<< HEAD
             <Route
               path="/libraryCategory/create/:categoryId"
               element={
@@ -104,6 +160,9 @@ const AppRoutes = () => {
       {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
       <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
 
+=======
+      {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
+>>>>>>> origin/Tien
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
@@ -170,6 +229,10 @@ const AppRoutes = () => {
 };
 
 const App = () => {
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> origin/Tien
   return (
     <Provider store={store}>
       <ThemeProvider>

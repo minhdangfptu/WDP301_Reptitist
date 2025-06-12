@@ -25,7 +25,7 @@ const LibraryCategoryCreate = () => {
       .post("http://localhost:8080/reptitist/library_categories", formData)
       .then(() => {
         alert("Tạo danh mục thành công");
-        navigate("http://localhost:8080/reptitist/library_categories/${id}");
+        navigate(`http://localhost:8080/reptitist/library_categories/${id}`);
       })
       .catch(() => {
         alert("Tạo thất bại");
