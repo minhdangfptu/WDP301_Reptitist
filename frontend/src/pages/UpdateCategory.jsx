@@ -33,7 +33,7 @@ const UpdateCategory = () => {
     e.preventDefault();
     try {
       await axios.put(`http://localhost:8080/reptitist/library_categories/${id}`, formData);
-      navigate(`/libraryCategory/${formData.topic_id}`);
+      navigate(`/libraryCategory/${formData.topic_id._id}`);
     } catch (err) {
       setError("Không thể cập nhật danh mục. Vui lòng thử lại.");
     }

@@ -38,10 +38,10 @@ import AddProduct from './pages/AddProduct';
 
 // Loading spinner
 const LoadingSpinner = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
     height: '100vh',
     fontSize: '18px',
     flexDirection: 'column',
@@ -59,7 +59,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   if (loading) return <LoadingSpinner />;
   if (!user) return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
   if (requiredRole && !hasRole(requiredRole)) return <Navigate to="/" replace />;
-  
+
   return children;
 };
 
@@ -69,7 +69,7 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 
   if (loading) return <LoadingSpinner />;
   if (user && redirectIfAuthenticated) return <Navigate to="/" replace />;
-  
+
   return children;
 };
 
@@ -77,7 +77,8 @@ const AppRoutes = () => (
   <Routes>
     {/* Public */}
     <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
-        <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
+    <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
+    
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
     <Route path="/ContactUs" element={<ContactUs />} />
