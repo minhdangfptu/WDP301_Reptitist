@@ -1,6 +1,6 @@
 const Product = require('../models/Products');
 const Feedback = require('../models/Product_feedback');
-const ProductReport = require('../models/Product_reports'); // New model for reports
+const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
 
 async function updateAverageRating(productId) {
@@ -269,6 +269,10 @@ const getMyProductStats = async (req, res) => {
       user_id: shopId, 
       product_status: 'reported' 
     });
+    const notAvailableProducts = await Product.countDocuments({ 
+      user_id: shopId, 
+      product_status: 'not_available' 
+    });
     const outOfStock = await Product.countDocuments({ 
       user_id: shopId, 
       product_quantity: 0 
@@ -290,6 +294,7 @@ const getMyProductStats = async (req, res) => {
       totalProducts,
       availableProducts,
       reportedProducts,
+      notAvailableProducts,
       outOfStock,
       inventoryValue: inventoryValue[0]?.totalValue || 0
     };

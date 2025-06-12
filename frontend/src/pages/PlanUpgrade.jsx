@@ -47,9 +47,13 @@ const PlanUpgrade = () => {
     const { period, price, planName } = purchaseData;
     const periodText = period === 'monthly' ? 'hàng tháng' : 'hàng năm';
     
-    toast.success(`Bạn đã chọn gói ${planName} - ${periodText} với giá ${formatPrice(price)}đ. Chức năng thanh toán sẽ được cập nhật sớm!`, {
-      position: "top-right",
-      autoClose: 5000
+    // Navigate to payment processing page
+    navigate('/payment-processing', {
+      state: {
+        period,
+        price,
+        planName
+      }
     });
     setShowDetailModal(false);
   };

@@ -1,53 +1,115 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Search, User, HelpCircle, Facebook } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import '../css/ShopLandingPage.css';
 import Footer from '../components/Footer';
 
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [newProducts, setNewProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  // Categories based on Image 2
-  const categories = [
-    { name: 'Chuồng nuôi', image: '/product1.png' },
-    { name: 'Hệ thống sưởi', image: '/product1.png' },
-    { name: 'Hệ thống chiếu sáng', image: '/product1.png' },
-    { name: 'Máy phun sương', image: '/product1.png' },
-    { name: 'Hệ thống lọc khí', image: '/product1.png' },
-    { name: 'Bát đựng nước, thức ăn', image: '/product1.png' },
-    { name: 'Trang trí chuồng', image: '/product1.png' },
-    { name: 'Thức ăn', image: '/product1.png' },
-    { name: 'Vitamin & khoáng chất', image: '/product1.png' },
-    { name: 'Dung dịch vệ sinh chuồng', image: '/product1.png' },
-    { name: 'Thuốc khử', image: '/product1.png' },
-    { name: 'Gel dưỡng da & vảy', image: '/product1.png' }
-  ];
+  // Fetch data on component mount
+  useEffect(() => {
+    initializeData();
+  }, []);
 
-  // Flash sale products based on Image 2
-  const flashSaleProducts = [
-    { id: 1, name: 'Bộ chuồng nuôi bò sát cao cấp', price: 100000, soldCount: 100, image: '/product1.png' },
-    { id: 2, name: 'Bộ chuồng nuôi bò sát cao cấp', price: 100000, soldCount: 100, image: '/product1.png' },
-    { id: 3, name: 'Bộ chuồng nuôi bò sát cao cấp', price: 100000, soldCount: 100, image: '/product1.png' },
-    { id: 4, name: 'Bộ chuồng nuôi bò sát cao cấp', price: 100000, soldCount: 100, image: '/product1.png' }
-  ];
+  const initializeData = async () => {
+    try {
+      setLoading(true);
+      await Promise.all([
+        fetchCategories(),
+        fetchRecentProducts(),
+        fetchFeaturedProducts()
+      ]);
+    } catch (error) {
+      console.error('Error initializing data:', error);
+      toast.error('Có lỗi xảy ra khi tải dữ liệu');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // New products based on Image 3
-  const newProducts = [
-    { id: 1, name: '[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro', price: 200000, status: 'Bỏ vào giỏ', image: '/product1.png' },
-    { id: 2, name: '[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro', price: 200000, status: 'Bán chạy', image: '/product1.png' },
-    { id: 3, name: '[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro', price: 200000, status: 'Bình Sale 3/2', image: '/product1.png' },
-    { id: 4, name: '[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro', price: 200000, status: 'Freeship', image: '/product1.png' }
-  ];
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const categoriesData = response.data || [];
+      
+      // Take first 12 categories for display
+      setCategories(categoriesData.slice(0, 12));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setCategories([]);
+    }
+  };
 
-  // Featured products based on Image 3
-  const featuredProducts = [
-    { id: 1, name: 'Thức ăn khô', type: 'BỌ SÁT', price: '1kg/70.000đ', image: '/product1.png' },
-    { id: 2, name: 'Thức ăn khô', type: 'BỌ SÁT', price: '1kg/70.000đ', image: '/product1.png' },
-    { id: 3, name: 'Thức ăn khô', type: 'BỌ SÁT', price: '1kg/70.000đ', image: '/product1.png' },
-    { id: 4, name: 'Thức ăn khô', type: 'BỌ SÁT', price: '1kg/70.000đ', image: '/product1.png' },
-    { id: 5, name: 'Thức ăn khô', type: 'BỌ SÁT', price: '1kg/70.000đ', image: '/product1.png' },
-    { id: 6, name: 'Thức ăn khô', type: 'BỌ SÁT', price: '1kg/70.000đ', image: '/product1.png' }
-  ];
+  // Fetch recent products for "flash sale" and "new products"
+  const fetchRecentProducts = async () => {
+    try {
+      const response = await axios.get('http://localhost:8080/reptitist/shop/products/recent/');
+      const products = response.data || [];
+      
+      // Split products for different sections
+      setFlashSaleProducts(products.slice(0, 4));
+      setNewProducts(products.slice(4, 8));
+    } catch (error) {
+      console.error('Error fetching recent products:', error);
+      setFlashSaleProducts([]);
+      setNewProducts([]);
+    }
+  };
+
+  // Fetch featured products from a specific category
+  const fetchFeaturedProducts = async () => {
+    try {
+      // Try to get products from first category if available
+      if (categories.length > 0) {
+        const response = await axios.get(`http://localhost:8080/reptitist/shop/products/category/${categories[0]._id}`);
+        const products = response.data || [];
+        setFeaturedProducts(products.slice(0, 6));
+      } else {
+        // Fallback to recent products
+        const response = await axios.get('http://localhost:8080/reptitist/shop/products/recent/');
+        const products = response.data || [];
+        setFeaturedProducts(products.slice(0, 6));
+      }
+    } catch (error) {
+      console.error('Error fetching featured products:', error);
+      setFeaturedProducts([]);
+    }
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Navigate to search results or filter products
+      console.log('Searching for:', searchTerm);
+    }
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  // Format image URL
+  const getImageUrl = (imageUrl) => {
+    if (!imageUrl) return '/product1.png';
+    if (Array.isArray(imageUrl)) {
+      return imageUrl[0] || '/product1.png';
+    }
+    return imageUrl;
+  };
 
   // Shop features based on Image 1
   const shopFeatures = [
@@ -68,7 +130,7 @@ const ShopLandingPage = () => {
         <div className="shop-top-header">
           <div className="shop-top-links">
             <a href="#" className="shop-top-link">Kênh người bán</a>
-            <a href="#" className="shop-top-link">Trở thành người bán trên Reptisist Shop</a>
+            <Link to="/shop/products" className="shop-top-link">Trở thành người bán trên Reptisist Shop</Link>
             <a href="#" className="shop-top-link">Kết nối với chúng tôi</a>
             <div className="shop-social-icons">
               <a href="#" className="shop-social-icon">
@@ -80,9 +142,9 @@ const ShopLandingPage = () => {
             <a href="#" className="shop-top-action">
               <HelpCircle size={16} /> Hỗ trợ
             </a>
-            <a href="#" className="shop-top-action">
+            <Link to="/login" className="shop-top-action">
               <User size={16} /> Tài khoản
-            </a>
+            </Link>
           </div>
         </div>
         
@@ -92,7 +154,7 @@ const ShopLandingPage = () => {
             <h1 className="shop-name">REPTISIST SHOP</h1>
           </div>
           
-          <div className="shop-search-container">
+          <form onSubmit={handleSearch} className="shop-search-container">
             <input 
               type="text" 
               placeholder="Tìm sản phẩm, thương hiệu, hoặc tên shop" 
@@ -100,15 +162,15 @@ const ShopLandingPage = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button className="shop-search-button">
+            <button type="submit" className="shop-search-button">
               <Search size={18} />
             </button>
-          </div>
+          </form>
           
           <div className="shop-cart-container">
-            <a href="#" className="shop-cart-icon">
+            <Link to="/cart" className="shop-cart-icon">
               <ShoppingCart size={22} />
-            </a>
+            </Link>
           </div>
         </div>
         
@@ -133,7 +195,7 @@ const ShopLandingPage = () => {
                 <li>Premium alarms, heating lamps</li>
                 <li>Live feed, and more!</li>
               </ul>
-              <a href="#" className="shop-now-btn">SHOP NOW!</a>
+              <a href="#products" className="shop-now-btn">SHOP NOW!</a>
             </div>
           </div>
           <div className="hero-side">
@@ -164,20 +226,33 @@ const ShopLandingPage = () => {
         <div className="section-header">
           <h2>DANH MỤC</h2>
         </div>
-        <div className="categories-grid">
-          {categories.map((category, index) => (
-            <div className="category-item" key={index}>
-              <div className="category-image-container">
-                <img src={category.image} alt={category.name} className="category-image" />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Đang tải danh mục...</div>
+          </div>
+        ) : (
+          <div className="categories-grid">
+            {categories.map((category, index) => (
+              <div className="category-item" key={category._id || index}>
+                <div className="category-image-container">
+                  <img 
+                    src={getImageUrl(category.product_category_imageurl)} 
+                    alt={category.product_category_name} 
+                    className="category-image"
+                    onError={(e) => {
+                      e.target.src = '/product1.png';
+                    }}
+                  />
+                </div>
+                <div className="category-name">{category.product_category_name}</div>
               </div>
-              <div className="category-name">{category.name}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Flash Sale */}
-      <section className="flash-sale-section">
+      <section className="flash-sale-section" id="products">
         <div className="section-header">
           <h2>FLASH SALE</h2>
           <div className="countdown">
@@ -188,26 +263,43 @@ const ShopLandingPage = () => {
             <span className="countdown-number">00</span>
           </div>
         </div>
-        <div className="products-grid">
-          {flashSaleProducts.map(product => (
-            <Link to="/ProductDetail" key={product.id} className="product-link">
-              <div className="product-card">
-                <div className="product-image-container">
-                  <img src={product.image} alt={product.name} className="product-image" />
-                </div>
-                <div className="product-info">
-                  <div className="product-price">{product.price.toLocaleString()} đ</div>
-                  <div className="product-sold-indicator">
-                    <div className="sold-progress">
-                      <div className="sold-progress-bar" style={{ width: '100%' }}></div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Đang tải sản phẩm...</div>
+          </div>
+        ) : flashSaleProducts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Chưa có sản phẩm flash sale</div>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {flashSaleProducts.map(product => (
+              <Link to={`/product/${product._id}`} key={product._id} className="product-link">
+                <div className="product-card">
+                  <div className="product-image-container">
+                    <img 
+                      src={getImageUrl(product.product_imageurl)} 
+                      alt={product.product_name} 
+                      className="product-image"
+                      onError={(e) => {
+                        e.target.src = '/product1.png';
+                      }}
+                    />
+                  </div>
+                  <div className="product-info">
+                    <div className="product-price">{formatCurrency(product.product_price)}</div>
+                    <div className="product-sold-indicator">
+                      <div className="sold-progress">
+                        <div className="sold-progress-bar" style={{ width: '100%' }}></div>
+                      </div>
+                      <div className="sold-text">Đã bán 0</div>
                     </div>
-                    <div className="sold-text">Đã bán {product.soldCount}</div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Featured Products */}
@@ -215,22 +307,39 @@ const ShopLandingPage = () => {
         <div className="section-header">
           <h2>TÌM KIẾM HÀNG ĐẦU</h2>
         </div>
-        <div className="products-grid">
-          {featuredProducts.map(product => (
-            <Link to="/ProductDetail" key={product.id} className="product-link">
-              <div className="featured-product-card">
-                <div className="featured-product-image-container">
-                  <img src={product.image} alt={product.name} className="featured-product-image" />
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Đang tải sản phẩm...</div>
+          </div>
+        ) : featuredProducts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Chưa có sản phẩm nổi bật</div>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {featuredProducts.map(product => (
+              <Link to={`/product/${product._id}`} key={product._id} className="product-link">
+                <div className="featured-product-card">
+                  <div className="featured-product-image-container">
+                    <img 
+                      src={getImageUrl(product.product_imageurl)} 
+                      alt={product.product_name} 
+                      className="featured-product-image"
+                      onError={(e) => {
+                        e.target.src = '/product1.png';
+                      }}
+                    />
+                  </div>
+                  <div className="featured-product-info">
+                    <div className="featured-product-type">BỌ SÁT</div>
+                    <div className="featured-product-name">{product.product_name}</div>
+                    <div className="featured-product-price">{formatCurrency(product.product_price)}</div>
+                  </div>
                 </div>
-                <div className="featured-product-info">
-                  <div className="featured-product-type">{product.type}</div>
-                  <div className="featured-product-name">{product.name}</div>
-                  <div className="featured-product-price">{product.price}</div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* New Products */}
@@ -238,27 +347,46 @@ const ShopLandingPage = () => {
         <div className="section-header">
           <h2>MỚI NHẤT HÔM NAY</h2>
         </div>
-        <div className="products-grid">
-          {newProducts.map(product => (
-            <Link to="/ProductDetail" key={product.id} className="product-link">
-              <div className="new-product-card">
-                <div className="new-product-image-container">
-                  <img src={product.image} alt={product.name} className="new-product-image" />
-                  <div className="product-badge">{product.status}</div>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Đang tải sản phẩm...</div>
+          </div>
+        ) : newProducts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '50px 0' }}>
+            <div>Chưa có sản phẩm mới</div>
+          </div>
+        ) : (
+          <div className="products-grid">
+            {newProducts.map(product => (
+              <Link to={`/product/${product._id}`} key={product._id} className="product-link">
+                <div className="new-product-card">
+                  <div className="new-product-image-container">
+                    <img 
+                      src={getImageUrl(product.product_imageurl)} 
+                      alt={product.product_name} 
+                      className="new-product-image"
+                      onError={(e) => {
+                        e.target.src = '/product1.png';
+                      }}
+                    />
+                    <div className="product-badge">MỚI</div>
+                  </div>
+                  <div className="new-product-info">
+                    <div className="new-product-name">{product.product_name}</div>
+                    <div className="new-product-price">{formatCurrency(product.product_price)}</div>
+                  </div>
                 </div>
-                <div className="new-product-info">
-                  <div className="new-product-name">{product.name}</div>
-                  <div className="new-product-price">{product.price.toLocaleString()} đ</div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Login Banner */}
       <section className="login-banner">
-        <div className="login-message">Đăng nhập để biết thêm thông tin</div>
+        <div className="login-message">
+          <Link to="/login">Đăng nhập để biết thêm thông tin</Link>
+        </div>
       </section>
 
       {/* Footer */}
