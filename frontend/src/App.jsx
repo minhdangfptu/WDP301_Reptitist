@@ -247,6 +247,11 @@ const AppRoutes = () => {
           <ProductManagement />
         </ProtectedRoute>
       } />
+      <Route path="/LibraryManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <LibraryManagement />
+        </ProtectedRoute>
+      } />
       <Route path="/admin/products/create" element={
         <ProtectedRoute requiredRole="admin">
           <ProductForm />

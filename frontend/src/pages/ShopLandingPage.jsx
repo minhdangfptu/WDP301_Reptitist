@@ -149,10 +149,10 @@ const ShopLandingPage = () => {
           </div>
           <div className="hero-side">
             <div className="hero-small">
-              <img src="hero-small-1.png" alt="Reptile Care" className="hero-small-image" />
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
             <div className="hero-small">
-              <img src="hero-small-2.png" alt="Reptile Care" className="hero-small-image" />
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
           </div>
         </div>
@@ -351,10 +351,7 @@ const ShopLandingPage = () => {
           </div>
         </section>
 
-        {/* Login Banner */}
-        {/* <section className="login-banner">
-          <div className="login-message">Đăng nhập để biết thêm thông tin</div>
-        </section> */}
+``
       </Container>
       {/* Footer */}
       <Footer />
