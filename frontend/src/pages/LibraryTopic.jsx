@@ -8,7 +8,7 @@ const Library = () => {
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     axios
       .get("http://localhost:8080/reptitist/library_topics")
@@ -68,7 +68,7 @@ const Library = () => {
                           display: "inline-block",
                         }}
                       >
-                        
+                        ▶
                       </span>
                     </div>
 
@@ -81,62 +81,13 @@ const Library = () => {
                         </li>
                       </ul>
                     )}
-                    <div className="library-content">
-            {/* Sidebar */}
-            <div className="sidebar">
-              <h2 className="sidebar-title">Thư viện kiến thức</h2>
-              <ul className="sidebar-menu">
-                {topics.map((topic, idx) => (
-                  <li key={topic._id}>
-                    <div
-                      className="menu-item"
-                      onClick={() => toggleTopic(idx)}
-                      style={{ cursor: "pointer", userSelect: "none" }}
-                    >
-                      <a href="#" className="menu-link">
-                        {topic.topic_title}
-                      </a>
-                      <span
-                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
-                        aria-hidden="true"
-                      ></span>
-                    </div>
-                    <ul
-                      className="submenu"
-                      style={{ display: openIndex === idx ? "block" : "none" }}
-                    >
-                      <li>
-                        <a href={`/libraryCategory/${topic._id}`}>
-                          {topic.topic_description || "Chưa có mô tả"}
-                        </a>
-                      </li>
-                    </ul>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Content Grid */}
-            <div className="content-grid d-flex flex-wrap gap-4">
-              {topics.map((topic) => (
-                <div
-                  className="category-card border rounded p-3 text-center"
-                  key={topic._id}
-                  style={{ width: "250px" }}
-                >
-                  <div className="card-image mb-2">
-                    <img
-                      src={topic.topic_imageurl[0] || "/default.jpg"}
-                      alt={topic.topic_title}
-                      style={{ width: "100%", height: "150px", objectFit: "cover" }}
-                    />
-                  </div>
-                  <div className="card-title fw-bold">{topic.topic_title}</div>
-                  {/* <p>{topic.topic_description}</p>
-                  <Link to={`/library/${topic._id}`}>Xem chi tiết</Link> */}
-                </div>
-              ))}
-              <div style={{ flex: 1 }}>
+            <div style={{ flex: 1 }}>
               <div style={{ textAlign: "right", marginBottom: "20px" }}>
                 <Link to="/library_topics/create">
                   <button
@@ -226,6 +177,7 @@ const Library = () => {
           </div>
         </div>
       </section>
+
 
       <Footer />
     </>

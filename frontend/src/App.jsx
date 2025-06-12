@@ -76,6 +76,8 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AppRoutes = () => (
   <Routes>
     {/* Public */}
+    <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
+        <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
     <Route path="/ContactUs" element={<ContactUs />} />

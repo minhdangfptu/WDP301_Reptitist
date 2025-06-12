@@ -159,7 +159,6 @@ const LibraryContent = () => {
   if (error) return <div className="text-danger text-center my-5">{error}</div>;
 
   const selectedContent = contents.find((item) => item._id === selectedContentId);
->>>>>>> origin/Tien
 
   return (
     <>

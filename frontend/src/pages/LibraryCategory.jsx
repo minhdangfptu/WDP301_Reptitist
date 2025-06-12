@@ -10,8 +10,9 @@ const LibraryCategory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { id: topicId } = useParams();
-
+  const { id } = useParams();
+  const [openIndex, setOpenIndex] = useState(null);
+  const topicId = id;
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -47,6 +48,10 @@ const LibraryCategory = () => {
     }
   };
 
+  const toggleTopic = (idx) => {
+    setOpenIndex(openIndex === idx ? null : idx);
+  };
+
   if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
   if (error) return <div className="text-danger text-center my-5">{error}</div>;
 
@@ -54,17 +59,16 @@ const LibraryCategory = () => {
     <>
       <Header />
 
-      <div className="page-title bg-light py-4">
-        <div className="container text-center">
-          <h1 className="fw-bold">DANH MỤC THƯ VIỆN</h1>
-          <p className="text-muted">Chủ đề: {topic?.topic_title || "Không xác định"}</p>
+      <div className="page-title">
+        <div className="container">
+          <h1>THƯ VIỆN KIẾN THỨC</h1>
         </div>
       </div>
 
       <div className="container">
         <div className="breadcrumb">
-          <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right mx-2"></i>
-          <Link to="/LibraryTopic">Thư viện kiến thức</Link> <i className="fas fa-angle-right mx-2"></i>
+          <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/LibraryTopic">Thư viện kiến thức</a> <i className="fas fa-angle-right"></i>{" "}
           <span>{topic?.topic_title || "Chủ đề không xác định"}</span>
         </div>
 
@@ -73,52 +77,102 @@ const LibraryCategory = () => {
             <button className="btn btn-success">+ Tạo danh mục</button>
           </Link>
         </div>
+      </div>
 
-        <div className="row row-cols-1 row-cols-md-3 g-4">
-          {allCategories.map((cat) => (
-            <div className="col" key={cat._id}>
-              <div className="card h-100 shadow-sm border-0 d-flex flex-column">
-                <img
-                  src={cat.category_imageurl || "/default.jpg"}
-                  className="card-img-top"
-                  alt={cat.category_content}
-                  style={{
-                    height: "200px",
-                    objectFit: "cover",
-                    borderTopLeftRadius: "0.5rem",
-                    borderTopRightRadius: "0.5rem",
-                  }}
-                />
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title text-primary">{cat.category_content}</h5>
-                  <p className="card-text text-muted flex-grow-1">
-                    {cat.category_description || "Chưa có mô tả"}
-                  </p>
-                  <div className="mt-auto d-flex justify-content-between">
-                    <button
-                      className="btn btn-outline-primary btn-sm me-2"
-                      onClick={() => navigate(`/librarycontent/${cat._id}`)}
+      <section className="library-section">
+        <div className="container">
+          <div className="library-content">
+            {/* Sidebar */}
+            <div className="sidebar">
+              <h2 className="sidebar-title">Thư viện kiến thức</h2>
+              <ul className="sidebar-menu list-unstyled">
+                {allCategories.map((cat, idx) => (
+                  <li key={cat._id}>
+                    <div
+                      className="menu-item"
+                      onClick={() => toggleTopic(idx)}
+                      style={{ cursor: "pointer", userSelect: "none" }}
                     >
-                      Xem nội dung
-                    </button>
+                      <Link to="#" className="menu-link">
+                        {cat.category_content}
+                      </Link>
+                      <span
+                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
+                        aria-hidden="true"
+                      ></span>
+                    </div>
+                    <ul
+                      className="submenu"
+                      style={{ display: openIndex === idx ? "block" : "none" }}
+                    >
+                      <li>
+                        <Link to={`/librarycontent/${cat._id}`}>
+                          {cat.category_description || "Chưa có mô tả"}
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Content Grid */}
+            <div className="content-grid">
+              {allCategories.map((cat) => (
+                <div className="category-card" key={cat._id}>
+                  <div className="card-image">
+                    <img
+                      src={
+                        cat.category_imageurl ||
+                        "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
+                      }
+                      alt={cat.category_content}
+                    />
+                  </div>
+                  <div className="card-title">{cat.category_content}</div>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <Link to={`/library_categories/update/${cat._id}`}>
-                      <button className="btn btn-warning btn-sm me-2">Cập nhật</button>
+                      <button
+                        style={{
+                          backgroundColor: "#ffc107",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        Cập nhật
+                      </button>
                     </Link>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(cat._id)}>
+                    <button
+                      style={{
+                        backgroundColor: "#dc3545",
+                        color: "#fff",
+                        border: "none",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                      }}
+                      onClick={() => handleDelete(cat._id)}
+                    >
                       Xoá
                     </button>
                   </div>
                 </div>
-              </div>
+              ))}
+              {allCategories.length === 0 && (
+                <div className="col-12 text-center mt-4">
+                  <p>Không có danh mục nào để hiển thị.</p>
+                </div>
+              )}
             </div>
-          ))}
-          {allCategories.length === 0 && (
-            <div className="col-12 text-center mt-4">
-              <p>Không có danh mục nào để hiển thị.</p>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      </section>
 
       <Footer />
     </>

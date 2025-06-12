@@ -19,6 +19,7 @@ const UpdateCategory = () => {
     axios
       .get(`http://localhost:8080/reptitist/library_categories/${id}`)
       .then((response) => {
+        console.log(response.data); // Kiểm tra dữ liệu trả về
         setFormData(response.data);
       })
       .catch(() => setError("Không thể tải thông tin danh mục."));
