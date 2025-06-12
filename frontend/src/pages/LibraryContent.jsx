@@ -34,7 +34,7 @@ const LibraryContent = () => {
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      userId = decoded.user_id; // Giả định user_id nằm trong payload
+      userId = decoded.user_id; 
     } catch (err) {
       console.error("Lỗi giải mã token:", err);
     }
@@ -89,7 +89,6 @@ const LibraryContent = () => {
       }
     };
 
-    // Lấy danh sách chủ đề
     const fetchTopics = async () => {
       try {
         const response = await axios.get(
@@ -106,19 +105,16 @@ const LibraryContent = () => {
     });
   }, [categoryId]);
 
-  // Cập nhật user_id trong formData khi token thay đổi
   useEffect(() => {
     setFormData((prev) => ({ ...prev, user_id: userId || "sample_user_id" }));
   }, [userId]);
 
-  // Hàm chọn nội dung
   const handleSelectContent = (contentId) => {
     setSelectedContentId(contentId);
     setIsCreating(false);
     setIsEditing(false);
   };
 
-  // Hàm xử lý thay đổi form
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -127,7 +123,6 @@ const LibraryContent = () => {
     }));
   };
 
-  // Hàm tạo nội dung
   const handleCreate = async (e) => {
     e.preventDefault();
     
@@ -145,7 +140,6 @@ const LibraryContent = () => {
         topic_category_id: "",
         category_content_id: categoryId
       });
-      // Refresh danh sách
       const response = await axios.get("http://localhost:8080/reptitist/library_contents");
       const filtered = response.data.filter(
         (item) => String(item.category_content_id) === String(categoryId)
@@ -157,7 +151,6 @@ const LibraryContent = () => {
     }
   };
 
-  // Hàm mở form chỉnh sửa
   const handleEdit = () => {
     const content = contents.find((item) => item._id === selectedContentId);
     if (content) {
@@ -173,7 +166,6 @@ const LibraryContent = () => {
     }
   };
 
-  // Hàm cập nhật nội dung
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!formData.topic_category_id) {
@@ -200,7 +192,6 @@ const LibraryContent = () => {
     }
   };
 
-  // Hàm xóa nội dung
   const handleDelete = async () => {
     if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
       try {
