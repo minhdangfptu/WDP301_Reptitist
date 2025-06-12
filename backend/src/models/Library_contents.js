@@ -5,8 +5,8 @@ const libraryContentSchema = new mongoose.Schema({
   content: { type: String, required: true },
   image_urls: { type: [String], default: [] },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  topic_id: { type: mongoose.Schema.Types.ObjectId, ref: 'LibraryTopic', required: true  },
-  category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'LibraryCategory', required: true  }
+  topic_category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'LibraryTopic', required: true  },
+  category_content_id: { type: mongoose.Schema.Types.ObjectId, ref: 'LibraryCategory', required: true  }
 }, { collection: 'library_contents', timestamps: true });
 
 module.exports = mongoose.models.LibraryContent || mongoose.model('LibraryContent', libraryContentSchema);

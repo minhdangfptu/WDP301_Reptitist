@@ -1,37 +1,64 @@
 import React, { useEffect, useState } from "react";
-
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+
+// Cấu hình Axios để gửi token trong header
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 const LibraryContent = () => {
   const { categoryId } = useParams();
   const [contents, setContents] = useState([]);
-
   const [category, setCategory] = useState(null);
+  const [topics, setTopics] = useState([]); // Thêm state cho danh sách chủ đề
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Lấy user_id từ token
+  const token = localStorage.getItem("token");
+  let userId = "";
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      userId = decoded.user_id; // Giả định user_id nằm trong payload
+    } catch (err) {
+      console.error("Lỗi giải mã token:", err);
+    }
+  }
+
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     image_urls: [],
-    user_id: "sample_user_id",
-    topic_id: "sample_topic_id",
-    category_id: categoryId
+    user_id: userId || "sample_user_id", // Sử dụng user_id từ token
+    topic_category_id: "", // Để trống, chờ người dùng chọn
+    category_content_id: categoryId
   });
   const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
+
     const fetchCategory = async () => {
       try {
         const response = await axios.get(
           `http://localhost:8080/reptitist/library_categories/${categoryId}`
         );
+        console.log("Category:", response.data);
         setCategory(response.data);
       } catch (err) {
         setError("Lỗi khi tải thông tin danh mục");
@@ -43,19 +70,46 @@ const LibraryContent = () => {
         const response = await axios.get(
           "http://localhost:8080/reptitist/library_contents"
         );
-        const filtered = response.data.filter(
-          (item) => item.category_content_id === categoryId 
-        );
+        const filtered = response.data.filter((item) => {
+          console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
+          if (item.category_content_id && typeof item.category_content_id === "object") {
+            if (item.category_content_id._id) {
+              return String(item.category_content_id._id) === String(categoryId);
+            }
+            if (item.category_content_id.$oid) {
+              return item.category_content_id.$oid === categoryId;
+            }
+          }
+          return String(item.category_content_id) === String(categoryId);
+        });
+        console.log("Contents:", filtered);
         setContents(filtered);
       } catch (err) {
         setError("Lỗi khi tải nội dung thư viện");
       }
     };
 
-    Promise.all([fetchCategory(), fetchContents()]).then(() => {
+    // Lấy danh sách chủ đề
+    const fetchTopics = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:8080/reptitist/library_topics"
+        );
+        setTopics(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải danh sách chủ đề");
+      }
+    };
+
+    Promise.all([fetchCategory(), fetchContents(), fetchTopics()]).then(() => {
       setLoading(false);
     });
   }, [categoryId]);
+
+  // Cập nhật user_id trong formData khi token thay đổi
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, user_id: userId || "sample_user_id" }));
+  }, [userId]);
 
   // Hàm chọn nội dung
   const handleSelectContent = (contentId) => {
@@ -76,26 +130,30 @@ const LibraryContent = () => {
   // Hàm tạo nội dung
   const handleCreate = async (e) => {
     e.preventDefault();
+    
     try {
       await axios.post("http://localhost:8080/reptitist/library_contents", {
         ...formData,
-        category_id: categoryId
+        category_content_id: categoryId
       });
       setIsCreating(false);
       setFormData({
         title: "",
         content: "",
         image_urls: [],
-        user_id: "sample_user_id",
-        topic_id: "sample_topic_id",
-        category_id: categoryId
+        user_id: userId || "sample_user_id",
+        topic_category_id: "",
+        category_content_id: categoryId
       });
       // Refresh danh sách
       const response = await axios.get("http://localhost:8080/reptitist/library_contents");
-      const filtered = response.data.filter((item) => item.category_id === categoryId);
+      const filtered = response.data.filter(
+        (item) => String(item.category_content_id) === String(categoryId)
+      );
       setContents(filtered);
     } catch (err) {
       setError("Lỗi khi tạo nội dung");
+      console.error("Lỗi chi tiết:", err.response?.data);
     }
   };
 
@@ -107,29 +165,32 @@ const LibraryContent = () => {
         title: content.title,
         content: content.content,
         image_urls: content.image_urls,
-        user_id: content.user_id,
-        topic_id: content.topic_id,
-        category_id: categoryId
+        user_id: userId || content.user_id,
+        topic_category_id: content.topic_category_id,
+        category_content_id: categoryId
       });
       setIsEditing(true);
     }
   };
 
-  // Hàm cập nhật nội dung (ĐÃ SỬA)
+  // Hàm cập nhật nội dung
   const handleUpdate = async (e) => {
     e.preventDefault();
+    if (!formData.topic_category_id) {
+      setError("Vui lòng chọn chủ đề");
+      return;
+    }
     try {
       const response = await axios.put(
         `http://localhost:8080/reptitist/library_contents/${selectedContentId}`,
         {
           ...formData,
-          category_id: categoryId
+          category_content_id: categoryId
         }
       );
-      // Cập nhật trực tiếp danh sách contents
       setContents((prevContents) =>
         prevContents.map((item) =>
-          item._id === selectedContentId ? { ...item, ...response.data } : item
+          item._id === selectedContentId ? { ...item, ...response.data.content } : item
         )
       );
       setIsEditing(false);
@@ -144,9 +205,10 @@ const LibraryContent = () => {
     if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
       try {
         await axios.delete(`http://localhost:8080/reptitist/library_contents/${selectedContentId}`);
-        // Refresh danh sách
         const response = await axios.get("http://localhost:8080/reptitist/library_contents");
-        const filtered = response.data.filter((item) => item.category_id === categoryId);
+        const filtered = response.data.filter(
+          (item) => String(item.category_content_id) === String(categoryId)
+        );
         setContents(filtered);
         setSelectedContentId(null);
       } catch (err) {
@@ -165,7 +227,6 @@ const LibraryContent = () => {
       <Header />
       <div className="page-title">
         <div className="container">
-
           <h1>THƯ VIỆN KIẾN THỨC</h1>
         </div>
       </div>
@@ -186,7 +247,6 @@ const LibraryContent = () => {
       <section className="library-section">
         <div className="container">
           <div className="library-content">
-            {/* Sidebar */}
             <div className="sidebar">
               <h2 className="sidebar-title">Chuyên mục bài viết</h2>
               <ul className="sidebar-menu">
@@ -219,12 +279,10 @@ const LibraryContent = () => {
               </ul>
             </div>
 
-            {/* Content Area */}
             <div
               className="content-grid"
               style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
             >
-              {/* Nút Create */}
               <div style={{ width: "100%", marginBottom: "10px" }}>
                 <button
                   style={{
@@ -245,7 +303,6 @@ const LibraryContent = () => {
                 </button>
               </div>
 
-              {/* Form tạo/cập nhật */}
               {(isCreating || isEditing) && (
                 <div style={{ width: "100%", marginBottom: "20px" }}>
                   <form
@@ -280,7 +337,7 @@ const LibraryContent = () => {
                       />
                     </div>
                     <div style={{ marginBottom: "10px" }}>
-                      <label>URL hình ảnh :</label>
+                      <label>URL hình ảnh:</label>
                       <input
                         type="text"
                         name="image_urls"
@@ -321,9 +378,9 @@ const LibraryContent = () => {
                             title: "",
                             content: "",
                             image_urls: [],
-                            user_id: "sample_user_id",
-                            topic_id: "sample_topic_id",
-                            category_id: categoryId
+                            user_id: userId || "sample_user_id",
+                            topic_category_id: "",
+                            category_content_id: categoryId
                           });
                         }}
                       >
@@ -337,7 +394,6 @@ const LibraryContent = () => {
               {selectedContent && !isCreating && !isEditing ? (
                 <div style={{ width: "100%" }}>
                   <div className="mb-4 p-3 border rounded">
-                    {/* Nút Update và Delete */}
                     <div style={{ marginBottom: "10px" }}>
                       <button
                         style={{
@@ -375,7 +431,7 @@ const LibraryContent = () => {
                           gridTemplateRows: "repeat(2, 1fr)",
                           gap: "10px",
                           maxWidth: "710px",
-                          marginBottom: "10px",
+                          marginBottom: "10px"
                         }}
                       >
                         {selectedContent.image_urls.slice(0, 3).map((img, index) => (
@@ -391,7 +447,7 @@ const LibraryContent = () => {
                                 ? { gridColumn: "1 / 2", gridRow: "1 / 3", width: "500px", height: "300px" }
                                 : index === 1
                                 ? { gridColumn: "2 / 3", gridRow: "1 / 2", width: "200px", height: "145px" }
-                                : { gridColumn: "2 / 3", gridRow: "2 / 3", width: "200px", height: "145px" }),
+                                : { gridColumn: "2 / 3", gridRow: "2 / 3", width: "200px", height: "145px" })
                             }}
                           />
                         ))}
@@ -425,7 +481,7 @@ const LibraryContent = () => {
                           style={{
                             width: "100%",
                             height: "180px",
-                            objectFit: "cover",
+                            objectFit: "cover"
                           }}
                         />
                       </div>
@@ -443,6 +499,5 @@ const LibraryContent = () => {
     </>
   );
 };
-
 
 export default LibraryContent;
