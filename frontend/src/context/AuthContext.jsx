@@ -294,7 +294,7 @@ export const AuthProvider = ({ children }) => {
     isShop,
     isAdmin,
     isPremium,
-    checkAuthStatus,,
+    checkAuthStatus,
     loginWithGoogle
   };
 

@@ -306,27 +306,7 @@ const reportProduct = async (req, res) => {
   }
 };
 
-// Cập nhật sản phẩm (chỉ Shop owner)
-const updateMyProduct = async (req, res) => {
-  try {
-    const { productName } = req.params;
-    const products = await Product.find({ 
-      product_name: { $regex: productName, $options: 'i' },
-      product_status: 'available' // Chỉ hiển thị sản phẩm available
-    }).populate('user_id', 'username');
-    
-    if (!products || products.length === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy sản phẩm với tên này' });
-    }
-    res.status(200).json(products);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Lỗi khi tìm sản phẩm!',
-      error: error.message
-    });
-  }
-};
+
 
 const getAllProductRecentUploaded = async (req, res) => {
   try {
@@ -352,25 +332,6 @@ const getAllProductRecentUploaded = async (req, res) => {
 
 
 // Báo cáo sản phẩm (dành cho Customer)
-const reportProduct = async (req, res) => {
-  try {
-    const productId = req.params.productId;
-    const product = await Product.findById(productId)
-      .populate('user_id', 'username')
-      .populate('product_category_id', 'product_category_name');
-    
-    if (!product) {
-      return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
-    }
-    res.status(200).json(product);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Lỗi khi lấy chi tiết sản phẩm!',
-      error: error.message
-    });
-  }
-};
 
 // Feedback functions giữ nguyên
 // Feedback functions giữ nguyên
@@ -558,6 +519,10 @@ const getTopRatedProducts = async (req, res) => {
       error: error.message
     });
   }
+};
+const getAllProductByName = async (req, res) => {
+};
+const getProductDetails = async (req, res) => {
 };
 
 module.exports = {
