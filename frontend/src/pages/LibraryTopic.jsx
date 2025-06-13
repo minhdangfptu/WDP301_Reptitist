@@ -24,6 +24,23 @@ const Library = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+
+  const handleDelete = async (topicId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
+      try {
+        await axios.delete(`http://localhost:8080/reptitist/library_topics/${topicId}`);
+        setTopics(topics.filter((topic) => topic._id !== topicId));
+        alert("Xóa chủ đề thành công!");
+      } catch (error) {
+        console.error("Lỗi khi xóa chủ đề:", error);
+        alert("Có lỗi xảy ra khi xóa chủ đề!");
+      }
+    }
+  };
+
+
+
+
   return (
     <>
       <Header />
