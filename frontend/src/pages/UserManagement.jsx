@@ -16,7 +16,7 @@ const UserManagement = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('all');
+  const [filterAccountType, setFilterAccountType] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterDate, setFilterDate] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -27,7 +27,13 @@ const UserManagement = () => {
   // Modal states
   const [showUserDetailModal, setShowUserDetailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showAccountTypeModal, setShowAccountTypeModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [accountTypeForm, setAccountTypeForm] = useState({
+    type: 'customer',
+    level: 'normal',
+    expires_at: ''
+  });
   
   // Statistics
   const [stats, setStats] = useState({
@@ -41,33 +47,18 @@ const UserManagement = () => {
 
   const searchInputRef = useRef(null);
 
-  // Get role display text
-  const getRoleDisplayText = (role) => {
-    switch (role) {
-      case 'admin': return 'Quản trị viên';
-      case 'shop': return 'Cửa hàng';
-      case 'customer': return 'Khách hàng';
-      default: return 'Chưa xác định';
-    }
-  };
-
-  // Get role badge color
-  const getRoleBadgeColor = (role) => {
-    switch (role) {
-      case 'admin': return 'um-badge-admin';
-      case 'shop': return 'um-badge-shop';
-      case 'customer': return 'um-badge-customer';
-      default: return 'um-badge-default';
-    }
-  };
-
-  // Get account type display
-  const getAccountTypeDisplay = (user) => {
-    if (!user) return 'Customer';
+  // Get account type display text
+  const getAccountTypeDisplayText = (userData) => {
+    if (!userData) return 'Customer';
     
-    // Check if user is shop based on role or account_type
-    if (user.role_id?.role_name === 'shop' || user.account_type?.type === 'shop') {
-      const level = user.account_type?.level;
+    // Check role first for admin
+    if (userData.role_id?.role_name === 'admin') {
+      return 'Administrator';
+    }
+    
+    // Check account_type for shop
+    if (userData.account_type?.type === 'shop') {
+      const level = userData.account_type?.level;
       if (level === 'premium') {
         return 'Premium Shop';
       } else {
@@ -76,7 +67,7 @@ const UserManagement = () => {
     }
     
     // Check account type level for customers
-    if (user.account_type?.level === 'premium') {
+    if (userData.account_type?.level === 'premium') {
       return 'Premium Customer';
     }
     
@@ -84,14 +75,21 @@ const UserManagement = () => {
   };
 
   // Get account type badge color
-  const getAccountTypeBadgeColor = (user) => {
-    if (!user) return 'um-badge-default';
+  const getAccountTypeBadgeColor = (userData) => {
+    if (!userData) return 'um-badge-default';
     
-    if (user.role_id?.role_name === 'shop' || user.account_type?.type === 'shop') {
-      return user.account_type?.level === 'premium' ? 'um-badge-premium' : 'um-badge-shop';
+    // Admin
+    if (userData.role_id?.role_name === 'admin') {
+      return 'um-badge-admin';
     }
     
-    if (user.account_type?.level === 'premium') {
+    // Shop
+    if (userData.account_type?.type === 'shop') {
+      return userData.account_type?.level === 'premium' ? 'um-badge-premium' : 'um-badge-shop';
+    }
+    
+    // Customer
+    if (userData.account_type?.level === 'premium') {
       return 'um-badge-premium';
     }
     
@@ -250,9 +248,18 @@ const UserManagement = () => {
       );
     }
 
-    // Role filter
-    if (filterRole !== 'all') {
-      filtered = filtered.filter(user => user.role_id?.role_name === filterRole);
+    // Account type filter
+    if (filterAccountType !== 'all') {
+      filtered = filtered.filter(user => {
+        if (filterAccountType === 'admin') {
+          return user.role_id?.role_name === 'admin';
+        } else if (filterAccountType === 'shop') {
+          return user.account_type?.type === 'shop';
+        } else if (filterAccountType === 'customer') {
+          return user.role_id?.role_name !== 'admin' && user.account_type?.type !== 'shop';
+        }
+        return true;
+      });
     }
 
     // Status filter
@@ -302,9 +309,9 @@ const UserManagement = () => {
       if (sortField === 'created_at') {
         aValue = new Date(a.created_at);
         bValue = new Date(b.created_at);
-      } else if (sortField === 'role') {
-        aValue = a.role_id?.role_name || '';
-        bValue = b.role_id?.role_name || '';
+      } else if (sortField === 'account_type') {
+        aValue = getAccountTypeDisplayText(a);
+        bValue = getAccountTypeDisplayText(b);
       }
 
       if (sortDirection === 'asc') {
@@ -316,7 +323,7 @@ const UserManagement = () => {
 
     setFilteredUsers(filtered);
     setCurrentPage(1);
-  }, [users, searchTerm, filterRole, filterStatus, filterDate, sortField, sortDirection]);
+  }, [users, searchTerm, filterAccountType, filterStatus, filterDate, sortField, sortDirection]);
 
   // Format date
   const formatDate = (dateString) => {
@@ -348,13 +355,55 @@ const UserManagement = () => {
   // Reset filters
   const resetFilters = () => {
     setSearchTerm('');
-    setFilterRole('all');
+    setFilterAccountType('all');
     setFilterStatus('all');
     setFilterDate('all');
     setCurrentPage(1);
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
+  };
+
+  // Handle account type update
+  const handleAccountTypeUpdate = async () => {
+    if (!selectedUser) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.patch(
+        `http://localhost:8080/reptitist/admin/users/${selectedUser._id}/account-type`,
+        accountTypeForm,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success('Cập nhật loại tài khoản thành công');
+        await fetchUsers();
+        setShowAccountTypeModal(false);
+        setSelectedUser(null);
+      }
+    } catch (error) {
+      console.error('Error updating account type:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật loại tài khoản');
+    }
+  };
+
+  // Open account type modal
+  const openAccountTypeModal = (userData) => {
+    setSelectedUser(userData);
+    setAccountTypeForm({
+      type: userData.account_type?.type || 'customer',
+      level: userData.account_type?.level || 'normal',
+      expires_at: userData.account_type?.expires_at || ''
+    });
+    setShowAccountTypeModal(true);
   };
 
   // Check admin access
@@ -500,13 +549,13 @@ const UserManagement = () => {
             </div>
             
             <div className="um-filter-group">
-              <label>Vai trò:</label>
+              <label>Loại tài khoản:</label>
               <select
-                value={filterRole}
-                onChange={(e) => setFilterRole(e.target.value)}
+                value={filterAccountType}
+                onChange={(e) => setFilterAccountType(e.target.value)}
                 className="um-filter-select"
               >
-                <option value="all">Tất cả vai trò</option>
+                <option value="all">Tất cả loại</option>
                 <option value="admin">Quản trị viên</option>
                 <option value="shop">Cửa hàng</option>
                 <option value="customer">Khách hàng</option>
@@ -565,7 +614,7 @@ const UserManagement = () => {
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || filterRole !== 'all' || filterStatus !== 'all' || filterDate !== 'all') && (
+          {(searchTerm || filterAccountType !== 'all' || filterStatus !== 'all' || filterDate !== 'all') && (
             <div className="um-filter-summary">
               <div className="um-filter-results">
                 <span>Hiển thị {filteredUsers.length} / {users.length} người dùng</span>
@@ -578,11 +627,12 @@ const UserManagement = () => {
                     <button onClick={() => setSearchTerm('')}>×</button>
                   </span>
                 )}
-                {filterRole !== 'all' && (
+                {filterAccountType !== 'all' && (
                   <span className="um-filter-tag">
                     <i className="fas fa-user-tag"></i>
-                    {getRoleDisplayText(filterRole)}
-                    <button onClick={() => setFilterRole('all')}>×</button>
+                    {filterAccountType === 'admin' ? 'Quản trị viên' : 
+                     filterAccountType === 'shop' ? 'Cửa hàng' : 'Khách hàng'}
+                    <button onClick={() => setFilterAccountType('all')}>×</button>
                   </span>
                 )}
                 {filterStatus !== 'all' && (
@@ -632,7 +682,6 @@ const UserManagement = () => {
                     <tr>
                       <th>Người dùng</th>
                       <th>Email</th>
-                      <th>Vai trò</th>
                       <th>Loại tài khoản</th>
                       <th>Trạng thái</th>
                       <th>Ngày tạo</th>
@@ -640,14 +689,14 @@ const UserManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentUsers.map(user => (
-                      <tr key={user._id} className="um-table-row">
+                    {currentUsers.map(userData => (
+                      <tr key={userData._id} className="um-table-row">
                         <td>
                           <div className="um-user-info">
                             <div className="um-user-avatar-container">
                               <img
-                                src={user.user_imageurl || '/default-avatar.png'}
-                                alt={user.username}
+                                src={userData.user_imageurl || '/default-avatar.png'}
+                                alt={userData.username}
                                 className="um-user-avatar"
                                 onError={(e) => {
                                   e.target.src = '/default-avatar.png';
@@ -655,47 +704,42 @@ const UserManagement = () => {
                               />
                             </div>
                             <div className="um-user-details">
-                              <span className="um-username">{user.username}</span>
-                              <small className="um-user-id">ID: {user._id.slice(-8)}</small>
-                              {user.fullname && (
-                                <small className="um-fullname">{user.fullname}</small>
+                              <span className="um-username">{userData.username}</span>
+                              <small className="um-user-id">ID: {userData._id.slice(-8)}</small>
+                              {userData.fullname && (
+                                <small className="um-fullname">{userData.fullname}</small>
                               )}
                             </div>
                           </div>
                         </td>
                         <td>
-                          <span className="um-email">{user.email}</span>
-                        </td>
-                        <td>
-                          <span className={`um-role-badge ${getRoleBadgeColor(user.role_id?.role_name)}`}>
-                            {getRoleDisplayText(user.role_id?.role_name)}
-                          </span>
+                          <span className="um-email">{userData.email}</span>
                         </td>
                         <td>
                           <div className="um-account-type">
-                            <span className={`um-role-badge ${getAccountTypeBadgeColor(user)}`}>
-                              {getAccountTypeDisplay(user)}
+                            <span className={`um-role-badge ${getAccountTypeBadgeColor(userData)}`}>
+                              {getAccountTypeDisplayText(userData)}
                             </span>
-                            {user.account_type?.expires_at && (
+                            {userData.account_type?.expires_at && (
                               <small className="um-expiry-date">
-                                Hết hạn: {new Date(user.account_type.expires_at).toLocaleDateString('vi-VN')}
+                                Hết hạn: {new Date(userData.account_type.expires_at).toLocaleDateString('vi-VN')}
                               </small>
                             )}
                           </div>
                         </td>
                         <td>
                           <button
-                            onClick={() => toggleUserStatus(user)}
-                            className={`um-status-btn ${user.isActive ? 'um-status-active' : 'um-status-inactive'}`}
+                            onClick={() => toggleUserStatus(userData)}
+                            className={`um-status-btn ${userData.isActive ? 'um-status-active' : 'um-status-inactive'}`}
                           >
-                            <i className={`fas ${user.isActive ? 'fa-check-circle' : 'fa-ban'}`}></i>
-                            {user.isActive ? 'Đang hoạt động' : 'Đã khóa'}
+                            <i className={`fas ${userData.isActive ? 'fa-check-circle' : 'fa-ban'}`}></i>
+                            {userData.isActive ? 'Đang hoạt động' : 'Đã khóa'}
                           </button>
                         </td>
                         <td>
                           <div className="um-date-info">
                             <span className="um-date">
-                              {new Date(user.created_at).toLocaleDateString('vi-VN')}
+                              {new Date(userData.created_at).toLocaleDateString('vi-VN')}
                             </span>
                           </div>
                         </td>
@@ -703,7 +747,7 @@ const UserManagement = () => {
                           <div className="um-action-buttons">
                             <button
                               onClick={() => {
-                                setSelectedUser(user);
+                                setSelectedUser(userData);
                                 setShowUserDetailModal(true);
                               }}
                               className="um-btn-action um-btn-view"
@@ -713,7 +757,7 @@ const UserManagement = () => {
                             </button>
                             <button
                               onClick={() => {
-                                setSelectedUser(user);
+                                setSelectedUser(userData);
                                 setShowDeleteModal(true);
                               }}
                               className="um-btn-action um-btn-delete"
@@ -796,7 +840,7 @@ const UserManagement = () => {
                         src={selectedUser.user_imageurl || '/images/default-avatar.png'}
                         alt={selectedUser.username}
                         onError={(e) => {
-                          e.target.onerror = null; // Prevent infinite loop
+                          e.target.onerror = null;
                           e.target.src = '/images/default-avatar.png';
                         }}
                       />
@@ -805,11 +849,8 @@ const UserManagement = () => {
                       <h4>{selectedUser.username}</h4>
                       <p className="um-user-email">{selectedUser.email}</p>
                       <div className="um-user-badges">
-                        <span className={`um-role-badge ${getRoleBadgeColor(selectedUser.role_id?.role_name)}`}>
-                          {getRoleDisplayText(selectedUser.role_id?.role_name)}
-                        </span>
                         <span className={`um-role-badge ${getAccountTypeBadgeColor(selectedUser)}`}>
-                          {getAccountTypeDisplay(selectedUser)}
+                          {getAccountTypeDisplayText(selectedUser)}
                         </span>
                       </div>
                     </div>
@@ -852,7 +893,7 @@ const UserManagement = () => {
                   </div>
 
                   {/* Account Type Details */}
-                  {(selectedUser.role_id?.role_name === 'shop' || selectedUser.account_type?.type === 'shop') && (
+                  {selectedUser.account_type?.type === 'shop' && (
                     <div className="um-detail-section">
                       <h4 className="um-section-title">
                         <i className="fas fa-store"></i>
@@ -964,6 +1005,79 @@ const UserManagement = () => {
                 >
                   <i className="fas fa-trash"></i>
                   Xóa người dùng
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Account Type Modal */}
+        {showAccountTypeModal && selectedUser && (
+          <div className="um-modal-overlay">
+            <div className="um-modal">
+              <div className="um-modal-header">
+                <h3>Chỉnh sửa loại tài khoản</h3>
+                <button 
+                  className="um-modal-close"
+                  onClick={() => setShowAccountTypeModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="um-modal-body">
+                <div className="um-form-group">
+                  <label>Loại tài khoản:</label>
+                  <select
+                    value={accountTypeForm.type}
+                    onChange={(e) => setAccountTypeForm({
+                      ...accountTypeForm,
+                      type: e.target.value
+                    })}
+                  >
+                    <option value="customer">Customer</option>
+                    <option value="premium">Premium</option>
+                    <option value="vip">VIP</option>
+                  </select>
+                </div>
+                <div className="um-form-group">
+                  <label>Cấp độ:</label>
+                  <select
+                    value={accountTypeForm.level}
+                    onChange={(e) => setAccountTypeForm({
+                      ...accountTypeForm,
+                      level: e.target.value
+                    })}
+                  >
+                    <option value="normal">Normal</option>
+                    <option value="silver">Silver</option>
+                    <option value="gold">Gold</option>
+                    <option value="platinum">Platinum</option>
+                  </select>
+                </div>
+                <div className="um-form-group">
+                  <label>Ngày hết hạn (tùy chọn):</label>
+                  <input
+                    type="datetime-local"
+                    value={accountTypeForm.expires_at}
+                    onChange={(e) => setAccountTypeForm({
+                      ...accountTypeForm,
+                      expires_at: e.target.value
+                    })}
+                  />
+                </div>
+              </div>
+              <div className="um-modal-footer">
+                <button 
+                  className="um-btn um-btn-secondary"
+                  onClick={() => setShowAccountTypeModal(false)}
+                >
+                  Hủy
+                </button>
+                <button 
+                  className="um-btn um-btn-primary"
+                  onClick={handleAccountTypeUpdate}
+                >
+                  Cập nhật
                 </button>
               </div>
             </div>

@@ -3,7 +3,6 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
-const DEFAULTS = require('../constants/defaults');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -702,6 +701,71 @@ const createUser = async (req, res) => {
     }
 };
 
+// Cập nhật loại tài khoản người dùng (admin)
+const updateUserAccountType = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { type, level, expires_at } = req.body;
+
+        // Validate input
+        if (!type || !level) {
+            return res.status(400).json({ 
+                message: 'Loại tài khoản và cấp độ không được để trống' 
+            });
+        }
+
+        // Validate account type
+        const validTypes = ['customer', 'premium', 'vip'];
+        if (!validTypes.includes(type)) {
+            return res.status(400).json({ 
+                message: 'Loại tài khoản không hợp lệ. Các loại hợp lệ: customer, premium, vip' 
+            });
+        }
+
+        // Validate account level
+        const validLevels = ['normal', 'silver', 'gold', 'platinum'];
+        if (!validLevels.includes(level)) {
+            return res.status(400).json({ 
+                message: 'Cấp độ tài khoản không hợp lệ. Các cấp độ hợp lệ: normal, silver, gold, platinum' 
+            });
+        }
+
+        // Find user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng' });
+        }
+
+        // Update account type
+        const updateData = {
+            account_type: {
+                type,
+                level,
+                activated_at: new Date(),
+                expires_at: expires_at || null
+            }
+        };
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { new: true, runValidators: true }
+        ).populate('role_id', 'role_name role_description')
+         .select('-password_hashed -refresh_tokens');
+
+        res.status(200).json({
+            message: 'Cập nhật loại tài khoản thành công',
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error('Update account type error:', error);
+        res.status(500).json({
+            message: 'Không thể cập nhật loại tài khoản',
+            error: error.message
+        });
+    }
+};
+
 // Export controller functions
 module.exports = {
     checkAdminRole,
@@ -712,10 +776,11 @@ module.exports = {
     getAllProductReports,
     handleProductReport,
     getAdminStats,
+    searchUsers,
     getUserById,
     updateUser,
     deleteUser,
     toggleUserStatus,
-    searchUsers,
-    createUser
+    createUser,
+    updateUserAccountType
 };

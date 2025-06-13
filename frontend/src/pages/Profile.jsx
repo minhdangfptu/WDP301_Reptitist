@@ -11,7 +11,7 @@ import '../css/Profile.css';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, hasRole } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -318,12 +318,13 @@ const Profile = () => {
   const getUserAccountTypeDisplay = () => {
     if (!user) return 'Customer';
     
-    // Check role first
-    if (user.role === 'admin') {
+    // Check role first for admin
+    if (hasRole('admin')) {
       return 'Administrator';
     }
     
-    if (user.role === 'shop' || user.account_type?.type === 'shop') {
+    // Check account_type for shop
+    if (user.account_type?.type === 'shop') {
       const level = user.account_type?.level;
       if (level === 'premium') {
         return 'Premium Shop Partner';
@@ -345,13 +346,18 @@ const Profile = () => {
     if (!user) return false;
     
     // Don't show upgrade for admin
-    if (user.role === 'admin') return false;
+    if (hasRole('admin')) return false;
     
     // Don't show upgrade if already shop or premium
-    if (user.role === 'shop' || user.account_type?.type === 'shop') return false;
+    if (user.account_type?.type === 'shop') return false;
     if (user.account_type?.level === 'premium') return false;
     
     return true;
+  };
+
+  // Check if user is shop
+  const isShop = () => {
+    return user?.account_type?.type === 'shop';
   };
 
   if (!user || !isDataLoaded) {
@@ -456,7 +462,7 @@ const Profile = () => {
                   ) : (
                     <div className="profile-badge-container">
                       <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
-                      {(user.role === 'shop' || user.account_type?.type === 'shop') && (
+                      {isShop() && (
                         <span className="shop-features-link">
                           <Link to="/ProductManagement">Quản lý cửa hàng</Link>
                         </span>
@@ -602,14 +608,14 @@ const Profile = () => {
             </div>
 
             {/* Account Type Information */}
-            {(user.role === 'shop' || user.account_type?.type === 'shop') && (
+            {isShop() && (
               <div className="account-type-section">
                 <h3 className="section-title">Thông tin đối tác</h3>
                 <div className="account-type-info">
                   <div className="account-type-item">
                     <span className="account-type-label">Loại tài khoản:</span>
                     <span className="account-type-value">
-                      {user.account_type?.level === 'premium' ? 'Shop Premium' : 'Shop Partner'}
+                      {user.account_type?.level === 'premium' ? 'Premium Shop Partner' : 'Shop Partner'}
                     </span>
                   </div>
                   {user.account_type?.activated_at && (

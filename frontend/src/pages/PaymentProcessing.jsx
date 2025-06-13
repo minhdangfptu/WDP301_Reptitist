@@ -124,26 +124,21 @@ const PaymentProcessing = () => {
         throw new Error('Failed to create transaction record');
       }
 
-      // Update user role and account type based on planType
+      // Update user account type based on planType
       if (planType === 'partner') {
-        // Call admin API to update role to shop
-        const adminResponse = await axios.put(
-          `http://localhost:8080/reptitist/admin/users/${user.id}`,
-          {
-            username: user.username,
-            email: user.email,
-            fullname: user.fullname || '',
-            phone_number: user.phone_number || '',
-            address: user.address || '',
-            isActive: true,
-            role: 'shop',
-            account_type: {
-              type: 'shop',
-              level: planName === 'Gói Premium' ? 'premium' : 'normal',
-              activated_at: new Date(),
-              expires_at: expiresAt
-            }
-          },
+        // Update account type to shop
+        const updateData = {
+          account_type: {
+            type: 'shop',
+            level: planName === 'Gói Premium' ? 'premium' : 'normal',
+            activated_at: new Date(),
+            expires_at: expiresAt
+          }
+        };
+
+        const response = await axios.put(
+          'http://localhost:8080/reptitist/auth/update-role',
+          updateData,
           {
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -152,28 +147,23 @@ const PaymentProcessing = () => {
           }
         );
 
-        if (adminResponse.status === 200) {
+        if (response.status === 200) {
           // Update local user data
           const updatedUser = {
             ...user,
-            role: 'shop',
-            account_type: {
-              type: 'shop',
-              level: planName === 'Gói Premium' ? 'premium' : 'normal',
-              activated_at: new Date(),
-              expires_at: expiresAt
-            }
+            account_type: updateData.account_type
           };
 
           updateUser(updatedUser);
           localStorage.setItem('user', JSON.stringify(updatedUser));
+        } else {
+          throw new Error('Failed to update account type to shop');
         }
       } else if (planType === 'individual' && planName === 'Premium') {
         // Update account type to premium for individual plan
         const response = await axios.put(
           'http://localhost:8080/reptitist/auth/update-role',
           {
-            role: user.role,
             account_type: {
               type: 'customer',
               level: 'premium',

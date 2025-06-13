@@ -8,7 +8,7 @@ import axios from 'axios';
 import '../css/Transaction.css';
 
 const Transaction = () => {
-  const { user } = useAuth();
+  const { user, hasRole } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -226,12 +226,13 @@ const Transaction = () => {
   const getUserAccountTypeDisplay = () => {
     if (!user) return 'Customer';
     
-    // Check role first
-    if (user.role === 'admin') {
+    // Check role first for admin
+    if (hasRole('admin')) {
       return 'Administrator';
     }
     
-    if (user.role === 'shop' || user.account_type?.type === 'shop') {
+    // Check account_type for shop
+    if (user.account_type?.type === 'shop') {
       const level = user.account_type?.level;
       if (level === 'premium') {
         return 'Premium Shop Partner';
@@ -253,13 +254,18 @@ const Transaction = () => {
     if (!user) return false;
     
     // Don't show upgrade for admin
-    if (user.role === 'admin') return false;
+    if (hasRole('admin')) return false;
     
     // Don't show upgrade if already shop or premium
-    if (user.role === 'shop' || user.account_type?.type === 'shop') return false;
+    if (user.account_type?.type === 'shop') return false;
     if (user.account_type?.level === 'premium') return false;
     
     return true;
+  };
+
+  // Check if user is shop
+  const isShop = () => {
+    return user?.account_type?.type === 'shop';
   };
 
   if (!user) {
@@ -323,7 +329,7 @@ const Transaction = () => {
                   ) : (
                     <div className="profile-badge-container">
                       <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
-                      {(user.role === 'shop' || user.account_type?.type === 'shop') && (
+                      {isShop() && (
                         <span className="shop-features-link">
                           <Link to="/ProductManagement">Quản lý cửa hàng</Link>
                         </span>
@@ -368,7 +374,7 @@ const Transaction = () => {
                       {getUserAccountTypeDisplay()}
                     </span>
                   </div>
-                  {(user.role === 'shop' || user.account_type?.type === 'shop') && user.account_type?.expires_at && (
+                  {isShop() && user.account_type?.expires_at && (
                     <div className="billing-item">
                       <span className="billing-label">Hết hạn:</span>
                       <span className="billing-value">

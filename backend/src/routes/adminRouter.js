@@ -14,7 +14,8 @@ const {
     getUserById,
     updateUser,
     deleteUser,
-    toggleUserStatus
+    toggleUserStatus,
+    updateUserAccountType
 } = require('../controllers/adminController');
 
 // Apply auth middleware to all admin routes
@@ -27,6 +28,7 @@ router.get('/users/search', searchUsers);             // GET /admin/users/search
 router.get('/users/:userId', getUserById);            // GET /admin/users/:id - Lấy thông tin một người dùng
 router.put('/users/:userId', updateUser);             // PUT /admin/users/:id - Cập nhật thông tin người dùng
 router.patch('/users/:userId/status', toggleUserStatus); // PATCH /admin/users/:id/status - Thay đổi trạng thái
+router.patch('/users/:userId/account-type', updateUserAccountType); // PATCH /admin/users/:id/account-type - Cập nhật loại tài khoản
 router.delete('/users/:userId', deleteUser);          // DELETE /admin/users/:id - Xóa người dùng
 
 // Shop management routes

@@ -4,7 +4,6 @@ const Role = require('../models/Roles');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const DEFAULTS = require('../constants/defaults');
 
 const fs = require('fs');
 console.log(fs.readdirSync(__dirname + '/../models'));
