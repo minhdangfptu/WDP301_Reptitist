@@ -78,6 +78,17 @@ class AuthService {
     }
   }
 
+  async loginWithGoogle() {
+    try {
+      // Redirect to Google OAuth endpoint
+      window.location.href = `${API_BASE_URL}/auth/google`;
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Google login failed';
+      return { success: false, message };
+    }
+  }
+
   // Refresh access token
   async refreshAccessToken() {
     try {
