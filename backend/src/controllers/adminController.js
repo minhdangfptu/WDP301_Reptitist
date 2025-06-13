@@ -667,7 +667,8 @@ const createUser = async (req, res) => {
             phone_number: phone_number || '',
             address: address || '',
             role_id: roleDoc._id,
-            isActive: true
+            isActive: true,
+            user_imageurl: '/default-avatar.png'
         });
         
         await newUser.save();

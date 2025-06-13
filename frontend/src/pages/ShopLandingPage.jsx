@@ -144,7 +144,7 @@ const ShopLandingPage = () => {
                 <li>Premium alarms, heating lamps</li>
                 <li>Live feed, and more!</li>
               </ul>
-              <a href="#" className="shop-now-btn">SHOP NOW!</a>
+              <a href="#products" className="shop-now-btn">SHOP NOW!</a>
             </div>
           </div>
           <div className="hero-side">
@@ -152,6 +152,7 @@ const ShopLandingPage = () => {
               <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
             <div className="hero-small">
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
               <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
           </div>

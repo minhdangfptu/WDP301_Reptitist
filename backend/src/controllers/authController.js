@@ -38,6 +38,7 @@ const signup = async (req, res) => {
             email,
             password_hashed: hashedPassword,
             role_id: role._id,
+            user_imageurl: '/default-avatar.png'
         });
         
         await user.save();

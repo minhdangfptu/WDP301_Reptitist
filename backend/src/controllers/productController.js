@@ -1,6 +1,6 @@
 const Product = require('../models/Products');
 const Feedback = require('../models/Product_feedback');
-// const ProductReport = require('../models/Product_reports'); // New model for reports
+const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
 const { successResponse } = require('../../utils/APIResponse');
 
@@ -22,6 +22,8 @@ async function updateAverageRating(productId) {
     console.error('Error updating average rating:', error);
   }
 }
+
+// Tạo sản phẩm mới (chỉ dành cho Shop)
 
 // Tạo sản phẩm mới (chỉ dành cho Shop)
 const createProduct = async (req, res) => {
@@ -175,59 +177,7 @@ const deleteMyProduct = async (req, res) => {
   }
 };
 
-// Báo cáo sản phẩm (dành cho Customer)
-// const reportProduct = async (req, res) => {
-//   try {
-//     const { productId } = req.params;
-//     const { reason, description } = req.body;
 
-//     // Kiểm tra sản phẩm có tồn tại không
-//     const product = await Product.findById(productId);
-//     if (!product) {
-//       return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
-//     }
-
-//     // Kiểm tra user đã báo cáo sản phẩm này chưa
-//     const existingReport = await ProductReport.findOne({
-//       product_id: productId,
-//       reporter_id: req.user._id
-//     });
-
-//     if (existingReport) {
-//       return res.status(400).json({ 
-//         message: 'Bạn đã báo cáo sản phẩm này rồi' 
-//       });
-//     }
-
-//     // Tạo báo cáo mới
-//     const report = new ProductReport({
-//       product_id: productId,
-//       reporter_id: req.user._id,
-//       shop_id: product.user_id,
-//       reason,
-//       description,
-//       status: 'pending'
-//     });
-
-//     await report.save();
-
-//     // Chuyển trạng thái sản phẩm sang 'reported' 
-//     await Product.findByIdAndUpdate(productId, { 
-//       product_status: 'reported' 
-//     });
-
-//     res.status(201).json({
-//       message: 'Báo cáo sản phẩm thành công',
-//       report
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       message: 'Lỗi khi báo cáo sản phẩm',
-//       error: error.message
-//     });
-//   }
-// };
 
 // Lấy thống kê sản phẩm của Shop
 const getMyProductStats = async (req, res) => {
@@ -297,13 +247,67 @@ const getAllProductsByCategory = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({
-      message: 'Failed to fetch products!',
+      message: 'Lỗi khi lấy danh sách sản phẩm!',
       error: error.message
     });
   }
-}
+};
+// Báo cáo sản phẩm (dành cho Customer)
+const reportProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { reason, description } = req.body;
 
-const getAllProductByName = async (req, res) => {
+    // Kiểm tra sản phẩm có tồn tại không
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+    }
+
+    // Kiểm tra user đã báo cáo sản phẩm này chưa
+    const existingReport = await ProductReport.findOne({
+      product_id: productId,
+      reporter_id: req.user._id
+    });
+
+    if (existingReport) {
+      return res.status(400).json({ 
+        message: 'Bạn đã báo cáo sản phẩm này rồi' 
+      });
+    }
+
+    // Tạo báo cáo mới
+    const report = new ProductReport({
+      product_id: productId,
+      reporter_id: req.user._id,
+      shop_id: product.user_id,
+      reason,
+      description,
+      status: 'pending'
+    });
+
+    await report.save();
+
+    // Chuyển trạng thái sản phẩm sang 'reported' 
+    await Product.findByIdAndUpdate(productId, { 
+      product_status: 'reported' 
+    });
+
+    res.status(201).json({
+      message: 'Báo cáo sản phẩm thành công',
+      report
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Lỗi khi báo cáo sản phẩm',
+      error: error.message
+    });
+  }
+};
+
+// Cập nhật sản phẩm (chỉ Shop owner)
+const updateMyProduct = async (req, res) => {
   try {
     const { productName } = req.params;
     const products = await Product.find({ 
@@ -346,7 +350,9 @@ const getAllProductRecentUploaded = async (req, res) => {
   }
 };
 
-const getProductDetails = async (req, res) => {
+
+// Báo cáo sản phẩm (dành cho Customer)
+const reportProduct = async (req, res) => {
   try {
     const productId = req.params.productId;
     const product = await Product.findById(productId)
@@ -367,6 +373,7 @@ const getProductDetails = async (req, res) => {
 };
 
 // Feedback functions giữ nguyên
+// Feedback functions giữ nguyên
 const createFeedbackAndRating = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -375,6 +382,7 @@ const createFeedbackAndRating = async (req, res) => {
 
     const product = await Product.findById(productId);
     if (!product) {
+      return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
       return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
     }
 
@@ -552,21 +560,23 @@ const getTopRatedProducts = async (req, res) => {
   }
 };
 
-
 module.exports = {
+  // Shop functions
   // Shop functions
   createProduct,
   getMyProducts,
   updateMyProduct,
   deleteMyProduct,
   getMyProductStats,
-  // reportProduct,
+  reportProduct,
   
   // Public functions
   getAllProductsByCategory,
   getAllProductByName, 
   getAllProductRecentUploaded, 
   getProductDetails, 
+  
+  // Feedback functions
   
   // Feedback functions
   createFeedbackAndRating, 

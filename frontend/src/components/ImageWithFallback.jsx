@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import '../css/ImageWithFallback.css';
 
-const ImageWithFallback = ({ src, alt, fallbackSrc = '/default-avatar.png', className = '', ...props }) => {
-  const [imgSrc, setImgSrc] = useState(src);
+const ImageWithFallback = ({ 
+  src, 
+  alt, 
+  fallbackSrc = '/default-avatar.png', 
+  className = '', 
+  ...props 
+}) => {
+  const [imgSrc, setImgSrc] = useState(src || fallbackSrc);
 
   const handleError = () => {
-    setImgSrc(fallbackSrc);
+    if (imgSrc !== fallbackSrc) {
+      setImgSrc(fallbackSrc);
+    }
   };
 
   return (

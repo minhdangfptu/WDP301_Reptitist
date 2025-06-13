@@ -31,8 +31,11 @@ import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
 import ProductDetail from './pages/ProductDetail';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
-import ProductForm from './pages/ProductForm';
-import ProductManagement from './pages/ProductManagement';
+import ProductForm from './pages/ShopProductForm';
+import ProductManagement from './pages/ShopProductManagement';
+import LibraryManagement from './pages/LibraryManagement';
+import AdminShopManagement from './pages/AdminShopManagement';
+import PaymentProcessing from './pages/PaymentProcessing';
 import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';import PlanUpgrade from './pages/PlanUpgrade';
@@ -136,7 +139,12 @@ const AppRoutes = () => {
       <Route path="/product-detail/:productId" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
-      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+     
+      <Route path="/payment-processing" element={
+        <ProtectedRoute>
+          <PaymentProcessing />
+        </ProtectedRoute>
+      } />
       
       {/* Auth routes - redirect if already logged in */}
       
@@ -247,11 +255,17 @@ const AppRoutes = () => {
           <ProductManagement />
         </ProtectedRoute>
       } />
+      <Route path="/AdminShopManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminShopManagement />
+        </ProtectedRoute>
+      } />
       <Route path="/LibraryManagement" element={
         <ProtectedRoute requiredRole="admin">
           <LibraryManagement />
         </ProtectedRoute>
       } />
+      
       <Route path="/admin/products/create" element={
         <ProtectedRoute requiredRole="admin">
           <ProductForm />

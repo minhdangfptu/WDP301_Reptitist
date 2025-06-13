@@ -92,9 +92,14 @@ const Header = () => {
                       Giao dịch
                     </Link>
                     {hasRole('admin') && (
-                      <Link to="/UserManagement" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
-                        Quản lý người dùng
-                      </Link>
+                      <>
+                        <Link to="/UserManagement" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
+                          Quản lý người dùng
+                        </Link>
+                        <Link to="/AdminShopManagement" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
+                          Quản lý Shop
+                        </Link>
+                      </>
                     )}
                     {hasAnyRole(['shop', 'admin']) && (
                       <>
