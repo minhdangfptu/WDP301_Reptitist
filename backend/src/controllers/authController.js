@@ -4,6 +4,7 @@ const Role = require('../models/Roles');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const DEFAULTS = require('../constants/defaults');
 
 const fs = require('fs');
 console.log(fs.readdirSync(__dirname + '/../models'));
@@ -38,7 +39,7 @@ const signup = async (req, res) => {
             email,
             password_hashed: hashedPassword,
             role_id: role._id,
-            user_imageurl: '/default-avatar.png' // Updated to use PNG file
+            user_imageurl: '/default-avatar.png' // Default avatar path
         });
         
         await user.save();

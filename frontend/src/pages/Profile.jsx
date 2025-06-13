@@ -314,6 +314,46 @@ const Profile = () => {
     return `http://localhost:8080${imageUrl}`;
   };
 
+  // Helper function to get user account type display
+  const getUserAccountTypeDisplay = () => {
+    if (!user) return 'Customer';
+    
+    // Check role first
+    if (user.role === 'admin') {
+      return 'Administrator';
+    }
+    
+    if (user.role === 'shop' || user.account_type?.type === 'shop') {
+      const level = user.account_type?.level;
+      if (level === 'premium') {
+        return 'Premium Shop Partner';
+      } else {
+        return 'Shop Partner';
+      }
+    }
+    
+    // Check account type level for customers
+    if (user.account_type?.level === 'premium') {
+      return 'Premium Customer';
+    }
+    
+    return 'Customer';
+  };
+
+  // Helper function to check if user should see upgrade option
+  const shouldShowUpgrade = () => {
+    if (!user) return false;
+    
+    // Don't show upgrade for admin
+    if (user.role === 'admin') return false;
+    
+    // Don't show upgrade if already shop or premium
+    if (user.role === 'shop' || user.account_type?.type === 'shop') return false;
+    if (user.account_type?.level === 'premium') return false;
+    
+    return true;
+  };
+
   if (!user || !isDataLoaded) {
     return (
       <>
@@ -408,15 +448,20 @@ const Profile = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  {user.account_type?.type === 'premium' ? (
-                    <div className="profile-badge-container">
-                      <span className="profile-badge-text">Premium Customer</span>
-                    </div>
-                  ) : (
+                  {shouldShowUpgrade() ? (
                     <Link to="/PlanUpgrade" className="profile-badge-container">
-                      <span className="profile-badge-text">Customer</span>
+                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
                       <span className="upgrade-button">Upgrade account</span>
                     </Link>
+                  ) : (
+                    <div className="profile-badge-container">
+                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
+                      {(user.role === 'shop' || user.account_type?.type === 'shop') && (
+                        <span className="shop-features-link">
+                          <Link to="/ProductManagement">Quản lý cửa hàng</Link>
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -555,6 +600,37 @@ const Profile = () => {
                 </div>
               </div>
             </div>
+
+            {/* Account Type Information */}
+            {(user.role === 'shop' || user.account_type?.type === 'shop') && (
+              <div className="account-type-section">
+                <h3 className="section-title">Thông tin đối tác</h3>
+                <div className="account-type-info">
+                  <div className="account-type-item">
+                    <span className="account-type-label">Loại tài khoản:</span>
+                    <span className="account-type-value">
+                      {user.account_type?.level === 'premium' ? 'Shop Premium' : 'Shop Partner'}
+                    </span>
+                  </div>
+                  {user.account_type?.activated_at && (
+                    <div className="account-type-item">
+                      <span className="account-type-label">Ngày kích hoạt:</span>
+                      <span className="account-type-value">
+                        {new Date(user.account_type.activated_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                  )}
+                  {user.account_type?.expires_at && (
+                    <div className="account-type-item">
+                      <span className="account-type-label">Ngày hết hạn:</span>
+                      <span className="account-type-value">
+                        {new Date(user.account_type.expires_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Delivery Information Section */}
             <div className="delivery-section">

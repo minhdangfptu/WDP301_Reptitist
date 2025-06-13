@@ -89,14 +89,42 @@ const PaymentProcessing = () => {
         return;
       }
 
-      // Call backend API to update user role and account type
-      const updateData = {
-        fullname: user.fullname,
-        phone_number: user.phone_number,
-        address: user.address
-      };
+      // Determine the expiration date based on period
+      const expiresAt = period === 'monthly' ? 
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
+        new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);  // 365 days
 
-      // Determine role and account type based on planType
+      // First, create transaction record
+      const transactionResponse = await axios.post(
+        'http://localhost:8080/reptitist/transactions',
+        {
+          amount: price,
+          net_amount: price,
+          transaction_type: planType === 'partner' ? 'shop_upgrade' : 'premium_upgrade',
+          status: 'completed',
+          description: `Thanh toán nâng cấp ${planName} ${period === 'monthly' ? 'hàng tháng' : 'hàng năm'}`,
+          items: JSON.stringify({
+            plan_name: planName,
+            plan_type: planType,
+            period: period,
+            price: price,
+            transfer_code: transferCode
+          }),
+          user_id: user.id
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!transactionResponse.data || !transactionResponse.data.transaction) {
+        throw new Error('Failed to create transaction record');
+      }
+
+      // Update user role and account type based on planType
       if (planType === 'partner') {
         // Call admin API to update role to shop
         const adminResponse = await axios.put(
@@ -111,11 +139,9 @@ const PaymentProcessing = () => {
             role: 'shop',
             account_type: {
               type: 'shop',
-              level: 'normal',
+              level: planName === 'Gói Premium' ? 'premium' : 'normal',
               activated_at: new Date(),
-              expires_at: period === 'monthly' ? 
-                new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
-                new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
+              expires_at: expiresAt
             }
           },
           {
@@ -133,11 +159,9 @@ const PaymentProcessing = () => {
             role: 'shop',
             account_type: {
               type: 'shop',
-              level: 'normal',
+              level: planName === 'Gói Premium' ? 'premium' : 'normal',
               activated_at: new Date(),
-              expires_at: period === 'monthly' ? 
-                new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
-                new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
+              expires_at: expiresAt
             }
           };
 
@@ -146,24 +170,16 @@ const PaymentProcessing = () => {
         }
       } else if (planType === 'individual' && planName === 'Premium') {
         // Update account type to premium for individual plan
-        const updatedUser = {
-          ...user,
-          account_type: {
-            type: 'customer',
-            level: 'premium',
-            activated_at: new Date(),
-            expires_at: period === 'monthly' ? 
-              new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
-              new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)  // 365 days
-          }
-        };
-
-        // Call API to update user role and account type
         const response = await axios.put(
-          `${process.env.REACT_APP_API_URL}/auth/update-role`,
+          'http://localhost:8080/reptitist/auth/update-role',
           {
             role: user.role,
-            account_type: updatedUser.account_type
+            account_type: {
+              type: 'customer',
+              level: 'premium',
+              activated_at: new Date(),
+              expires_at: expiresAt
+            }
           },
           {
             headers: {
@@ -183,59 +199,26 @@ const PaymentProcessing = () => {
         }
       }
 
-      // Create transaction record
-      const transactionResponse = await axios.post(
-        'http://localhost:8080/reptitist/transactions',
-        {
-          amount: price,
-          net_amount: price,
-          transaction_type: planType === 'partner' ? 'shop_upgrade' : 'premium_upgrade',
-          status: 'completed',
-          description: `Thanh toán nâng cấp ${planName} ${period === 'monthly' ? 'hàng tháng' : 'hàng năm'}`,
-          items: JSON.stringify({
-            plan_name: planName,
-            plan_type: planType,
-            period: period,
-            price: price
-          }),
-          user_id: user.id
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!transactionResponse.data || !transactionResponse.data.transaction) {
-        throw new Error('Failed to create transaction record');
-      }
-
       setPaymentCompleted(true);
       toast.success('Thanh toán thành công! Tài khoản của bạn đã được nâng cấp.');
       
       setTimeout(() => {
         if (planType === 'partner') {
-          navigate('/dashboard'); // Redirect to dashboard
+          navigate('/ProductManagement'); // Redirect to product management for shop
         } else {
-          navigate('/dashboard'); // Redirect to dashboard thường
+          navigate('/Profile'); // Redirect to profile for premium customer
         }
       }, 3000);
 
     } catch (error) {
       console.error('Payment processing error:', error);
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         console.error('Error response:', error.response.data);
         toast.error(error.response.data.message || 'Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
       } else if (error.request) {
-        // The request was made but no response was received
         console.error('Error request:', error.request);
         toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet của bạn.');
       } else {
-        // Something happened in setting up the request that triggered an Error
         console.error('Error message:', error.message);
         toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
       }
@@ -254,6 +237,11 @@ const PaymentProcessing = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h2>
             <p className="text-gray-600 mb-4">
               Tài khoản của bạn đã được nâng cấp lên gói {planName}
+              {planType === 'partner' && (
+                <span className="block mt-2 text-green-600 font-semibold">
+                  Bạn đã trở thành đối tác của chúng tôi!
+                </span>
+              )}
             </p>
             <div className="text-sm text-gray-500">
               Đang chuyển hướng...
@@ -303,6 +291,12 @@ const PaymentProcessing = () => {
               <div className="payment-info-item">
                 <div className="payment-info-label">Gói dịch vụ</div>
                 <div className="payment-info-value">{planName}</div>
+              </div>
+              <div className="payment-info-item">
+                <div className="payment-info-label">Loại gói</div>
+                <div className="payment-info-value">
+                  {planType === 'partner' ? 'Đối tác' : 'Cá nhân'}
+                </div>
               </div>
               <div className="payment-info-item">
                 <div className="payment-info-label">Chu kỳ</div>

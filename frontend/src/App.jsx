@@ -32,10 +32,11 @@ import ProductDetail from './pages/ProductDetail';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
 import ProductForm from './pages/ShopProductForm';
-import ProductManagement from './pages/ShopProductManagement';
+import ShopProductManagement from './pages/ShopProductManagement';
 import LibraryManagement from './pages/LibraryManagement';
 import AdminShopManagement from './pages/AdminShopManagement';
 import PaymentProcessing from './pages/PaymentProcessing';
+import ProductManagement from './pages/ProductManagement';
 
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
 // import loadinggif from './public/loading.gif';
@@ -105,6 +106,7 @@ const AppRoutes = () => {
       <Route path="/ProductDetail" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       <Route path="/payment-processing" element={
+        
         <ProtectedRoute>
           <PaymentProcessing />
         </ProtectedRoute>
@@ -186,6 +188,8 @@ const AppRoutes = () => {
           < CreateTreatmentPage/>
         </ProtectedRoute>
       } />
+      <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
+      <Route path="/shop/products/create" element={<ProductForm />} />
       
       {/* Admin only routes */}
       <Route path="/UserManagement" element={

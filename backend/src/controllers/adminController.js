@@ -3,6 +3,7 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
+const DEFAULTS = require('../constants/defaults');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -678,7 +679,7 @@ const createUser = async (req, res) => {
             address: address || '',
             role_id: roleDoc._id,
             isActive: true,
-            user_imageurl: '/default-avatar.png'
+            user_imageurl: '/default-avatar.png' // Default avatar path
         });
         
         await newUser.save();

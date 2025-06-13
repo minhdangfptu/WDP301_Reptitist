@@ -100,6 +100,8 @@ router.put('/update-role', authMiddleware, async (req, res) => {
         const { role, account_type } = req.body;
         
         const updateData = {};
+        
+        // Update role if provided
         if (role) {
             const roleDoc = await Role.findOne({ role_name: role });
             if (!roleDoc) {
@@ -108,6 +110,7 @@ router.put('/update-role', authMiddleware, async (req, res) => {
             updateData.role_id = roleDoc._id;
         }
         
+        // Update account type if provided
         if (account_type) {
             updateData.account_type = {
                 type: account_type.type || 'customer',
@@ -147,7 +150,7 @@ router.put('/update-role', authMiddleware, async (req, res) => {
 
         res.json(userResponse);
     } catch (error) {
-        console.error(error);
+        console.error('Update role error:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 });

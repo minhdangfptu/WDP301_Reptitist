@@ -44,13 +44,8 @@ const ShopProductManagement = () => {
 
   // Check shop permission
   useEffect(() => {
-    if (!hasRole('shop') || user?.account_type?.type !== 'shop') {
-      toast.error('Bạn không có quyền truy cập trang này');
-      navigate('/');
-      return;
-    }
     initializeData();
-  }, [hasRole, navigate, user]);
+  }, []);
 
   // Initialize all data
   const initializeData = async () => {
@@ -74,7 +69,7 @@ const ShopProductManagement = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
+        console.error('No token found');
         return;
       }
 
@@ -90,15 +85,6 @@ const ShopProductManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      
-      if (error.response?.status === 403) {
-        toast.error('Bạn không có quyền truy cập');
-      } else if (error.response?.status === 401) {
-        toast.error('Phiên đăng nhập đã hết hạn');
-      } else {
-        toast.error('Không thể tải danh sách sản phẩm của bạn');
-      }
-      
       setProducts([]);
       setFilteredProducts([]);
     }
@@ -254,7 +240,7 @@ const ShopProductManagement = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
+        console.error('No token found');
         return;
       }
 
@@ -268,7 +254,6 @@ const ShopProductManagement = () => {
       );
 
       if (response.status === 200) {
-        toast.success('Xóa sản phẩm thành công');
         await fetchMyProducts();
         await fetchMyStats();
         setShowDeleteModal(false);
@@ -276,7 +261,6 @@ const ShopProductManagement = () => {
       }
     } catch (error) {
       console.error('Error deleting product:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa sản phẩm');
     }
   };
 
@@ -285,7 +269,7 @@ const ShopProductManagement = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
+        console.error('No token found');
         return;
       }
 
@@ -294,20 +278,17 @@ const ShopProductManagement = () => {
         { product_status: newStatus },
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Authorization': `Bearer ${token}`
           }
         }
       );
 
       if (response.status === 200) {
-        toast.success('Cập nhật trạng thái sản phẩm thành công');
         await fetchMyProducts();
         await fetchMyStats();
       }
     } catch (error) {
       console.error('Error updating product status:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
     }
   };
 
@@ -358,7 +339,6 @@ const ShopProductManagement = () => {
   // Reset filters
   const resetFilters = () => {
     setSearchTerm('');
-    setFilterCategory('all');
     setFilterStatus('all');
     setFilterDate('all');
     setCurrentPage(1);
@@ -430,27 +410,6 @@ const ShopProductManagement = () => {
 
     return pages;
   };
-
-  // Check shop access
-  if (!hasRole('shop')) {
-    return (
-      <>
-        <Header />
-        <div className="pm-container">
-          <div className="pm-no-access">
-            <i className="fas fa-exclamation-triangle pm-warning-icon"></i>
-            <h2>Không có quyền truy cập</h2>
-            <p>Bạn không có quyền xem trang này. Chỉ có Shop mới có thể truy cập.</p>
-            <Link to="/" className="pm-btn pm-btn-primary">
-              <i className="fas fa-home"></i>
-              Về trang chủ
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
 
   return (
     <>

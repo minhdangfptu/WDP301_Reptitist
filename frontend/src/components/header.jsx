@@ -30,6 +30,11 @@ const Header = () => {
     }
   };
 
+  // Check if user is a shop (either role is shop or account_type is shop)
+  const isShop = () => {
+    return hasRole('shop') || user?.account_type?.type === 'shop';
+  };
+
   return (
     <header className="header">
       <div className="container">
@@ -78,6 +83,11 @@ const Header = () => {
                   <>
                     <div className="header__dropdown-header">
                       Xin chào, {user.fullname || user.username}!
+                      {isShop() && (
+                        <span className="header__shop-badge">
+                          {user.account_type?.level === 'premium' ? 'Shop Premium' : 'Shop'}
+                        </span>
+                      )}
                     </div>
                     <Link to="/Profile" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                       Hồ sơ
@@ -94,6 +104,8 @@ const Header = () => {
                     
                     {hasRole('admin') && (
                       <>
+                        <div className="header__dropdown-divider"></div>
+                        <div className="header__dropdown-section-title">Quản trị viên</div>
                         <Link to="/UserManagement" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                           Quản lý người dùng
                         </Link>
@@ -103,8 +115,10 @@ const Header = () => {
                       </>
                     )}
                     
-                    {hasAnyRole(['shop', 'admin']) && (
+                    {isShop() && (
                       <>
+                        <div className="header__dropdown-divider"></div>
+                        <div className="header__dropdown-section-title">Cửa hàng</div>
                         <Link to="/ShopDashboard" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                           Dashboard Shop
                         </Link>

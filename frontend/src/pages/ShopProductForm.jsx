@@ -40,17 +40,17 @@ const ShopProductForm = () => {
   const validationRules = {
     product_name: {
       required: true,
-      minLength: 3,
-      maxLength: 200,
+      minLength: 2,
+      maxLength: 50,
       pattern: /^[a-zA-ZÀ-ỹ0-9\s\-.,()&]+$/
     },
     product_description: {
-      maxLength: 1000
+      maxLength: 150
     },
     product_price: {
       required: true,
       min: 1000,
-      max: 100000000,
+      max: 1000000000,
       pattern: /^\d+$/
     },
     product_quantity: {
@@ -69,14 +69,8 @@ const ShopProductForm = () => {
 
   // Check shop permission
   useEffect(() => {
-    if (!hasRole('shop')) {
-      toast.error('Bạn không có quyền truy cập trang này');
-      navigate('/');
-      return;
-    }
-    
     initializeForm();
-  }, [hasRole, navigate, productId]);
+  }, [productId]);
 
   // Initialize form data
   const initializeForm = async () => {
@@ -153,55 +147,65 @@ const ShopProductForm = () => {
     }
   };
 
-  // Validate single field
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Special handling for numeric fields
+    if (name === 'product_price' || name === 'product_quantity') {
+      // Remove any non-digit characters
+      const numericValue = value.replace(/\D/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  // Validate field
   const validateField = (name, value) => {
     const rules = validationRules[name];
     if (!rules) return '';
 
-    // Required validation
-    if (rules.required && (!value || value.toString().trim() === '')) {
-      return 'Trường này là bắt buộc';
+    if (rules.required && !value) {
+      return 'Vui lòng nhập thông tin này';
     }
 
-    // Skip other validations if field is empty and not required
-    if (!value || value.toString().trim() === '') {
-      return '';
-    }
-
-    // Pattern validation
-    if (rules.pattern && !rules.pattern.test(value.toString())) {
-      switch (name) {
-        case 'product_name':
-          return 'Tên sản phẩm chỉ được chứa chữ cái, số, khoảng trắng và các ký tự đặc biệt cơ bản';
-        case 'product_price':
-        case 'product_quantity':
-          return 'Chỉ được nhập số nguyên dương';
-        case 'product_imageurl':
-          return 'URL hình ảnh không hợp lệ';
-        default:
-          return 'Định dạng không hợp lệ';
+    if (value) {
+      if (rules.minLength && value.length < rules.minLength) {
+        return `Tối thiểu ${rules.minLength} ký tự`;
       }
-    }
 
-    // Length validation
-    if (rules.minLength && value.toString().length < rules.minLength) {
-      return `Tối thiểu ${rules.minLength} ký tự`;
-    }
-    if (rules.maxLength && value.toString().length > rules.maxLength) {
-      return `Tối đa ${rules.maxLength} ký tự`;
-    }
+      if (rules.maxLength && value.length > rules.maxLength) {
+        return `Tối đa ${rules.maxLength} ký tự`;
+      }
 
-    // Number validation
-    if (rules.min !== undefined || rules.max !== undefined) {
-      const numValue = parseInt(value);
-      if (isNaN(numValue)) {
-        return 'Phải là số hợp lệ';
+      if (rules.pattern && !rules.pattern.test(value)) {
+        if (name === 'product_price' || name === 'product_quantity') {
+          return 'Vui lòng nhập số nguyên dương';
+        }
+        return 'Giá trị không hợp lệ';
       }
-      if (rules.min !== undefined && numValue < rules.min) {
-        return `Giá trị tối thiểu là ${formatNumber(rules.min)}`;
+
+      if (rules.min !== undefined && parseInt(value) < rules.min) {
+        return `Giá trị tối thiểu là ${rules.min}`;
       }
-      if (rules.max !== undefined && numValue > rules.max) {
-        return `Giá trị tối đa là ${formatNumber(rules.max)}`;
+
+      if (rules.max !== undefined && parseInt(value) > rules.max) {
+        return `Giá trị tối đa là ${rules.max}`;
       }
     }
 
@@ -224,41 +228,9 @@ const ShopProductForm = () => {
       newErrors.product_category_id = 'Danh mục không tồn tại';
     }
 
+    console.log('Validation Errors:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Format price input
-    if (name === 'product_price') {
-      const numericValue = value.replace(/[^\d]/g, '');
-      setFormData(prev => ({
-        ...prev,
-        [name]: numericValue
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-
-    // Mark field as touched
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
   };
 
   // Handle field blur
@@ -390,7 +362,8 @@ const ShopProductForm = () => {
         ...formData,
         product_price: parseInt(formData.product_price),
         product_quantity: parseInt(formData.product_quantity),
-        product_status: 'available' // Shop products are immediately available
+        product_status: 'available', // Shop products are immediately available
+        product_imageurl: formData.product_imageurl || '' // Make image optional
       };
 
       let response;
@@ -426,7 +399,7 @@ const ShopProductForm = () => {
         // Redirect after delay
         setTimeout(() => {
           navigate('/shop/products');
-        }, 2000);
+        }, 1500);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -454,7 +427,8 @@ const ShopProductForm = () => {
 
   // Format number for display
   const formatNumber = (num) => {
-    return new Intl.NumberFormat('vi-VN').format(num);
+    if (!num) return '';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "");
   };
 
   // Format currency
@@ -462,7 +436,8 @@ const ShopProductForm = () => {
     if (!amount) return '';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
@@ -497,27 +472,6 @@ const ShopProductForm = () => {
     setErrors({});
     setTouched({});
   };
-
-  // Check shop access
-  if (!hasRole('shop')) {
-    return (
-      <>
-        <Header />
-        <div className="pf-container">
-          <div className="pf-no-access">
-            <i className="fas fa-exclamation-triangle pf-warning-icon"></i>
-            <h2>Không có quyền truy cập</h2>
-            <p>Bạn không có quyền truy cập trang này. Chỉ có Shop mới có thể tạo/chỉnh sửa sản phẩm.</p>
-            <Link to="/" className="pf-btn pf-btn-primary">
-              <i className="fas fa-home"></i>
-              Về trang chủ
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
 
   // Loading state
   if (pageLoading) {
@@ -609,20 +563,21 @@ const ShopProductForm = () => {
                       value={formData.product_name}
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
-                      placeholder="Nhập tên sản phẩm..."
                       className={`pf-input ${getFieldErrorClass('product_name')}`}
-                      maxLength="200"
+                      placeholder="Nhập tên sản phẩm (2-50 ký tự)"
                       required
                     />
+                    <div className="pf-input-info">
+                      <span className="pf-char-count">
+                        {formData.product_name.length}/50 ký tự
+                      </span>
+                    </div>
                     {errors.product_name && touched.product_name && (
                       <div className="pf-error-message">
                         <i className="fas fa-exclamation-circle"></i>
                         {errors.product_name}
                       </div>
                     )}
-                    <div className="pf-input-info">
-                      <span>{formData.product_name.length}/200 ký tự</span>
-                    </div>
                   </div>
 
                   {/* Product Description */}
@@ -636,20 +591,21 @@ const ShopProductForm = () => {
                       value={formData.product_description}
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
-                      placeholder="Nhập mô tả chi tiết về sản phẩm..."
                       className={`pf-textarea ${getFieldErrorClass('product_description')}`}
+                      placeholder="Nhập mô tả sản phẩm (tối đa 150 ký tự)"
                       rows="4"
-                      maxLength="1000"
                     />
+                    <div className="pf-input-info">
+                      <span className="pf-char-count">
+                        {formData.product_description.length}/150 ký tự
+                      </span>
+                    </div>
                     {errors.product_description && touched.product_description && (
                       <div className="pf-error-message">
                         <i className="fas fa-exclamation-circle"></i>
                         {errors.product_description}
                       </div>
                     )}
-                    <div className="pf-input-info">
-                      <span>{formData.product_description.length}/1000 ký tự</span>
-                    </div>
                   </div>
 
                   {/* Price and Quantity */}
@@ -927,23 +883,6 @@ const ShopProductForm = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Form Summary */}
-              {Object.keys(errors).length > 0 && (
-                <div className="pf-form-summary">
-                  <div className="pf-summary-errors">
-                    <h4>
-                      <i className="fas fa-exclamation-triangle"></i>
-                      Có {Object.keys(errors).length} lỗi cần sửa:
-                    </h4>
-                    <ul>
-                      {Object.entries(errors).map(([field, error]) => (
-                        <li key={field}>{error}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
             </div>
           </form>
         </div>

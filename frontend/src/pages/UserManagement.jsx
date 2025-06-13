@@ -61,6 +61,43 @@ const UserManagement = () => {
     }
   };
 
+  // Get account type display
+  const getAccountTypeDisplay = (user) => {
+    if (!user) return 'Customer';
+    
+    // Check if user is shop based on role or account_type
+    if (user.role_id?.role_name === 'shop' || user.account_type?.type === 'shop') {
+      const level = user.account_type?.level;
+      if (level === 'premium') {
+        return 'Premium Shop';
+      } else {
+        return 'Shop Partner';
+      }
+    }
+    
+    // Check account type level for customers
+    if (user.account_type?.level === 'premium') {
+      return 'Premium Customer';
+    }
+    
+    return 'Customer';
+  };
+
+  // Get account type badge color
+  const getAccountTypeBadgeColor = (user) => {
+    if (!user) return 'um-badge-default';
+    
+    if (user.role_id?.role_name === 'shop' || user.account_type?.type === 'shop') {
+      return user.account_type?.level === 'premium' ? 'um-badge-premium' : 'um-badge-shop';
+    }
+    
+    if (user.account_type?.level === 'premium') {
+      return 'um-badge-premium';
+    }
+    
+    return 'um-badge-customer';
+  };
+
   // Check admin permission
   useEffect(() => {
     if (!hasRole('admin')) {
@@ -620,6 +657,9 @@ const UserManagement = () => {
                             <div className="um-user-details">
                               <span className="um-username">{user.username}</span>
                               <small className="um-user-id">ID: {user._id.slice(-8)}</small>
+                              {user.fullname && (
+                                <small className="um-fullname">{user.fullname}</small>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -627,19 +667,19 @@ const UserManagement = () => {
                           <span className="um-email">{user.email}</span>
                         </td>
                         <td>
-                          <span className={`um-role-badge um-badge-${user.role_id?.role_name || 'default'}`}>
-                            {user.role_id?.role_name || 'N/A'}
+                          <span className={`um-role-badge ${getRoleBadgeColor(user.role_id?.role_name)}`}>
+                            {getRoleDisplayText(user.role_id?.role_name)}
                           </span>
                         </td>
                         <td>
                           <div className="um-account-type">
-                            <span className={`um-role-badge um-badge-${user.account_type?.type || 'default'}`}>
-                              {user.account_type?.type || 'customer'}
+                            <span className={`um-role-badge ${getAccountTypeBadgeColor(user)}`}>
+                              {getAccountTypeDisplay(user)}
                             </span>
-                            {user.account_type?.level === 'premium' && (
-                              <span className="um-role-badge um-badge-premium">
-                                Premium
-                              </span>
+                            {user.account_type?.expires_at && (
+                              <small className="um-expiry-date">
+                                Hết hạn: {new Date(user.account_type.expires_at).toLocaleDateString('vi-VN')}
+                              </small>
                             )}
                           </div>
                         </td>
@@ -764,9 +804,14 @@ const UserManagement = () => {
                     <div className="um-user-basic-info">
                       <h4>{selectedUser.username}</h4>
                       <p className="um-user-email">{selectedUser.email}</p>
-                      <span className={`um-role-badge ${getRoleBadgeColor(selectedUser.role_id?.role_name)}`}>
-                        {getRoleDisplayText(selectedUser.role_id?.role_name)}
-                      </span>
+                      <div className="um-user-badges">
+                        <span className={`um-role-badge ${getRoleBadgeColor(selectedUser.role_id?.role_name)}`}>
+                          {getRoleDisplayText(selectedUser.role_id?.role_name)}
+                        </span>
+                        <span className={`um-role-badge ${getAccountTypeBadgeColor(selectedUser)}`}>
+                          {getAccountTypeDisplay(selectedUser)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -805,6 +850,34 @@ const UserManagement = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Account Type Details */}
+                  {(selectedUser.role_id?.role_name === 'shop' || selectedUser.account_type?.type === 'shop') && (
+                    <div className="um-detail-section">
+                      <h4 className="um-section-title">
+                        <i className="fas fa-store"></i>
+                        Thông tin đối tác
+                      </h4>
+                      <div className="um-detail-grid">
+                        <div className="um-detail-item">
+                          <label>Loại đối tác:</label>
+                          <span>{selectedUser.account_type?.level === 'premium' ? 'Premium Shop' : 'Shop Partner'}</span>
+                        </div>
+                        {selectedUser.account_type?.activated_at && (
+                          <div className="um-detail-item">
+                            <label>Ngày kích hoạt:</label>
+                            <span>{formatDate(selectedUser.account_type.activated_at)}</span>
+                          </div>
+                        )}
+                        {selectedUser.account_type?.expires_at && (
+                          <div className="um-detail-item">
+                            <label>Ngày hết hạn:</label>
+                            <span>{formatDate(selectedUser.account_type.expires_at)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {selectedUser.wallet && (
                     <div className="um-wallet-info">
