@@ -262,11 +262,7 @@ const AppRoutes = () => {
       <Route path="/auth/callback" element={<AuthCallback />} />
       
       {/* Route catch-all cho các đường dẫn không tồn tại */}
-      <Route path="*" element={
-        <PublicRoute>
-          <UnderDevPage />
-        </PublicRoute>
-      } />
+      <Route path="*" element={<UnderDevPage />} />
     </Routes>
   );
 };

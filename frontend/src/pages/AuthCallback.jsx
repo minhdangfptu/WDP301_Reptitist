@@ -44,6 +44,7 @@ const AuthCallback = () => {
             height: '100vh',
             fontSize: '1.2rem'
         }}>
+            <img src = "loading.gif"></img>
             Đang xử lý đăng nhập...
         </div>
     );

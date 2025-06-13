@@ -33,6 +33,7 @@ const ProductDetail = () => {
   const { productId } = useParams()
   const { user } = useAuth()
   const userId = user ? user.id : null
+  const [newImages, setNewImages] = useState([])
   const [product, setProduct] = useState(null)
   const [reviews, setReviews] = useState([])
   const [reviewsCount, setReviewsCount] = useState(0)
@@ -130,51 +131,51 @@ const ProductDetail = () => {
   const handleRemoveImage = (index) => {
     setNewImages((prevImages) => prevImages.filter((_, i) => i !== index))
   }
-  const handleSubmitFeedback = async (e) => {
-    e.preventDefault()
-    if (submitting) return // Prevent multiple submissions
-    if (newRating == 0) {
-      alert("Vui lòng chọn chọn số sao đánh giá")
-      return
-    }
-    if (!newComment.trim()) {
-      alert("Vui lòng nhập bình luận đánh giá")
-      return
-    }
-    setSubmitting(true)
-    try {
-      const response = await createFeedbackAndRatingApi(productId, newRating, newComment)
-      setReviews((prevReviews) => [
-        ...prevReviews,
-        {
-          rating: newRating,
-          comment: newComment,
-          // images: newImages,
-          user_id: { username: "Bạn" }, // Mock user data
-          createdAt: new Date().toISOString(),
-        },
-      ])
-      setReviewsCount((prevCount) => prevCount + 1)
-      setNewRating(0)
-      setNewComment("")
-      setNewImages([])
-      setSubmitting(false)
-    } catch (error) {
-      console.error("Error submitting feedback:", error)
-      if (error.response?.status === 400) {
-        alert("Vui lòng điền đầy đủ thông tin đánh giá")
-      } else if (error.response?.status === 500) {
-        alert("Đã có lỗi xảy ra, vui lòng thử lại sau")
-      } else if (error.response?.status === 401) {
-        alert("Bạn cần đăng nhập để đánh giá sản phẩm")
-      } else if (error.response?.status === 404) {
-        alert("Sản phẩm không tồn tại hoặc đã bị xóa")
-      }
-      setError("Failed to submit feedback")
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  // const handleSubmitFeedback = async (e) => {
+  //   e.preventDefault()
+  //   if (submitting) return // Prevent multiple submissions
+  //   if (newRating == 0) {
+  //     alert("Vui lòng chọn chọn số sao đánh giá")
+  //     return
+  //   }
+  //   if (!newComment.trim()) {
+  //     alert("Vui lòng nhập bình luận đánh giá")
+  //     return
+  //   }
+  //   setSubmitting(true)
+  //   try {
+  //     const response = await createFeedbackAndRatingApi(productId, newRating, newComment)
+  //     setReviews((prevReviews) => [
+  //       ...prevReviews,
+  //       {
+  //         rating: newRating,
+  //         comment: newComment,
+  //         // images: newImages,
+  //         user_id: { username: "Bạn" }, // Mock user data
+  //         createdAt: new Date().toISOString(),
+  //       },
+  //     ])
+  //     setReviewsCount((prevCount) => prevCount + 1)
+  //     setNewRating(0)
+  //     setNewComment("")
+  //     setNewImages([])
+  //     setSubmitting(false)
+  //   } catch (error) {
+  //     console.error("Error submitting feedback:", error)
+  //     if (error.response?.status === 400) {
+  //       alert("Vui lòng điền đầy đủ thông tin đánh giá")
+  //     } else if (error.response?.status === 500) {
+  //       alert("Đã có lỗi xảy ra, vui lòng thử lại sau")
+  //     } else if (error.response?.status === 401) {
+  //       alert("Bạn cần đăng nhập để đánh giá sản phẩm")
+  //     } else if (error.response?.status === 404) {
+  //       alert("Sản phẩm không tồn tại hoặc đã bị xóa")
+  //     }
+  //     setError("Failed to submit feedback")
+  //   } finally {
+  //     setSubmitting(false)
+  //   }
+  // }
 
   const handleUpdateFeedback = async (feedbackId) => {
     if (submitting) return // Prevent multiple submissions
@@ -363,7 +364,7 @@ const ProductDetail = () => {
           <div className="product-detail-images">
             <div className="product-detail-main-image">
               <img
-                src={product?.product_imageurl?.[selectedImage] || "/default-image.png" || "/placeholder.svg"}
+                src={product.product_imageurl?.[selectedImage] || "/default-image.png" }
                 alt={product?.name || "Product"}
               />
 
