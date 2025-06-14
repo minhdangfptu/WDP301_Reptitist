@@ -198,6 +198,25 @@ const updateProductStatus = async (req, res) => {
   }
 };
 
+const checkProductAvailability = async (req,res) => {
+  try{
+    const productId = req.params;
+    const product = await Product.findById(productId).select("product_status product_quantity");
+    if(!product){
+      return res.status(404).json({message: "Product not found"});
+    }
+    res.status(200).json({
+      status: product.product_status,
+      quantity: product.product_quantity,
+      isAvailable: product.product_status === "available" && product.product_quantity > 0
+    });
+  }catch(error){
+    res.status(500).json({
+      message: "Failed to check product availabity!"
+    });
+  }
+}
+
 
 const createFeedbackAndRating = async (req, res) => {
   try {
@@ -397,5 +416,6 @@ module.exports = {
   editFeedbackAndRating,
   deleteFeedbackAndRating,
   approveProduct,
-  getTopRatedProducts
+  getTopRatedProducts,
+  checkProductAvailability
 };

@@ -39,6 +39,9 @@ import CreateTreatmentPage from './pages/CreateTreatmentPage';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
 import AddProduct from "./pages/AddProduct";
 import UnderDevPage from './pages/UnderDevPage';
+import CartPage from './pages/CartPage';
+import { ToastContainer } from 'react-toastify';
+import {CartProvider} from './context/CartContext';
 
 
 // Loading component
@@ -131,8 +134,16 @@ const AppRoutes = () => {
       <Route path="/LandingPage" element={<LandingPage />} />
       <Route path="/ContactUs" element={<ContactUs />} />
 
-      <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-      <Route path="/product-detail/:productId" element={<ProductDetail />} />
+      <Route path="/ShopLandingPage" element={
+        <CartProvider>
+          <ShopLandingPage />
+        </CartProvider>
+        } />
+      <Route path="/product-detail/:productId" element={
+        <CartProvider>
+          <ProductDetail />
+        </CartProvider>
+        } />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
@@ -214,6 +225,16 @@ const AppRoutes = () => {
           < CreateTreatmentPage/>
         </ProtectedRoute>
       } />
+      <Route path = "/my-cart" element={
+        <ProtectedRoute>
+          <CartPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/my-orders" element={
+        <ProtectedRoute>
+          
+        </ProtectedRoute>
+      } />
       
       {/* Admin only routes */}
       <Route path="/UserManagement" element={
@@ -258,6 +279,14 @@ const App = () => {
           <Router>
             <div className="app">
               <AppRoutes />
+              <ToastContainer 
+                position="top-right" 
+                autoClose={3000} 
+                hideProgressBar={false} 
+                newestOnTop={false} 
+                closeOnClick 
+                pauseOnHover 
+              />
             </div>
           </Router>
         </AuthProvider>

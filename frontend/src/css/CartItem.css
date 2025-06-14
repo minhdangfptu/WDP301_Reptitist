@@ -1,0 +1,195 @@
+.cart-item {
+  display: grid;
+  grid-template-columns: 50px 2fr 1fr 1fr 1fr 50px;
+  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.item-info {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.item-details h3 {
+  margin: 0 0 5px 0;
+  font-size: 1.1rem;
+  color: #2d8f47;
+  font-weight: 600;
+}
+
+.item-details p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.quantity-btn {
+  width: 35px;
+  height: 35px;
+  border: 2px solid #2d8f47;
+  background: white;
+  color: #2d8f47;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-btn:hover:not(:disabled) {
+  background: #2d8f47;
+  color: white;
+}
+
+.quantity-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-display {
+  font-weight: 600;
+  font-size: 1.1rem;
+  min-width: 30px;
+  text-align: center;
+  color: #2d8f47;
+}
+
+.item-price,
+.item-subtotal {
+  font-weight: 600;
+  color: #2d8f47;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.remove-btn {
+  width: 35px;
+  height: 35px;
+  border: none;
+  background: #dc3545;
+  color: white;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
+/* Thêm style cho trạng thái sản phẩm và thông tin tồn kho */
+.unavailable-item {
+  opacity: 0.7;
+  background-color: #f8f8f8;
+  border: 1px dashed #ccc;
+}
+
+.status-badge {
+  display: inline-block;
+  background-color: #dc3545;
+  color: white;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 5px;
+  margin-right: 10px;
+}
+
+.stock-info {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+.item-details {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Thêm style cho checkbox */
+.item-checkbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.item-select-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #2d8f47;
+}
+
+.checkbox-label {
+  position: relative;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .cart-item {
+    grid-template-columns: 40px 1fr;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .item-checkbox {
+    grid-row: 1;
+    grid-column: 1;
+    align-self: flex-start;
+    padding-top: 10px;
+  }
+
+  .item-info {
+    grid-row: 1;
+    grid-column: 2;
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .quantity-controls,
+  .item-price,
+  .item-subtotal {
+    grid-column: 2;
+  }
+
+  .remove-btn {
+    grid-row: 1;
+    grid-column: 2;
+    justify-self: flex-end;
+  }
+}

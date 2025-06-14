@@ -1,0 +1,277 @@
+/* Top navigation bar */
+.top-nav {
+  background-color: #00843D;
+  color: #333;
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.top-nav-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  flex-direction: row !important;
+}
+
+.top-nav-left,
+.top-nav-right {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.top-nav-link {
+  color: #FFFFFF !important;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.top-nav-link:hover {
+  opacity: 0.8;
+}
+
+.icon {
+  vertical-align: middle;
+}
+
+.divider {
+  color: #ccc !important;
+  font-size: 12px !important;
+  margin: 0 6px !important;
+  white-space: nowrap !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+/* Main header */
+.main-header {
+  background: #00843D;
+  padding: 20px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 30px;
+}
+
+.logo-image {
+  width: 300%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand-name {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-left: 10px;
+}
+
+.page-title {
+  background-color: #00843D;
+  font-size: 18px;
+  color: white;
+  margin-left: 20px;
+  position: relative;
+  padding-left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 15px;
+  
+}
+
+.page-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 1px;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.page-icon {
+  margin-right: 5px;
+}
+
+.search-container {
+  flex: 1;
+  max-width: 600px;
+  margin-left: 40px;
+}
+
+.search-container form {
+  display: flex;
+  width: 100%;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 15px;
+  border: none;
+  border-radius: 8px 0 0 8px;
+  font-size: 14px;
+  outline: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) inset;
+}
+
+.search-button {
+  background-color: #1c6b32;
+  border: none;
+  border-radius: 0 8px 8px 0;
+  padding: 0 20px;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.search-button:hover {
+  background-color: #155a28;
+}
+
+/* Navigation menu */
+.main-nav {
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-list li {
+  position: relative;
+}
+
+.nav-list li a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 25px;
+  color: #555;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.nav-list li a:hover {
+  color: #2d8f47;
+  background-color: rgba(45, 143, 71, 0.05);
+}
+
+.nav-list li.active a {
+  color: #2d8f47;
+  font-weight: 600;
+}
+
+.nav-list li.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #2d8f47;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .top-nav {
+    padding: 8px 15px;
+  }
+
+  .top-nav-container {
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .top-nav-left, .top-nav-right {
+    justify-content: center;
+  }
+
+  .main-header-container {
+    flex-direction: column;
+    gap: 20px;
+    padding: 15px;
+  }
+
+  .search-container {
+    width: 100%;
+    margin-left: 0;
+    order: 3;
+  }
+
+  .logo-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .brand-name {
+    margin-left: 0;
+  }
+
+  .page-title {
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .page-title::before {
+    display: none;
+  }
+
+  .nav-list {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .nav-list li a {
+    padding: 10px 15px;
+  }
+}
+
+@media (min-width: 769px) {
+  .top-nav-container {
+    flex-direction: row;
+  }
+}

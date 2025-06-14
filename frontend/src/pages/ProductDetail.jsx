@@ -27,7 +27,10 @@ import { useEffect } from "react"
 import axios from "axios"
 import { toast } from "react-toastify"
 import { useAuth } from "../context/AuthContext"
-import { updateFeedbackAndRating,deleteFeedbackAndRating } from "../services/feedbackService"
+import { updateFeedbackAndRating, deleteFeedbackAndRating } from "../services/feedbackService"
+import AddToCartModal from "../components/AddToCartModal"
+import { addToCartService } from "../services/cartService"
+import { useCart } from "../context/CartContext"
 
 const ProductDetail = () => {
   const { productId } = useParams()
@@ -51,7 +54,8 @@ const ProductDetail = () => {
   const [editingReview, setEditingReview] = useState(null)
   const [editRating, setEditRating] = useState(0)
   const [editComment, setEditComment] = useState("")
-
+  const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false)
+  const { cartCount } = useCart()
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -109,14 +113,6 @@ const ProductDetail = () => {
     }
   }
 
-  const handleAddToCart = () => {
-    console.log("Add to cart:", {
-      product: product.id,
-      quantity,
-      variant: selectedVariant,
-    })
-  }
-
   const handleBuyNow = () => {
     console.log("Buy now:", {
       product: product.id,
@@ -130,51 +126,51 @@ const ProductDetail = () => {
   const handleRemoveImage = (index) => {
     setNewImages((prevImages) => prevImages.filter((_, i) => i !== index))
   }
-  const handleSubmitFeedback = async (e) => {
-    e.preventDefault()
-    if (submitting) return // Prevent multiple submissions
-    if (newRating == 0) {
-      alert("Vui lòng chọn chọn số sao đánh giá")
-      return
-    }
-    if (!newComment.trim()) {
-      alert("Vui lòng nhập bình luận đánh giá")
-      return
-    }
-    setSubmitting(true)
-    try {
-      const response = await createFeedbackAndRatingApi(productId, newRating, newComment)
-      setReviews((prevReviews) => [
-        ...prevReviews,
-        {
-          rating: newRating,
-          comment: newComment,
-          // images: newImages,
-          user_id: { username: "Bạn" }, // Mock user data
-          createdAt: new Date().toISOString(),
-        },
-      ])
-      setReviewsCount((prevCount) => prevCount + 1)
-      setNewRating(0)
-      setNewComment("")
-      setNewImages([])
-      setSubmitting(false)
-    } catch (error) {
-      console.error("Error submitting feedback:", error)
-      if (error.response?.status === 400) {
-        alert("Vui lòng điền đầy đủ thông tin đánh giá")
-      } else if (error.response?.status === 500) {
-        alert("Đã có lỗi xảy ra, vui lòng thử lại sau")
-      } else if (error.response?.status === 401) {
-        alert("Bạn cần đăng nhập để đánh giá sản phẩm")
-      } else if (error.response?.status === 404) {
-        alert("Sản phẩm không tồn tại hoặc đã bị xóa")
-      }
-      setError("Failed to submit feedback")
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  // const handleSubmitFeedback = async (e) => {
+  //   e.preventDefault()
+  //   if (submitting) return // Prevent multiple submissions
+  //   if (newRating == 0) {
+  //     alert("Vui lòng chọn chọn số sao đánh giá")
+  //     return
+  //   }
+  //   if (!newComment.trim()) {
+  //     alert("Vui lòng nhập bình luận đánh giá")
+  //     return
+  //   }
+  //   setSubmitting(true)
+  //   try {
+  //     const response = await createFeedbackAndRatingApi(productId, newRating, newComment)
+  //     setReviews((prevReviews) => [
+  //       ...prevReviews,
+  //       {
+  //         rating: newRating,
+  //         comment: newComment,
+  //         // images: newImages,
+  //         user_id: { username: "Bạn" }, // Mock user data
+  //         createdAt: new Date().toISOString(),
+  //       },
+  //     ])
+  //     setReviewsCount((prevCount) => prevCount + 1)
+  //     setNewRating(0)
+  //     setNewComment("")
+  //     setNewImages([])
+  //     setSubmitting(false)
+  //   } catch (error) {
+  //     console.error("Error submitting feedback:", error)
+  //     if (error.response?.status === 400) {
+  //       alert("Vui lòng điền đầy đủ thông tin đánh giá")
+  //     } else if (error.response?.status === 500) {
+  //       alert("Đã có lỗi xảy ra, vui lòng thử lại sau")
+  //     } else if (error.response?.status === 401) {
+  //       alert("Bạn cần đăng nhập để đánh giá sản phẩm")
+  //     } else if (error.response?.status === 404) {
+  //       alert("Sản phẩm không tồn tại hoặc đã bị xóa")
+  //     }
+  //     setError("Failed to submit feedback")
+  //   } finally {
+  //     setSubmitting(false)
+  //   }
+  // }
 
   const handleUpdateFeedback = async (feedbackId) => {
     if (submitting) return // Prevent multiple submissions
@@ -240,6 +236,25 @@ const ProductDetail = () => {
     setEditingReview(null)
     setEditRating(0)
     setEditComment("")
+  }
+
+  const handleAddToCart = async (productId, quantity) => {
+    console.log("Adding to cart:", { productId, quantity })
+
+    try {
+      await addToCartService(productId, quantity)
+      toast.success("Thêm vào giỏ hàng thành công!")
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error("Vui lòng điền đầy đủ thông tin sản phẩm")
+      } else if (error.response?.status === 500) {
+        toast.error("Đã có lỗi xảy ra, vui lòng thử lại sau")
+      } else if (error.response?.status === 401) {
+        toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng")
+      }
+    }
+    setIsAddToCartModalOpen(false)
+
   }
 
   if (loading) {
@@ -313,8 +328,24 @@ const ProductDetail = () => {
           </div>
 
           <div className="shop-cart-container">
-            <a href="#" className="shop-cart-icon">
+            <a href="/my-cart" className="shop-cart-icon" style={{ position: "relative" }}>
               <ShoppingCart size={22} />
+              {user && cartCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    background: "red",
+                    color: "white",
+                    borderRadius: "50%",
+                    padding: "2px 6px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
             </a>
           </div>
         </div>
@@ -478,7 +509,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="product-detail-actions">
-              <button className="product-detail-add-cart" onClick={handleAddToCart}>
+              <button className="product-detail-add-cart" onClick={() => setIsAddToCartModalOpen(true)}>
                 <ShoppingCart size={20} />
                 Thêm vào giỏ
               </button>
@@ -710,6 +741,13 @@ const ProductDetail = () => {
         </div>
       </div>
       <Footer />
+      {/* Add to Cart Modal */}
+      <AddToCartModal
+        isOpen={isAddToCartModalOpen}
+        onClose={() => setIsAddToCartModalOpen(false)}
+        product={product}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   )
 }

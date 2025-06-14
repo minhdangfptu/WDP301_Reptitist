@@ -295,9 +295,9 @@ const ShopLandingPage = () => {
           </div>
 
           <div className="shop-cart-container">
-            <a href="#" className="shop-cart-icon">
+            <Link to="/my-cart" className="shop-cart-icon">
               <ShoppingCart size={22} />
-            </a>
+            </Link>
           </div>
         </div>
 

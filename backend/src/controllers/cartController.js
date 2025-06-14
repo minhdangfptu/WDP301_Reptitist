@@ -144,9 +144,25 @@ const deleteAllProductFromCart = async (req, res) => {
         return res.status(500).json({ message: 'Failed to delete cart item', error: error.message });
     }
 }
+const countCartItems = async (req, res) => {
+  try {
+    const user_id = req.userId;
+    const cart = await Cart.findOne({ user_id });
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+
+    const totalQuantity = cart.cart_items.reduce((total, item) => total + item.quantity, 0);
+    return res.status(200).json({ totalQuantity });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to fetch cart count', error: error.message });
+  }
+};
 module.exports = {
   addProductToCart,
   getCart,
   deleteProductFromCart,
-  deleteAllProductFromCart
+  deleteAllProductFromCart,
+  countCartItems
 };
