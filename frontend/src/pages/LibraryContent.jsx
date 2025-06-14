@@ -21,7 +21,7 @@ const LibraryContent = () => {
   const { categoryId } = useParams();
   const [contents, setContents] = useState([]);
   const [category, setCategory] = useState(null);
-  const [topics, setTopics] = useState([]); // Thêm state cho danh sách chủ đề
+  const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedContentId, setSelectedContentId] = useState(null);
@@ -29,23 +29,28 @@ const LibraryContent = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   // Lấy user_id từ token
-  const token = localStorage.getItem("token");
-  let userId = "";
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      userId = decoded.user_id; 
-    } catch (err) {
-      console.error("Lỗi giải mã token:", err);
+  const getUserId = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        return decoded.id; // Thay đổi từ user_id thành id
+      } catch (err) {
+        console.error("Lỗi giải mã token:", err);
+        return null;
+      }
     }
-  }
+    return null;
+  };
+
+  const userId = getUserId();
 
   const [formData, setFormData] = useState({
     title: "",
     content: "",
     image_urls: [],
-    user_id: userId || "sample_user_id", // Sử dụng user_id từ token
-    topic_category_id: "", // Để trống, chờ người dùng chọn
+    user_id: userId,
+    topic_category_id: "",
     category_content_id: categoryId
   });
   const navigate = useNavigate();
@@ -105,9 +110,14 @@ const LibraryContent = () => {
     });
   }, [categoryId]);
 
+  // Cập nhật formData khi userId thay đổi
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, user_id: userId || "sample_user_id" }));
-  }, [userId]);
+    const currentUserId = getUserId();
+    setFormData(prev => ({
+      ...prev,
+      user_id: currentUserId
+    }));
+  }, []);
 
   const handleSelectContent = (contentId) => {
     setSelectedContentId(contentId);
@@ -125,29 +135,107 @@ const LibraryContent = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    console.log("Bắt đầu handleCreate");
+    console.log("userId:", userId);
+    console.log("Token:", localStorage.getItem("token"));
+    console.log("categoryId:", categoryId);
+    console.log("Category:", category);
+    
+    // Kiểm tra đăng nhập
+    if (!userId) {
+      console.log("Chưa đăng nhập");
+      setError("Vui lòng đăng nhập để tạo nội dung");
+      navigate('/login', { state: { from: `/LibraryContent/${categoryId}` } });
+      return;
+    }
+    
+    // Kiểm tra dữ liệu trước khi gửi
+    if (!formData.title.trim()) {
+      console.log("Thiếu tiêu đề");
+      setError("Vui lòng nhập tiêu đề");
+      return;
+    }
+    if (!formData.content.trim()) {
+      console.log("Thiếu nội dung");
+      setError("Vui lòng nhập nội dung");
+      return;
+    }
+    
+    if (!category?.topic_id) {
+      console.log("Không tìm thấy topic_id");
+      setError("Không tìm thấy thông tin chủ đề");
+      return;
+    }
     
     try {
-      await axios.post("http://localhost:8080/reptitist/library_contents", {
+      console.log("Bắt đầu gửi request");
+      // Chuẩn bị dữ liệu gửi đi
+      const dataToSend = {
         ...formData,
-        category_content_id: categoryId
+        category_content_id: categoryId,
+        image_urls: Array.isArray(formData.image_urls) ? formData.image_urls : [],
+        user_id: userId,
+        topic_category_id: category.topic_id // Sử dụng topic_id từ category hiện tại
+      };
+
+      const apiUrl = "http://localhost:8080/reptitist/library_contents";
+      console.log("API URL:", apiUrl);
+      console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
+      console.log("Headers:", {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json"
       });
+
+      const response = await axios.post(apiUrl, dataToSend);
+      console.log("Phản hồi từ server:", response.data);
+      
+      // Reset form và cập nhật danh sách
       setIsCreating(false);
       setFormData({
         title: "",
         content: "",
         image_urls: [],
-        user_id: userId || "sample_user_id",
-        topic_category_id: "",
+        user_id: userId,
+        topic_category_id: category.topic_id,
         category_content_id: categoryId
       });
-      const response = await axios.get("http://localhost:8080/reptitist/library_contents");
-      const filtered = response.data.filter(
+      
+      // Cập nhật danh sách nội dung
+      console.log("Cập nhật danh sách nội dung");
+      const contentsResponse = await axios.get(apiUrl);
+      const filtered = contentsResponse.data.filter(
         (item) => String(item.category_content_id) === String(categoryId)
       );
       setContents(filtered);
+      
+      // Hiển thị thông báo thành công
+      setError(null);
+      alert("Tạo nội dung thành công!");
+      
     } catch (err) {
-      setError("Lỗi khi tạo nội dung");
-      console.error("Lỗi chi tiết:", err.response?.data);
+      console.error("Chi tiết lỗi:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        headers: err.response?.headers,
+        config: {
+          url: err.config?.url,
+          method: err.config?.method,
+          data: err.config?.data,
+          headers: err.config?.headers
+        }
+      });
+      setError(err.response?.data?.message || "Lỗi khi tạo nội dung. Vui lòng kiểm tra lại thông tin.");
+    }
+  };
+
+  // Thêm log cho form submit
+  const handleFormSubmit = (e) => {
+    console.log("Form submit");
+    if (isCreating) {
+      handleCreate(e);
+    } else if (isEditing) {
+      handleUpdate(e);
     }
   };
 
@@ -297,7 +385,7 @@ const LibraryContent = () => {
               {(isCreating || isEditing) && (
                 <div style={{ width: "100%", marginBottom: "20px" }}>
                   <form
-                    onSubmit={isCreating ? handleCreate : handleUpdate}
+                    onSubmit={handleFormSubmit}
                     style={{
                       padding: "20px",
                       border: "1px solid #ccc",
@@ -317,6 +405,7 @@ const LibraryContent = () => {
                         required
                       />
                     </div>
+                    
                     <div style={{ marginBottom: "10px" }}>
                       <label>Nội dung:</label>
                       <textarea
@@ -335,6 +424,7 @@ const LibraryContent = () => {
                         value={formData.image_urls.join(", ")}
                         onChange={handleFormChange}
                         style={{ width: "100%", padding: "5px" }}
+                        placeholder="Nhập các URL hình ảnh, phân cách bằng dấu phẩy"
                       />
                     </div>
                     <div style={{ marginBottom: "10px" }}>
@@ -369,7 +459,7 @@ const LibraryContent = () => {
                             title: "",
                             content: "",
                             image_urls: [],
-                            user_id: userId || "sample_user_id",
+                            user_id: userId,
                             topic_category_id: "",
                             category_content_id: categoryId
                           });
