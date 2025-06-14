@@ -444,7 +444,6 @@ const LibraryContent = () => {
                         ))}
                       </div>
                     )}
-                    <h3>{selectedContent.title}</h3>
                     <div dangerouslySetInnerHTML={{ __html: selectedContent.content }} />
                   </div>
                 </div>
