@@ -203,9 +203,17 @@ const LibraryContent = () => {
       // Cập nhật danh sách nội dung
       console.log("Cập nhật danh sách nội dung");
       const contentsResponse = await axios.get(apiUrl);
-      const filtered = contentsResponse.data.filter(
-        (item) => String(item.category_content_id) === String(categoryId)
-      );
+      const filtered = contentsResponse.data.filter((item) => {
+        if (item.category_content_id && typeof item.category_content_id === "object") {
+          if (item.category_content_id._id) {
+            return String(item.category_content_id._id) === String(categoryId);
+          }
+          if (item.category_content_id.$oid) {
+            return String(item.category_content_id.$oid) === String(categoryId);
+          }
+        }
+        return String(item.category_content_id) === String(categoryId);
+      });
       setContents(filtered);
       
       // Hiển thị thông báo thành công
@@ -285,9 +293,17 @@ const LibraryContent = () => {
       try {
         await axios.delete(`http://localhost:8080/reptitist/library_contents/${selectedContentId}`);
         const response = await axios.get("http://localhost:8080/reptitist/library_contents");
-        const filtered = response.data.filter(
-          (item) => String(item.category_content_id) === String(categoryId)
-        );
+        const filtered = response.data.filter((item) => {
+          if (item.category_content_id && typeof item.category_content_id === "object") {
+            if (item.category_content_id._id) {
+              return String(item.category_content_id._id) === String(categoryId);
+            }
+            if (item.category_content_id.$oid) {
+              return String(item.category_content_id.$oid) === String(categoryId);
+            }
+          }
+          return String(item.category_content_id) === String(categoryId);
+        });
         setContents(filtered);
         setSelectedContentId(null);
       } catch (err) {
