@@ -4,7 +4,6 @@ import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import ReactPlayer from "react-player";
 
-console.log("huhuhuhuhuhuhuhu")
 const LandingPage = () => {
   return (
     <>
