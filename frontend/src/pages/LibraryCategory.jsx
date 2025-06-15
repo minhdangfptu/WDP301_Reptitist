@@ -121,15 +121,15 @@ const LibraryCategory = () => {
             <div className="content-grid">
               {allCategories.map((cat) => (
                 <div className="category-card" key={cat._id}>
-                  <div className="card-image">
-                    <img
-                      src={
-                        cat.category_imageurl ||
-                        "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
-                      }
-                      alt={cat.category_content}
-                    />
-                  </div>
+                  <Link to={`/librarycontent/${cat._id}`}>
+                    <div className="card-image" style={{ cursor: "pointer" }}>
+                      <img
+                        src={cat.category_imageurl || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                        alt={cat.category_content}
+                      />
+                    </div>
+                  </Link>
+
                   <div className="card-title">{cat.category_content}</div>
                   <div
                     style={{

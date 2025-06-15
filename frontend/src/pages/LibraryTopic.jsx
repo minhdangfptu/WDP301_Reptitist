@@ -137,21 +137,21 @@ const Library = () => {
                       padding: "10px",
                     }}
                   >
-                    <div className="card-image">
-                      <img
-                        src={
-                          topic.topic_imageurl?.[0] ||
-                          "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
-                        }
-                        alt={topic.topic_title}
-                        style={{
-                          width: "100%",
-                          height: "200px",
-                          objectFit: "cover",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    </div>
+                    <Link to={`/libraryCategory/${topic._id}`}>
+                      <div className="card-image" style={{ cursor: "pointer" }}>
+                        <img
+                          src={topic.topic_imageurl?.[0] || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                          alt={topic.topic_title}
+                          style={{
+                            width: "100%",
+                            height: "200px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </div>
+                    </Link>
+
                     <div className="card-title" style={{ marginTop: "10px", fontWeight: "bold" }}>
                       {topic.topic_title}
                     </div>
