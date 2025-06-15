@@ -20,11 +20,12 @@ const corsOptions = {
     'http://127.0.0.1:5173',
     'https://reptitist-service-git-test-huhuhuhu-minhdangfptus-projects.vercel.app/'
   ],
+  
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
-
+console.log(""),
 app.use(cors(corsOptions));
 
 // Handle preflight requests
