@@ -32,7 +32,12 @@ const PlanUpgrade = () => {
 
     // Show detail modal for all plans except free plan
     if (planKey !== 'free') {
-      setSelectedPlanDetail(plan);
+      // Add planType to the plan data
+      const planWithType = {
+        ...plan,
+        planType: activeTab === 'individual' ? 'individual' : 'partner'
+      };
+      setSelectedPlanDetail(planWithType);
       setShowDetailModal(true);
     } else {
       // Direct action for free plan (shouldn't happen since free is current)
@@ -47,9 +52,14 @@ const PlanUpgrade = () => {
     const { period, price, planName } = purchaseData;
     const periodText = period === 'monthly' ? 'hàng tháng' : 'hàng năm';
     
-    toast.success(`Bạn đã chọn gói ${planName} - ${periodText} với giá ${formatPrice(price)}đ. Chức năng thanh toán sẽ được cập nhật sớm!`, {
-      position: "top-right",
-      autoClose: 5000
+    // Navigate to payment processing page with planType
+    navigate('/payment-processing', {
+      state: {
+        period,
+        price,
+        planName,
+        planType: activeTab === 'individual' ? 'individual' : 'partner'
+      }
     });
     setShowDetailModal(false);
   };

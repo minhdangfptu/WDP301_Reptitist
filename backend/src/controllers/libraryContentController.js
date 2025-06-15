@@ -26,7 +26,7 @@ exports.createLibraryContent = async (req, res) => {
 exports.getAllLibraryContents = async (req, res) => {
   try {
     const contents = await LibraryContent.find()
-      .populate('user_id topic_id category_id'); // ✅ đúng theo schema
+      .populate('user_id topic_id category_id'); 
     res.status(200).json(contents);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách nội dung', error: error.message });

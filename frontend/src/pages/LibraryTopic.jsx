@@ -4,13 +4,14 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const Library = () => {
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/reptitist/library_topics")
+      .get(`${baseUrl}/reptitist/library_topics`)
       .then((response) => {
         setTopics(response.data);
       })

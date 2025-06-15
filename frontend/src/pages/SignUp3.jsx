@@ -23,7 +23,6 @@ const SignUp3 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Redirect if not verified or no email
   useEffect(() => {
     console.log("SignUp3 - Email:", email, "Verified:", isVerified); // Debug log
     
@@ -70,6 +69,8 @@ const SignUp3 = () => {
       newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự";
     } else if (!/(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
       newErrors.password = "Mật khẩu phải chứa ít nhất 1 chữ hoa và 1 số";
+    } else if (formData.password.length > 50) {
+      newErrors.password = "Mật khẩu không được quá 50 ký tự";
     }
     
     // Confirm password validation
@@ -117,13 +118,17 @@ const SignUp3 = () => {
           setErrors({ username: "Tên người dùng đã tồn tại" });
         } else if (result.message.includes('Email already exists')) {
           setErrors({ submit: "Email đã được đăng ký" });
+        } else if (result.message.includes('Invalid password')) {
+          setErrors({ password: "Mật khẩu không hợp lệ" });
         } else {
           setErrors({ submit: result.message || "Đăng ký thất bại. Vui lòng thử lại." });
         }
       }
     } catch (error) {
       console.error("Error during registration:", error);
-      setErrors({ submit: "Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại." });
+      setErrors({ 
+        submit: error.message || "Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại." 
+      });
     } finally {
       setIsSubmitting(false);
     }

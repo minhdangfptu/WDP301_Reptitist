@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const ProductsByCategory = () => {
   const { categoryId } = useParams();
@@ -15,7 +16,7 @@ const ProductsByCategory = () => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/reptitist/shop/products/category/${categoryId}`
+          `${baseUrl}/reptitist/shop/products/category/${categoryId}`
         );
         setProducts(res.data);
       } catch (err) {

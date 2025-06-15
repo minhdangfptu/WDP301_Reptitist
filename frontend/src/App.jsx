@@ -11,8 +11,7 @@ import LibraryContentCreate from './pages/LibraryCategoryCreate';
 // Import components
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
-import Library from './pages/LibraryTopic';
-import LibraryDetail from './pages/LibraryCategory';
+import LibraryTopic from './pages/LibraryTopic';
 import LibraryContent from './pages/LibraryContent';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
@@ -23,12 +22,28 @@ import Settings from './pages/Settings';
 import Security from './pages/Security';
 import YourPet from './pages/YourPet';
 import Transaction from './pages/Transaction';
-import UserList from './pages/UserList';
+import UserManagement from './pages/UserManagement';
 import ShopLandingPage from './pages/ShopLandingPage';
+import YourPetDetail from './pages/YourPetDetail';
+import CreateNewPet from './pages/CreateNewPetPage';
+import AIChatPage from './pages/AIChatPage';
+import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
+import ProductDetail from './pages/ProductDetail';
 import PlanUpgrade from './pages/PlanUpgrade';
 import LibraryCategory from './pages/LibraryCategory';
+import ProductForm from './pages/ShopProductForm';
+import ShopProductManagement from './pages/ShopProductManagement';
+import LibraryManagement from './pages/LibraryManagement';
+import AdminShopManagement from './pages/AdminShopManagement';
+import PaymentProcessing from './pages/PaymentProcessing';
+import ProductManagement from './pages/ProductManagement';
+import AuthCallback from './pages/AuthCallback';
+import CreateTreatmentPage from './pages/CreateTreatmentPage';
+// import loadinggif from './public/loading.gif';import PlanUpgrade from './pages/PlanUpgrade';
 import ProductsByCategory from "./pages/ProductsByCategory"; 
 import AddProduct from "./pages/AddProduct";
+import UnderDevPage from './pages/UnderDevPage';
+import ListProductPage from './pages/ListProductPage';
 
 
 // Loading component
@@ -43,20 +58,35 @@ const LoadingSpinner = () => (
     gap: '16px'
   }}>
     <div className="spinner"></div>
-    <div>Đang tải...</div>
+    <div>Đang tải...
+
+    </div>
   </div>
 );
+
 
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Đang tải...
+        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
+      </div>
+    );
   }
 
   if (!user) {
     return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
+
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
@@ -67,11 +97,23 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 // Public Route component (redirect to home if already logged in)
+
 const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
+        Đang tải...
+      </div>
+    );
   }
 
   // If user is already logged in and we should redirect
@@ -82,32 +124,32 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   return children;
 };
 
+
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+      {/* <Route path="/products/category/:categoryId" element={<ProductsByCategory />} /> */}
       <Route path="/products/create" element={<AddProduct />} />
       {/* Public routes - accessible to everyone */}
+      {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/LandingPage" element={<LandingPage />} />
+      {/* <Route path="/LandingPage" element={<LandingPage />} /> */}
       <Route path="/ContactUs" element={<ContactUs />} />
-      <Route path="/Library" element={<Library />} />
-      <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
-            <Route
-              path="/libraryCategory/create/:categoryId"
-              element={
-                <ProtectedRoute>
-                  <LibraryContentCreate />
-                </ProtectedRoute>
-              }
-            />
-      {/* <Route path="/LibraryDetail2/:categoryId" element={<LibraryDetail2 />} /> */}
-      <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
 
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+      <Route path="/product-detail/:productId" element={<ProductDetail />} />
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       
+      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+      <Route path="/payment-processing" element={
+        
+        <ProtectedRoute>
+          <PaymentProcessing />
+        </ProtectedRoute>
+      } />
+      
       {/* Auth routes - redirect if already logged in */}
+      
       <Route path="/Login" element={
         <PublicRoute>
           <Login />
@@ -128,6 +170,9 @@ const AppRoutes = () => {
           <SignUp3 />
         </PublicRoute>
       } />
+      <Route path="/products/search/:productName" element={<ListProductPage />} />
+      <Route path="/products/category/:categoryId" element={<ListProductPage />} />
+      
       
       {/* Protected routes - require login */}
       <Route path="/Profile" element={
@@ -140,6 +185,9 @@ const AppRoutes = () => {
           <Security />
         </ProtectedRoute>
       } />
+       <Route path="/LibraryTopic" element={<LibraryTopic />} />
+       <Route path="/LibraryCategory" element={<LibraryCategory />} />
+       <Route path="/LibraryContent/:id" element={<LibraryContent />} />
       <Route path="/Settings" element={
         <ProtectedRoute>
           <Settings />
@@ -155,16 +203,71 @@ const AppRoutes = () => {
           <Transaction />
         </ProtectedRoute>
       } />
+      <Route path="/your-pet/detail/:reptileId" element={
+        <ProtectedRoute>
+          < YourPetDetail/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/create" element={
+        <ProtectedRoute>
+          < CreateNewPet/>
+        </ProtectedRoute>
+      } />
+      <Route path="/your-pet/ai/:reptileId" element={
+        <ProtectedRoute>
+          < AIChatPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-health-tracking/:reptileId" element={
+        <ProtectedRoute>
+          < CreateTrackingHealthPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/create-treatment/:reptileId" element={
+        <ProtectedRoute>
+          < CreateTreatmentPage/>
+        </ProtectedRoute>
+      } />
+      <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
+      <Route path="/shop/products/create" element={<ProductForm />} />
       
       {/* Admin only routes */}
-      <Route path="/UserList" element={
+      <Route path="/UserManagement" element={
         <ProtectedRoute requiredRole="admin">
-          <UserList />
+          <UserManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/ProductManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/AdminShopManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminShopManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/LibraryManagement" element={
+        <ProtectedRoute requiredRole="admin">
+          <LibraryManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products/create" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductForm />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/products/edit/:productId" element={
+        <ProtectedRoute requiredRole="admin">
+          <ProductForm />
         </ProtectedRoute>
       } />
       
-      {/* Catch all route - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Auth callback route */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      
+      {/* Route catch-all cho các đường dẫn không tồn tại */}
+      <Route path="*" element={<UnderDevPage />} />
     </Routes>
   );
 };

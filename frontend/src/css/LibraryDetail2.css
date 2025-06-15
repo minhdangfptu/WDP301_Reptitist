@@ -193,7 +193,7 @@
 
 .article-title {
   font-size: 24px;
-  color: var(--secondary-color);
+  color: black;
   margin-bottom: 10px;
   font-weight: 700;
 }
@@ -271,7 +271,7 @@
 
 .article-content h2 {
   font-size: 20px;
-  color: var(--secondary-color);
+  color: black;
   margin: 30px 0 15px;
 }
 

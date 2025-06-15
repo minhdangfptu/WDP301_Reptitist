@@ -1,7 +1,8 @@
+/* eslint-disable no-undef */
 import axios from 'axios';
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const axiosClient = axios.create({
-  baseURL: 'http://localhost:8080/reptitist',
+  baseURL: `${baseUrl}/reptitist`,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -44,7 +45,7 @@ axiosClient.interceptors.response.use(
 
         // Gọi API refresh token
         const response = await axios.post(
-          'http://localhost:8080/reptitist/auth/refresh-token',
+          `${baseUrl}/reptitist/auth/refresh-token`,
           {
             refresh_token: refreshToken,
           },
