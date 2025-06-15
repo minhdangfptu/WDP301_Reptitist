@@ -1,6 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react';
-import Header from "../components/Header";
-import Footer from "../components/Footer";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../context/AuthContext';
@@ -17,7 +15,6 @@ const ContactUs = () => {
     message: ''
   });
 
-  // Tự động fill thông tin nếu user đã đăng nhập
   useEffect(() => {
     if (user) {
       setFormData(prev => ({
