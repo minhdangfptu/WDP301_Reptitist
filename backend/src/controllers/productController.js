@@ -5,12 +5,22 @@ const mongoose = require('mongoose');
 const { successResponse } = require('../../utils/APIResponse');
 
 async function updateAverageRating(productId) {
-  const result = await Feedback.aggregate([
-    { $match: { product_id: mongoose.Types.ObjectId(productId) } },
-    { $group: { _id: '$product_id', avgRating: { $avg: '$rating' } } }
-  ]);
-  const avgRating = result.length > 0 ? result[0].avgRating : 0;
-  await Product.findByIdAndUpdate(productId, { average_rating: avgRating });
+  try {
+    // Ensure productId is a valid ObjectId (using new)
+    const result = await Feedback.aggregate([
+      { $match: { product_id: new mongoose.Types.ObjectId(productId) } },
+      { $group: { _id: '$product_id', avgRating: { $avg: '$rating' } } }
+    ]);
+
+    const avgRating = result.length > 0 ? result[0].avgRating : 0;
+
+    // Update the average rating for the product
+    await Product.findByIdAndUpdate(productId, { average_rating: avgRating });
+    console.log(`Updated average rating for product: ${productId}`);
+
+  } catch (error) {
+    console.error('Error updating average rating:', error);
+  }
 }
 
 // Tạo sản phẩm mới (chỉ dành cho Shop)
@@ -314,11 +324,12 @@ const getMyProductStats = async (req, res) => {
 const getAllProductsByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
+
     const products = await Product.find({ 
       product_category_id: categoryId,
       product_status: 'available' // Chỉ hiển thị sản phẩm available
     }).populate('user_id', 'username'); // Populate thông tin shop
-    
+
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'Không có sản phẩm nào trong danh mục này' });
     }
@@ -338,7 +349,7 @@ const getAllProductByName = async (req, res) => {
     const products = await Product.find({ 
       product_name: { $regex: productName, $options: 'i' },
       product_status: 'available' // Chỉ hiển thị sản phẩm available
-    }).populate('user_id', 'username');
+    }).populate('user_id', 'username', 'address');
     
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'Không tìm thấy sản phẩm với tên này' });
@@ -398,6 +409,7 @@ const getProductDetails = async (req, res) => {
 // Feedback functions giữ nguyên
 const createFeedbackAndRating = async (req, res) => {
   try {
+
     const { productId } = req.params;
     const { rating, comment } = req.body;
     const user_id = req.user._id;
@@ -547,6 +559,40 @@ const approveProduct = async (req, res) => {
   }
 };
 
+const getTopRatedProducts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 12;
+
+    const products = await Product.find({ 
+      product_status: 'available', 
+      average_rating: { $gt: 0 } 
+    })
+    .sort({ average_rating: -1 })
+    .limit(limit)
+    .populate('product_category_id', 'product_category_name');
+
+    if (!products || products.length === 0) {
+      return res.status(200).json({ 
+        message: 'No products found with ratings',
+        data: []
+      });
+    }
+    // console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",products);
+    res.status(200).json({
+      message: 'Top rated products fetched successfully',
+      count: products.length,
+      data: products
+      
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: 'Error fetching top rated products',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   // Shop functions
   createProduct,
@@ -555,7 +601,8 @@ module.exports = {
   deleteMyProduct,
   getMyProductStats,
   reportProduct,
-  
+  approveProduct,
+
   // Public functions
   getAllProductsByCategory,
   getAllProductByName, 
@@ -567,5 +614,5 @@ module.exports = {
   viewFeedbackAndRating, 
   editFeedbackAndRating,
   deleteFeedbackAndRating,
-  approveProduct
+  getTopRatedProducts
 };

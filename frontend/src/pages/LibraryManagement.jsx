@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/LibraryManagement.css';
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const LibraryManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
@@ -99,7 +99,7 @@ const LibraryManagement = () => {
   // Fetch library contents
   const fetchContents = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/library_contents');
+      const response = await axios.get(`${baseUrl}/reptitist/library_contents`);
       if (response.data) {
         setContents(response.data);
         setFilteredContents(response.data);
@@ -115,7 +115,7 @@ const LibraryManagement = () => {
   // Fetch topics
   const fetchTopics = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/library_topics');
+      const response = await axios.get(`${baseUrl}/reptitist/library_topics`);
       if (response.data) {
         setTopics(response.data);
       }
@@ -129,7 +129,7 @@ const LibraryManagement = () => {
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/library_categories');
+      const response = await axios.get(`${baseUrl}/reptitist/library_categories`);
       if (response.data) {
         setCategories(response.data);
       }
@@ -294,7 +294,7 @@ const LibraryManagement = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/library_contents/${selectedContent._id}`
+        `${baseUrl}/reptitist/library_contents/${selectedContent._id}`
       );
 
       if (response.status === 200) {
@@ -319,7 +319,7 @@ const LibraryManagement = () => {
     try {
       setFormLoading(true);
       const response = await axios.post(
-        'http://localhost:8080/reptitist/library_topics',
+        `${baseUrl}/reptitist/library_topics`,
         topicForm,
         {
           headers: {
@@ -355,7 +355,7 @@ const LibraryManagement = () => {
     try {
       setFormLoading(true);
       const response = await axios.post(
-        'http://localhost:8080/reptitist/library_categories',
+        `${baseUrl}/reptitist/library_categories`,
         categoryForm,
         {
           headers: {
@@ -397,7 +397,7 @@ const LibraryManagement = () => {
       };
 
       const response = await axios.post(
-        'http://localhost:8080/reptitist/library_contents',
+        `${baseUrl}/reptitist/library_contents`,
         formData,
         {
           headers: {
@@ -434,7 +434,7 @@ const LibraryManagement = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/library_topics/${topicId}`
+        `${baseUrl}/reptitist/library_topics/${topicId}`
       );
 
       if (response.status === 200) {
@@ -455,7 +455,7 @@ const LibraryManagement = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/library_categories/${categoryId}`
+        `${baseUrl}/reptitist/library_categories/${categoryId}`
       );
 
       if (response.status === 200) {

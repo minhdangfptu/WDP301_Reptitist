@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/ProductManagement.css';
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const ProductManagement = () => {
   const { user, hasRole } = useAuth();
@@ -80,7 +81,7 @@ const ProductManagement = () => {
   const fetchProducts = useCallback(async () => {
     try {
       // First get all categories
-      const categoriesResponse = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const categoriesResponse = await axios.get(`${baseUrl}/reptitist/shop/category`);
       const allCategories = categoriesResponse.data || [];
       
       // Then fetch products from each category
@@ -89,7 +90,7 @@ const ProductManagement = () => {
       for (const category of allCategories) {
         try {
           const productsResponse = await axios.get(
-            `http://localhost:8080/reptitist/shop/products/category/${category._id}`
+            `${baseUrl}/reptitist/shop/products/category/${category._id}`
           );
           if (productsResponse.data && Array.isArray(productsResponse.data)) {
             allProducts.push(...productsResponse.data);
@@ -122,7 +123,7 @@ const ProductManagement = () => {
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
       setCategories(response.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -267,7 +268,7 @@ const ProductManagement = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/shop/products/${selectedProduct._id}`
+        `${baseUrl}/reptitist/shop/products/${selectedProduct._id}`
       );
 
       if (response.status === 200) {
@@ -286,7 +287,7 @@ const ProductManagement = () => {
   const updateProductStatus = async (productId, newStatus) => {
     try {
       const response = await axios.put(
-        `http://localhost:8080/reptitist/shop/product-status/${productId}`,
+        `${baseUrl}/reptitist/shop/product-status/${productId}`,
         { product_status: newStatus },
         {
           headers: {
@@ -315,7 +316,7 @@ const ProductManagement = () => {
     try {
       setCategoryLoading(true);
       const response = await axios.post(
-        'http://localhost:8080/reptitist/shop/create-category',
+        `${baseUrl}/reptitist/shop/create-category`,
         categoryForm,
         {
           headers: {
@@ -348,7 +349,7 @@ const ProductManagement = () => {
 
     try {
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/shop/category/${categoryId}`
+        `${baseUrl}/reptitist/shop/category/${categoryId}`
       );
 
       if (response.status === 200) {

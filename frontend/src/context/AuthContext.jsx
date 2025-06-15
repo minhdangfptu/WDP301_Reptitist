@@ -1,4 +1,5 @@
-// context/AuthContext.jsx
+/* eslint-disable no-undef */
+/* eslint-disable no-console */
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
 
@@ -247,6 +248,27 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      debugLog('Initiating Google login...');
+      const response = await authService.loginWithGoogle();
+      if (response.success) {
+        debugLog('Google login successful');
+        await checkAuthStatus();
+        return { success: true };
+      } else {
+        debugLog('Google login failed:', response.message);
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      debugLog('Google login failed:', error);
+      return {
+        success: false,
+        message: 'Đăng nhập Google thất bại'
+      };
+    }
+  };
+
   const isShop = () => {
     const result = user?.role === 'shop';
     debugLog('isShop:', result);
@@ -281,6 +303,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin,
     isPremium,
     checkAuthStatus,
+    loginWithGoogle,
   };
 
   debugLog('AuthProvider rendering with user:', user ? user.username : 'null');

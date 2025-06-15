@@ -56,12 +56,12 @@ const Header = () => {
   };
 
   return (
-    <header className="header">
+    <header style={{ position: 'static', width: '100%', zIndex: '1000' }} className="header">
       <div className="container">
         <nav className="header__nav">
           <Link to="/">
             <img
-            style={{width: '136px', justifyContent: 'center', marginTop: '5px', content: 'center', marginBottom: '0px'}}
+              style={{ width: '135px', height: 'auto', justifyContent: 'center', marginBottom: '0px', marginTop: '0px' }}
               src="/logo1.png"
               className="header__logo"
               alt="Logo"
@@ -72,7 +72,7 @@ const Header = () => {
             <li><Link to="/Community" className="header__nav-link">CỘNG ĐỒNG</Link></li>
             <li><Link to="/LibraryTopic" className="header__nav-link">THƯ VIỆN</Link></li>
             <li><Link to="/ShopLandingPage" className="header__nav-link">MUA SẮM</Link></li>
-            <li><Link to="/ContactUs" className="header__nav-link">Liên hệ</Link></li>
+            <li><Link to="/ContactUs" className="header__nav-link">LIÊN HỆ</Link></li>
             {user && <li><Link to="/YourPet" className="header__nav-link">YOUR PET</Link></li>}
           </ul>
 
@@ -87,7 +87,7 @@ const Header = () => {
                 ▼
               </span>
             </div>
-            
+
             {showAccountMenu && (
               <div className="header__dropdown">
                 {!user ? (
@@ -119,7 +119,6 @@ const Header = () => {
                     <Link to="/Transaction" className="header__dropdown-item" onClick={() => setShowAccountMenu(false)}>
                       Giao dịch
                     </Link>
-                    
                     {hasRole('admin') && (
                       <>
                         <div className="header__dropdown-divider"></div>
@@ -145,8 +144,7 @@ const Header = () => {
                         </Link>
                       </>
                     )}
-                    
-                    <div 
+                    <div
                       className="header__dropdown-logout"
                       onClick={() => {
                         handleLogout();

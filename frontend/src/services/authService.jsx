@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/reptitist';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 class AuthService {
   // Login method
@@ -75,6 +75,17 @@ class AuthService {
       console.warn('Logout request failed:', error.message);
     } finally {
       this.clearTokens();
+    }
+  }
+
+  async loginWithGoogle() {
+    try {
+      // Redirect to Google OAuth endpoint
+      window.location.href = `${API_BASE_URL}/auth/google`;
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Google login failed';
+      return { success: false, message };
     }
   }
 

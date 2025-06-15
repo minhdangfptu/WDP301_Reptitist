@@ -37,9 +37,34 @@ import LibraryManagement from './pages/LibraryManagement';
 import AdminShopManagement from './pages/AdminShopManagement';
 import PaymentProcessing from './pages/PaymentProcessing';
 import ProductManagement from './pages/ProductManagement';
-
+import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
-// import loadinggif from './public/loading.gif';
+// import loadinggif from './public/loading.gif';import PlanUpgrade from './pages/PlanUpgrade';
+import ProductsByCategory from "./pages/ProductsByCategory"; 
+import AddProduct from "./pages/AddProduct";
+import UnderDevPage from './pages/UnderDevPage';
+import ListProductPage from './pages/ListProductPage';
+
+
+// Loading component
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh',
+    fontSize: '18px',
+    flexDirection: 'column',
+    gap: '16px'
+  }}>
+    <div className="spinner"></div>
+    <div>Đang tải...
+
+    </div>
+  </div>
+);
+
+
 // Protected Route component
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
@@ -54,12 +79,14 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
         fontSize: '18px'
       }}>
         Đang tải...
+        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
       </div>
     );
   }
 
   if (!user) {
     return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
+
   }
 
   if (requiredRole && !hasRole(requiredRole)) {
@@ -70,6 +97,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 };
 
 // Public Route component (redirect to home if already logged in)
+
 const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   const { user, loading } = useAuth();
 
@@ -82,6 +110,7 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
         height: '100vh',
         fontSize: '18px'
       }}>
+        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
         Đang tải...
       </div>
     );
@@ -95,15 +124,22 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   return children;
 };
 
+
 const AppRoutes = () => {
   return (
     <Routes>
+      {/* <Route path="/products/category/:categoryId" element={<ProductsByCategory />} /> */}
+      <Route path="/products/create" element={<AddProduct />} />
+      {/* Public routes - accessible to everyone */}
       {/* Public routes - accessible to everyone */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/LandingPage" element={<LandingPage />} />
+      {/* <Route path="/LandingPage" element={<LandingPage />} /> */}
       <Route path="/ContactUs" element={<ContactUs />} />
+
       <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-      <Route path="/ProductDetail" element={<ProductDetail />} />
+      <Route path="/product-detail/:productId" element={<ProductDetail />} />
+      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+      
       <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
       <Route path="/payment-processing" element={
         
@@ -113,6 +149,7 @@ const AppRoutes = () => {
       } />
       
       {/* Auth routes - redirect if already logged in */}
+      
       <Route path="/Login" element={
         <PublicRoute>
           <Login />
@@ -133,6 +170,9 @@ const AppRoutes = () => {
           <SignUp3 />
         </PublicRoute>
       } />
+      <Route path="/products/search/:productName" element={<ListProductPage />} />
+      <Route path="/products/category/:categoryId" element={<ListProductPage />} />
+      
       
       {/* Protected routes - require login */}
       <Route path="/Profile" element={
@@ -223,8 +263,11 @@ const AppRoutes = () => {
         </ProtectedRoute>
       } />
       
-      {/* Catch all route - redirect to home */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Auth callback route */}
+      <Route path="/auth/callback" element={<AuthCallback />} />
+      
+      {/* Route catch-all cho các đường dẫn không tồn tại */}
+      <Route path="*" element={<UnderDevPage />} />
     </Routes>
   );
 };
@@ -235,7 +278,9 @@ const App = () => {
       <ThemeProvider>
         <AuthProvider>
           <Router>
-            <AppRoutes />
+            <div className="app">
+              <AppRoutes />
+            </div>
           </Router>
         </AuthProvider>
       </ThemeProvider>

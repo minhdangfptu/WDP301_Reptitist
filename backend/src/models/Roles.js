@@ -18,5 +18,6 @@ const Role = mongoose.models.Role || mongoose.model('Role', new mongoose.Schema(
   collection: 'roles'
 }));
 
-module.exports = Role;
+// Check if model exists before creating
+module.exports = mongoose.models.Role || mongoose.model('Role', roleSchema);
 console.log('Role model loaded');
