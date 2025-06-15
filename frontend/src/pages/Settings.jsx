@@ -18,7 +18,7 @@ const Settings = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const { darkMode, toggleDarkMode } = useTheme();
-
+  console.log("huhuhuhuhuhuhuhu");
   useEffect(() => {
     if (user) {
       setIsDataLoaded(true);

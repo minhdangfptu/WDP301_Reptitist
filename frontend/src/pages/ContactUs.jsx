@@ -17,7 +17,7 @@ const ContactUs = () => {
     message: ''
   });
 
-  // Tự động fill thông tin nếu user đã đăng nhập
+
   useEffect(() => {
     if (user) {
       setFormData(prev => ({
