@@ -4,11 +4,12 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ReactPlayer from "react-player";
 
+console.log("huhuhuhuhuhuhuhu")
 const LandingPage = () => {
   return (
     <>
       <Header />
-
+      
       <section className="hero">
         <div className="container">
           <div
@@ -33,8 +34,12 @@ const LandingPage = () => {
               dàng hơn!
             </p>
             <div className="hero-buttons">
-              <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY!</a>
-              <a href="/PlanUpgrade" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
+              <a href="#" className="btn btn-primary">
+                KHÁM PHÁ NGAY!
+              </a>
+              <a href="/PlanUpgrade" className="btn btn-secondary">
+                CÁC GÓI DỊCH VỤ
+              </a>
             </div>
           </div>
           <div className="discount-badge">
@@ -43,7 +48,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
       <section className="about">
         <div className="container">
           <h2 style={{ textAlign: "center", justifyContent: "center" }}>
@@ -81,13 +85,18 @@ const LandingPage = () => {
             </div>
             <div className="about-image">
               {/* <img src="BGLandingPage.png" alt="Bò sát tại Reptiest" /> */}
-              <ReactPlayer playing={true} muted={true} url="https://www.youtube.com/watch?v=KYPKoT8C5TA" controls width="100%" />
+              <ReactPlayer
+                playing={true}
+                muted={true}
+                url="https://www.youtube.com/watch?v=KYPKoT8C5TA"
+                controls
+                width="100%"
+              />
               {/* <div className="play-button"></div> */}
             </div>
           </div>
         </div>
       </section>
-
       <section className="features">
         <div className="container">
           <h2 className="section-title">KHÁM PHÁ CÙNG CHÚNG TÔI</h2>
@@ -121,7 +130,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
       <section className="news">
         <div className="container">
           <h2 className="section-title">THÔNG TIN VÀ CẬP NHẬT</h2>
@@ -140,7 +148,11 @@ const LandingPage = () => {
                   tắm quá lạnh hoặc không thích hợp với nhiệt độ cơ thể của
                   chúng
                 </p>
-                <a href="#" className="btn btn-primary" style={{backgroundColor: "#0fa958", borderRadius:"30px"}}>
+                <a
+                  href="#"
+                  className="btn btn-primary"
+                  style={{ backgroundColor: "#0fa958", borderRadius: "30px" }}
+                >
                   Xem thêm
                 </a>
               </div>
@@ -167,7 +179,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
       <Footer />
     </>
   );
