@@ -2,6 +2,7 @@ const Product = require('../models/Products');
 const Feedback = require('../models/Product_feedback');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
+const { successResponse } = require('../../utils/APIResponse');
 
 async function updateAverageRating(productId) {
   const result = await Feedback.aggregate([
@@ -520,6 +521,31 @@ const deleteFeedbackAndRating = async (req, res) => {
     });
   }
 };
+const approveProduct = async (req, res) => {
+  try {
+    const { id } = req.query; 
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid product ID format' });
+    }
+
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(200).json({ message: 'Product not found', data:[] });
+    }
+    product.product_status = 'available';
+    await product.save();
+
+    res.status(200).json(successResponse({
+      message: 'Product approved successfully',
+      product
+    }));
+  } catch (error) {
+    console.error('Approve Product Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 module.exports = {
   // Shop functions
@@ -540,5 +566,6 @@ module.exports = {
   createFeedbackAndRating, 
   viewFeedbackAndRating, 
   editFeedbackAndRating,
-  deleteFeedbackAndRating
+  deleteFeedbackAndRating,
+  approveProduct
 };

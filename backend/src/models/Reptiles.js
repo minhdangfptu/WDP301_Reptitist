@@ -43,6 +43,7 @@ const reptileSchema = new mongoose.Schema({
   diet: { type: String },
   recommended_foods: { type: [String] },
   prohibited_foods: { type: [String] },
+  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   disease: diseaseSchema
 }, {
   collection: 'reptiles',
