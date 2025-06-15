@@ -76,14 +76,7 @@ const mockProducts = [
 ];
 
 const categories = [
-  "Áo thun",
-  "Áo sơ mi",
-  "Áo khoác",
-  "Quần jean",
-  "Quần short",
-  "Quần dài",
-  "Đồ lót",
-  "Phụ kiện",
+ "Chưa phân loại"
 ];
 
 const priceRanges = [
