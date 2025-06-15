@@ -17,7 +17,8 @@ const corsOptions = {
     'http://localhost:3000', // React development server
     'http://localhost:5173', // Vite development server  
     'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173'
+    'http://127.0.0.1:5173',
+    'https://reptitist-service-git-test-huhuhuhu-minhdangfptus-projects.vercel.app/'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
