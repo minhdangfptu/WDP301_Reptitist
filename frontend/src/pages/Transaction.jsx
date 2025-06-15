@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Transaction.css';
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const Transaction = () => {
   const { user, hasRole } = useAuth();
   const [transactions, setTransactions] = useState([]);
@@ -31,7 +31,7 @@ const Transaction = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/reptitist/transactions?range=${dateRange}`,
+        `${baseUrl}/reptitist/transactions?range=${dateRange}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`

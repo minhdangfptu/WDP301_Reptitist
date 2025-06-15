@@ -31,6 +31,7 @@ import {
   deleteFeedbackAndRating,
 } from "../services/feedbackService";
 import ShopHeader from "../components/ShopHeader";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -64,7 +65,7 @@ const ProductDetail = () => {
       try {
         console.log(productId);
         const response = await axios.get(
-          `http://localhost:8080/reptitist/shop/products/detail/${productId}`
+          `${baseUrl}/reptitist/shop/products/detail/${productId}`
         );
         setProduct(response.data);
         console.log(
@@ -86,7 +87,7 @@ const ProductDetail = () => {
     const fetchFeedbacks = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/reptitist/shop/products-feedbacks/${productId}`
+          `${baseUrl}/reptitist/shop/products-feedbacks/${productId}`
         );
         setReviews(response.data.feedbacks || []);
         setReviewsCount(response.data.count || 0);
@@ -104,7 +105,7 @@ const ProductDetail = () => {
   const fetchRelatedProducts = async (categoryId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/reptitist/shop/products/category/${categoryId}`
+        `${baseUrl}/reptitist/shop/products/category/${categoryId}`
       );
       const related = response.data
         .filter((p) => p._id !== productId)
@@ -118,7 +119,7 @@ const ProductDetail = () => {
   const fetchReviews = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/reptitist/shop/products-feedbacks/${productId}`
+        `${baseUrl}/reptitist/shop/products-feedbacks/${productId}`
       );
       setReviews(response.data.feedbacks || []);
     } catch (error) {
@@ -240,7 +241,7 @@ const ProductDetail = () => {
       const token = localStorage.getItem("token");
 
       const response = await axios.post(
-        `http://localhost:8080/reptitist/shop/products-feedbacks/${productId}`,
+        `${baseUrl}/reptitist/shop/products-feedbacks/${productId}`,
         {
           rating: newReview.rating,
           comment: newReview.comment,
@@ -275,7 +276,7 @@ const ProductDetail = () => {
 
       // Fetch product details
       const productResponse = await axios.get(
-        `http://localhost:8080/reptitist/shop/products/detail/${productId}`
+        `${baseUrl}/reptitist/shop/products/detail/${productId}`
       );
       const productData = productResponse.data;
 

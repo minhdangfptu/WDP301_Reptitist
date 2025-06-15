@@ -4,7 +4,7 @@ import { Card, Button, Spinner, Container } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 // Hàm format ngày giờ
 const formatDate = (dateString) => {
   if (!dateString) return "";
@@ -123,7 +123,7 @@ function ImproveSuggestion() {
     setError(null);
     try {
       const response = await axios.get(
-        `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+        `${baseUrl}/reptitist/ai/get-all-recommendations/${reptileId}`
       );
       setRecommendations(response.data.data);
       toast.success("Đã tải gợi ý cải thiện thành công!");
@@ -141,7 +141,7 @@ function ImproveSuggestion() {
     setError(null);
     try {
       const response = await axios.post(
-        `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+        `${baseUrl}/reptitist/ai/get-all-recommendations/${reptileId}`
       );
       setRecommendations([response.data.data, ...recommendations]);
       toast.success("Đã tạo gợi ý cải thiện mới thành công!");

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/reptitist';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 class AuthService {
   // Login method

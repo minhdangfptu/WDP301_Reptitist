@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const LibraryContent = () => {
   const { categoryId } = useParams();
   const [contents, setContents] = useState([]);
@@ -13,7 +13,7 @@ const LibraryContent = () => {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("http://localhost:8080/reptitist/library_contents")
+      .get(`${baseUrl}/reptitist/library_contents`)
       .then((response) => {
         // Lọc theo category_id._id (đã được populate)
 console.log("API data:", response.data);
