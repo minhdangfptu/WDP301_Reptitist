@@ -1,13 +1,13 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-// import Header from "../components/Header.jsx";
-// import Footer from "../components/Footer.jsx";
+import Header from "../components/Header.jsx";
+import Footer from "../components/Footer.jsx";
 import ReactPlayer from "react-player";
 
 const LandingPage = () => {
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       
       <section className="hero">
         <div className="container">
@@ -178,7 +178,7 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

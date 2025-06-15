@@ -1,4 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +16,7 @@ const ContactUs = () => {
     subject: '',
     message: ''
   });
+
 
   useEffect(() => {
     if (user) {
