@@ -601,7 +601,8 @@ module.exports = {
   deleteMyProduct,
   getMyProductStats,
   reportProduct,
-  
+  approveProduct,
+
   // Public functions
   getAllProductsByCategory,
   getAllProductByName, 

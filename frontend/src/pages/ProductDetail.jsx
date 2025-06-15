@@ -1,7 +1,7 @@
 "use client"
 
 /* eslint-disable no-console */
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Star,
   Heart,
@@ -23,11 +23,10 @@ import "../css/ProductDetail.css"
 import "../css/editForm.css"
 import Footer from "../components/Footer"
 import { useParams } from "react-router-dom"
-import { useEffect } from "react"
 import axios from "axios"
 import { toast } from "react-toastify"
 import { useAuth } from "../context/AuthContext"
-import { updateFeedbackAndRating,deleteFeedbackAndRating } from "../services/feedbackService"
+import { updateFeedbackAndRating, deleteFeedbackAndRating } from "../services/feedbackService"
 
 const ProductDetail = () => {
   const { productId } = useParams()
@@ -45,19 +44,21 @@ const ProductDetail = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [newRating, setNewRating] = useState(0)
   const [newComment, setNewComment] = useState("")
-  // const [newImages, setNewImages] = useState([]);
   const [submitting, setSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editingReview, setEditingReview] = useState(null)
   const [editRating, setEditRating] = useState(0)
   const [editComment, setEditComment] = useState("")
+  const [showReviewForm, setShowReviewForm] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        console.log(productId)
         const response = await axios.get(`http://localhost:8080/reptitist/shop/products/detail/${productId}`)
         setProduct(response.data)
+        // console.log("product>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response.data)
         setLoading(false)
       } catch (err) {
         setError("Failed to load product details")
@@ -68,11 +69,11 @@ const ProductDetail = () => {
 
     fetchProduct()
   }, [productId])
+
   useEffect(() => {
     const fetchFeedbacks = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/reptitist/shop/products-feedbacks/${productId}`)
-
         setReviews(response.data.feedbacks || [])
         setReviewsCount(response.data.count || 0)
         setLoading(false)
@@ -85,14 +86,15 @@ const ProductDetail = () => {
 
     fetchFeedbacks()
   }, [productId])
+
   useEffect(() => {
-    // Fetch related products based on the product's category
     const fetchRelatedProducts = async () => {
       if (product && product.product_category_id) {
         try {
           const response = await axios.get(
-            `http://localhost:8080/reptitist/shop/products/category/${product.product_category_id}`,
+            `http://localhost:8080/reptitist/shop/products/category/${product.product_category_id._id}`,
           )
+          // console.log("response>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response.data)
           setRelatedProducts(response.data)
         } catch (err) {
           setError("Failed to load related products")
@@ -125,60 +127,17 @@ const ProductDetail = () => {
       variant: selectedVariant,
     })
   }
+
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files)
   }
+
   const handleRemoveImage = (index) => {
     setNewImages((prevImages) => prevImages.filter((_, i) => i !== index))
   }
-  // const handleSubmitFeedback = async (e) => {
-  //   e.preventDefault()
-  //   if (submitting) return // Prevent multiple submissions
-  //   if (newRating == 0) {
-  //     alert("Vui lòng chọn chọn số sao đánh giá")
-  //     return
-  //   }
-  //   if (!newComment.trim()) {
-  //     alert("Vui lòng nhập bình luận đánh giá")
-  //     return
-  //   }
-  //   setSubmitting(true)
-  //   try {
-  //     const response = await createFeedbackAndRatingApi(productId, newRating, newComment)
-  //     setReviews((prevReviews) => [
-  //       ...prevReviews,
-  //       {
-  //         rating: newRating,
-  //         comment: newComment,
-  //         // images: newImages,
-  //         user_id: { username: "Bạn" }, // Mock user data
-  //         createdAt: new Date().toISOString(),
-  //       },
-  //     ])
-  //     setReviewsCount((prevCount) => prevCount + 1)
-  //     setNewRating(0)
-  //     setNewComment("")
-  //     setNewImages([])
-  //     setSubmitting(false)
-  //   } catch (error) {
-  //     console.error("Error submitting feedback:", error)
-  //     if (error.response?.status === 400) {
-  //       alert("Vui lòng điền đầy đủ thông tin đánh giá")
-  //     } else if (error.response?.status === 500) {
-  //       alert("Đã có lỗi xảy ra, vui lòng thử lại sau")
-  //     } else if (error.response?.status === 401) {
-  //       alert("Bạn cần đăng nhập để đánh giá sản phẩm")
-  //     } else if (error.response?.status === 404) {
-  //       alert("Sản phẩm không tồn tại hoặc đã bị xóa")
-  //     }
-  //     setError("Failed to submit feedback")
-  //   } finally {
-  //     setSubmitting(false)
-  //   }
-  // }
 
   const handleUpdateFeedback = async (feedbackId) => {
-    if (submitting) return // Prevent multiple submissions
+    if (submitting) return
     if (editRating === 0) {
       alert("Vui lòng chọn số sao đánh giá")
       return
@@ -189,14 +148,12 @@ const ProductDetail = () => {
     }
     setSubmitting(true)
     try {
-      await updateFeedbackAndRating(feedbackId, editRating, editComment);
-      // Update the reviews list with the edited review
+      await updateFeedbackAndRating(feedbackId, editRating, editComment)
       setReviews((prevReviews) =>
         prevReviews.map((review) =>
           review._id === feedbackId ? { ...review, rating: editRating, comment: editComment } : review,
         ),
       )
-
       toast.success("Cập nhật đánh giá thành công!")
       setEditingReview(null)
       setEditRating(0)
@@ -214,9 +171,10 @@ const ProductDetail = () => {
       }
       setError("Failed to update feedback")
     } finally {
-      setSubmitting(false);
+      setSubmitting(false)
     }
   }
+
   const handleDeleteFeedback = async (reviewId) => {
     try {
       await deleteFeedbackAndRating(reviewId)
@@ -226,16 +184,15 @@ const ProductDetail = () => {
     } catch (error) {
       console.error("Error deleting feedback:", error.message)
       if (error.response?.status === 400) {
-        alert("Đã có lỗi xảy ra, vui lòng thử lại sau");
+        alert("Đã có lỗi xảy ra, vui lòng thử lại sau")
       } else if (error.response?.status === 401) {
-        alert("Bạn cần đăng nhập để xóa đánh giá");
+        alert("Bạn cần đăng nhập để xóa đánh giá")
       } else if (error.response?.status === 404) {
-        alert("Đánh giá không tồn tại hoặc đã bị xóa");
+        alert("Đánh giá không tồn tại hoặc đã bị xóa")
       }
-      setError("Failed to delete feedback");
+      setError("Failed to delete feedback")
     }
   }
-
 
   const handleCancelEdit = () => {
     setEditingReview(null)
@@ -261,9 +218,10 @@ const ProductDetail = () => {
   }
 
   if (error) return <div>{error}</div>
+
   return (
     <div className="pd-page">
-      {/* Header - Using shop- classes to match CSS */}
+      {/* Header */}
       <header className="shop-header">
         <div className="shop-top-header">
           <div className="shop-top-links">
@@ -364,8 +322,8 @@ const ProductDetail = () => {
           <div className="product-detail-images">
             <div className="product-detail-main-image">
               <img
-                src={product.product_imageurl?.[selectedImage] || "/default-image.png" }
-                alt={product?.name || "Product"}
+                src={product?.product_imageurl?.[selectedImage] || "/default-image.png"}
+                alt={product?.product_name || "Product"}
               />
 
               <div className="product-detail-image-actions">
@@ -385,7 +343,7 @@ const ProductDetail = () => {
                     className={`product-detail-thumbnail ${selectedImage === index ? "active" : ""}`}
                     onClick={() => setSelectedImage(index)}
                   >
-                    <img src={image || "/placeholder.svg"} alt={`${product.name} ${index + 1}`} />
+                    <img src={image || "/placeholder.svg"} alt={`${product.product_name} ${index + 1}`} />
                   </div>
                 ))
               ) : (
@@ -419,20 +377,23 @@ const ProductDetail = () => {
               </div>
               <div className="product-detail-rating-stats">
                 <span className="product-detail-review-count">({reviewsCount} đánh giá)</span>
-                {/* <span className="product-detail-sold-count">
-                  {product.sold} đã bán
-                </span> */}
               </div>
             </div>
 
             <div className="product-detail-price">
-              <div className="product-detail-current-price">₫{product.product_price?.toLocaleString() || "0"}</div>
-              <div className="product-detail-original-price">₫{product.originalPrice?.toLocaleString() || "0"}</div>
-              <div className="product-detail-discount">-{product.discount || 0}%</div>
+              <div className="product-detail-current-price">
+                ₫{product?.product_price?.toLocaleString() || "0"}
+              </div>
+              <div className="product-detail-original-price">
+                ₫{product?.originalPrice?.toLocaleString() || "0"}
+              </div>
+              <div className="product-detail-discount">
+                -{product?.discount || 0}%
+              </div>
             </div>
 
             <div className="product-detail-variants">
-              {product.variants &&
+              {product?.variants &&
                 product.variants.map((variant, index) => (
                   <div key={index} className="product-detail-variant-group">
                     <label className="product-detail-variant-label">{variant.name}</label>
@@ -546,7 +507,7 @@ const ProductDetail = () => {
               <div className="description-content">
                 <div
                   dangerouslySetInnerHTML={{
-                    __html: product?.product_description.replace(/\n/g, "<br>"),
+                    __html: product?.product_description?.replace(/\n/g, "<br>"),
                   }}
                 />
               </div>
@@ -556,7 +517,7 @@ const ProductDetail = () => {
               <div className="specifications-content">
                 <table className="specs-table">
                   <tbody>
-                    {product?.product_description.split("\n").map((line, index) => (
+                    {product?.product_description?.split("\n").map((line, index) => (
                       <tr key={index}>
                         <td className="spec-label">{index === 0 ? "Mô tả sản phẩm" : ""}</td>
                         <td className="spec-value">
@@ -565,10 +526,11 @@ const ProductDetail = () => {
                           ))}
                         </td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {activeTab === "reviews" && (
               <div className="reviews-content">
@@ -577,14 +539,12 @@ const ProductDetail = () => {
                     <div className="rating-big">
                       😍 {product?.average_rating} ⭐😍
                     </div>
-
                     <div className="total-reviews">{reviewsCount} đánh giá</div>
                   </div>
 
-                  {/* Add Review Button */}
                   {user && (
-                    <div style={{ marginBottom: '20px' }}>
-                      <button 
+                    <div style={{ marginBottom: "20px" }}>
+                      <button
                         onClick={() => setShowReviewForm(!showReviewForm)}
                         className="product-detail-add-cart"
                       >
@@ -593,112 +553,117 @@ const ProductDetail = () => {
                     </div>
                   )}
 
-                <div className="reviews-list">
-                  {reviews.length > 0 ? (
-                    reviews.map((review) => (
-                      <div key={review._id} className="review-item">
-                        {editingReview === review._id ? (
-                          // Edit form
-                          <div className="edit-review-form">
-                            <div className="feedback-rating">
-                              <label>Đánh giá của bạn:</label>
-                              <div className="star-rating-select">
-                                {[...Array(5)].map((_, index) => (
-                                  <Star
-                                    key={index}
-                                    size={20}
-                                    className={
-                                      index < (editRating || 0) ? "star-filled clickable" : "star-empty clickable"
-                                    }
-                                    onClick={() => setEditRating(index + 1)}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="feedback-comment">
-                              <textarea
-                                rows={3}
-                                value={editComment}
-                                onChange={(e) => setEditComment(e.target.value)}
-                                placeholder="Nhập nhận xét của bạn..."
-                              ></textarea>
-                            </div>
-
-                            <div className="edit-actions">
-                              <button
-                                className="save-edit-btn"
-                                onClick={() => handleUpdateFeedback(review._id)}
-                                disabled={submitting}
-                              >
-                                {submitting ? "Đang lưu..." : "Lưu"}
-                              </button>
-                              <button className="cancel-edit-btn" onClick={handleCancelEdit}>
-                                Hủy
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div className="review-header">
-                              <div className="reviewer-info">
-                                <span className="reviewer-name">
-                                  {review.user_id ? review.user_id.username : "Anonymous"}
-                                </span>
-                                <div className="review-rating">
-                                  {[...Array(5)].map((_, i) => (
+                  <div className="reviews-list">
+                    {reviews.length > 0 ? (
+                      reviews.map((review) => (
+                        <div key={review._id} className="review-item">
+                          {editingReview === review._id ? (
+                            <div className="edit-review-form">
+                              <div className="feedback-rating">
+                                <label>Đánh giá của bạn:</label>
+                                <div className="star-rating-select">
+                                  {[...Array(5)].map((_, index) => (
                                     <Star
-                                      key={i}
-                                      size={14}
-                                      color={i < review.rating ? "gold" : "#ccc"}
+                                      key={index}
+                                      size={20}
+                                      className={
+                                        index < (editRating || 0) ? "star-filled clickable" : "star-empty clickable"
+                                      }
+                                      onClick={() => setEditRating(index + 1)}
                                     />
                                   ))}
                                 </div>
                               </div>
-                              <div className="review-actions">
-                                <span className="review-date">{new Date(review.createdAt).toLocaleDateString()}</span>
-                                {/* Chỉ hiển thị nút edit/delete cho review của user hiện tại */}
-                                {review.user_id?._id === user?.id && (
-                                  <div className="review-buttons">
-                                    <button
-                                      className="edit-review-btn"
-                                      onClick={() => {
-                                        setEditingReview(review._id)
-                                        setEditRating(review.rating)
-                                        setEditComment(review.comment)
-                                      }}
-                                      title="Sửa đánh giá"
-                                    >
-                                      <FiEdit size={16} color="blue" />
-                                    </button>
-                                    <button
-                                      className="delete-review-btn"
-                                      onClick={() => handleDeleteFeedback(review._id)}
-                                      title="Xóa đánh giá"
-                                    >
-                                      <RiDeleteBinLine size={16} color="red" />
-                                    </button>
+
+                              <div className="feedback-comment">
+                                <textarea
+                                  rows={3}
+                                  value={editComment}
+                                  onChange={(e) => setEditComment(e.target.value)}
+                                  placeholder="Nhập nhận xét của bạn..."
+                                ></textarea>
+                              </div>
+
+                              <div className="edit-actions">
+                                <button
+                                  className="save-edit-btn"
+                                  onClick={() => handleUpdateFeedback(review._id)}
+                                  disabled={submitting}
+                                >
+                                  {submitting ? "Đang lưu..." : "Lưu"}
+                                </button>
+                                <button className="cancel-edit-btn" onClick={handleCancelEdit}>
+                                  Hủy
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="review-header">
+                                <div className="reviewer-info">
+                                  <span className="reviewer-name">
+                                    {review.user_id ? review.user_id.username : "Anonymous"}
+                                  </span>
+                                  <div className="review-rating">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        size={14}
+                                        color={i < review.rating ? "gold" : "#ccc"}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="review-actions">
+                                  <span className="review-date">
+                                    {new Date(review.createdAt).toLocaleDateString()}
+                                  </span>
+                                  {review.user_id?._id === user?.id && (
+                                    <div className="review-buttons">
+                                      <button
+                                        className="edit-review-btn"
+                                        onClick={() => {
+                                          setEditingReview(review._id)
+                                          setEditRating(review.rating)
+                                          setEditComment(review.comment)
+                                        }}
+                                        title="Sửa đánh giá"
+                                      >
+                                        <FiEdit size={16} color="blue" />
+                                      </button>
+                                      <button
+                                        className="delete-review-btn"
+                                        onClick={() => handleDeleteFeedback(review._id)}
+                                        title="Xóa đánh giá"
+                                      >
+                                        <RiDeleteBinLine size={16} color="red" />
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="review-content">
+                                <p>{review.comment}</p>
+                                {review.images && review.images.length > 0 && (
+                                  <div className="review-images">
+                                    {review.images.map((image, index) => (
+                                      <img
+                                        key={index}
+                                        src={image || "/placeholder.svg"}
+                                        alt={`Review ${index + 1}`}
+                                      />
+                                    ))}
                                   </div>
                                 )}
                               </div>
-                            </div>
-                            <div className="review-content">
-                              <p>{review.comment}</p>
-                              {review.images && review.images.length > 0 && (
-                                <div className="review-images">
-                                  {review.images.map((image, index) => (
-                                    <img key={index} src={image || "/placeholder.svg"} alt={`Review ${index + 1}`} />
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    ))
-                  ) : (
-                    <div>No reviews available</div>
-                  )}
+                            </>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div>No reviews available</div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -725,7 +690,7 @@ const ProductDetail = () => {
               <p>No related products found</p>
             )}
           </div>
-        )}
+        </div>
       </div>
       <Footer />
     </div>

@@ -35,6 +35,7 @@ const ShopLandingPage = () => {
         const response = await axios.get(
           "http://localhost:8080/reptitist/shop/category"
         );
+        console.log("cảet>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response.data)
         setCategories(response.data);
         setLoading(false);
       } catch (err) {

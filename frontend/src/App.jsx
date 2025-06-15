@@ -170,26 +170,9 @@ const AppRoutes = () => {
           <SignUp3 />
         </PublicRoute>
       } />
-      <Route path="/list-product/" element={
-        <PublicRoute>
-          <ListProductPage />
-        </PublicRoute>
-      } />
-      <Route path="/products/search/:productName" element={
-        <PublicRoute>
-          <ListProductPage />
-        </PublicRoute>
-      } />
-      <Route path="/products/category/:categoryId" element={
-        <PublicRoute>
-          <ListProductPage />
-        </PublicRoute>
-      } />
-      <Route path="/products" element={
-        <PublicRoute>
-          <ListProductPage />
-        </PublicRoute>
-      } />
+      <Route path="/products/search/:productName" element={<ListProductPage />} />
+      <Route path="/products/category/:categoryId" element={<ListProductPage />} />
+      
       
       {/* Protected routes - require login */}
       <Route path="/Profile" element={
