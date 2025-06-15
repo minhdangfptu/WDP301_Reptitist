@@ -8,20 +8,24 @@ const aiRoute = require('./aiRoute.js');
 const libraryCategoriesRoute = require('./libraryCategoriesRoute');
 const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
+const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRoute'); // Uncomment if you have admin routes
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/pet', userReptileRoutes);
-router.use('/lore', reptileInfoRoute);
+router.use('/reptile-info', reptileInfoRoute);
 router.use('/library_categories', libraryCategoriesRoute);
 router.use('/library_contents', libraryContentRoute);
 router.use('/', topicCategoryRoutes);
 router.use('/order', orderRoute);
 router.use('/admin', adminRoute);
 router.use('/ai', aiRoute);
-router.use('/reptitist', topicCategoryRoutes);
-
+router.use('/library-categories', libraryCategoriesRoute);
+router.use('/library-content', libraryContentRoute);
+router.use('/topic-categories', topicCategoryRoutes);
+router.use('/transactions', transactionRoute);
+router.use('/admin', adminRoute);
 
 module.exports= router;

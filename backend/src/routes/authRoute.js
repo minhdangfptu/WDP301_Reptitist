@@ -5,6 +5,7 @@ const User = require('../models/users');
 const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const crypto = require('crypto');
+const Role = require('../models/Roles');
 
 const router = express.Router();
 require('../config/passport-google'); // Import Google OAuth configuration
@@ -139,5 +140,66 @@ router.get('/google/callback',
         }
     }
 );
+
+// Route to update user role and account type
+router.put('/update-role', authMiddleware, async (req, res) => {
+    try {
+        const { role, account_type } = req.body;
+        
+        const updateData = {};
+        
+        // Update role if provided
+        if (role) {
+            const roleDoc = await Role.findOne({ role_name: role });
+            if (!roleDoc) {
+                return res.status(400).json({ message: 'Invalid role' });
+            }
+            updateData.role_id = roleDoc._id;
+        }
+        
+        // Update account type if provided
+        if (account_type) {
+            updateData.account_type = {
+                type: account_type.type || 'customer',
+                level: account_type.level || 'normal',
+                activated_at: account_type.activated_at || new Date(),
+                expires_at: account_type.expires_at || null
+            };
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            updateData,
+            { new: true, runValidators: true }
+        ).select('-password_hashed -refresh_tokens -__v')
+         .populate('role_id', 'role_name role_description');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Format response to match frontend expectations
+        const userResponse = {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            fullname: user.fullname,
+            phone_number: user.phone_number,
+            address: user.address,
+            wallet: user.wallet,
+            account_type: user.account_type,
+            user_imageurl: user.user_imageurl,
+            isActive: user.isActive,
+            role: user.role_id ? user.role_id.role_name : 'customer',
+            created_at: user.created_at,
+            updated_at: user.updated_at
+        };
+
+        res.json(userResponse);
+    } catch (error) {
+        console.error('Update role error:', error);
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
 
 module.exports = router;

@@ -1017,7 +1017,7 @@ function ReptileHealthTrackingPage() {
                         <th
                           style={{
                             ...styles.tableHeaderCell,
-                            minWidth: "100px",
+                            minWidth: 100,
                           }}
                         >
                           Số lượng

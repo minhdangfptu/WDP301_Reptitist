@@ -565,11 +565,10 @@ const ProductDetail = () => {
                           ))}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
             {activeTab === "reviews" && (
               <div className="reviews-content">
@@ -581,7 +580,18 @@ const ProductDetail = () => {
 
                     <div className="total-reviews">{reviewsCount} đánh giá</div>
                   </div>
-                </div>
+
+                  {/* Add Review Button */}
+                  {user && (
+                    <div style={{ marginBottom: '20px' }}>
+                      <button 
+                        onClick={() => setShowReviewForm(!showReviewForm)}
+                        className="product-detail-add-cart"
+                      >
+                        Viết đánh giá
+                      </button>
+                    </div>
+                  )}
 
                 <div className="reviews-list">
                   {reviews.length > 0 ? (
@@ -715,7 +725,7 @@ const ProductDetail = () => {
               <p>No related products found</p>
             )}
           </div>
-        </div>
+        )}
       </div>
       <Footer />
     </div>
