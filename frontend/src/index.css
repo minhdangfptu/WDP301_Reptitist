@@ -81,7 +81,7 @@ body {
 /* Header styles */
 header {
   background-color: var(--white);
-  padding: 10px 0;
+  padding: 0px 0;
   border-bottom: 1px solid #eee;
 }
 
@@ -274,7 +274,7 @@ nav {
 
 .about-image {
   flex: 1;
-  border-radius: var(--border-radius);
+  /* border-radius: var(--border-radius); */
   overflow: hidden;
   position: relative;
 }
@@ -340,7 +340,7 @@ nav {
 
 .feature-card {
   background-color: var(--white);
-  border-radius: var(--border-radius);
+  /* border-radius: var(--border-radius); */
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -378,7 +378,7 @@ nav {
   display: flex;
   gap: 20px;
   background-color: var(--white);
-  border-radius: var(--border-radius);
+  /* border-radius: var(--border-radius); */
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -423,7 +423,7 @@ nav {
 .news-item-image {
   width: 80px;
   height: 80px;
-  border-radius: var(--border-radius);
+  /* border-radius: var(--border-radius); */
   overflow: hidden;
 }
 

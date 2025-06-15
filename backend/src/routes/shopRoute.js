@@ -18,7 +18,7 @@ const {
   createFeedbackAndRating, 
   viewFeedbackAndRating, 
   deleteFeedbackAndRating, 
-  editFeedbackAndRating
+  editFeedbackAndRating, getTopRatedProducts
 } = require('../controllers/productController');
 const {addProductToCart, getCart, deleteProductFromCart, deleteAllProductFromCart} = require('../controllers/cartController');
 
@@ -47,9 +47,10 @@ router.get('/my-stats', authMiddleware, getMyProductStats);
 
 // Product Report (for customers)
 router.post('/products/:productId/report', authMiddleware, reportProduct);
+router.get('/products/top-rated', getTopRatedProducts);
 
 // Product Feedback Routes
-router.post('/products-feedbacks/:productId', authMiddleware, createFeedbackAndRating);
+router.post('/products-feedbacks/:productId', authMiddleware,authUserIdOnly, createFeedbackAndRating);
 router.get('/products-feedbacks/:productId', viewFeedbackAndRating);
 router.put('/products-feedbacks/:feedbackId', authUserIdOnly, editFeedbackAndRating);
 router.delete('/products-feedbacks/:feedbackId', authUserIdOnly, deleteFeedbackAndRating);

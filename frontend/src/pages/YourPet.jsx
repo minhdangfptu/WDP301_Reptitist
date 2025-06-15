@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../css/YourPet.css";
 import { ToastContainer, toast } from "react-toastify";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const YourPet = () => {
   const deleteButtonStyle = {
@@ -43,7 +44,7 @@ const YourPet = () => {
   useEffect(() => {
     if (userId) {
       axios
-        .get(`http://localhost:8080/reptitist/pet/get-reptile/${userId}`)
+        .get(`${baseUrl}/reptitist/pet/get-reptile/${userId}`)
         .then((response) => {
           setUserPets(response.data);
           console.log(response.data); 

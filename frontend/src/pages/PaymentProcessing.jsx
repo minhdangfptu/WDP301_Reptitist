@@ -8,7 +8,7 @@ import { ArrowLeft, CheckCircle, Copy, Clock, CreditCard } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/PaymentProcessing.css';
 import axios from 'axios';
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const PaymentProcessing = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -96,7 +96,7 @@ const PaymentProcessing = () => {
 
       // First, create transaction record
       const transactionResponse = await axios.post(
-        'http://localhost:8080/reptitist/transactions',
+        `${baseUrl}/reptitist/transactions`,
         {
           amount: price,
           net_amount: price,
@@ -137,7 +137,7 @@ const PaymentProcessing = () => {
         };
 
         const response = await axios.put(
-          'http://localhost:8080/reptitist/auth/update-role',
+          `${baseUrl}/reptitist/auth/update-role`,
           updateData,
           {
             headers: {
@@ -162,7 +162,7 @@ const PaymentProcessing = () => {
       } else if (planType === 'individual' && planName === 'Premium') {
         // Update account type to premium for individual plan
         const response = await axios.put(
-          'http://localhost:8080/reptitist/auth/update-role',
+          `${baseUrl}/reptitist/auth/update-role`,
           {
             account_type: {
               type: 'customer',

@@ -1,35 +1,36 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import { useAuth } from '../context/AuthContext';
-import { toast, ToastContainer } from 'react-toastify';
-import axios from 'axios';
-import '../css/ProductManagement.css';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
+import { toast, ToastContainer } from "react-toastify";
+import axios from "axios";
+import "../css/ProductManagement.css";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const ShopProductManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
-  
+
   // State management
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterCategory, setFilterCategory] = useState('all');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterDate, setFilterDate] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterDate, setFilterDate] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortField, setSortField] = useState('createdAt');
-  const [sortDirection, setSortDirection] = useState('desc');
-  
+  const [sortField, setSortField] = useState("createdAt");
+  const [sortDirection, setSortDirection] = useState("desc");
+
   // Modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProductDetailModal, setShowProductDetailModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  
+
   // Statistics
   const [stats, setStats] = useState({
     total: 0,
@@ -37,7 +38,7 @@ const ShopProductManagement = () => {
     reported: 0,
     notAvailable: 0,
     outOfStock: 0,
-    inventoryValue: 0
+    inventoryValue: 0,
   });
 
   const searchInputRef = useRef(null);
@@ -51,14 +52,10 @@ const ShopProductManagement = () => {
   const initializeData = async () => {
     try {
       setLoading(true);
-      await Promise.all([
-        fetchMyProducts(),
-        fetchCategories(),
-        fetchMyStats()
-      ]);
+      await Promise.all([fetchMyProducts(), fetchCategories(), fetchMyStats()]);
     } catch (error) {
-      console.error('Error initializing data:', error);
-      toast.error('Có lỗi xảy ra khi tải dữ liệu');
+      console.error("Error initializing data:", error);
+      toast.error("Có lỗi xảy ra khi tải dữ liệu");
     } finally {
       setLoading(false);
     }
@@ -67,24 +64,27 @@ const ShopProductManagement = () => {
   // Fetch my products from API
   const fetchMyProducts = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        console.error('No token found');
+        console.error("No token found");
         return;
       }
 
-      const response = await axios.get('http://localhost:8080/reptitist/shop/my-products', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const response = await axios.get(
+        `${baseUrl}/reptitist/shop/my-products`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
+      );
 
       if (response.data?.products) {
         setProducts(response.data.products);
         setFilteredProducts(response.data.products);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       setProducts([]);
       setFilteredProducts([]);
     }
@@ -93,10 +93,10 @@ const ShopProductManagement = () => {
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
       setCategories(response.data || []);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
       setCategories([]);
     }
   }, []);
@@ -104,51 +104,51 @@ const ShopProductManagement = () => {
   // Fetch my statistics
   const fetchMyStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/shop/my-stats', {
+      const response = await axios.get(`${baseUrl}/reptitist/shop/my-stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data) {
         setStats(response.data);
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error("Error fetching stats:", error);
     }
   }, []);
 
   // Filter by date range
   const filterByDateRange = useCallback((productsList, dateFilter) => {
-    if (dateFilter === 'all') return productsList;
+    if (dateFilter === "all") return productsList;
 
     const now = new Date();
     const startDate = new Date();
 
     switch (dateFilter) {
-      case 'today':
+      case "today":
         startDate.setHours(0, 0, 0, 0);
         break;
-      case 'week':
+      case "week":
         startDate.setDate(now.getDate() - 7);
         break;
-      case 'month':
+      case "month":
         startDate.setMonth(now.getMonth() - 1);
         break;
-      case 'quarter':
+      case "quarter":
         startDate.setMonth(now.getMonth() - 3);
         break;
-      case 'year':
+      case "year":
         startDate.setFullYear(now.getFullYear() - 1);
         break;
       default:
         return productsList;
     }
 
-    return productsList.filter(product => {
+    return productsList.filter((product) => {
       const productDate = new Date(product.createdAt || product.updatedAt);
       return productDate >= startDate;
     });
@@ -161,21 +161,27 @@ const ShopProductManagement = () => {
     // Search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(product =>
-        product.product_name?.toLowerCase().includes(searchLower) ||
-        product._id?.toLowerCase().includes(searchLower) ||
-        (product.product_description && product.product_description.toLowerCase().includes(searchLower))
+      filtered = filtered.filter(
+        (product) =>
+          product.product_name?.toLowerCase().includes(searchLower) ||
+          product._id?.toLowerCase().includes(searchLower) ||
+          (product.product_description &&
+            product.product_description.toLowerCase().includes(searchLower))
       );
     }
 
     // Category filter
-    if (filterCategory !== 'all') {
-      filtered = filtered.filter(product => product.product_category_id?._id === filterCategory);
+    if (filterCategory !== "all") {
+      filtered = filtered.filter(
+        (product) => product.product_category_id?._id === filterCategory
+      );
     }
 
     // Status filter
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(product => product.product_status === filterStatus);
+    if (filterStatus !== "all") {
+      filtered = filtered.filter(
+        (product) => product.product_status === filterStatus
+      );
     }
 
     // Date filter
@@ -186,15 +192,15 @@ const ShopProductManagement = () => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
-      if (sortField === 'createdAt' || sortField === 'updatedAt') {
+      if (sortField === "createdAt" || sortField === "updatedAt") {
         aValue = new Date(a[sortField] || 0);
         bValue = new Date(b[sortField] || 0);
-      } else if (sortField === 'product_price') {
+      } else if (sortField === "product_price") {
         aValue = a.product_price || 0;
         bValue = b.product_price || 0;
       }
 
-      if (sortDirection === 'asc') {
+      if (sortDirection === "asc") {
         return aValue > bValue ? 1 : -1;
       } else {
         return aValue < bValue ? 1 : -1;
@@ -203,21 +209,33 @@ const ShopProductManagement = () => {
 
     setFilteredProducts(filtered);
     setCurrentPage(1);
-  }, [products, searchTerm, filterCategory, filterStatus, filterDate, sortField, sortDirection, filterByDateRange]);
+  }, [
+    products,
+    searchTerm,
+    filterCategory,
+    filterStatus,
+    filterDate,
+    sortField,
+    sortDirection,
+    filterByDateRange,
+  ]);
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   // Handle sorting
   const handleSort = (field) => {
     if (field === sortField) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -238,18 +256,18 @@ const ShopProductManagement = () => {
     if (!selectedProduct) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        console.error('No token found');
+        console.error("No token found");
         return;
       }
 
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/shop/my-products/${selectedProduct._id}`,
+        `${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -260,26 +278,26 @@ const ShopProductManagement = () => {
         setSelectedProduct(null);
       }
     } catch (error) {
-      console.error('Error deleting product:', error);
+      console.error("Error deleting product:", error);
     }
   };
 
   // Handle update product status
   const updateProductStatus = async (productId, newStatus) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        console.error('No token found');
+        console.error("No token found");
         return;
       }
 
       const response = await axios.put(
-        `http://localhost:8080/reptitist/shop/my-products/${productId}`,
+        `${baseUrl}/reptitist/shop/my-products/${productId}`,
         { product_status: newStatus },
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -288,59 +306,63 @@ const ShopProductManagement = () => {
         await fetchMyStats();
       }
     } catch (error) {
-      console.error('Error updating product status:', error);
+      console.error("Error updating product status:", error);
     }
   };
 
   // Format date
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
-      return new Date(dateString).toLocaleDateString('vi-VN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+      return new Date(dateString).toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     } catch (error) {
-      return 'N/A';
+      return "N/A";
     }
   };
 
   // Format currency
   const formatCurrency = (amount) => {
-    if (typeof amount !== 'number') return '0 VNĐ';
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
+    if (typeof amount !== "number") return "0 VNĐ";
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
     }).format(amount);
   };
 
   // Get status badge color
   const getStatusBadgeColor = (status) => {
     switch (status) {
-      case 'available': return 'pm-badge-available';
-      case 'reported': return 'pm-badge-pending';
-      case 'not_available': return 'pm-badge-not-available';
-      default: return 'pm-badge-default';
+      case "available":
+        return "pm-badge-available";
+      case "reported":
+        return "pm-badge-pending";
+      case "not_available":
+        return "pm-badge-not-available";
+      default:
+        return "pm-badge-default";
     }
   };
 
   // Get category name
   const getCategoryName = (category) => {
-    if (category && typeof category === 'object') {
-      return category.product_category_name || 'N/A';
+    if (category && typeof category === "object") {
+      return category.product_category_name || "N/A";
     }
-    const cat = categories.find(c => c._id === category);
-    return cat ? cat.product_category_name : 'N/A';
+    const cat = categories.find((c) => c._id === category);
+    return cat ? cat.product_category_name : "N/A";
   };
 
   // Reset filters
   const resetFilters = () => {
-    setSearchTerm('');
-    setFilterStatus('all');
-    setFilterDate('all');
+    setSearchTerm("");
+    setFilterStatus("all");
+    setFilterDate("all");
     setCurrentPage(1);
     if (searchInputRef.current) {
       searchInputRef.current.focus();
@@ -351,10 +373,10 @@ const ShopProductManagement = () => {
   const renderPagination = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-    
+
     if (endPage - startPage + 1 < maxVisible) {
       startPage = Math.max(1, endPage - maxVisible + 1);
     }
@@ -372,7 +394,9 @@ const ShopProductManagement = () => {
       );
       if (startPage > 2) {
         pages.push(
-          <span key="start-dots" className="pm-pagination-dots">...</span>
+          <span key="start-dots" className="pm-pagination-dots">
+            ...
+          </span>
         );
       }
     }
@@ -383,7 +407,7 @@ const ShopProductManagement = () => {
         <button
           key={i}
           onClick={() => setCurrentPage(i)}
-          className={`pm-pagination-btn ${currentPage === i ? 'active' : ''}`}
+          className={`pm-pagination-btn ${currentPage === i ? "active" : ""}`}
         >
           {i}
         </button>
@@ -394,7 +418,9 @@ const ShopProductManagement = () => {
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) {
         pages.push(
-          <span key="end-dots" className="pm-pagination-dots">...</span>
+          <span key="end-dots" className="pm-pagination-dots">
+            ...
+          </span>
         );
       }
       pages.push(
@@ -426,7 +452,7 @@ const ShopProductManagement = () => {
         pauseOnHover
         theme="light"
       />
-      
+
       <div className="pm-container">
         {/* Page Header */}
         <div className="pm-page-header">
@@ -444,7 +470,10 @@ const ShopProductManagement = () => {
               </div>
             </div>
             <div className="pm-header-actions">
-              <Link to="/shop/products/create" className="pm-btn pm-btn-primary">
+              <Link
+                to="/shop/products/create"
+                className="pm-btn pm-btn-primary"
+              >
                 <i className="fas fa-plus"></i>
                 Thêm sản phẩm
               </Link>
@@ -464,16 +493,23 @@ const ShopProductManagement = () => {
                 <span className="pm-stat-label">Tổng sản phẩm</span>
               </div>
             </div>
-            
+
             <div className="pm-stat-card pm-stat-available">
               <div className="pm-stat-icon">
                 <i className="fas fa-check-circle"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.availableProducts}</span>
+                <span className="pm-stat-number">
+                  {stats.availableProducts}
+                </span>
                 <span className="pm-stat-label">Đang bán</span>
                 <span className="pm-stat-percentage">
-                  {stats.totalProducts ? Math.round((stats.availableProducts / stats.totalProducts) * 100) : 0}%
+                  {stats.totalProducts
+                    ? Math.round(
+                        (stats.availableProducts / stats.totalProducts) * 100
+                      )
+                    : 0}
+                  %
                 </span>
               </div>
             </div>
@@ -486,7 +522,12 @@ const ShopProductManagement = () => {
                 <span className="pm-stat-number">{stats.reportedProducts}</span>
                 <span className="pm-stat-label">Bị báo cáo</span>
                 <span className="pm-stat-percentage">
-                  {stats.totalProducts ? Math.round((stats.reportedProducts / stats.totalProducts) * 100) : 0}%
+                  {stats.totalProducts
+                    ? Math.round(
+                        (stats.reportedProducts / stats.totalProducts) * 100
+                      )
+                    : 0}
+                  %
                 </span>
               </div>
             </div>
@@ -496,7 +537,9 @@ const ShopProductManagement = () => {
                 <i className="fas fa-ban"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.notAvailableProducts}</span>
+                <span className="pm-stat-number">
+                  {stats.notAvailableProducts}
+                </span>
                 <span className="pm-stat-label">Ngừng bán</span>
               </div>
             </div>
@@ -516,7 +559,9 @@ const ShopProductManagement = () => {
                 <i className="fas fa-wallet"></i>
               </div>
               <div className="pm-stat-content">
-                <span className="pm-stat-number">{formatCurrency(stats.inventoryValue)}</span>
+                <span className="pm-stat-number">
+                  {formatCurrency(stats.inventoryValue)}
+                </span>
                 <span className="pm-stat-label">Giá trị kho hàng</span>
               </div>
             </div>
@@ -537,7 +582,7 @@ const ShopProductManagement = () => {
               />
               <i className="fas fa-search pm-search-icon"></i>
             </div>
-            
+
             <div className="pm-filter-group">
               <label>Danh mục:</label>
               <select
@@ -546,14 +591,14 @@ const ShopProductManagement = () => {
                 className="pm-filter-select"
               >
                 <option value="all">Tất cả danh mục</option>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <option key={category._id} value={category._id}>
                     {category.product_category_name}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             <div className="pm-filter-group">
               <label>Trạng thái:</label>
               <select
@@ -609,39 +654,47 @@ const ShopProductManagement = () => {
           </div>
 
           {/* Filter Summary */}
-          {(searchTerm || filterCategory !== 'all' || filterStatus !== 'all' || filterDate !== 'all') && (
+          {(searchTerm ||
+            filterCategory !== "all" ||
+            filterStatus !== "all" ||
+            filterDate !== "all") && (
             <div className="pm-filter-summary">
               <div className="pm-filter-results">
-                <span>Hiển thị {filteredProducts.length} / {products.length} sản phẩm</span>
+                <span>
+                  Hiển thị {filteredProducts.length} / {products.length} sản
+                  phẩm
+                </span>
               </div>
               <div className="pm-filter-tags">
                 {searchTerm && (
                   <span className="pm-filter-tag">
-                    <i className="fas fa-search"></i>
-                    "{searchTerm}"
-                    <button onClick={() => setSearchTerm('')}>×</button>
+                    <i className="fas fa-search"></i>"{searchTerm}"
+                    <button onClick={() => setSearchTerm("")}>×</button>
                   </span>
                 )}
-                {filterCategory !== 'all' && (
+                {filterCategory !== "all" && (
                   <span className="pm-filter-tag">
                     <i className="fas fa-tags"></i>
                     {getCategoryName(filterCategory)}
-                    <button onClick={() => setFilterCategory('all')}>×</button>
+                    <button onClick={() => setFilterCategory("all")}>×</button>
                   </span>
                 )}
-                {filterStatus !== 'all' && (
+                {filterStatus !== "all" && (
                   <span className="pm-filter-tag">
                     <i className="fas fa-toggle-on"></i>
-                    {filterStatus === 'available' ? 'Đang bán' : 
-                     filterStatus === 'reported' ? 'Bị báo cáo' : 'Ngừng bán'}
-                    <button onClick={() => setFilterStatus('all')}>×</button>
+                    {filterStatus === "available"
+                      ? "Đang bán"
+                      : filterStatus === "reported"
+                      ? "Bị báo cáo"
+                      : "Ngừng bán"}
+                    <button onClick={() => setFilterStatus("all")}>×</button>
                   </span>
                 )}
-                {filterDate !== 'all' && (
+                {filterDate !== "all" && (
                   <span className="pm-filter-tag">
                     <i className="fas fa-calendar"></i>
                     {filterDate}
-                    <button onClick={() => setFilterDate('all')}>×</button>
+                    <button onClick={() => setFilterDate("all")}>×</button>
                   </span>
                 )}
               </div>
@@ -662,18 +715,23 @@ const ShopProductManagement = () => {
               <i className="fas fa-box-open pm-empty-icon"></i>
               <h3>Không tìm thấy sản phẩm</h3>
               <p>
-                {filteredProducts.length === 0 && products.length === 0 
-                  ? 'Bạn chưa có sản phẩm nào' 
-                  : 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm'
-                }
+                {filteredProducts.length === 0 && products.length === 0
+                  ? "Bạn chưa có sản phẩm nào"
+                  : "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm"}
               </p>
               {filteredProducts.length === 0 && products.length > 0 ? (
-                <button onClick={resetFilters} className="pm-btn pm-btn-primary">
+                <button
+                  onClick={resetFilters}
+                  className="pm-btn pm-btn-primary"
+                >
                   <i className="fas fa-refresh"></i>
                   Đặt lại bộ lọc
                 </button>
               ) : (
-                <Link to="/shop/products/create" className="pm-btn pm-btn-primary">
+                <Link
+                  to="/shop/products/create"
+                  className="pm-btn pm-btn-primary"
+                >
                   <i className="fas fa-plus"></i>
                   Thêm sản phẩm đầu tiên
                 </Link>
@@ -687,13 +745,15 @@ const ShopProductManagement = () => {
                   Sản phẩm của tôi ({filteredProducts.length})
                 </h3>
                 <div className="pm-table-actions">
-                  <button 
-                    onClick={() => fetchMyProducts()} 
+                  <button
+                    onClick={() => fetchMyProducts()}
                     className="pm-btn pm-btn-secondary"
                     title="Làm mới dữ liệu"
                     disabled={loading}
                   >
-                    <i className={`fas fa-sync-alt ${loading ? 'fa-spin' : ''}`}></i>
+                    <i
+                      className={`fas fa-sync-alt ${loading ? "fa-spin" : ""}`}
+                    ></i>
                   </button>
                 </div>
               </div>
@@ -702,25 +762,46 @@ const ShopProductManagement = () => {
                 <table className="pm-products-table">
                   <thead>
                     <tr>
-                      <th onClick={() => handleSort('product_name')} className="pm-sortable">
+                      <th
+                        onClick={() => handleSort("product_name")}
+                        className="pm-sortable"
+                      >
                         <span>Thông tin sản phẩm</span>
-                        {sortField === 'product_name' && (
-                          <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
+                        {sortField === "product_name" && (
+                          <i
+                            className={`fas fa-chevron-${
+                              sortDirection === "asc" ? "up" : "down"
+                            }`}
+                          ></i>
                         )}
                       </th>
                       <th>Danh mục</th>
-                      <th onClick={() => handleSort('product_price')} className="pm-sortable">
+                      <th
+                        onClick={() => handleSort("product_price")}
+                        className="pm-sortable"
+                      >
                         <span>Giá</span>
-                        {sortField === 'product_price' && (
-                          <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
+                        {sortField === "product_price" && (
+                          <i
+                            className={`fas fa-chevron-${
+                              sortDirection === "asc" ? "up" : "down"
+                            }`}
+                          ></i>
                         )}
                       </th>
                       <th>Số lượng</th>
                       <th>Trạng thái</th>
-                      <th onClick={() => handleSort('createdAt')} className="pm-sortable">
+                      <th
+                        onClick={() => handleSort("createdAt")}
+                        className="pm-sortable"
+                      >
                         <span>Ngày tạo</span>
-                        {sortField === 'createdAt' && (
-                          <i className={`fas fa-chevron-${sortDirection === 'asc' ? 'up' : 'down'}`}></i>
+                        {sortField === "createdAt" && (
+                          <i
+                            className={`fas fa-chevron-${
+                              sortDirection === "asc" ? "up" : "down"
+                            }`}
+                          ></i>
                         )}
                       </th>
                       <th>Hành động</th>
@@ -732,89 +813,124 @@ const ShopProductManagement = () => {
                         <td className="pm-product-info">
                           <div className="pm-product-main">
                             <img
-                              src={product.product_imageurl || '/default-product.png'}
+                              src={
+                                product.product_imageurl ||
+                                "/default-product.png"
+                              }
                               alt={product.product_name}
                               className="pm-product-image"
                               onError={(e) => {
-                                e.target.src = '/default-product.png';
+                                e.target.src = "/default-product.png";
                               }}
                             />
                             <div className="pm-product-details">
-                              <h4 className="pm-product-name" title={product.product_name}>
+                              <h4
+                                className="pm-product-name"
+                                title={product.product_name}
+                              >
                                 {product.product_name}
                               </h4>
                               <p className="pm-product-id">ID: {product._id}</p>
                               {product.product_description && (
-                                <p className="pm-product-description" title={product.product_description}>
-                                  {product.product_description.length > 50 
-                                    ? `${product.product_description.substring(0, 50)}...` 
-                                    : product.product_description
-                                  }
+                                <p
+                                  className="pm-product-description"
+                                  title={product.product_description}
+                                >
+                                  {product.product_description.length > 50
+                                    ? `${product.product_description.substring(
+                                        0,
+                                        50
+                                      )}...`
+                                    : product.product_description}
                                 </p>
                               )}
                             </div>
                           </div>
                         </td>
-                        
+
                         <td className="pm-category">
                           <span className="pm-category-badge">
                             {getCategoryName(product.product_category_id)}
                           </span>
                         </td>
-                        
+
                         <td className="pm-price">
                           <span className="pm-price-value">
                             {formatCurrency(product.product_price)}
                           </span>
                         </td>
-                        
+
                         <td className="pm-quantity">
                           <div className="pm-quantity-info">
-                            <span className={`pm-quantity-value ${product.product_quantity === 0 ? 'pm-out-of-stock' : ''}`}>
+                            <span
+                              className={`pm-quantity-value ${
+                                product.product_quantity === 0
+                                  ? "pm-out-of-stock"
+                                  : ""
+                              }`}
+                            >
                               {product.product_quantity || 0}
                             </span>
                             {product.product_quantity === 0 && (
-                              <span className="pm-out-of-stock-label">Hết hàng</span>
+                              <span className="pm-out-of-stock-label">
+                                Hết hàng
+                              </span>
                             )}
                           </div>
                         </td>
-                        
+
                         <td className="pm-status">
                           <div className="pm-status-container">
-                            <span className={`pm-status-badge ${getStatusBadgeColor(product.product_status)}`}>
-                              {product.product_status === 'available' ? 'Đang bán' :
-                               product.product_status === 'reported' ? 'Bị báo cáo' :
-                               product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
+                            <span
+                              className={`pm-status-badge ${getStatusBadgeColor(
+                                product.product_status
+                              )}`}
+                            >
+                              {product.product_status === "available"
+                                ? "Đang bán"
+                                : product.product_status === "reported"
+                                ? "Bị báo cáo"
+                                : product.product_status === "not_available"
+                                ? "Ngừng bán"
+                                : "N/A"}
                             </span>
-                            {product.product_status !== 'reported' && (
+                            {product.product_status !== "reported" && (
                               <div className="pm-status-actions">
                                 <select
                                   value={product.product_status}
-                                  onChange={(e) => updateProductStatus(product._id, e.target.value)}
+                                  onChange={(e) =>
+                                    updateProductStatus(
+                                      product._id,
+                                      e.target.value
+                                    )
+                                  }
                                   className="pm-status-select"
                                   title="Thay đổi trạng thái"
                                 >
                                   <option value="available">Đang bán</option>
-                                  <option value="not_available">Ngừng bán</option>
+                                  <option value="not_available">
+                                    Ngừng bán
+                                  </option>
                                 </select>
                               </div>
                             )}
                           </div>
                         </td>
-                        
+
                         <td className="pm-date">
                           <div className="pm-date-info">
                             <span className="pm-date-value">
                               {formatDate(product.createdAt)}
                             </span>
-                            {product.updatedAt && product.updatedAt !== product.createdAt && (
-                              <span className="pm-updated-label">
-                                Sửa: {formatDate(product.updatedAt)}
-                              </span>
-                            )}
+                            {product.updatedAt &&
+                              product.updatedAt !== product.createdAt && (
+                                <span className="pm-updated-label">
+                                  Sửa: {formatDate(product.updatedAt)}
+                                </span>
+                              )}
                           </div>
                         </td>
-                        
+
                         <td className="pm-actions">
                           <div className="pm-action-buttons">
                             <button
@@ -824,7 +940,7 @@ const ShopProductManagement = () => {
                             >
                               <i className="fas fa-eye"></i>
                             </button>
-                            
+
                             <Link
                               to={`/shop/products/edit/${product._id}`}
                               className="pm-btn pm-btn-icon pm-btn-edit"
@@ -832,12 +948,12 @@ const ShopProductManagement = () => {
                             >
                               <i className="fas fa-edit"></i>
                             </Link>
-                            
+
                             <button
                               onClick={() => handleDeleteProduct(product)}
                               className="pm-btn pm-btn-icon pm-btn-delete"
                               title="Xóa sản phẩm"
-                              disabled={product.product_status === 'reported'}
+                              disabled={product.product_status === "reported"}
                             >
                               <i className="fas fa-trash"></i>
                             </button>
@@ -853,25 +969,31 @@ const ShopProductManagement = () => {
               {totalPages > 1 && (
                 <div className="pm-pagination">
                   <div className="pm-pagination-info">
-                    Hiển thị {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredProducts.length)} của {filteredProducts.length} sản phẩm
+                    Hiển thị {indexOfFirstItem + 1} -{" "}
+                    {Math.min(indexOfLastItem, filteredProducts.length)} của{" "}
+                    {filteredProducts.length} sản phẩm
                   </div>
-                  
+
                   <div className="pm-pagination-controls">
                     <button
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
                       disabled={currentPage === 1}
                       className="pm-pagination-btn pm-pagination-prev"
                     >
                       <i className="fas fa-chevron-left"></i>
                       Trước
                     </button>
-                    
+
                     <div className="pm-pagination-numbers">
                       {renderPagination()}
                     </div>
-                    
+
                     <button
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
                       className="pm-pagination-btn pm-pagination-next"
                     >
@@ -887,34 +1009,45 @@ const ShopProductManagement = () => {
 
         {/* Delete Confirmation Modal */}
         {showDeleteModal && selectedProduct && (
-          <div className="pm-modal-overlay" onClick={() => setShowDeleteModal(false)}>
-            <div className="pm-modal pm-delete-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="pm-modal-overlay"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <div
+              className="pm-modal pm-delete-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="pm-modal-header">
                 <h3>
                   <i className="fas fa-exclamation-triangle"></i>
                   Xác nhận xóa sản phẩm
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowDeleteModal(false)}
                   className="pm-modal-close"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="pm-modal-body">
                 <div className="pm-delete-warning">
                   <p>Bạn có chắc chắn muốn xóa sản phẩm này không?</p>
                   <div className="pm-product-preview">
-                    <img 
-                      src={selectedProduct.product_imageurl || '/default-product.png'} 
+                    <img
+                      src={
+                        selectedProduct.product_imageurl ||
+                        "/default-product.png"
+                      }
                       alt={selectedProduct.product_name}
                       className="pm-preview-image"
                     />
                     <div className="pm-preview-info">
                       <h4>{selectedProduct.product_name}</h4>
                       <p>ID: {selectedProduct._id}</p>
-                      <p>Giá: {formatCurrency(selectedProduct.product_price)}</p>
+                      <p>
+                        Giá: {formatCurrency(selectedProduct.product_price)}
+                      </p>
                     </div>
                   </div>
                   <div className="pm-warning-text">
@@ -923,16 +1056,16 @@ const ShopProductManagement = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="pm-modal-footer">
-                <button 
+                <button
                   onClick={() => setShowDeleteModal(false)}
                   className="pm-btn pm-btn-secondary"
                 >
                   <i className="fas fa-times"></i>
                   Hủy
                 </button>
-                <button 
+                <button
                   onClick={confirmDelete}
                   className="pm-btn pm-btn-danger"
                 >
@@ -946,83 +1079,111 @@ const ShopProductManagement = () => {
 
         {/* Product Detail Modal */}
         {showProductDetailModal && selectedProduct && (
-          <div className="pm-modal-overlay" onClick={() => setShowProductDetailModal(false)}>
-            <div className="pm-modal pm-detail-modal" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="pm-modal-overlay"
+            onClick={() => setShowProductDetailModal(false)}
+          >
+            <div
+              className="pm-modal pm-detail-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="pm-modal-header">
                 <h3>
                   <i className="fas fa-info-circle"></i>
                   Chi tiết sản phẩm
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowProductDetailModal(false)}
                   className="pm-modal-close"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="pm-modal-body pm-detail-body">
                 <div className="pm-detail-grid">
                   <div className="pm-detail-image">
-                    <img 
-                      src={selectedProduct.product_imageurl || '/default-product.png'} 
+                    <img
+                      src={
+                        selectedProduct.product_imageurl ||
+                        "/default-product.png"
+                      }
                       alt={selectedProduct.product_name}
                       className="pm-detail-main-image"
                     />
                   </div>
-                  
+
                   <div className="pm-detail-info">
-                    <h4 className="pm-detail-title">{selectedProduct.product_name}</h4>
-                    
+                    <h4 className="pm-detail-title">
+                      {selectedProduct.product_name}
+                    </h4>
+
                     <div className="pm-detail-fields">
                       <div className="pm-detail-field">
                         <label>Mã sản phẩm:</label>
                         <span>{selectedProduct._id}</span>
                       </div>
-                      
+
                       <div className="pm-detail-field">
                         <label>Danh mục:</label>
                         <span className="pm-category-badge">
                           {getCategoryName(selectedProduct.product_category_id)}
                         </span>
                       </div>
-                      
+
                       <div className="pm-detail-field">
                         <label>Giá bán:</label>
                         <span className="pm-price-value">
                           {formatCurrency(selectedProduct.product_price)}
                         </span>
                       </div>
-                      
+
                       <div className="pm-detail-field">
                         <label>Số lượng:</label>
-                        <span className={selectedProduct.product_quantity === 0 ? 'pm-out-of-stock' : ''}>
+                        <span
+                          className={
+                            selectedProduct.product_quantity === 0
+                              ? "pm-out-of-stock"
+                              : ""
+                          }
+                        >
                           {selectedProduct.product_quantity || 0}
-                          {selectedProduct.product_quantity === 0 && ' (Hết hàng)'}
+                          {selectedProduct.product_quantity === 0 &&
+                            " (Hết hàng)"}
                         </span>
                       </div>
-                      
+
                       <div className="pm-detail-field">
                         <label>Trạng thái:</label>
-                        <span className={`pm-status-badge ${getStatusBadgeColor(selectedProduct.product_status)}`}>
-                          {selectedProduct.product_status === 'available' ? 'Đang bán' :
-                           selectedProduct.product_status === 'reported' ? 'Bị báo cáo' :
-                           selectedProduct.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
+                        <span
+                          className={`pm-status-badge ${getStatusBadgeColor(
+                            selectedProduct.product_status
+                          )}`}
+                        >
+                          {selectedProduct.product_status === "available"
+                            ? "Đang bán"
+                            : selectedProduct.product_status === "reported"
+                            ? "Bị báo cáo"
+                            : selectedProduct.product_status === "not_available"
+                            ? "Ngừng bán"
+                            : "N/A"}
                         </span>
                       </div>
-                      
+
                       <div className="pm-detail-field">
                         <label>Ngày tạo:</label>
                         <span>{formatDate(selectedProduct.createdAt)}</span>
                       </div>
-                      
-                      {selectedProduct.updatedAt && selectedProduct.updatedAt !== selectedProduct.createdAt && (
-                        <div className="pm-detail-field">
-                          <label>Cập nhật cuối:</label>
-                          <span>{formatDate(selectedProduct.updatedAt)}</span>
-                        </div>
-                      )}
-                      
+
+                      {selectedProduct.updatedAt &&
+                        selectedProduct.updatedAt !==
+                          selectedProduct.createdAt && (
+                          <div className="pm-detail-field">
+                            <label>Cập nhật cuối:</label>
+                            <span>{formatDate(selectedProduct.updatedAt)}</span>
+                          </div>
+                        )}
+
                       {selectedProduct.product_description && (
                         <div className="pm-detail-field pm-detail-description">
                           <label>Mô tả:</label>
@@ -1033,7 +1194,7 @@ const ShopProductManagement = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="pm-modal-footer">
                 <Link
                   to={`/shop/products/edit/${selectedProduct._id}`}
@@ -1042,7 +1203,7 @@ const ShopProductManagement = () => {
                   <i className="fas fa-edit"></i>
                   Chỉnh sửa
                 </Link>
-                <button 
+                <button
                   onClick={() => setShowProductDetailModal(false)}
                   className="pm-btn pm-btn-secondary"
                 >
@@ -1054,7 +1215,7 @@ const ShopProductManagement = () => {
           </div>
         )}
       </div>
-      
+
       <Footer />
     </>
   );

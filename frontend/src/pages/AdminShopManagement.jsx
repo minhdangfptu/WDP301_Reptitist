@@ -7,6 +7,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
+
 const AdminShopManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
@@ -95,7 +98,7 @@ const AdminShopManagement = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/shops', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/shops`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -119,7 +122,7 @@ const AdminShopManagement = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/reports', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/reports`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -140,7 +143,7 @@ const AdminShopManagement = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/stats', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -160,7 +163,7 @@ const AdminShopManagement = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get(`http://localhost:8080/reptitist/admin/shops/${shopId}/products`, {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/shops/${shopId}/products`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -187,7 +190,7 @@ const AdminShopManagement = () => {
       if (!token) return;
 
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/admin/products/${productId}`,
+        `${baseUrl}/reptitist/admin/products/${productId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -216,7 +219,7 @@ const AdminShopManagement = () => {
       if (!token) return;
 
       const response = await axios.post(
-        `http://localhost:8080/reptitist/admin/reports/${reportId}/handle`,
+        `${baseUrl}/reptitist/admin/reports/${reportId}/handle`,
         {
           action, // 'approve' or 'reject'
           adminNote: note
@@ -251,7 +254,7 @@ const AdminShopManagement = () => {
 
       const newStatus = !shopData.isActive;
       const response = await axios.patch(
-        `http://localhost:8080/reptitist/admin/users/${shopData._id}/status`,
+        `${baseUrl}/reptitist/admin/users/${shopData._id}/status`,
         { isActive: newStatus },
         {
           headers: {

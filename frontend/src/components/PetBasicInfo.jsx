@@ -9,6 +9,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -39,7 +40,7 @@ const PetBasicInfo = ({ petInfo }) => {
     if (reptileId) {
       axios
         .get(
-          `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+          `${baseUrl}/reptitist/ai/get-all-recommendations/${reptileId}`
         )
         .then((res) => {
           const data = res.data.data;
@@ -158,70 +159,69 @@ const PetBasicInfo = ({ petInfo }) => {
   );
 
   return (
-    <Container fluid>
-      <div className="mb-5">
-        <h2 className="text-center fw-bold mb-4" style={{ fontSize: '2rem' }}>
-          THÔNG TIN CƠ BẢN
-        </h2>
-        <Row className="g-4">
-          {/* Profile Picture */}
-          <Col xs={12} md={4} className="text-center">
-            <Card className="border-0 shadow-sm">
-              <Card.Img
-                variant="top"
-                src={
-                  petInfo.user_reptile_imageurl || "/default-pet-image.jpg"
-                } // Fallback image
-                alt={petInfo.reptile_name || "Pet Image"} // Fallback alt text
-                style={{ objectFit: "cover", height: "200px" }}
-              />
-            </Card>
-          </Col>
-          {/* Basic Information Table */}
-          <Col xs={12} md={8}>
-            <Card className="border-0 shadow-sm" style={{ height: "100%" }}>
-              <Card.Body>
-                <Row>
-                  <Col xs={12} md={6}>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Tên bò sát</span>
-                      <span>{petInfo.reptile_name}</span>
-                    </div>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Giống loài</span>
-                      <span>{petInfo.reptile_species}</span>
-                    </div>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Tên thường gọi</span>
-                      <span>{petInfo.name} </span>
-                    </div>
-                  </Col>
-                  <Col xs={12} md={6}>
-                    <div className="mb-3 d-flex justify-content-between align-items-center">
-                      <span className="fw-medium">Tuổi</span>
-                      <div className="d-flex align-items-center">
-                        <span>{petInfo.age} tháng</span>
+    <>
+      <Container maxWidth="xl">
+        <div className="mb-5">
+          <h2 className="text-center fw-bold mb-4">THÔNG TIN CƠ BẢN</h2>
+          <Row className="g-4">
+            {/* Profile Picture */}
+            <Col xs={12} md={4} className="text-center">
+              <Card className="border-0 shadow-sm">
+                <Card.Img
+                  variant="top"
+                  src={
+                    petInfo.user_reptile_imageurl || "/default-pet-image.jpg"
+                  } // Fallback image
+                  alt={petInfo.reptile_name || "Pet Image"} // Fallback alt text
+                  style={{ objectFit: "cover", height: "200px" }}
+                />
+              </Card>
+            </Col>
+            {/* Basic Information Table */}
+            <Col xs={12} md={8}>
+              <Card className="border-0 shadow-sm" style={{ height: "100%" }}>
+                <Card.Body>
+                  <Row>
+                    <Col xs={12} md={6}>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Tên bò sát</span>
+                        <span>{petInfo.reptile_name}</span>
                       </div>
-                    </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Giống loài</span>
+                        <span>{petInfo.reptile_species}</span>
+                      </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Tên thường gọi</span>
+                        <span>{petInfo.name} </span>
+                      </div>
+                    </Col>
+                    <Col xs={12} md={6}>
+                      <div className="mb-3 d-flex justify-content-between align-items-center">
+                        <span className="fw-medium">Tuổi</span>
+                        <div className="d-flex align-items-center">
+                          <span>{petInfo.age} tháng</span>
+                        </div>
+                      </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Theo dõi từ</span>
+                        <span>{formatDate(petInfo.follow_since)}</span>
+                      </div>
+                      <div className="mb-3 d-flex justify-content-between">
+                        <span className="fw-medium">Cân nặng hiện tại</span>
+                        <span>{petInfo.current_weight} gam</span>
+                      </div>
+                    </Col>
                     <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Theo dõi từ</span>
-                      <span>{formatDate(petInfo.follow_since)}</span>
+                      <span className="fw-medium">Miêu tả</span>
+                      <span>{petInfo.description}</span>
                     </div>
-                    <div className="mb-3 d-flex justify-content-between">
-                      <span className="fw-medium">Cân nặng hiện tại</span>
-                      <span>{petInfo.current_weight} gam</span>
-                    </div>
-                  </Col>
-                  <div className="mb-3 d-flex justify-content-between">
-                    <span className="fw-medium">Miêu tả</span>
-                    <span>{petInfo.description}</span>
-                  </div>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </div>
 
       <Row className="g-4">
         {/* Weight Chart */}
@@ -408,6 +408,7 @@ const PetBasicInfo = ({ petInfo }) => {
         </Col>
       </Row>
     </Container>
+    </>
   );
 };
 
