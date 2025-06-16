@@ -29,7 +29,7 @@ import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
 import ProductDetail from './pages/ProductDetail';
 import PlanUpgrade from './pages/PlanUpgrade';
 
-import Library from './pages/LibraryTopic';
+import LibraryTopic from './pages/LibraryTopic';
 import LibraryCategory from './pages/LibraryCategory';
 import LibraryContent from './pages/LibraryContent';
 import LibraryContentCreate from './pages/LibraryCategoryCreate';
@@ -137,7 +137,7 @@ const AppRoutes = () => (
     <Route path="/SignUp3" element={<PublicRoute><SignUp3 /></PublicRoute>} />
 
     {/* Library */}
-    <Route path="/Library" element={<Library />} />
+    {/* <Route path="/Library" element={<Library />} /> */}
     <Route path="/libraryCategory/:id" element={<LibraryCategory />} />
     <Route path="/librarycontent/:categoryId" element={<LibraryContent />} />
     <Route
@@ -154,142 +154,45 @@ const AppRoutes = () => (
     {/* Product routes */}
     <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
     <Route path="/products/create" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
-
-      <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-      <Route path="/product-detail/:productId" element={<ProductDetail />} />
-      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+    <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
+    <Route path="/product-detail/:productId" element={<ProductDetail />} />
+    <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+    <Route path="/payment-processing" element={<ProtectedRoute><PaymentProcessing /></ProtectedRoute>} />
+    <Route path="/products/search/:productName" element={<ListProductPage />} />
+    <Route path="/products/category/:categoryId" element={<ListProductPage />} />
       
-      <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
-      <Route path="/payment-processing" element={
-        
-        <ProtectedRoute>
-          <PaymentProcessing />
-        </ProtectedRoute>
-      } />
+    {/* Protected routes - require login */}
+    <Route path="/Profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+    <Route path="/Security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
+    <Route path="/LibraryTopic" element={<LibraryTopic />} />
+    <Route path="/LibraryCategory" element={<LibraryCategory />} />
+    <Route path="/LibraryContent/:id" element={<LibraryContent />} />
+    <Route path="/Settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+    <Route path="/YourPet" element={<ProtectedRoute><YourPet /></ProtectedRoute>} />
+    <Route path="/Transaction" element={<ProtectedRoute><Transaction /></ProtectedRoute>} />
+    <Route path="/your-pet/detail/:reptileId" element={<ProtectedRoute><YourPetDetail /></ProtectedRoute>} />
+    <Route path="/your-pet/create" element={<ProtectedRoute><CreateNewPet /></ProtectedRoute>} />
+    <Route path="/your-pet/ai/:reptileId" element={<ProtectedRoute><AIChatPage /></ProtectedRoute>} />
+    <Route path="/create-health-tracking/:reptileId" element={<ProtectedRoute><CreateTrackingHealthPage /></ProtectedRoute>} />
+    <Route path="/create-treatment/:reptileId" element={<ProtectedRoute><CreateTreatmentPage /></ProtectedRoute>} />
+    <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
+    <Route path="/shop/products/create" element={<ProductForm />} />
       
-      {/* Auth routes - redirect if already logged in */}
+    {/* Admin only routes */}
+    <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
+    <Route path="/ProductManagement" element={<ProtectedRoute requiredRole="admin"><ProductManagement /></ProtectedRoute>} />
+    <Route path="/AdminShopManagement" element={<ProtectedRoute requiredRole="admin"><AdminShopManagement /></ProtectedRoute>} />
+    <Route path="/LibraryManagement" element={<ProtectedRoute requiredRole="admin"><LibraryManagement /></ProtectedRoute>} />
+    <Route path="/admin/products/create" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
+    <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
       
-      <Route path="/Login" element={
-        <PublicRoute>
-          <Login />
-        </PublicRoute>
-      } />
-      <Route path="/SignUp" element={
-        <PublicRoute>
-          <SignUp />
-        </PublicRoute>
-      } />
-      <Route path="/SignUp2" element={
-        <PublicRoute>
-          <SignUp2 />
-        </PublicRoute>
-      } />
-      <Route path="/SignUp3" element={
-        <PublicRoute>
-          <SignUp3 />
-        </PublicRoute>
-      } />
-      <Route path="/products/search/:productName" element={<ListProductPage />} />
-      <Route path="/products/category/:categoryId" element={<ListProductPage />} />
+    {/* Auth callback route */}
+    <Route path="/auth/callback" element={<AuthCallback />} />
       
-      
-      {/* Protected routes - require login */}
-      <Route path="/Profile" element={
-        <ProtectedRoute>
-          <Profile />
-        </ProtectedRoute>
-      } />
-      <Route path="/Security" element={
-        <ProtectedRoute>
-          <Security />
-        </ProtectedRoute>
-      } />
-       <Route path="/LibraryTopic" element={<LibraryTopic />} />
-       <Route path="/LibraryCategory" element={<LibraryCategory />} />
-       <Route path="/LibraryContent/:id" element={<LibraryContent />} />
-      <Route path="/Settings" element={
-        <ProtectedRoute>
-          <Settings />
-        </ProtectedRoute>
-      } />
-      <Route path="/YourPet" element={
-        <ProtectedRoute>
-          <YourPet />
-        </ProtectedRoute>
-      } />
-      <Route path="/Transaction" element={
-        <ProtectedRoute>
-          <Transaction />
-        </ProtectedRoute>
-      } />
-      <Route path="/your-pet/detail/:reptileId" element={
-        <ProtectedRoute>
-          < YourPetDetail/>
-        </ProtectedRoute>
-      } />
-      <Route path="/your-pet/create" element={
-        <ProtectedRoute>
-          < CreateNewPet/>
-        </ProtectedRoute>
-      } />
-      <Route path="/your-pet/ai/:reptileId" element={
-        <ProtectedRoute>
-          < AIChatPage/>
-        </ProtectedRoute>
-      } />
-      <Route path="/create-health-tracking/:reptileId" element={
-        <ProtectedRoute>
-          < CreateTrackingHealthPage/>
-        </ProtectedRoute>
-      } />
-      <Route path="/create-treatment/:reptileId" element={
-        <ProtectedRoute>
-          < CreateTreatmentPage/>
-        </ProtectedRoute>
-      } />
-      <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
-      <Route path="/shop/products/create" element={<ProductForm />} />
-      
-      {/* Admin only routes */}
-      <Route path="/UserManagement" element={
-        <ProtectedRoute requiredRole="admin">
-          <UserManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/ProductManagement" element={
-        <ProtectedRoute requiredRole="admin">
-          <ProductManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/AdminShopManagement" element={
-        <ProtectedRoute requiredRole="admin">
-          <AdminShopManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/LibraryManagement" element={
-        <ProtectedRoute requiredRole="admin">
-          <LibraryManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/products/create" element={
-        <ProtectedRoute requiredRole="admin">
-          <ProductForm />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/products/edit/:productId" element={
-        <ProtectedRoute requiredRole="admin">
-          <ProductForm />
-        </ProtectedRoute>
-      } />
-      
-      {/* Auth callback route */}
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      
-      {/* Route catch-all cho các đường dẫn không tồn tại */}
-      <Route path="*" element={<UnderDevPage />} />
-    </Routes>
-  );
-};
+    {/* Route catch-all cho các đường dẫn không tồn tại */}
+    <Route path="*" element={<UnderDevPage />} />
+  </Routes>
+);
 
 const App = () => (
   <Provider store={store}>

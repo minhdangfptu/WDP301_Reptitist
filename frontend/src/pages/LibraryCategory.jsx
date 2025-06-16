@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const LibraryCategory = () => {
   const [allCategories, setAllCategories] = useState([]);
@@ -13,6 +14,8 @@ const LibraryCategory = () => {
   const { id } = useParams();
   const [openIndex, setOpenIndex] = useState(null);
   const topicId = id;
+  const { user } = useAuth();
+  const isAdmin = user && user.role === "admin";
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -74,9 +77,11 @@ const LibraryCategory = () => {
         </div>
 
         <div className="d-flex justify-content-end mb-3">
-          <Link to={`/library_categories/create/${topicId}`}>
-            <button className="btn btn-success">+ Tạo danh mục</button>
-          </Link>
+          {isAdmin && (
+            <Link to={`/library_categories/create/${topicId}`}>
+              <button className="btn btn-success">+ Tạo danh mục</button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -138,30 +143,34 @@ const LibraryCategory = () => {
                       justifyContent: "space-between",
                     }}
                   >
-                    <Link to={`/library_categories/update/${cat._id}`}>
-                      <button
-                        style={{
-                          backgroundColor: "#ffc107",
-                          border: "none",
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                        }}
-                      >
-                        Cập nhật
-                      </button>
-                    </Link>
-                    <button
-                      style={{
-                        backgroundColor: "#dc3545",
-                        color: "#fff",
-                        border: "none",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                      }}
-                      onClick={() => handleDelete(cat._id)}
-                    >
-                      Xoá
-                    </button>
+                    {isAdmin && (
+                      <>
+                        <Link to={`/library_categories/update/${cat._id}`}>
+                          <button
+                            style={{
+                              backgroundColor: "#ffc107",
+                              border: "none",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            Cập nhật
+                          </button>
+                        </Link>
+                        <button
+                          style={{
+                            backgroundColor: "#dc3545",
+                            color: "#fff",
+                            border: "none",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                          }}
+                          onClick={() => handleDelete(cat._id)}
+                        >
+                          Xoá
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}

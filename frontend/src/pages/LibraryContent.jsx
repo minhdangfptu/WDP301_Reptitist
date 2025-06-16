@@ -4,6 +4,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { useAuth } from "../context/AuthContext";
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const LibraryContent = () => {
   const { categoryId } = useParams();
@@ -15,6 +16,8 @@ const LibraryContent = () => {
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user && user.role === "admin";
 
   // Lấy user_id từ token
   const getUserId = () => {
@@ -366,25 +369,27 @@ const LibraryContent = () => {
               className="content-grid"
               style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
             >
-              <div style={{ width: "100%", marginBottom: "10px" }}>
-                <button
-                  style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#28a745",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer"
-                  }}
-                  onClick={() => {
-                    setIsCreating(true);
-                    setIsEditing(false);
-                    setSelectedContentId(null);
-                  }}
-                >
-                  Tạo mới nội dung
-                </button>
-              </div>
+              {isAdmin && (
+                <div style={{ width: "100%", marginBottom: "10px" }}>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#28a745",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer"
+                    }}
+                    onClick={() => {
+                      setIsCreating(true);
+                      setIsEditing(false);
+                      setSelectedContentId(null);
+                    }}
+                  >
+                    Tạo mới nội dung
+                  </button>
+                </div>
+              )}
 
               {(isCreating || isEditing) && (
                 <div style={{ width: "100%", marginBottom: "20px" }}>
@@ -476,38 +481,41 @@ const LibraryContent = () => {
                 </div>
               )}
 
+              {selectedContent && !isCreating && !isEditing && isAdmin && (
+                <div style={{ marginBottom: "10px" }}>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      marginRight: "10px",
+                      cursor: "pointer"
+                    }}
+                    onClick={handleEdit}
+                  >
+                    Cập nhật
+                  </button>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer"
+                    }}
+                    onClick={handleDelete}
+                  >
+                    Xóa
+                  </button>
+                </div>
+              )}
+
               {selectedContent && !isCreating && !isEditing ? (
                 <div style={{ width: "100%" }}>
                   <div className="mb-4 p-3 border rounded">
-                    <div style={{ marginBottom: "10px" }}>
-                      <button
-                        style={{
-                          padding: "10px 20px",
-                          backgroundColor: "#007bff",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "5px",
-                          marginRight: "10px",
-                          cursor: "pointer"
-                        }}
-                        onClick={handleEdit}
-                      >
-                        Cập nhật
-                      </button>
-                      <button
-                        style={{
-                          padding: "10px 20px",
-                          backgroundColor: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "5px",
-                          cursor: "pointer"
-                        }}
-                        onClick={handleDelete}
-                      >
-                        Xóa
-                      </button>
-                    </div>
                     {selectedContent.image_urls && selectedContent.image_urls.length > 0 && (
                       <div
                         style={{

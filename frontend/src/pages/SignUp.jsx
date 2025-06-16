@@ -8,10 +8,7 @@ const Signup = () => {
         {/* Nội dung đăng ký */}
         <div className="signup-content">
           <div className="logo">
-            <img
-              src="Screenshot 2025-05-20 072648.png"
-              alt="Reptisist Logo"
-            />
+            <img src="/logo1.png" alt="Reptisist Logo" />
           </div>
 
           <h1 className="headline">
@@ -19,10 +16,12 @@ const Signup = () => {
           </h1>
 
           <p className="subheadline">
-            Website chăm sóc bò sát cung cấp Chatbot AI 24/7, thư viện kiến thức phong phú, hỏi đáp cá nhân hóa, và kết nối cộng đồng giúp bạn chăm sóc bò sát dễ dàng.
+            Website chăm sóc bò sát cung cấp Chatbot AI 24/7, thư viện kiến thức
+            phong phú, hỏi đáp cá nhân hóa, và kết nối cộng đồng giúp bạn chăm
+            sóc bò sát dễ dàng.
           </p>
 
-          <a href="#" className="social-signup-btn">
+          {/* <a href="#" className="social-signup-btn">
             <span className="google-icon">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
@@ -40,7 +39,33 @@ const Signup = () => {
               />
             </span>
             Đăng ký sử dụng Facebook
-          </a>
+          </a> */}
+          <button
+            className="social-login-btn"
+            disabled={true}
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
+          >
+            <span className="google-icon">
+              <img
+                src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg"
+                alt="Google"
+              />
+            </span>
+            Đăng nhập sử dụng Google
+          </button>
+          <button
+            className="social-login-btn"
+            disabled={true}
+            style={{ opacity: 0.6, cursor: "not-allowed" }}
+          >
+            <span className="google-icon">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
+                alt="Facebook"
+              />
+            </span>
+            Đăng nhập sử dụng Facebook
+          </button>
 
           <div className="terms">
             Bằng cách tiếp tục, bạn đồng ý với{" "}

@@ -71,9 +71,9 @@ export const AuthProvider = ({ children }) => {
 
       if (result.success) {
         debugLog('Login successful:', result.user);
-        const { user: userData, token, refreshToken } = result;
-        localStorage.setItem('access_token', token);
-        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+        const { user: userData, access_token, refresh_token } = result;
+        localStorage.setItem('access_token', access_token);
+        if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
         setIsAuthenticated(true);

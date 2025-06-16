@@ -10,7 +10,7 @@ const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
-const adminRoute = require('./adminRoute'); // Uncomment if you have admin routes
+const adminRoute = require('./adminRoute'); 
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);

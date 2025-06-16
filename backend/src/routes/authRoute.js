@@ -18,7 +18,7 @@ router.post('/change-password', authMiddleware, changePassword);
 router.post('/change-password-email', authMiddleware, changePasswordWithEmail);
 router.post('/upload-avatar', authMiddleware, uploadAvatar);
 
-// Route để lấy thông tin profile user (cần authentication)
+// Route để lấy thông tin profile user 
 router.get('/profile', authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user._id)

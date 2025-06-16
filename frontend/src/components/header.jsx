@@ -7,7 +7,8 @@ import "../css/common.css";
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-  const { user, logout, hasRole, hasAnyRole } = useAuth();
+  const { user, logout, hasRole, hasAnyRole, loading } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,12 +22,15 @@ const Header = () => {
   }, []);
 
   const handleLogout = async () => {
+    setLoggingOut(true);
     try {
       await logout();
       setShowAccountMenu(false);
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -34,6 +38,32 @@ const Header = () => {
   const isShop = () => {
     return hasRole('shop') || user?.account_type?.type === 'shop';
   };
+
+  if (loading) {
+    return (
+      <header className="header">
+        <div className="container">
+          <div style={{ padding: 16, textAlign: 'center' }}>
+            <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
+            Đang tải thông tin tài khoản...
+          </div>
+        </div>
+      </header>
+    );
+  }
+
+  if (loggingOut) {
+    return (
+      <header className="header">
+        <div className="container">
+          <div style={{ padding: 16, textAlign: 'center' }}>
+            <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px', marginRight: 12 }} />
+            Đang đăng xuất...
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header style={{ position: 'static', width: '100%', zIndex: '1000' }} className="header">

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import emailjs from "emailjs-com";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "../css/SignUp2.css";
 
 const SignUp2 = () => {
@@ -17,14 +17,14 @@ const SignUp2 = () => {
   // Cấu hình EmailJS - Kiểm tra lại các thông số này
   const EMAILJS_CONFIG = {
     SERVICE_ID: "service_llx7onu", // Xác nhận lại Service ID
-    TEMPLATE_ID: "template_dd8viae", // Xác nhận lại Template ID  
-    PUBLIC_KEY: "qOVKbEY7rEG5Dhe6D" // Xác nhận lại Public Key
+    TEMPLATE_ID: "template_dd8viae", // Xác nhận lại Template ID
+    PUBLIC_KEY: "qOVKbEY7rEG5Dhe6D", // Xác nhận lại Public Key
   };
 
   // Hàm gửi mã xác nhận qua Email
   const sendVerificationCode = async (userEmail) => {
     setIsLoading(true);
-    
+
     try {
       const codeGenerated = Math.floor(100000 + Math.random() * 900000);
       setVerificationCode(codeGenerated.toString());
@@ -50,24 +50,26 @@ const SignUp2 = () => {
       console.log("EmailJS response:", response); // Debug log
 
       if (response.status === 200) {
-        toast.success("Mã xác nhận đã được gửi tới email của bạn! Vui lòng kiểm tra hộp thư (bao gồm cả thư mục spam).", {
-          position: "top-right",
-          autoClose: 7000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true
-        });
+        toast.success(
+          "Mã xác nhận đã được gửi tới email của bạn! Vui lòng kiểm tra hộp thư (bao gồm cả thư mục spam).",
+          {
+            position: "top-right",
+            autoClose: 7000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          }
+        );
       } else {
         throw new Error(`EmailJS returned status: ${response.status}`);
       }
-
     } catch (error) {
       console.error("Email sending error:", error);
-      
+
       // Hiển thị lỗi chi tiết hơn
       let errorMessage = "Đã xảy ra lỗi khi gửi mã xác nhận. ";
-      
+
       if (error.text) {
         errorMessage += `Chi tiết: ${error.text}`;
       } else if (error.message) {
@@ -82,14 +84,13 @@ const SignUp2 = () => {
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
-        draggable: true
+        draggable: true,
       });
-      
+
       // Reset trạng thái nếu gửi email thất bại
-      setCurrentStep('initial');
+      setCurrentStep("initial");
       setIsRegistered(false);
       setShowCodeInput(false);
-      
     } finally {
       setIsLoading(false);
     }
@@ -105,15 +106,15 @@ const SignUp2 = () => {
     if (!email.trim()) {
       toast.error("Vui lòng nhập địa chỉ email.", {
         position: "top-right",
-        autoClose: 5000
+        autoClose: 5000,
       });
       return;
     }
-    
+
     if (!validateEmail(email.trim())) {
       toast.error("Vui lòng nhập địa chỉ email hợp lệ.", {
         position: "top-right",
-        autoClose: 5000
+        autoClose: 5000,
       });
       return;
     }
@@ -121,12 +122,12 @@ const SignUp2 = () => {
     // Hiển thị thông báo bắt đầu gửi
     toast.info("Đang gửi mã xác nhận đến email của bạn...", {
       position: "top-right",
-      autoClose: 3000
+      autoClose: 3000,
     });
 
     setShowCodeInput(true);
     setIsRegistered(true);
-    
+
     // Gửi email xác nhận
     await sendVerificationCode(email.trim());
   };
@@ -135,7 +136,7 @@ const SignUp2 = () => {
     if (!code.trim()) {
       toast.error("Vui lòng nhập mã xác nhận.", {
         position: "top-right",
-        autoClose: 5000
+        autoClose: 5000,
       });
       return;
     }
@@ -143,7 +144,7 @@ const SignUp2 = () => {
     if (code.length !== 6) {
       toast.error("Mã xác nhận phải có 6 chữ số.", {
         position: "top-right",
-        autoClose: 5000
+        autoClose: 5000,
       });
       return;
     }
@@ -157,31 +158,31 @@ const SignUp2 = () => {
         autoClose: 2000,
         onClose: () => {
           // Chuyển sang trang SignUp3 với thông tin email và trạng thái xác thực
-          navigate("/SignUp3", { 
-            state: { 
-              email: email.trim(), 
-              verified: true 
-            } 
+          navigate("/SignUp3", {
+            state: {
+              email: email.trim(),
+              verified: true,
+            },
           });
-        }
+        },
       });
     } else {
       toast.error("Mã xác nhận không đúng. Vui lòng kiểm tra lại.", {
         position: "top-right",
-        autoClose: 5000
+        autoClose: 5000,
       });
     }
   };
 
   const handleResendCode = async () => {
     if (isLoading) return;
-    
+
     setCode("");
     toast.info("Đang gửi lại mã xác nhận...", {
       position: "top-right",
-      autoClose: 2000
+      autoClose: 2000,
     });
-    
+
     await sendVerificationCode(email.trim());
   };
 
@@ -194,7 +195,7 @@ const SignUp2 = () => {
 
   const handleCodeInputChange = (e) => {
     // Chỉ cho phép nhập số và tối đa 6 ký tự
-    const inputValue = e.target.value.replace(/\D/g, '').slice(0, 6);
+    const inputValue = e.target.value.replace(/\D/g, "").slice(0, 6);
     setCode(inputValue);
   };
 
@@ -212,46 +213,48 @@ const SignUp2 = () => {
         pauseOnHover
         theme="light"
       />
-      
+
       <div className="signup2-container">
         <div className="signup2-content">
           <div className="signup2-logo">
             <img src="/logo1.png" alt="Reptisist Logo" />
           </div>
-          
+
           <h1 className="signup2-headline">
             Cùng chúng tôi chăm sóc bò sát theo cách chuyên nghiệp
           </h1>
-          
+
           <p className="signup2-subheadline">
-            Website chăm sóc bò sát cung cấp Chatbot AI 24/7, thư viện kiến thức phong phú, hỏi đáp cá nhân hóa, và kết nối cộng đồng giúp bạn chăm sóc bò sát dễ dàng.
+            Website chăm sóc bò sát cung cấp Chatbot AI 24/7, thư viện kiến thức
+            phong phú, hỏi đáp cá nhân hóa, và kết nối cộng đồng giúp bạn chăm
+            sóc bò sát dễ dàng.
           </p>
-          
+
           {/* Email Input Section */}
           <div className="signup2-input-wrapper">
-            <input 
-              type="email" 
-              placeholder="Nhập địa chỉ Email của bạn!" 
+            <input
+              type="email"
+              placeholder="Nhập địa chỉ Email của bạn!"
               className="signup2-email-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isRegistered}
               style={{
-                backgroundColor: isRegistered ? '#f0f0f0' : 'white',
-                cursor: isRegistered ? 'not-allowed' : 'text'
+                backgroundColor: isRegistered ? "#f0f0f0" : "white",
+                cursor: isRegistered ? "not-allowed" : "text",
               }}
             />
           </div>
 
           {/* Sign Up Button - Only show if not registered */}
           {!isRegistered && (
-            <button 
-              className="signup2-button" 
+            <button
+              className="signup2-button"
               onClick={handleSignUpClick}
               disabled={isLoading}
               style={{
                 opacity: isLoading ? 0.7 : 1,
-                cursor: isLoading ? 'not-allowed' : 'pointer'
+                cursor: isLoading ? "not-allowed" : "pointer",
               }}
             >
               {isLoading ? "⏳ Đang gửi mã..." : "Đăng ký ngay!"}
@@ -260,7 +263,7 @@ const SignUp2 = () => {
 
           {/* Verification Code Section */}
           {showCodeInput && (
-            <div style={{ width: '100%', maxWidth: '340px' }}>
+            <div style={{ width: "100%", maxWidth: "340px" }}>
               <div className="signup2-input-wrapper">
                 <input
                   type="text"
@@ -270,72 +273,76 @@ const SignUp2 = () => {
                   onChange={handleCodeInputChange}
                   maxLength="6"
                   style={{
-                    textAlign: 'center',
-                    fontSize: '18px',
-                    letterSpacing: '2px'
+                    textAlign: "left",
+                    fontSize: "13px",
+                    letterSpacing: "0.5px",
                   }}
                 />
               </div>
-              
-              <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column',
-                gap: '10px', 
-                alignItems: 'center',
-                marginTop: '15px'
-              }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button 
-                    className="signup2-button" 
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                  alignItems: "center",
+                  marginTop: "15px",
+                }}
+              >
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    className="signup2-button"
                     onClick={handleVerifyCode}
                     disabled={code.length !== 6}
                     style={{
                       opacity: code.length !== 6 ? 0.5 : 1,
-                      cursor: code.length !== 6 ? 'not-allowed' : 'pointer'
+                      cursor: code.length !== 6 ? "not-allowed" : "pointer",
                     }}
                   >
                     Xác nhận mã
                   </button>
-                  
-                  <button 
-                    className="signup2-button secondary" 
+
+                  <button
+                    className="signup2-button secondary"
                     onClick={handleResendCode}
                     disabled={isLoading}
                     style={{
-                      backgroundColor: '#6b7280',
+                      backgroundColor: "#6b7280",
                       opacity: isLoading ? 0.5 : 1,
-                      cursor: isLoading ? 'not-allowed' : 'pointer'
+                      cursor: isLoading ? "not-allowed" : "pointer",
                     }}
                   >
                     {isLoading ? "⏳ Đang gửi..." : "Gửi lại"}
                   </button>
                 </div>
-                
-                <button 
-                  className="signup2-button" 
+
+                <button
+                  className="signup2-button"
                   onClick={handleBackToEmail}
                   style={{
-                    backgroundColor: '#ef4444',
-                    fontSize: '14px',
-                    padding: '8px 16px'
+                    backgroundColor: "#ef4444",
+                    fontSize: "14px",
+                    padding: "8px 16px",
                   }}
                 >
                   ← Thay đổi email
                 </button>
               </div>
-              
-              <div style={{ 
-                fontSize: '12px', 
-                color: '#666', 
-                textAlign: 'center', 
-                marginTop: '15px',
-                lineHeight: '1.4'
-              }}>
+
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#666",
+                  textAlign: "center",
+                  marginTop: "15px",
+                  lineHeight: "1.4",
+                }}
+              >
                 ✉️ Mã xác nhận đã được gửi đến <strong>{email}</strong>
                 <br />
                 Vui lòng kiểm tra hộp thư (bao gồm cả thư mục spam/junk)
                 <br />
-                <small style={{ color: '#999' }}>
+                <small style={{ color: "#999" }}>
                   Nếu không nhận được email sau 2-3 phút, hãy bấm "Gửi lại"
                 </small>
               </div>
@@ -347,36 +354,51 @@ const SignUp2 = () => {
             <>
               <div className="signup2-divider">HOẶC</div>
 
-              <a href="#" className="signup2-social-btn">
-                <span className="signup2-google-icon">
+              <button
+                className="social-login-btn"
+                // onClick={handleGoogleLogin}
+                disabled={true}
+                style={{ opacity: 0.6, cursor: "not-allowed" }}
+              >
+                <span className="google-icon">
                   <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+                    src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg"
                     alt="Google"
                   />
                 </span>
-                Đăng ký sử dụng Google
-              </a>
-
-              <a href="#" className="signup2-social-btn">
-                <span className="signup2-facebook-icon">
+                Đăng nhập sử dụng Google
+              </button>
+              <button
+                className="social-login-btn"
+                // onClick={handleGoogleLogin}
+                disabled={true}
+                style={{ opacity: 0.6, cursor: "not-allowed" }}
+              >
+                <span className="google-icon">
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
                     alt="Facebook"
                   />
                 </span>
-                Đăng ký sử dụng Facebook
-              </a>
+                Đăng nhập sử dụng Facebook
+              </button>
             </>
           )}
 
           {/* Terms */}
           <div className="signup2-terms">
             Bằng cách tiếp tục, bạn đồng ý với{" "}
-            <a href="#" style={{ color: '#0fa958' }}>Điều khoản sử dụng</a> và{" "}
-            <a href="#" style={{ color: '#0fa958' }}>Chính sách bảo mật</a> của chúng tôi.
+            <a href="#" style={{ color: "#0fa958" }}>
+              Điều khoản sử dụng
+            </a>{" "}
+            và{" "}
+            <a href="#" style={{ color: "#0fa958" }}>
+              Chính sách bảo mật
+            </a>{" "}
+            của chúng tôi.
           </div>
         </div>
-        
+
         <div className="signup2-image">
           {/* The image will be loaded via CSS background */}
         </div>
