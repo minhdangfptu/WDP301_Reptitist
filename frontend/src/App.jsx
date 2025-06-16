@@ -152,7 +152,7 @@ const AppRoutes = () => (
     <Route path="/library_categories/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateCategory /></ProtectedRoute>} />
 
     {/* Product routes */}
-    <Route path="/products/category/:categoryId" element={<ProductsByCategory />} />
+    
     <Route path="/products/create" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
     <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
     <Route path="/product-detail/:productId" element={<ProductDetail />} />
