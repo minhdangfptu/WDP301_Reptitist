@@ -348,8 +348,8 @@ const getAllProductByName = async (req, res) => {
     const { productName } = req.params;
     const products = await Product.find({ 
       product_name: { $regex: productName, $options: 'i' },
-      product_status: 'available' // Chỉ hiển thị sản phẩm available
-    }).populate('user_id', 'username', 'address');
+      product_status: 'available' 
+    }).populate('user_id', 'username address');
     
     if (!products || products.length === 0) {
       return res.status(404).json({ message: 'Không tìm thấy sản phẩm với tên này' });
