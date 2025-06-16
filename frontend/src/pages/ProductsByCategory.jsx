@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const ProductsByCategory = () => {
   const { categoryId } = useParams();

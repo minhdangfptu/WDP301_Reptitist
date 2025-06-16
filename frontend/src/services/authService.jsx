@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { baseUrl } from '../config';
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const API_BASE_URL = baseUrl;
 
 class AuthService {
   // Login method

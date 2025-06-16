@@ -58,7 +58,7 @@ const LandingPage = () => {
               color: "#0fa958",
             }}
           >
-            REPTIEST
+            REPTITIST
           </h3>
 
           <div className="about-flex">

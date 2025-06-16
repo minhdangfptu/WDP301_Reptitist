@@ -31,7 +31,7 @@ import {
   deleteFeedbackAndRating,
 } from "../services/feedbackService";
 import ShopHeader from "../components/ShopHeader";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const ProductDetail = () => {
   const { productId } = useParams();

@@ -9,7 +9,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../css/YourPet.css";
 import { ToastContainer, toast } from "react-toastify";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const YourPet = () => {
   const deleteButtonStyle = {

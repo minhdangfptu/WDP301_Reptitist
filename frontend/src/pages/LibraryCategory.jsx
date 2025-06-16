@@ -4,7 +4,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const LibraryCategory = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [topic, setTopic] = useState(null);
@@ -20,7 +20,7 @@ const LibraryCategory = () => {
     const fetchCategories = async () => {
       try {
         console.log(topicId, 'topicId');
-        const response = await axios.get(`http://localhost:8080/reptitist/library_categories/topic/${topicId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/library_categories/topic/${topicId}`);
         setAllCategories(response.data);
       } catch (err) {
         setError("Lỗi khi tải danh sách danh mục");
@@ -29,7 +29,7 @@ const LibraryCategory = () => {
 
     const fetchTopic = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/reptitist/library_topics/${topicId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/library_topics/${topicId}`);
         setTopic(response.data);
       } catch (err) {
         setError("Lỗi khi tải thông tin chủ đề");
@@ -44,7 +44,7 @@ const LibraryCategory = () => {
   const handleDelete = async (categoryId) => {
     if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
       try {
-        await axios.delete(`http://localhost:8080/reptitist/library_categories/${categoryId}`);
+        await axios.delete(`${baseUrl}/reptitist/library_categories/${categoryId}`);
         setAllCategories(allCategories.filter((cat) => cat._id !== categoryId));
       } catch (error) {
         alert("Lỗi khi xoá danh mục.");

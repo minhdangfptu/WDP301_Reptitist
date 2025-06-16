@@ -4,7 +4,8 @@ import { Card, Button, Spinner, Container } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
+
 // Hàm format ngày giờ
 const formatDate = (dateString) => {
   if (!dateString) return "";
