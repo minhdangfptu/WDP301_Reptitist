@@ -119,7 +119,7 @@ const Header = () => {
                       Đăng nhập
                     </Link>
                     <Link
-                      to="/SignUp"
+                      to="/SignUp2"
                       className="header__dropdown-item"
                       onClick={() => setShowAccountMenu(false)}
                     >
