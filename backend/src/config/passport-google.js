@@ -5,16 +5,25 @@ const Role = require('../models/Roles');
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.BACKEND_PRODUCTION_URL}/reptitist/auth/google/callback`
+    callbackURL: 'http://localhost:8080/reptitist/auth/google/callback'
 },
     async (accessToken, refreshToken, profile, done) => {
         try {
             let user = await User.findOne({ email: profile.emails[0].value });
             if (!user) {
+                const rawName = profile.displayName || '';
+                let username = rawName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                if (!username) {
+                    username = profile.emails[0].value.split('@')[0];
+                }
+                if (username.length > 30) {
+                    username = username.slice(0, 30);
+                }
+
                 user = await User.create({
-                    username: profile.displayName.replace(/\s+/g, '').toLowerCase(),
+                    username: username,
                     email: profile.emails[0].value,
-                    password_hashed: 'google_auth_' + profile.id, // Placeholder password
+                    password_hashed: 'google_auth_' + profile.id,
                     role_id: await Role.findOne({ role_name: 'user' }).then(role => role._id),
                     user_imageurl: profile.photos[0].value,
                     fullname: profile.displayName,
@@ -26,6 +35,7 @@ passport.use(new GoogleStrategy({
         }
     }
 ));
+
 
 passport.serializeUser((user, done) => {
     done(null, user._id);

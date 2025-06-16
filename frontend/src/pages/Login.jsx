@@ -129,7 +129,7 @@ const Login = () => {
                                 </div>
                                 <p className="account-name">Mạnh Định</p>
                             </div> */}
-              <a href="/SignUp">
+              <a href="/SignUp2">
                 <div className="account-card">
                   <div className="create-account">
                     <span className="plus-icon">
@@ -144,7 +144,7 @@ const Login = () => {
             <div>
               <p className="login-instructions">
                 Nếu chưa có tài khoản, hãy{" "}
-                <a href="/SignUp" className="signup-link">
+                <a href="/SignUp2" className="signup-link">
                   đăng kí
                 </a>
                 !
