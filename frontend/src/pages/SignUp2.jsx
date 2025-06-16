@@ -16,9 +16,9 @@ const SignUp2 = () => {
 
   // Cấu hình EmailJS - Kiểm tra lại các thông số này
   const EMAILJS_CONFIG = {
-    SERVICE_ID: "service_llx7onu", // Xác nhận lại Service ID
-    TEMPLATE_ID: "template_dd8viae", // Xác nhận lại Template ID
-    PUBLIC_KEY: "qOVKbEY7rEG5Dhe6D", // Xác nhận lại Public Key
+    SERVICE_ID: "service_9ylk5f6", // Xác nhận lại Service ID
+    TEMPLATE_ID: "template_97513cq", // Xác nhận lại Template ID
+    PUBLIC_KEY: "5IefcaQyE5-34pRbq", // Xác nhận lại Public Key
   };
 
   // Hàm gửi mã xác nhận qua Email
@@ -29,7 +29,7 @@ const SignUp2 = () => {
       const codeGenerated = Math.floor(100000 + Math.random() * 900000);
       setVerificationCode(codeGenerated.toString());
 
-      // Cấu hình template parameters - Đảm bảo tên biến khớp với EmailJS template
+      
       const templateParams = {
         to_email: userEmail, // Email người nhận
         user_name: "Người dùng", // Tên người dùng
