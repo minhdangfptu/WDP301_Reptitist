@@ -19,6 +19,7 @@ import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const AIChatPage = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("chat");
@@ -78,7 +79,7 @@ const AIChatPage = ({ onClose }) => {
   // Fetch history using the reptileId from the URL parameters
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/reptitist/ai/get-ai-history/${reptileId}`)
+      .get(`${baseUrl}/reptitist/ai/get-ai-history/${reptileId}`)
       .then((response) => {
         setChatDataBaseHistory(response.data);
         setChatHistory(response.data);
@@ -133,7 +134,7 @@ const AIChatPage = ({ onClose }) => {
 
       try {
         const response = await axios.put(
-          `http://localhost:8080/reptitist/ai/update-conversation/${
+          `${baseUrl}/reptitist/ai/update-conversation/${
             chatHistory[0]._id
           }`,
           { ai_input: newUserMessage }
@@ -161,7 +162,7 @@ const AIChatPage = ({ onClose }) => {
   const handleCreateChat = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8080/reptitist/ai/new-conversation",
+        `${baseUrl}/reptitist/ai/new-conversation`,
         {
           user_reptile_id: reptileId,
         }
@@ -236,7 +237,7 @@ const AIChatPage = ({ onClose }) => {
   const handleHistoryClick = async (historyId) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/reptitist/ai/get-history/${historyId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/ai/get-history/${historyId}`);
       if (response.data) {
         setChatHistory([response.data]); // Cập nhật chatHistory với dữ liệu mới
       }

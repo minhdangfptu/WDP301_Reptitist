@@ -7,8 +7,8 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
-
-// Internal CSS styles
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+// Internal CSS styles  
 const styles = {
   pageContainer: {
     minHeight: "100vh",
@@ -374,7 +374,7 @@ function ReptileHealthTrackingPage() {
     };
     try {
       await axios.put(
-        `http://localhost:8080/reptitist/pet/health-history/${reptileId}`,
+        `${baseUrl}/reptitist/pet/health-history/${reptileId}`,
         data
       );
       toast.success("Đã lưu dữ liệu điều trị!");

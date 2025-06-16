@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/reptitist';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 class AuthService {
   // Login method
   async login(username, password) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+      const response = await axios.post(`${API_BASE_URL}/reptitist/auth/login`, {
         username,
         password
       });

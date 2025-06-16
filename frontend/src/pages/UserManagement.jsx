@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const UserManagement = () => {
   const { user, hasRole } = useAuth();
@@ -131,10 +132,10 @@ const UserManagement = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/users', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/users`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data) {
@@ -155,10 +156,10 @@ const UserManagement = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/stats', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data?.users) {
@@ -177,7 +178,7 @@ const UserManagement = () => {
 
       const newStatus = !userData.isActive;
       const response = await axios.patch(
-        `http://localhost:8080/reptitist/admin/users/${userData._id}/status`,
+        `${baseUrl}/reptitist/admin/users/${userData._id}/status`,
         { isActive: newStatus },
         {
           headers: {
@@ -213,11 +214,11 @@ const UserManagement = () => {
       if (!token) return;
 
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/admin/users/${selectedUser._id}`,
+        `${baseUrl}/reptitist/admin/users/${selectedUser._id}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -373,7 +374,7 @@ const UserManagement = () => {
       if (!token) return;
 
       const response = await axios.patch(
-        `http://localhost:8080/reptitist/admin/users/${selectedUser._id}/account-type`,
+        `${baseUrl}/reptitist/admin/users/${selectedUser._id}/account-type`,
         accountTypeForm,
         {
           headers: {

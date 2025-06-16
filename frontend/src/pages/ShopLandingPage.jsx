@@ -17,6 +17,7 @@ import { Container } from "react-bootstrap";
 import axios from "axios";
 import UnderDevPage from "./UnderDevPage";
 import ShopHeader from "../components/ShopHeader";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -33,7 +34,7 @@ const ShopLandingPage = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/shop/category"
+            `${baseUrl}/reptitist/shop/category`
         );
         console.log("cảet>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response.data)
         setCategories(response.data);
@@ -52,7 +53,7 @@ const ShopLandingPage = () => {
     const fetchNewProducts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/shop/products/recent/"
+          `${baseUrl}/reptitist/shop/products/recent/`
         );
         setNewProducts(response.data);
         setLoading(false);
@@ -69,7 +70,7 @@ const ShopLandingPage = () => {
     const fetchTopRatedProducts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/shop/products/top-rated"
+          `${baseUrl}/reptitist/shop/products/top-rated`
         );
         setTopRatedProducts(response.data.data);
         setLoading(false);

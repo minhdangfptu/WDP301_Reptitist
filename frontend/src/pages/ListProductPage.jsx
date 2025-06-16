@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import ShopHeader from "../components/ShopHeader";
 import { useAuth } from "../context/AuthContext";
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 // Mock data for products
 const mockProducts = [
   {
@@ -288,15 +288,15 @@ const ListProductPage = () => {
         let response;
         if (productName) {
           response = await axios.get(
-            `http://localhost:8080/reptitist/shop/products/search/${productName}`
+            `${baseUrl}/reptitist/shop/products/search/${productName}`
           );
         } else if (categoryId) {
           response = await axios.get(
-            `http://localhost:8080/reptitist/shop/products/category/${categoryId}`
+            `${baseUrl}/reptitist/shop/products/category/${categoryId}`
           );
         } else {
           response = await axios.get(
-            "http://localhost:8080/reptitist/shop/products"
+            `${baseUrl}/reptitist/shop/products`
           );
         }
         setProducts(response.data);
@@ -312,7 +312,7 @@ const ListProductPage = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/reptitist/shop/category/${categoryId}`
+          `${baseUrl}/reptitist/shop/category/${categoryId}`
         );
         setCate(response.data);
         setLoading(false);

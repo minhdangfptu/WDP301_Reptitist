@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const LibraryCategory = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +12,7 @@ const LibraryCategory = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/reptitist/library_categories")
+      .get(`${baseUrl}/reptitist/library_categories`)
       .then((response) => {
         setAllCategories(response.data);
         setLoading(false);
