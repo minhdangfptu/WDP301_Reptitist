@@ -4,11 +4,11 @@ import { useState } from "react"
 import "../css/CartItem.css"
 
 // Thêm prop isSelected và onSelectChange vào component CartItem
-const CartItem = ({ item, onUpdateQuantity, onRemove, isSelected, onSelectChange, productStatus }) => {
+const CartItem = ({ item, onUpdateQuantity, onRemove, isSelected, onSelectChange, disabled }) => {
   const [quantity, setQuantity] = useState(item.quantity)
 
   const handleQuantityChange = (newQuantity) => {
-    if (newQuantity < 1 || (productStatus && newQuantity > productStatus.quantity)) return
+    if (newQuantity < 1 || disabled) return
     setQuantity(newQuantity)
     onUpdateQuantity(item._id, newQuantity)
   }
@@ -22,21 +22,45 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, isSelected, onSelectChange
 
   // Thêm hàm xử lý khi checkbox thay đổi
   const handleSelectChange = (e) => {
-    onSelectChange(item._id, e.target.checked)
+    if (!disabled) {
+      onSelectChange(item._id, e.target.checked)
+    }
   }
 
-  // Kiểm tra trạng thái sản phẩm
-  const isAvailable = productStatus ? productStatus.isAvailable : true
+  const getStatusMessage = () => {
+    // Log the item to debug
+    console.log('CartItem product status:', item.product_status)
+    
+    if (!item.product_status) {
+      console.log('No product status found for item:', item)
+      return null
+    }
+    
+    const { product_status, product_quantity } = item.product_status
+    console.log('Product status:', product_status, 'Quantity:', product_quantity)
+    
+    if (product_status === "available" && product_quantity > 0) {
+      return null // Don't show any status for available products
+    }
+    if (product_status === "available" && product_quantity <= 0) {
+      return "Hết hàng"
+    }
+    return "Sản phẩm không khả dụng"
+  }
+
+  const statusMessage = getStatusMessage()
+  const isAvailable = item.product_status?.product_status === "available" && 
+                     item.product_status?.product_quantity > 0
 
   // Thêm checkbox vào đầu component
   return (
-    <div className={`cart-item ${!isAvailable ? "unavailable-item" : ""}`}>
+    <div className={`cart-item ${!isAvailable ? 'unavailable-item' : ''}`}>
       <div className="item-checkbox">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={handleSelectChange}
-          disabled={!isAvailable}
+          disabled={disabled}
           className="item-select-checkbox"
           id={`item-${item._id}`}
         />
@@ -51,31 +75,38 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, isSelected, onSelectChange
         />
         <div className="item-details">
           <h3>{item.product_name}</h3>
-          {!isAvailable && <span className="status-badge">Không khả dụng</span>}
-          {productStatus && (
-            <span className="stock-info">
-              Còn {productStatus.quantity} sản phẩm
-            </span>
+          {statusMessage && (
+            <div className="status-badges">
+              <span className={`status-badge ${!isAvailable ? 'unavailable' : 'out-of-stock'}`}>
+                {statusMessage}
+              </span>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="quantity-controls">
-        <button
-          className="quantity-btn"
-          onClick={() => handleQuantityChange(quantity - 1)}
-          disabled={quantity <= 1 || !isAvailable}
-        >
-          -
-        </button>
-        <span className="quantity-display">{quantity}</span>
-        <button
-          className="quantity-btn"
-          onClick={() => handleQuantityChange(quantity + 1)}
-          disabled={!isAvailable || (productStatus && quantity >= productStatus.quantity)}
-        >
-          +
-        </button>
+      <div className="cart-item-right">
+        <div className="quantity-controls">
+          <button
+            onClick={() => {
+              if (item.quantity > 1) {
+                onUpdateQuantity(item._id, item.quantity - 1)
+              }
+            }}
+            disabled={disabled || item.quantity <= 1}
+            className="quantity-btn"
+          >
+            -
+          </button>
+          <span className="quantity">{item.quantity}</span>
+          <button
+            onClick={() => onUpdateQuantity(item._id, item.quantity + 1)}
+            disabled={disabled}
+            className="quantity-btn"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       <div className="item-price">{formatPrice(item.price)}</div>

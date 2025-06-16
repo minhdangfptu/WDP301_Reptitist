@@ -9,7 +9,7 @@ import "../css/CustomHeader.css"
 import "../css/CartPage.css"
 // Import các utility functions
 import { isProductAvailable } from "../utils/cartUtils"
-import { getCartService, deleteProductFromCartService,checkProductAvailabilityService } from "../services/cartService"
+import { getCartService, deleteProductFromCartService, checkProductAvailabilityService, addToCartService } from "../services/cartService"
 import { toast } from "react-toastify"
 import axios from "axios"
 
@@ -30,24 +30,59 @@ const CartPage = () => {
       setLoading(true)
       const response = await getCartService()
       console.log('Cart API Response:', response)
-      setCartItems(response.cart.cart_items || [])
+      
+      // Check product status for each item
+      const itemsWithStatus = await Promise.all(
+        (response.cart.cart_items || []).map(async (item) => {
+          try {
+            const status = await checkProductAvailabilityService(item.product_id)
+            console.log('Product status for item:', item.product_id, status)
+            return {
+              ...item,
+              product_status: status
+            }
+          } catch (err) {
+            console.error('Error checking product status:', err)
+            return {
+              ...item,
+              product_status: {
+                product_status: "unavailable",
+                product_quantity: 0
+              }
+            }
+          }
+        })
+      )
+      
+      setCartItems(itemsWithStatus)
       
       // Initialize selected items
       const initialSelectedState = {}
-      response.cart.cart_items?.forEach((item) => {
-        initialSelectedState[item._id] = true
+      itemsWithStatus.forEach((item) => {
+        const isAvailable = item.product_status?.product_status === "available" && 
+                          item.product_status?.product_quantity > 0
+        initialSelectedState[item._id] = isAvailable
       })
       setSelectedItems(initialSelectedState)
-
-      // Check product status for each item
-      for (const item of response.cart.cart_items || []) {
-        const status = await checkProductAvailabilityService(item.product_id._id)
-        item.product_status = status
-      }
     } catch (err) {
-      setError("Failed to load cart data")
-      toast.error("Không thể tải dữ liệu giỏ hàng")
-      console.error("Error fetching cart:", err)
+      console.error("Detailed cart error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        headers: err.response?.headers
+      })
+      
+      let errorMessage = "Không thể tải dữ liệu giỏ hàng"
+      if (err.response?.status === 401) {
+        errorMessage = "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+      } else if (err.response?.status === 404) {
+        errorMessage = "Không tìm thấy giỏ hàng"
+      } else if (!err.response) {
+        errorMessage = "Không thể kết nối đến máy chủ"
+      }
+      
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -60,17 +95,43 @@ const CartPage = () => {
   }, [selectedItems, cartItems])
 
   const updateQuantity = async (itemId, newQuantity) => {
-    if (newQuantity < 1) return
-
     try {
-      // Call API to update quantity
-      await addToCartService(itemId, newQuantity)
-      // Refresh cart data
-      await fetchCartData()
-      toast.success("Cập nhật số lượng thành công")
+      // Find the cart item to get its product_id
+      const cartItem = cartItems.find(item => item._id === itemId)
+      if (!cartItem) {
+        toast.error("Không tìm thấy sản phẩm trong giỏ hàng")
+        return
+      }
+
+      // Calculate the quantity change
+      const quantityChange = newQuantity - cartItem.quantity
+
+      // Update UI immediately
+      setCartItems(prevItems => 
+        prevItems.map(item => 
+          item._id === itemId 
+            ? { ...item, quantity: newQuantity, subtotal: item.price * newQuantity }
+            : item
+        )
+      )
+
+      // Send the quantity change to the API
+      await addToCartService(cartItem.product_id, quantityChange)
+      
+      // If the new quantity is 0 or less, remove the item from the UI
+      if (newQuantity <= 0) {
+        setCartItems(prevItems => prevItems.filter(item => item._id !== itemId))
+        setSelectedItems(prev => {
+          const newSelected = { ...prev }
+          delete newSelected[itemId]
+          return newSelected
+        })
+      }
     } catch (err) {
+      // If there's an error, revert the UI change and refresh cart
       toast.error("Không thể cập nhật số lượng")
       console.error("Error updating quantity:", err)
+      await fetchCartData()
     }
   }
 
@@ -91,16 +152,33 @@ const CartPage = () => {
   }
 
   const handleSelectItem = (itemId, isSelected) => {
-    setSelectedItems((prev) => ({
-      ...prev,
-      [itemId]: isSelected,
-    }))
+    const item = cartItems.find(item => item._id === itemId)
+    // Check if product is available and has sufficient quantity
+    const isAvailable = item?.product_status?.product_status === "available" && 
+                       item?.product_status?.product_quantity > 0
+    if (isSelected && isAvailable) {
+      setSelectedItems((prev) => ({
+        ...prev,
+        [itemId]: isSelected,
+      }))
+    } else if (!isSelected) {
+      setSelectedItems((prev) => ({
+        ...prev,
+        [itemId]: isSelected,
+      }))
+    }
   }
 
   const handleSelectAll = (isSelected) => {
     const newSelectedState = {}
     cartItems.forEach((item) => {
-      newSelectedState[item._id] = isSelected
+      const isAvailable = item.product_status?.product_status === "available" && 
+                         item.product_status?.product_quantity > 0
+      if (isSelected && isAvailable) {
+        newSelectedState[item._id] = true
+      } else if (!isSelected) {
+        newSelectedState[item._id] = false
+      }
     })
     setSelectedItems(newSelectedState)
     setSelectAll(isSelected)
@@ -108,7 +186,9 @@ const CartPage = () => {
 
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
-      if (selectedItems[item._id]) {
+      const isAvailable = item.product_status?.product_status === "available" && 
+                         item.product_status?.product_quantity > 0
+      if (selectedItems[item._id] && isAvailable) {
         return total + item.subtotal
       }
       return total
@@ -117,7 +197,9 @@ const CartPage = () => {
 
   const getTotalItems = () => {
     return cartItems.reduce((total, item) => {
-      if (selectedItems[item._id]) {
+      const isAvailable = item.product_status?.product_status === "available" && 
+                         item.product_status?.product_quantity > 0
+      if (selectedItems[item._id] && isAvailable) {
         return total + item.quantity
       }
       return total
@@ -125,7 +207,11 @@ const CartPage = () => {
   }
 
   const getSelectedItems = () => {
-    return cartItems.filter((item) => selectedItems[item._id])
+    return cartItems.filter((item) => {
+      const isAvailable = item.product_status?.product_status === "available" && 
+                         item.product_status?.product_quantity > 0
+      return selectedItems[item._id] && isAvailable
+    })
   }
 
   if (loading) {
@@ -180,16 +266,21 @@ const CartPage = () => {
                     <span></span>
                   </div>
                   <div className="cart-items-list">
-                    {cartItems.map((item) => (
-                      <CartItem
-                        key={item._id}
-                        item={item}
-                        onUpdateQuantity={updateQuantity}
-                        onRemove={removeItem}
-                        isSelected={!!selectedItems[item._id]}
-                        onSelectChange={handleSelectItem}
-                      />
-                    ))}
+                    {cartItems.map((item) => {
+                      const isAvailable = item.product_status?.product_status === "available" && 
+                                        item.product_status?.product_quantity > 0
+                      return (
+                        <CartItem
+                          key={item._id}
+                          item={item}
+                          onUpdateQuantity={updateQuantity}
+                          onRemove={removeItem}
+                          isSelected={!!selectedItems[item._id]}
+                          onSelectChange={handleSelectItem}
+                          disabled={!isAvailable}
+                        />
+                      )
+                    })}
                   </div>
                 </>
               )}
