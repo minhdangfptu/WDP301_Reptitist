@@ -48,115 +48,68 @@ const ContactUs = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Kiểm tra các trường bắt buộc
+  
     if (!formData.user_name || !formData.user_email || !formData.user_phone || !formData.subject || !formData.message) {
-      toast.error('Vui lòng điền đầy đủ thông tin!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error('Vui lòng điền đầy đủ thông tin!');
       return;
     }
-
-    // Kiểm tra email hợp lệ
+  
     if (!isValidEmail(formData.user_email)) {
-      toast.error('Email không hợp lệ!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error('Email không hợp lệ!');
       return;
     }
-
-    // Kiểm tra số điện thoại hợp lệ
+  
     if (!isValidPhone(formData.user_phone)) {
-      toast.error('Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error('Số điện thoại không hợp lệ!');
       return;
     }
-
-    setLoading(true);
-
-    try {
-      // Tạo nội dung email với bố cục đẹp hơn
-      const emailBody = `
-===========================================
-THÔNG TIN LIÊN HỆ - GÓP Ý TỚI WEBSITE REPTITIST
-===========================================
-
-👤 THÔNG TIN NGƯỜI GỬI
-----------------------
-• Họ và tên: ${formData.user_name}
-• Email: ${formData.user_email}
-• Số điện thoại: ${formData.user_phone}
-
-📝 NỘI DUNG GÓP Ý - PHẢN HỒI
--------------------
-${formData.message}
-
-===========================================
-Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
-===========================================
-      `;
-
-      // Tạo URL Gmail với thông tin đã điền sẵn
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=reptitist.service@gmail.com&su=${encodeURIComponent(`[REPTITIST - GÓP Ý - PHẢN HỒI] ${formData.subject}`)}&body=${encodeURIComponent(emailBody)}`;
-
-      // Mở Gmail trong tab mới
-      window.open(gmailUrl, '_blank');
-
-      toast.success('Đang mở Gmail...', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      
-      // Reset form
-      setFormData({
-        user_name: '',
-        user_email: '',
-        user_phone: '',
-        subject: '',
-        message: ''
-      });
-      
-      // Reset form ref
-      if (form.current) {
-        form.current.reset();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Có lỗi xảy ra. Vui lòng thử lại sau.', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    } finally {
-      setLoading(false);
+  
+    // Tạo body
+    const emailBody = `
+  ===========================================
+  THÔNG TIN LIÊN HỆ - GÓP Ý TỚI WEBSITE REPTITIST
+  ===========================================
+  
+  👤 THÔNG TIN NGƯỜI GỬI
+  ----------------------
+  • Họ và tên: ${formData.user_name}
+  • Email: ${formData.user_email}
+  • Số điện thoại: ${formData.user_phone}
+  
+  📝 NỘI DUNG GÓP Ý - PHẢN HỒI
+  -------------------
+  ${formData.message}
+  
+  ===========================================
+  Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
+  ===========================================
+    `;
+  
+    // Tạo URL
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=reptitist.service@gmail.com&su=${encodeURIComponent(`[REPTITIST - GÓP Ý - PHẢN HỒI] ${formData.subject}`)}&body=${encodeURIComponent(emailBody)}`;
+  
+    // ✅ Mở pop-up NGAY
+    window.open(gmailUrl, '_blank');
+  
+    // ✅ Toast NGAY (nếu muốn)
+    toast.success('Đang mở Gmail...');
+  
+    // ✅ Reset form
+    setFormData({
+      user_name: '',
+      user_email: '',
+      user_phone: '',
+      subject: '',
+      message: ''
+    });
+  
+    if (form.current) {
+      form.current.reset();
     }
   };
+  
 
   return (
     <>
