@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const Library = () => {
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -23,6 +24,23 @@ const Library = () => {
   const toggleTopic = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
+
+
+  const handleDelete = async (topicId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
+      try {
+        await axios.delete(`http://localhost:8080/reptitist/library_topics/${topicId}`);
+        setTopics(topics.filter((topic) => topic._id !== topicId));
+        alert("Xóa chủ đề thành công!");
+      } catch (error) {
+        console.error("Lỗi khi xóa chủ đề:", error);
+        alert("Có lỗi xảy ra khi xóa chủ đề!");
+      }
+    }
+  };
+
+
+
 
   return (
     <>
@@ -68,7 +86,7 @@ const Library = () => {
                           display: "inline-block",
                         }}
                       >
-                        
+                        ▶
                       </span>
                     </div>
 
@@ -87,29 +105,97 @@ const Library = () => {
             </div>
 
             {/* Content Grid */}
-            <div className="content-grid d-flex flex-wrap gap-4">
-              {topics.map((topic) => (
-                <div
-                  className="category-card border rounded p-3 text-center"
-                  key={topic._id}
-                  style={{ width: "250px" }}
-                >
-                  <div className="card-image mb-2">
-                    <img
-                      src={topic.topic_imageurl[0] || "/default.jpg"}
-                      alt={topic.topic_title}
-                      style={{ width: "100%", height: "150px", objectFit: "cover" }}
-                    />
+            <div style={{ flex: 1 }}>
+              <div style={{ textAlign: "right", marginBottom: "20px" }}>
+                <Link to="/library_topics/create">
+                  <button
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#28a745",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    + Tạo chủ đề
+                  </button>
+                </Link>
+              </div>
+
+              <div
+                className="content-grid"
+                style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
+              >
+                {topics.map((topic) => (
+                  <div
+                    className="category-card"
+                    key={topic._id}
+                    style={{
+                      width: "280px",
+                      height: "auto",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      padding: "10px",
+                    }}
+                  >
+                    <Link to={`/libraryCategory/${topic._id}`}>
+                      <div className="card-image" style={{ cursor: "pointer" }}>
+                        <img
+                          src={topic.topic_imageurl?.[0] || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                          alt={topic.topic_title}
+                          style={{
+                            width: "100%",
+                            height: "200px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </div>
+                    </Link>
+
+                    <div className="card-title" style={{ marginTop: "10px", fontWeight: "bold" }}>
+                      {topic.topic_title}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Link to={`/library_topics/update/${topic._id}`}>
+                        <button
+                          style={{
+                            backgroundColor: "#ffc107",
+                            border: "none",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          Cập nhật
+                        </button>
+                      </Link>
+                      <button
+                        style={{
+                          backgroundColor: "#dc3545",
+                          color: "#fff",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                        }}
+                        onClick={() => handleDelete(topic._id)}
+                      >
+                        Xoá
+                      </button>
+                    </div>
                   </div>
-                  <div className="card-title fw-bold">{topic.topic_title}</div>
-                  {/* <p>{topic.topic_description}</p>
-                  <Link to={`/library/${topic._id}`}>Xem chi tiết</Link> */}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
+
 
       <Footer />
     </>
