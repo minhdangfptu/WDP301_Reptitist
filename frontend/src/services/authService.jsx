@@ -6,7 +6,7 @@ class AuthService {
   // Login method
   async login(username, password) {
     try {
-      const response = await axios.post(`${baseUrl}/auth/login`, {
+      const response = await axios.post(`${baseUrl}/reptitist/auth/login`, {
         username,
         password
       });
@@ -27,7 +27,7 @@ class AuthService {
   // Register method
   async register(userData) {
     try {
-      const response = await axios.post(`${baseUrl}/auth/signup`, {
+      const response = await axios.post(`${baseUrl}/reptitist/auth/signup`, {
         username: userData.username,
         email: userData.email,
         password: userData.password
@@ -49,7 +49,7 @@ class AuthService {
         throw new Error('No token found');
       }
 
-      const response = await axios.get(`${baseUrl}/auth/profile`, {
+      const response = await axios.get(`${baseUrl}/reptitist/auth/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -67,7 +67,7 @@ class AuthService {
       const refreshToken = localStorage.getItem('refreshToken');
       
       if (refreshToken) {
-        await axios.post(`${baseUrl}/auth/logout`, {
+        await axios.post(`${baseUrl}/reptitist/auth/logout`, {
           refresh_token: refreshToken
         });
       }
@@ -81,7 +81,7 @@ class AuthService {
   async loginWithGoogle() {
     try {
       // Redirect to Google OAuth endpoint
-      window.location.href = `${baseUrl}/auth/google`;
+      window.location.href = `${baseUrl}/reptitist/auth/google`;
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Google login failed';
@@ -98,7 +98,7 @@ class AuthService {
         throw new Error('No refresh token available');
       }
 
-        const response = await axios.post(`${baseUrl}/auth/refresh-token`, {
+        const response = await axios.post(`${baseUrl}/reptitist/auth/refresh-token`, {
         refresh_token: refreshToken
       });
 
