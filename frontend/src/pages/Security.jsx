@@ -10,7 +10,7 @@ import Footer from '../components/Footer';
 import NavigationBar from '../components/NavigationBar';
 import { useAuth } from '../context/AuthContext';
 import '../css/Security.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const Security = () => {
   const { user, logout } = useAuth();

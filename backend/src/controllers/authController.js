@@ -28,7 +28,7 @@ const signup = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
-        const role = await Role.findOne({ role_name: 'customer' });
+        const role = await Role.findOne({ role_name: 'user' });
         if (!role) {
             return res.status(400).json({ message: 'Role not found' });
         }
@@ -38,7 +38,7 @@ const signup = async (req, res) => {
             email,
             password_hashed: hashedPassword,
             role_id: role._id,
-            user_imageurl: '/default-avatar.png' // Default avatar path
+            user_imageurl: '/default-avatar.png' 
         });
         
         await user.save();

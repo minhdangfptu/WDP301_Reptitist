@@ -7,7 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
 
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 
 const AdminShopManagement = () => {
@@ -92,7 +92,7 @@ const AdminShopManagement = () => {
   // Fetch shops
   const fetchShops = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn');
         return;
@@ -119,7 +119,7 @@ const AdminShopManagement = () => {
   // Fetch reports
   const fetchReports = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.get(`${baseUrl}/reptitist/admin/reports`, {
@@ -140,7 +140,7 @@ const AdminShopManagement = () => {
   // Fetch statistics
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.get(`${baseUrl}/reptitist/admin/stats`, {
@@ -160,7 +160,7 @@ const AdminShopManagement = () => {
   // Fetch shop products
   const fetchShopProducts = async (shopId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.get(`${baseUrl}/reptitist/admin/shops/${shopId}/products`, {
@@ -186,7 +186,7 @@ const AdminShopManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.delete(
@@ -215,7 +215,7 @@ const AdminShopManagement = () => {
   // Handle report action
   const handleReportAction = async (reportId, action, note = '') => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.post(
@@ -249,7 +249,7 @@ const AdminShopManagement = () => {
   // Handle toggle shop status
   const toggleShopStatus = async (shopData) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const newStatus = !shopData.isActive;

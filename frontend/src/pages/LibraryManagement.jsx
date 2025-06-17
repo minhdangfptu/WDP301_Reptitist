@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/LibraryManagement.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const LibraryManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();

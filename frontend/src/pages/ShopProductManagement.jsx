@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import "../css/ProductManagement.css";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const ShopProductManagement = () => {
   const { user, hasRole } = useAuth();
@@ -64,7 +64,7 @@ const ShopProductManagement = () => {
   // Fetch my products from API
   const fetchMyProducts = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("refresh_token'");
       if (!token) {
         console.error("No token found");
         return;
@@ -104,7 +104,7 @@ const ShopProductManagement = () => {
   // Fetch my statistics
   const fetchMyStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("refresh_token'");
       if (!token) return;
 
       const response = await axios.get(`${baseUrl}/reptitist/shop/my-stats`, {
@@ -256,7 +256,7 @@ const ShopProductManagement = () => {
     if (!selectedProduct) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("refresh_token'");
       if (!token) {
         console.error("No token found");
         return;
@@ -285,7 +285,7 @@ const ShopProductManagement = () => {
   // Handle update product status
   const updateProductStatus = async (productId, newStatus) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("refresh_token'");
       if (!token) {
         console.error("No token found");
         return;

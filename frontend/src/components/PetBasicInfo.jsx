@@ -9,7 +9,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 function formatDate(dateString) {
   const date = new Date(dateString);

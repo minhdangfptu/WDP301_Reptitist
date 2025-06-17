@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
 import '../css/Profile.css';
 import { useNavigate } from 'react-router-dom';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const Profile = () => {
   const { user, updateUser, hasRole } = useAuth();

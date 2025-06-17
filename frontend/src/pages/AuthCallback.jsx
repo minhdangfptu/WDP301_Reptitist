@@ -22,8 +22,8 @@ const AuthCallback = () => {
 
             if (accessToken && refreshToken) {
                 // Store tokens
-                localStorage.setItem('token', accessToken);
-                localStorage.setItem('refreshToken', refreshToken);
+                localStorage.setItem('access_token', accessToken);
+                localStorage.setItem('refresh_token', refreshToken);
 
                 // Verify authentication
                 await checkAuthStatus();

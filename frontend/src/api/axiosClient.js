@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import axios from 'axios';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const axiosClient = axios.create({
   baseURL: `${baseUrl}/reptitist`,
   headers: {

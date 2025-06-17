@@ -115,8 +115,11 @@ const Login = () => {
         <div className="login-content">
           {/* Phần đăng nhập gần đây */}
           <div className="recent-logins">
-            <div className="login-logo">
-              <img src="../public/logo1.png" alt="Reptisist Logo" />
+            <div
+              className="login-logo"
+              style={{ justifyContent: "center", alignItems: "center" }}
+            >
+              <img src="/logo1.png" alt="Reptisist Logo" />
             </div>
 
             <h2 className="recent-title">Đăng nhập gần đây</h2>
@@ -133,8 +136,8 @@ const Login = () => {
                 <div className="account-card">
                   <div className="create-account">
                     <span className="plus-icon">
-                        <div style={{marginBottom: "4px"}}>+</div>
-                        </span>
+                      <div style={{ marginBottom: "4px" }}>+</div>
+                    </span>
                   </div>
                   <p className="account-name">Tạo tài khoản</p>
                 </div>
@@ -204,7 +207,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (error) setError(null); // Clear error when user types
+                  if (error) setError(null); 
                 }}
                 disabled={isLoading}
               />
@@ -239,10 +242,11 @@ const Login = () => {
 
             <div className="login-divider">HOẶC</div>
 
-            <a
-              href="#"
+            <button
               className="social-login-btn"
               onClick={handleGoogleLogin}
+              disabled={false}
+          
             >
               <span className="google-icon">
                 <img
@@ -251,17 +255,22 @@ const Login = () => {
                 />
               </span>
               Đăng nhập sử dụng Google
-            </a>
-
-            <a href="#" className="social-login-btn">
-              <span className="login-facebook-icon">
+            </button>
+            <button
+              className="social-login-btn"
+              onClick={handleGoogleLogin}
+              disabled={true}
+              style={{ opacity: 0.6, cursor: "not-allowed" }}
+            >
+              <span className="google-icon">
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
                   alt="Facebook"
                 />
               </span>
               Đăng nhập sử dụng Facebook
-            </a>
+            </button>
+
 
             <div className="login-terms">
               Bằng cách tiếp tục, bạn đồng ý với{" "}
