@@ -22,7 +22,7 @@ const LibraryCategoryCreate = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
-      .post(`${baseUrl}/reptitist/library_categories`, formData)
+      .post(`${baseUrl}/reptitist/library-categories`, formData)
       .then(() => {
         alert("Tạo danh mục thành công");
         navigate(`${baseUrl}/reptitist/library_categories/${id}`);

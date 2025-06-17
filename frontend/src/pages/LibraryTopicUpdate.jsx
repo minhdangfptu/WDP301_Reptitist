@@ -14,7 +14,7 @@ const UpdateLibraryTopic = () => {
 
   useEffect(() => {
     axios
-      .get(`${baseUrl}/reptitist/library_topics/${id}`)
+      .get(`${baseUrl}/reptitist/topic-categories/library_topics/${id}`)
       .then((res) => {
         const topic = res.data;
         setTitle(topic.topic_title || "");

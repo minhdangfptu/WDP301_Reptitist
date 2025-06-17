@@ -52,7 +52,7 @@ const LibraryContent = () => {
     const fetchCategory = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist/library_categories/${categoryId}`
+          `${baseUrl}/reptitist//library-categories/${categoryId}`
         );
         console.log("Category:", response.data);
         setCategory(response.data);
@@ -64,7 +64,7 @@ const LibraryContent = () => {
     const fetchContents = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist/library_contents`
+          `${baseUrl}/reptitist/library-content`
         );
         const filtered = response.data.filter((item) => {
           console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
@@ -88,7 +88,7 @@ const LibraryContent = () => {
     const fetchTopics = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist/library_topics`
+          `${baseUrl}/reptitist/topic-categories/library_topics`
         );
         setTopics(response.data);
       } catch (err) {

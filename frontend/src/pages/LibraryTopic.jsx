@@ -6,7 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { baseUrl } from '../config';
 
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
 const Library = () => {
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
@@ -18,7 +18,7 @@ const Library = () => {
   useEffect(() => {
     setLoading(true);
     axios
-      .get(`${baseUrl}/reptitist/library_topics`)
+      .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
         setTopics(response.data);
         setLoading(false);
@@ -36,7 +36,7 @@ const Library = () => {
   const handleDelete = async (topicId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
       try {
-        await axios.delete(`http://localhost:8080/reptitist/library_topics/${topicId}`);
+        await axios.delete(`${baseUrl}/reptitist/library_topics/${topicId}`);
         setTopics(topics.filter((topic) => topic._id !== topicId));
         alert("Xóa chủ đề thành công!");
       } catch (error) {
