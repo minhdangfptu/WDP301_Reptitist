@@ -20,26 +20,6 @@ const Signup = () => {
             phong phú, hỏi đáp cá nhân hóa, và kết nối cộng đồng giúp bạn chăm
             sóc bò sát dễ dàng.
           </p>
-
-          {/* <a href="#" className="social-signup-btn">
-            <span className="google-icon">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-                alt="Google"
-              />
-            </span>
-            Đăng ký sử dụng Google
-          </a>
-
-          <a href="#" className="social-signup-btn">
-            <span className="facebook-icon">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
-                alt="Facebook"
-              />
-            </span>
-            Đăng ký sử dụng Facebook
-          </a> */}
           <button
             className="social-login-btn"
             disabled={true}

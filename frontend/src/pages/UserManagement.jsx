@@ -126,7 +126,7 @@ const UserManagement = () => {
   // Fetch users
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn');
         return;
@@ -153,7 +153,7 @@ const UserManagement = () => {
   // Fetch statistics
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.get(`${baseUrl}/reptitist/admin/stats`, {
@@ -210,7 +210,7 @@ const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.delete(
@@ -370,7 +370,7 @@ const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.patch(

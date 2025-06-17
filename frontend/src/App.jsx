@@ -45,7 +45,6 @@ import PaymentProcessing from './pages/PaymentProcessing';
 import ProductManagement from './pages/ProductManagement';
 import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
-import ProductsByCategory from './pages/ProductsByCategory';
 import AddProduct from './pages/AddProduct';
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
