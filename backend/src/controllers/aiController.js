@@ -6,7 +6,7 @@ require('dotenv').config();
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
-//Ham ban dau
+
 // const createAiHistory = async (req, res) => {
 //     try {
 //         const { ai_input, user_reptile_id } = req.body;

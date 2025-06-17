@@ -7,7 +7,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 // Internal CSS styles  
 const styles = {
   pageContainer: {

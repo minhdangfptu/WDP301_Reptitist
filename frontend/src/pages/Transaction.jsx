@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Transaction.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const Transaction = () => {
   const { user, hasRole } = useAuth();
   const [transactions, setTransactions] = useState([]);

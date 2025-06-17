@@ -6,7 +6,7 @@ import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../css/ProductForm.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const ShopProductForm = () => {
   const { user, hasRole } = useAuth();
@@ -22,7 +22,7 @@ const ShopProductForm = () => {
     product_quantity: '',
     product_category_id: '',
     product_imageurl: '',
-    product_status: 'available' // Sản phẩm tự động available
+    product_status: 'available' 
   });
 
   const [categories, setCategories] = useState([]);

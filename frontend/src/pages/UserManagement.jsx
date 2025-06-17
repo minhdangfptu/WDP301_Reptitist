@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const UserManagement = () => {
   const { user, hasRole } = useAuth();

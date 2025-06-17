@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { ToastContainer, toast } from 'react-toastify'; 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+import { baseUrl } from '../config';  
 const CreateNewPet = () => {
   const { user } = useAuth();
   const user_id = user ? user.id : null;
