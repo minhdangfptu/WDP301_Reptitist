@@ -6,8 +6,9 @@ import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../css/ProductForm.css';
+import { baseUrl } from '../config';
 
-const ProductForm = () => {
+const ShopProductForm = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -21,7 +22,7 @@ const ProductForm = () => {
     product_quantity: '',
     product_category_id: '',
     product_imageurl: '',
-    product_status: 'available'
+    product_status: 'available' 
   });
 
   const [categories, setCategories] = useState([]);
@@ -40,17 +41,17 @@ const ProductForm = () => {
   const validationRules = {
     product_name: {
       required: true,
-      minLength: 3,
-      maxLength: 200,
+      minLength: 2,
+      maxLength: 50,
       pattern: /^[a-zA-ZÀ-ỹ0-9\s\-.,()&]+$/
     },
     product_description: {
-      maxLength: 1000
+      maxLength: 150
     },
     product_price: {
       required: true,
       min: 1000,
-      max: 100000000,
+      max: 1000000000,
       pattern: /^\d+$/
     },
     product_quantity: {
@@ -67,16 +68,10 @@ const ProductForm = () => {
     }
   };
 
-  // Check admin permission
+  // Check shop permission
   useEffect(() => {
-    if (!hasRole('admin')) {
-      toast.error('Bạn không có quyền truy cập trang này');
-      navigate('/');
-      return;
-    }
-    
     initializeForm();
-  }, [hasRole, navigate, productId]);
+  }, [productId]);
 
   // Initialize form data
   const initializeForm = async () => {
@@ -97,7 +92,7 @@ const ProductForm = () => {
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
       setCategories(response.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -110,7 +105,22 @@ const ProductForm = () => {
   const fetchProductData = async () => {
     try {
       setPageLoading(true);
-      const response = await axios.get(`http://localhost:8080/reptitist/shop/products/${productId}`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('Phiên đăng nhập đã hết hạn');
+        navigate('/shop/products');
+        return;
+      }
+
+      const response = await axios.get(
+        `${baseUrl}/reptitist/shop/my-products/${productId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
       const product = response.data;
       
       if (product) {
@@ -119,69 +129,84 @@ const ProductForm = () => {
           product_description: product.product_description || '',
           product_price: product.product_price ? product.product_price.toString() : '',
           product_quantity: product.product_quantity ? product.product_quantity.toString() : '',
-          product_category_id: product.product_category_id || '',
-          product_imageurl: product.product_imageurl || '',
+          product_category_id: product.product_category_id?._id || product.product_category_id || '',
+          product_imageurl: Array.isArray(product.product_imageurl) 
+            ? product.product_imageurl[0] || '' 
+            : product.product_imageurl || '',
           product_status: product.product_status || 'available'
         });
         
-        setPreviewImage(product.product_imageurl || '');
+        const imageUrl = Array.isArray(product.product_imageurl) 
+          ? product.product_imageurl[0] || '' 
+          : product.product_imageurl || '';
+        setPreviewImage(imageUrl);
       }
     } catch (error) {
       console.error('Error fetching product:', error);
       toast.error('Không thể tải thông tin sản phẩm');
-      navigate('/admin/products');
+      navigate('/shop/products');
     }
   };
 
-  // Validate single field
+  // Handle input change
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Special handling for numeric fields
+    if (name === 'product_price' || name === 'product_quantity') {
+      // Remove any non-digit characters
+      const numericValue = value.replace(/\D/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  // Validate field
   const validateField = (name, value) => {
     const rules = validationRules[name];
     if (!rules) return '';
 
-    // Required validation
-    if (rules.required && (!value || value.toString().trim() === '')) {
-      return 'Trường này là bắt buộc';
+    if (rules.required && !value) {
+      return 'Vui lòng nhập thông tin này';
     }
 
-    // Skip other validations if field is empty and not required
-    if (!value || value.toString().trim() === '') {
-      return '';
-    }
-
-    // Pattern validation
-    if (rules.pattern && !rules.pattern.test(value.toString())) {
-      switch (name) {
-        case 'product_name':
-          return 'Tên sản phẩm chỉ được chứa chữ cái, số, khoảng trắng và các ký tự đặc biệt cơ bản';
-        case 'product_price':
-        case 'product_quantity':
-          return 'Chỉ được nhập số nguyên dương';
-        case 'product_imageurl':
-          return 'URL hình ảnh không hợp lệ';
-        default:
-          return 'Định dạng không hợp lệ';
+    if (value) {
+      if (rules.minLength && value.length < rules.minLength) {
+        return `Tối thiểu ${rules.minLength} ký tự`;
       }
-    }
 
-    // Length validation
-    if (rules.minLength && value.toString().length < rules.minLength) {
-      return `Tối thiểu ${rules.minLength} ký tự`;
-    }
-    if (rules.maxLength && value.toString().length > rules.maxLength) {
-      return `Tối đa ${rules.maxLength} ký tự`;
-    }
+      if (rules.maxLength && value.length > rules.maxLength) {
+        return `Tối đa ${rules.maxLength} ký tự`;
+      }
 
-    // Number validation
-    if (rules.min !== undefined || rules.max !== undefined) {
-      const numValue = parseInt(value);
-      if (isNaN(numValue)) {
-        return 'Phải là số hợp lệ';
+      if (rules.pattern && !rules.pattern.test(value)) {
+        if (name === 'product_price' || name === 'product_quantity') {
+          return 'Vui lòng nhập số nguyên dương';
+        }
+        return 'Giá trị không hợp lệ';
       }
-      if (rules.min !== undefined && numValue < rules.min) {
-        return `Giá trị tối thiểu là ${formatNumber(rules.min)}`;
+
+      if (rules.min !== undefined && parseInt(value) < rules.min) {
+        return `Giá trị tối thiểu là ${rules.min}`;
       }
-      if (rules.max !== undefined && numValue > rules.max) {
-        return `Giá trị tối đa là ${formatNumber(rules.max)}`;
+
+      if (rules.max !== undefined && parseInt(value) > rules.max) {
+        return `Giá trị tối đa là ${rules.max}`;
       }
     }
 
@@ -204,41 +229,9 @@ const ProductForm = () => {
       newErrors.product_category_id = 'Danh mục không tồn tại';
     }
 
+    console.log('Validation Errors:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Format price input
-    if (name === 'product_price') {
-      const numericValue = value.replace(/[^\d]/g, '');
-      setFormData(prev => ({
-        ...prev,
-        [name]: numericValue
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-
-    // Mark field as touched
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
   };
 
   // Handle field blur
@@ -298,7 +291,7 @@ const ProductForm = () => {
       };
       reader.readAsDataURL(file);
 
-      // For demo, we'll use base64. In production, upload to cloud storage
+      // Convert to base64 and save to MongoDB
       const base64 = await convertToBase64(file);
       setFormData(prev => ({
         ...prev,
@@ -357,22 +350,32 @@ const ProductForm = () => {
 
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        toast.error('Phiên đăng nhập đã hết hạn');
+        navigate('/login');
+        return;
+      }
       
       // Prepare data for submission
       const submitData = {
         ...formData,
         product_price: parseInt(formData.product_price),
-        product_quantity: parseInt(formData.product_quantity)
+        product_quantity: parseInt(formData.product_quantity),
+        product_status: 'available', // Shop products are immediately available
+        product_imageurl: formData.product_imageurl || '' // Make image optional
       };
 
       let response;
       if (isEdit) {
         // Update existing product
         response = await axios.put(
-          `http://localhost:8080/reptitist/shop/products/${productId}`,
+          `${baseUrl}/reptitist/shop/my-products/${productId}`,
           submitData,
           {
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             }
           }
@@ -380,10 +383,11 @@ const ProductForm = () => {
       } else {
         // Create new product
         response = await axios.post(
-          'http://localhost:8080/reptitist/shop/products/create',
+          `${baseUrl}/reptitist/shop/products/create`,
           submitData,
           {
             headers: {
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
             }
           }
@@ -395,8 +399,8 @@ const ProductForm = () => {
         
         // Redirect after delay
         setTimeout(() => {
-          navigate('/admin/products');
-        }, 2000);
+          navigate('/shop/products');
+        }, 1500);
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -405,6 +409,11 @@ const ProductForm = () => {
         toast.error(error.response.data.message);
       } else if (error.response?.status === 400) {
         toast.error('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.');
+      } else if (error.response?.status === 401) {
+        toast.error('Phiên đăng nhập đã hết hạn');
+        navigate('/login');
+      } else if (error.response?.status === 403) {
+        toast.error('Bạn không có quyền thực hiện hành động này');
       } else if (error.response?.status === 404) {
         toast.error(isEdit ? 'Không tìm thấy sản phẩm cần cập nhật' : 'Endpoint không tồn tại');
       } else if (error.response?.status === 500) {
@@ -419,7 +428,8 @@ const ProductForm = () => {
 
   // Format number for display
   const formatNumber = (num) => {
-    return new Intl.NumberFormat('vi-VN').format(num);
+    if (!num) return '';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "");
   };
 
   // Format currency
@@ -427,22 +437,14 @@ const ProductForm = () => {
     if (!amount) return '';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
-      currency: 'VND'
+      currency: 'VND',
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
   // Get field error class
   const getFieldErrorClass = (fieldName) => {
     return errors[fieldName] && touched[fieldName] ? 'pf-error' : '';
-  };
-
-  // Check if form has changes (for edit mode)
-  const hasFormChanges = () => {
-    if (!isEdit) return true;
-    
-    // Compare current form data with original data
-    // This would require storing original data when fetching
-    return true; // Simplified for now
   };
 
   // Reset form
@@ -471,27 +473,6 @@ const ProductForm = () => {
     setErrors({});
     setTouched({});
   };
-
-  // Check admin access
-  if (!hasRole('admin')) {
-    return (
-      <>
-        <Header />
-        <div className="pf-container">
-          <div className="pf-no-access">
-            <i className="fas fa-exclamation-triangle pf-warning-icon"></i>
-            <h2>Không có quyền truy cập</h2>
-            <p>Bạn không có quyền truy cập trang này. Chỉ có Admin mới có thể tạo/chỉnh sửa sản phẩm.</p>
-            <Link to="/" className="pf-btn pf-btn-primary">
-              <i className="fas fa-home"></i>
-              Về trang chủ
-            </Link>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
 
   // Loading state
   if (pageLoading) {
@@ -537,20 +518,20 @@ const ProductForm = () => {
               </h1>
               <p>
                 {isEdit 
-                  ? 'Cập nhật thông tin sản phẩm trong hệ thống'
-                  : 'Tạo sản phẩm mới để bán trên nền tảng'
+                  ? 'Cập nhật thông tin sản phẩm trong cửa hàng của bạn'
+                  : 'Tạo sản phẩm mới để bán trong cửa hàng của bạn'
                 }
               </p>
               <div className="pf-header-breadcrumb">
                 <Link to="/">Trang chủ</Link>
                 <i className="fas fa-chevron-right"></i>
-                <Link to="/admin/products">Quản lý sản phẩm</Link>
+                <Link to="/shop/products">Quản lý sản phẩm</Link>
                 <i className="fas fa-chevron-right"></i>
                 <span>{isEdit ? 'Chỉnh sửa' : 'Thêm mới'}</span>
               </div>
             </div>
             <div className="pf-header-actions">
-              <Link to="/admin/products" className="pf-btn pf-btn-secondary">
+              <Link to="/shop/products" className="pf-btn pf-btn-secondary">
                 <i className="fas fa-arrow-left"></i>
                 Quay lại
               </Link>
@@ -583,20 +564,21 @@ const ProductForm = () => {
                       value={formData.product_name}
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
-                      placeholder="Nhập tên sản phẩm..."
                       className={`pf-input ${getFieldErrorClass('product_name')}`}
-                      maxLength="200"
+                      placeholder="Nhập tên sản phẩm (2-50 ký tự)"
                       required
                     />
+                    <div className="pf-input-info">
+                      <span className="pf-char-count">
+                        {formData.product_name.length}/50 ký tự
+                      </span>
+                    </div>
                     {errors.product_name && touched.product_name && (
                       <div className="pf-error-message">
                         <i className="fas fa-exclamation-circle"></i>
                         {errors.product_name}
                       </div>
                     )}
-                    <div className="pf-input-info">
-                      <span>{formData.product_name.length}/200 ký tự</span>
-                    </div>
                   </div>
 
                   {/* Product Description */}
@@ -610,20 +592,21 @@ const ProductForm = () => {
                       value={formData.product_description}
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
-                      placeholder="Nhập mô tả chi tiết về sản phẩm..."
                       className={`pf-textarea ${getFieldErrorClass('product_description')}`}
+                      placeholder="Nhập mô tả sản phẩm (tối đa 150 ký tự)"
                       rows="4"
-                      maxLength="1000"
                     />
+                    <div className="pf-input-info">
+                      <span className="pf-char-count">
+                        {formData.product_description.length}/150 ký tự
+                      </span>
+                    </div>
                     {errors.product_description && touched.product_description && (
                       <div className="pf-error-message">
                         <i className="fas fa-exclamation-circle"></i>
                         {errors.product_description}
                       </div>
                     )}
-                    <div className="pf-input-info">
-                      <span>{formData.product_description.length}/1000 ký tự</span>
-                    </div>
                   </div>
 
                   {/* Price and Quantity */}
@@ -713,27 +696,29 @@ const ProductForm = () => {
                     {categories.length === 0 && (
                       <div className="pf-input-info pf-warning">
                         <i className="fas fa-exclamation-triangle"></i>
-                        Chưa có danh mục nào. <Link to="/admin/products">Tạo danh mục mới</Link>
+                        Chưa có danh mục nào. Vui lòng liên hệ admin để tạo danh mục.
                       </div>
                     )}
                   </div>
 
-                  {/* Status */}
+                  {/* Status - Read only for shop */}
                   <div className="pf-form-group">
                     <label className="pf-label">
                       <i className="fas fa-toggle-on"></i>
                       Trạng thái
                     </label>
-                    <select
-                      name="product_status"
-                      value={formData.product_status}
-                      onChange={handleInputChange}
-                      className="pf-select"
-                    >
-                      <option value="available">Đang bán</option>
-                      <option value="pending">Chờ duyệt</option>
-                      <option value="not_available">Ngừng bán</option>
-                    </select>
+                    <div className="pf-input-wrapper">
+                      <input
+                        type="text"
+                        value="Đang bán"
+                        className="pf-input"
+                        disabled
+                        style={{ backgroundColor: '#e8f5e8', color: '#166534' }}
+                      />
+                    </div>
+                    <div className="pf-input-info">
+                      Sản phẩm sẽ được hiển thị ngay sau khi tạo
+                    </div>
                   </div>
                 </div>
               </div>
@@ -811,48 +796,48 @@ const ProductForm = () => {
                           </button>
                         </div>
                         <div className="pf-upload-info">
-                          <small>Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB.</small>
+                          <small>Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB. Ảnh sẽ được lưu vào hệ thống.</small>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Image Preview */}
-                    <div className="pf-image-preview-section">
-                      {previewImage ? (
-                        <div className="pf-image-preview">
-                          <div className="pf-preview-container">
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="pf-preview-image"
-                              onError={(e) => {
-                                e.target.src = '/default-product.png';
-                                toast.error('Không thể tải hình ảnh. Vui lòng kiểm tra URL.');
-                              }}
-                            />
-                            <div className="pf-preview-overlay">
-                              <button
-                                type="button"
-                                onClick={removeImage}
-                                className="pf-btn pf-btn-danger pf-remove-image"
-                                title="Xóa ảnh"
-                              >
-                                <i className="fas fa-trash"></i>
-                              </button>
-                            </div>
-                          </div>
-                          <div className="pf-preview-info">
-                            <span>Ảnh xem trước</span>
+                  {/* Image Preview */}
+                  <div className="pf-image-preview-section">
+                    {previewImage ? (
+                      <div className="pf-image-preview">
+                        <div className="pf-preview-container">
+                          <img
+                            src={previewImage}
+                            alt="Preview"
+                            className="pf-preview-image"
+                            onError={(e) => {
+                              e.target.src = '/default-product.png';
+                              toast.error('Không thể tải hình ảnh. Vui lòng kiểm tra URL.');
+                            }}
+                          />
+                          <div className="pf-preview-overlay">
+                            <button
+                              type="button"
+                              onClick={removeImage}
+                              className="pf-btn pf-btn-danger pf-remove-image"
+                              title="Xóa ảnh"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
                           </div>
                         </div>
-                      ) : (
-                        <div className="pf-no-preview">
-                          <i className="fas fa-image"></i>
-                          <p>Chưa có ảnh xem trước</p>
-                          <small>Thêm URL hoặc tải ảnh lên để xem trước</small>
+                        <div className="pf-preview-info">
+                          <span>Ảnh xem trước</span>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="pf-no-preview">
+                        <i className="fas fa-image"></i>
+                        <p>Chưa có ảnh xem trước</p>
+                        <small>Thêm URL hoặc tải ảnh lên để xem trước</small>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -873,7 +858,7 @@ const ProductForm = () => {
 
                 <div className="pf-actions-right">
                   <Link
-                    to="/admin/products"
+                    to="/shop/products"
                     className="pf-btn pf-btn-secondary"
                   >
                     <i className="fas fa-times"></i>
@@ -899,25 +884,6 @@ const ProductForm = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Form Summary */}
-              {(Object.keys(errors).length > 0 || !hasFormChanges()) && (
-                <div className="pf-form-summary">
-                  {Object.keys(errors).length > 0 && (
-                    <div className="pf-summary-errors">
-                      <h4>
-                        <i className="fas fa-exclamation-triangle"></i>
-                        Có {Object.keys(errors).length} lỗi cần sửa:
-                      </h4>
-                      <ul>
-                        {Object.entries(errors).map(([field, error]) => (
-                          <li key={field}>{error}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           </form>
         </div>
@@ -928,4 +894,4 @@ const ProductForm = () => {
   );
 };
 
-export default ProductForm;
+export default ShopProductForm;

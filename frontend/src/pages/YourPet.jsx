@@ -9,6 +9,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import "../css/YourPet.css";
 import { ToastContainer, toast } from "react-toastify";
+import { baseUrl } from '../config';
 
 const YourPet = () => {
   const deleteButtonStyle = {
@@ -36,21 +37,27 @@ const YourPet = () => {
 
   const { user } = useAuth();
   const [userPets, setUserPets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const userId = user ? user.id : null;
 
   useEffect(() => {
     if (userId) {
+      setLoading(true);
       axios
-        .get(`http://localhost:8080/reptitist/pet/get-reptile/${userId}`)
+        .get(`${baseUrl}/reptitist/pet/get-reptile/${userId}`)
         .then((response) => {
           setUserPets(response.data);
+          setLoading(false);
           console.log(response.data); 
         })
         .catch((error) => {
           console.error("There was an error fetching the user pets:", error);
+          setLoading(false);
         });
+    } else {
+      setLoading(false);
     }
   }, [userId]);
 
@@ -83,6 +90,19 @@ const YourPet = () => {
   const handleCreatePetClick = () => {
     navigate(`/your-pet/create`); 
   };
+
+  if (loading) {
+    return (
+      <div className="your-pet-page">
+        <Header />
+        <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <img src="/loading.gif" alt="Loading" style={{ width: 50, height: 50, marginRight: 12 }} />
+          Đang tải thú cưng...
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="your-pet-page">

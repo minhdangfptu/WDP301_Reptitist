@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-
+import { baseUrl } from '../config';
 const CreateUserModal = ({ isOpen, onClose, onUserCreated }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -96,7 +96,7 @@ const CreateUserModal = ({ isOpen, onClose, onUserCreated }) => {
       }
 
       const response = await axios.post(
-        'http://localhost:8080/reptitist/admin/users',
+        `${baseUrl}/reptitist/admin/users`,
         {
           username: formData.username.trim(),
           email: formData.email.trim(),

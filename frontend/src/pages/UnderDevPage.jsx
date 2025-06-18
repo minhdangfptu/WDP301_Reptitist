@@ -6,7 +6,7 @@ import { Construction, ArrowLeft } from "lucide-react";
 const UnderDevPage = () => {
   const styles = {
     container: {
-      backgroundColor: "#f8f9fa",
+      backgroundColor: "#00843d",
       minHeight: "100vh",
     },
     content: {
@@ -16,7 +16,7 @@ const UnderDevPage = () => {
       boxShadow: "0 0 20px rgba(0, 0, 0, 0.1)",
     },
     constructionIcon: {
-      color: "#ffc107",
+      color: "#00843d",
       animation: "bounce 2s infinite",
     },
     heading: {
@@ -28,27 +28,8 @@ const UnderDevPage = () => {
       fontSize: "1.1rem",
       lineHeight: 1.6,
     },
-    progressContainer: {
-      width: "100%",
-      maxWidth: "300px",
-      margin: "0 auto",
-    },
-    progressBar: {
-      width: "100%",
-      height: "8px",
-      backgroundColor: "#e9ecef",
-      borderRadius: "4px",
-      overflow: "hidden",
-    },
-    progressFill: {
-      width: "30%",
-      height: "100%",
-      backgroundColor: "#007bff",
-      borderRadius: "4px",
-      animation: "progress 2s ease-in-out infinite",
-    },
     backButton: {
-      backgroundColor: "#006934",
+      backgroundColor: "#00843d",
       padding: "0.75rem 1.5rem",
       fontWeight: 500,
       transition: "all 0.3s ease",

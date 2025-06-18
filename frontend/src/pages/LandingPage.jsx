@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+import Header from "../components/Header.jsx";
+import Footer from "../components/Footer.jsx";
 import ReactPlayer from "react-player";
 
 const LandingPage = () => {
@@ -58,7 +58,7 @@ const LandingPage = () => {
               color: "#0fa958",
             }}
           >
-            REPTIEST
+            REPTITIST
           </h3>
 
           <div className="about-flex">

@@ -11,6 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AIChatPage from "./AIChatPage";
 import TrackingHealth from "../components/TrackingHealth";
 import ImproveSuggestion from "../components/ImproveSuggestion";
+import { baseUrl } from '../config';
 
 export default function YourPetDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function YourPetDetail() {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/reptitist/pet/${reptileId}`)
+      .get(`${baseUrl}/reptitist/pet/${reptileId}`)
       .then((response) => {
         setPetDetails(response.data);
         setLoading(false);

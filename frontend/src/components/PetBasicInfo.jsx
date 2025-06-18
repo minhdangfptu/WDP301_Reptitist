@@ -9,6 +9,7 @@ import {
 } from "react-bootstrap";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import { baseUrl } from '../config';
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -39,7 +40,7 @@ const PetBasicInfo = ({ petInfo }) => {
     if (reptileId) {
       axios
         .get(
-          `http://localhost:8080/reptitist/ai/get-all-recommendations/${reptileId}`
+          `${baseUrl}/reptitist/ai/get-all-recommendations/${reptileId}`
         )
         .then((res) => {
           const data = res.data.data;

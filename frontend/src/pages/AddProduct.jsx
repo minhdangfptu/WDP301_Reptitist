@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+import { baseUrl } from '../config';
 const AddProduct = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,7 +61,7 @@ const AddProduct = () => {
 
     try {
       await axios.post(
-        "http://localhost:8080/reptitist/shop/products/create",
+        `${baseUrl}/reptitist/shop/products/create`,
         form
       );
       alert("Thêm sản phẩm thành công!");

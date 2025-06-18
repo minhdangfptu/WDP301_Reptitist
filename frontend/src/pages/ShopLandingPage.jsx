@@ -9,13 +9,15 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/ShopLandingPage.css";
 import Footer from "../components/Footer";
 import ProductCategories from "./ProductCategories";
 import { Container } from "react-bootstrap";
 import axios from "axios";
 import UnderDevPage from "./UnderDevPage";
+import ShopHeader from "../components/ShopHeader";
+import { baseUrl } from '../config';
 
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,13 +28,15 @@ const ShopLandingPage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const productsPerSlide = 6;
   const [newProducts, setNewProducts] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/shop/category"
+            `${baseUrl}/reptitist/shop/category`
         );
+        console.log("cảet>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response.data)
         setCategories(response.data);
         setLoading(false);
       } catch (err) {
@@ -49,7 +53,7 @@ const ShopLandingPage = () => {
     const fetchNewProducts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/shop/products/recent/"
+          `${baseUrl}/reptitist/shop/products/recent/`
         );
         setNewProducts(response.data);
         setLoading(false);
@@ -66,7 +70,7 @@ const ShopLandingPage = () => {
     const fetchTopRatedProducts = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/shop/products/top-rated"
+          `${baseUrl}/reptitist/shop/products/top-rated`
         );
         setTopRatedProducts(response.data.data);
         setLoading(false);
@@ -79,69 +83,6 @@ const ShopLandingPage = () => {
     fetchTopRatedProducts();
   }, []);
 
-  // Categories based on Image 2
-  // const flashSaleProducts = [
-  //   {
-  //     id: 1,
-  //     name: "Bộ chuồng nuôi bò sát cao cấp",
-  //     price: 100000,
-  //     soldCount: 100,
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Bộ chuồng nuôi bò sát cao cấp",
-  //     price: 100000,
-  //     soldCount: 100,
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Bộ chuồng nuôi bò sát cao cấp",
-  //     price: 100000,
-  //     soldCount: 100,
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Bộ chuồng nuôi bò sát cao cấp",
-  //     price: 100000,
-  //     soldCount: 100,
-  //     image: "/product1.png",
-  //   },
-  // ];
-
-  // New products based on Image 3
-  // const newProducts = [
-  //   {
-  //     id: 1,
-  //     name: "[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro",
-  //     price: 200000,
-  //     status: "Bỏ vào giỏ",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro",
-  //     price: 200000,
-  //     status: "Bán chạy",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro",
-  //     price: 200000,
-  //     status: "Bình Sale 3/2",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "[Kem Dưỡng] Kem dưỡng cá sấu 2025 vip pro",
-  //     price: 200000,
-  //     status: "Freeship",
-  //     image: "/product1.png",
-  //   },
-  // ];
   if (loading) {
     return (
       <div style={{ 
@@ -160,51 +101,6 @@ const ShopLandingPage = () => {
   if (error) {
     return <div>{error}</div>;
   }
-  // Featured products based on Image 3
-  // const featuredProducts = [
-  //   {
-  //     id: 1,
-  //     name: "Thức ăn khô",
-  //     type: "BỌ SÁT",
-  //     price: "1kg/70.000đ",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Thức ăn khô",
-  //     type: "BỌ SÁT",
-  //     price: "1kg/70.000đ",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Thức ăn khô",
-  //     type: "BỌ SÁT",
-  //     price: "1kg/70.000đ",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Thức ăn khô",
-  //     type: "BỌ SÁT",
-  //     price: "1kg/70.000đ",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Thức ăn khô",
-  //     type: "BỌ SÁT",
-  //     price: "1kg/70.000đ",
-  //     image: "/product1.png",
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "Thức ăn khô",
-  //     type: "BỌ SÁT",
-  //     price: "1kg/70.000đ",
-  //     image: "/product1.png",
-  //   },
-  // ];
 
   // Shop features based on Image 1
   const shopFeatures = [
@@ -237,95 +133,7 @@ const ShopLandingPage = () => {
   return (
     <div className="shop-landing-page">
       {/* Header */}
-      <header className="shop-header">
-        <div className="shop-top-header">
-          <div className="shop-top-links">
-            <a
-              href="/"
-              className="shop-top-link"
-              style={{ fontWeight: "bold" }}
-            >
-              TRANG CHỦ
-            </a>
-            <a href="#" className="shop-top-link">
-              Trở thành người bán trên Reptisist Shop
-            </a>
-            <a href="#" className="shop-top-link">
-              Kết nối với chúng tôi
-            </a>
-            <div className="shop-social-icons">
-              <a href="#" className="shop-social-icon">
-                <Facebook size={16} />
-              </a>
-            </div>
-          </div>
-          <div className="shop-top-actions">
-            <a href="#" className="shop-top-action">
-              <HelpCircle size={16} /> Hỗ trợ
-            </a>
-            <a href="#" className="shop-top-action">
-              <User size={16} /> Tài khoản
-            </a>
-          </div>
-        </div>
-
-        <div className="shop-main-header">
-          <div className="shop-logo-container">
-            <a href="/">
-              <img
-                src="/logo_knen.png"
-                alt="Reptisist Shop"
-                className="shop-logo"
-              />
-            </a>
-            <h1 className="shop-name">REPTISIST SHOP</h1>
-          </div>
-
-          <div className="shop-search-container">
-            <input
-              type="text"
-              placeholder="Tìm sản phẩm, thương hiệu, hoặc tên shop"
-              className="shop-search-input"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button className="shop-search-button">
-              <Search size={18} />
-            </button>
-          </div>
-
-          <div className="shop-cart-container">
-            <Link to="/my-cart" className="shop-cart-icon">
-              <ShoppingCart size={22} />
-            </Link>
-          </div>
-        </div>
-
-        <nav className="shop-main-nav">
-          <ul className="shop-nav-links">
-            <li>
-              <a href="#" className="shop-nav-link">
-                Chuồng & phụ kiện chuồng
-              </a>
-            </li>
-            <li>
-              <a href="#" className="shop-nav-link">
-                Thiết bị & dụng cụ nuôi
-              </a>
-            </li>
-            <li>
-              <a href="#" className="shop-nav-link">
-                Thức ăn & Dinh dưỡng
-              </a>
-            </li>
-            <li>
-              <a href="#" className="shop-nav-link">
-                Sản phẩm vệ sinh & chăm sóc sức khỏe
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header>
+      <ShopHeader />
 
       {/* Hero Banner */}
       {/* <section className="hero-section">
@@ -338,15 +146,15 @@ const ShopLandingPage = () => {
                 <li>Premium alarms, heating lamps</li>
                 <li>Live feed, and more!</li>
               </ul>
-              <a href="#" className="shop-now-btn">SHOP NOW!</a>
+              <a href="#products" className="shop-now-btn">SHOP NOW!</a>
             </div>
           </div>
           <div className="hero-side">
             <div className="hero-small">
-              <img src="hero-small-1.png" alt="Reptile Care" className="hero-small-image" />
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
             <div className="hero-small">
-              <img src="hero-small-2.png" alt="Reptile Care" className="hero-small-image" />
+              <img src="product1.png" alt="Reptile Care" className="hero-small-image" />
             </div>
           </div>
         </div>
@@ -376,7 +184,11 @@ const ShopLandingPage = () => {
           ) : (
             <div className="categories-grid">
               {categories.map((category) => (
-                <div className="category-item" key={category._id}>
+                <div
+                  className="category-item"
+                  key={category._id}
+                  onClick={() => navigate(`/products/category/${category._id}`)}
+                >
                   <div className="category-image-container">
                     <img
                       src={category.product_category_imageurl}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import "../css/SignUp3.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SignUp3 = () => {
   const navigate = useNavigate();
@@ -24,11 +26,10 @@ const SignUp3 = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    console.log("SignUp3 - Email:", email, "Verified:", isVerified); // Debug log
+    console.log("SignUp3 - Email:", email, "Verified:", isVerified); 
     
     if (!email || !isVerified) {
-      // Show alert and redirect
-      alert("Vui lòng xác thực email trước khi tiếp tục đăng ký.");
+      toast.error("Vui lòng xác thực email trước khi tiếp tục đăng ký.");
       navigate('/SignUp2');
     }
   }, [email, isVerified, navigate]);
@@ -110,7 +111,7 @@ const SignUp3 = () => {
       
       if (result.success) {
         // Registration successful
-        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
         navigate('/Login');
       } else {
         // Registration failed
@@ -123,6 +124,7 @@ const SignUp3 = () => {
         } else {
           setErrors({ submit: result.message || "Đăng ký thất bại. Vui lòng thử lại." });
         }
+        toast.error(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Error during registration:", error);
@@ -165,6 +167,18 @@ const SignUp3 = () => {
 
   return (
     <div className="signup3-body">
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="signup3-container">
         <div className="signup3-content">
           <div className="signup3-logo">

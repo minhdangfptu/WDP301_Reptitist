@@ -28,7 +28,7 @@ const signup = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
-        const role = await Role.findOne({ role_name: 'customer' });
+        const role = await Role.findOne({ role_name: 'user' });
         if (!role) {
             return res.status(400).json({ message: 'Role not found' });
         }
@@ -38,6 +38,7 @@ const signup = async (req, res) => {
             email,
             password_hashed: hashedPassword,
             role_id: role._id,
+            user_imageurl: '/default-avatar.png' 
         });
         
         await user.save();
@@ -120,7 +121,15 @@ const login = async (req, res) => {
                 id: existUser._id,
                 username: existUser.username,
                 email: existUser.email,
-                role: existUser.role_id ? existUser.role_id.role_name : 'user'
+                role: existUser.role_id ? existUser.role_id.role_name : 'customer',
+                // Thêm các thông tin khác nếu cần
+                fullname: existUser.fullname,
+                phone_number: existUser.phone_number,
+                address: existUser.address,
+                user_imageurl: existUser.user_imageurl,
+                isActive: existUser.isActive,
+                wallet: existUser.wallet,
+                account_type: existUser.account_type
             }
         });
     } catch (error) {

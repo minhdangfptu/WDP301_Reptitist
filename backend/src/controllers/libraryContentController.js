@@ -3,15 +3,15 @@ const LibraryContent = require('../models/Library_contents');
 // [POST] Create
 exports.createLibraryContent = async (req, res) => {
   try {
-    const { title, content, image_urls, user_id, topic_id, category_id } = req.body;
+    const { title, content, image_urls, user_id, topic_category_id, category_content_id } = req.body;
 
     const newContent = new LibraryContent({
       title,
       content,
       image_urls,
       user_id,
-      topic_id,
-      category_id
+      topic_category_id,
+      category_content_id
     });
 
     await newContent.save();
@@ -21,32 +21,29 @@ exports.createLibraryContent = async (req, res) => {
   }
 };
 
-
 // [GET] List all
 exports.getAllLibraryContents = async (req, res) => {
   try {
     const contents = await LibraryContent.find()
-      .populate('user_id topic_id category_id'); // ✅ đúng theo schema
+      .populate('user_id topic_category_id category_content_id'); 
     res.status(200).json(contents);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy danh sách nội dung', error: error.message });
   }
 };
 
-
-// [GET] Detail by ID
 // [GET] Detail by ID
 exports.getLibraryContentById = async (req, res) => {
   try {
     const { id } = req.params;
-    const content = await LibraryContent.findById(id).populate('user_id topic_id category_id');
+    const content = await LibraryContent.findById(id)
+      .populate('user_id topic_category_id category_content_id'); // Sửa tên trường cho đúng schema
     if (!content) return res.status(404).json({ message: 'Nội dung không tồn tại' });
     res.status(200).json(content);
   } catch (error) {
     res.status(500).json({ message: 'Lỗi khi lấy nội dung', error: error.message });
   }
 };
-
 
 // [PUT] Update
 exports.updateLibraryContent = async (req, res) => {
