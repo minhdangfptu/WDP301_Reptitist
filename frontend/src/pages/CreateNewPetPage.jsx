@@ -7,6 +7,12 @@ import { ToastContainer, toast } from 'react-toastify';
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { baseUrl } from '../config';  
+
+const getToday = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
+
 const CreateNewPet = () => {
   const { user } = useAuth();
   const user_id = user ? user.id : null;
@@ -22,7 +28,7 @@ const CreateNewPet = () => {
     description: "",
     user_reptile_imageurl: "",
     age: "",
-    follow_since: "",
+    follow_since: getToday(),
     current_weight: "",
     weight_history: [],
     sleeping_status: [],
@@ -134,7 +140,7 @@ const CreateNewPet = () => {
         description: "",
         user_reptile_imageurl: "",
         age: "",
-        follow_since: "",
+        follow_since: getToday(),
         current_weight: "",
         weight_history: [],
         sleeping_status: [],

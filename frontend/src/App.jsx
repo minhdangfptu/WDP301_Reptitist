@@ -48,9 +48,14 @@ import CreateTreatmentPage from './pages/CreateTreatmentPage';
 import AddProduct from './pages/AddProduct';
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
+
 import CartPage from './pages/CartPage';
 import { ToastContainer } from 'react-toastify';
 import {CartProvider} from './context/CartContext';
+
+import PolicyPage from './pages/PolicyPage';
+import EditYourPetPage from './pages/EditYourPetPage';
+
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -129,6 +134,7 @@ const AppRoutes = () => (
     {/* Public */}
     <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
     <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
+    <Route path="/policy-terms" element={<PolicyPage />} />
     
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
@@ -187,7 +193,11 @@ const AppRoutes = () => (
     <Route path="/create-treatment/:reptileId" element={<ProtectedRoute><CreateTreatmentPage /></ProtectedRoute>} />
     <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
     <Route path="/shop/products/create" element={<ProductForm />} />
+
     <Route path="/my-cart" element={ <ProtectedRoute><CartPage /></ProtectedRoute>} />
+
+    <Route path="/your-pet/edit/:reptileId" element={<ProtectedRoute><EditYourPetPage /></ProtectedRoute>} />
+
       
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />

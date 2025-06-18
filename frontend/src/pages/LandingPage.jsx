@@ -3,8 +3,12 @@ import React, { useState } from "react";
 import Header from "../components/Header.jsx";
 import Footer from "../components/Footer.jsx";
 import ReactPlayer from "react-player";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
+  const { user,  loading } = useAuth();
+  const navigate = useNavigate();
   return (
     <>
       <Header />
@@ -33,7 +37,12 @@ const LandingPage = () => {
               dàng hơn!
             </p>
             <div className="hero-buttons">
-              <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY!</a>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(user ? "/YourPet" : "/Login")}
+              >
+                KHÁM PHÁ NGAY!
+              </button>
               <a href="/PlanUpgrade" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
             </div>
           </div>
@@ -46,16 +55,18 @@ const LandingPage = () => {
 
       <section className="about">
         <div className="container">
-          <h2 style={{ textAlign: "center", justifyContent: "center" }}>
-            Nền tảng chăm sóc bò sát toàn diện
+          <h2 className="landing-main-title">
+            NỀN TẢNG CHĂM SÓC BÒ SÁT TOÀN DIỆN
           </h2>
           <h3
+          className="landing-main-title"
             style={{
               textAlign: "center",
               justifyContent: "center",
               fontWeight: "700px",
               fontSize: "2rem",
-              color: "#0fa958",
+              backgroundColor: "#0fa958",
+              color: "#000000",
             }}
           >
             REPTITIST
@@ -71,7 +82,7 @@ const LandingPage = () => {
                 cho những người bạn bò sát của bạn, chúng tôi tập trung phát
                 triển đa dạng các dịch vụ chất lượng cao, từ cung cấp bộ công cụ
                 chăm sóc chuyên nghiệp đến ứng dụng công nghệ trí tuệ nhân tạo
-                (AI) hiện đại
+                hiện đại
               </p>
               <p>
                 Chúng tôi tự hào mang đến những trải nghiệm tốt nhất, được khách
@@ -99,13 +110,38 @@ const LandingPage = () => {
               "MUA SẮM THỎA THÍCH",
             ].map((title, i) => {
               const images = [
-                "/landing_library.jpg",
-                "/landing_ai.webp",
-                "/landing_axo.jpg",
-                "/landing_shop.jpg",
+                "/feature_thuvien.png",
+                "/feature_bosat.png",
+                "/feature_tuvan.png",
+                "/feature_shop.png",
+              ];
+              const links = [
+                "/LibraryTopic",
+                "/YourPet",
+                "/Community",
+                "/ShopLandingPage",
               ];
               return (
-                <div className="feature-card" key={i}>
+                <div
+                  className="feature-card"
+                  key={i}
+                  style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/Login');
+                    } else {
+                      navigate(links[i]);
+                    }
+                  }}
+                  onMouseOver={e => {
+                    e.currentTarget.style.transform = 'translateY(-8px) scale(1.04)';
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(15,169,88,0.18)';
+                  }}
+                  onMouseOut={e => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                  }}
+                >
                   <img src={images[i]} alt={title} />
                   <div className="feature-content">
                     <h3
@@ -122,7 +158,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="news">
+      <section className="news" style={{paddingTop: "0px"}}>
         <div className="container">
           <h2 className="section-title">THÔNG TIN VÀ CẬP NHẬT</h2>
           <div className="news-grid">
@@ -159,7 +195,7 @@ const LandingPage = () => {
                   </div>
                   <div>
                     <h4 className="news-item-title">{title}</h4>
-                    <p className="news-date">{`0${i + 1}/05/2023`}</p>
+                    <p className="news-date">{`0${i + 1}/05/2025`}</p>
                   </div>
                 </div>
               ))}

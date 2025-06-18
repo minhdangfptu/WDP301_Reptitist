@@ -12,7 +12,6 @@ const ContactUs = () => {
   const [formData, setFormData] = useState({
     user_name: '',
     user_email: '',
-    user_phone: '',
     subject: '',
     message: ''
   });
@@ -24,7 +23,6 @@ const ContactUs = () => {
         ...prev,
         user_name: user.username || '',
         user_email: user.email || '',
-        user_phone: user.phone_number || ''
       }));
     }
   }, [user]);
@@ -33,12 +31,6 @@ const ContactUs = () => {
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
-
-  // Hàm kiểm tra số điện thoại hợp lệ
-  const isValidPhone = (phone) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    return phoneRegex.test(phone);
   };
 
   const handleChange = (e) => {
@@ -51,18 +43,13 @@ const ContactUs = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
   
-    if (!formData.user_name || !formData.user_email || !formData.user_phone || !formData.subject || !formData.message) {
+    if (!formData.user_name || !formData.user_email || !formData.subject || !formData.message) {
       toast.error('Vui lòng điền đầy đủ thông tin!');
       return;
     }
   
     if (!isValidEmail(formData.user_email)) {
       toast.error('Email không hợp lệ!');
-      return;
-    }
-  
-    if (!isValidPhone(formData.user_phone)) {
-      toast.error('Số điện thoại không hợp lệ!');
       return;
     }
   
@@ -76,8 +63,7 @@ const ContactUs = () => {
   ----------------------
   • Họ và tên: ${formData.user_name}
   • Email: ${formData.user_email}
-  • Số điện thoại: ${formData.user_phone}
-  
+
   📝 NỘI DUNG GÓP Ý - PHẢN HỒI
   -------------------
   ${formData.message}
@@ -86,21 +72,15 @@ const ContactUs = () => {
   Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
   ===========================================
     `;
-  
-    // Tạo URL
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=reptitist.service@gmail.com&su=${encodeURIComponent(`[REPTITIST - GÓP Ý - PHẢN HỒI] ${formData.subject}`)}&body=${encodeURIComponent(emailBody)}`;
-  
-    // ✅ Mở pop-up NGAY
     window.open(gmailUrl, '_blank');
   
-    // ✅ Toast NGAY (nếu muốn)
+
     toast.success('Đang mở Gmail...');
   
-    // ✅ Reset form
     setFormData({
       user_name: '',
       user_email: '',
-      user_phone: '',
       subject: '',
       message: ''
     });
@@ -117,15 +97,15 @@ const ContactUs = () => {
 
       <div className="page-title">
         <div className="container">
-          <h1>LIÊN HỆ</h1>
+          <h1>GÓP Ý - PHẢN HỒI</h1>
         </div>
       </div>
 
-      <section className="contact-section">
+      <section style={{marginTop: '30px'}} className="contact-section">
         <div className="container">
           <div className="contact-content">
             <div className="contact-info">
-              <h2>Liên hệ với chúng tôi</h2>
+              <h2>Góp ý cho chúng tôi</h2>
               <p>Chúng tôi luôn sẵn sàng lắng nghe mọi ý kiến đóng góp của bạn để phát triển dịch vụ ngày càng tốt hơn.</p>
               <div className="social-icons">
                 <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
@@ -133,6 +113,38 @@ const ContactUs = () => {
                 <a href="#" className="social-icon"><i className="fab fa-youtube"></i></a>
                 <a href="#" className="social-icon"><i className="fab fa-tiktok"></i></a>
               </div>
+              <p style={{ marginTop: '20px', marginBottom: '10px', textAlign: 'left' }}>
+                Hoặc gửi ý kiến, phản hồi qua Google Form
+              </p>
+              <a 
+                href="https://forms.gle/FdUEYMKnZ5i4yCjP7" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  width: '40%',
+                  textAlign: 'center',
+                  fontWeight: '400',
+                  padding: '7px 5px',
+                  backgroundColor: 'transparent',
+                  color: '#0fa958',
+                  border: '1px solid #0fa958',
+                  textDecoration: 'none',
+                  borderRadius: '30px',
+                  marginTop: '10px',
+                  transition: 'background-color 0.3s, color 0.3s',
+                }}
+                onMouseOver={e => {
+                  e.target.style.backgroundColor = '#0fa958';
+                  e.target.style.color = '#fff';
+                }}
+                onMouseOut={e => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#0fa958';
+                }}
+              >
+                Google Form
+              </a>
             </div>
             <div className="contact-form">
               <form ref={form} onSubmit={handleSubmit}>
@@ -155,18 +167,6 @@ const ContactUs = () => {
                     className="form-control"
                     placeholder="Email"
                     value={formData.user_email}
-                    onChange={handleChange}
-                    required
-                    readOnly={!!user}
-                  />
-                </div>
-                <div className="form-group">
-                  <input
-                    type="tel"
-                    name="user_phone"
-                    className="form-control"
-                    placeholder="Số điện thoại"
-                    value={formData.user_phone}
                     onChange={handleChange}
                     required
                     readOnly={!!user}
@@ -215,14 +215,14 @@ const ContactUs = () => {
                 <div className="card-icon"><i className="fas fa-map-marker-alt"></i></div>
                 <div className="card-content">
                   <h3>Địa chỉ của tôi</h3>
-                  <p>DELTA Building, FPT University, Hòa Lạc, Hà Nội</p>
+                  <p>DELTA Building, FPT University</p>
                 </div>
               </div>
               <div className="contact-card">
                 <div className="card-icon"><i className="fas fa-phone-alt"></i></div>
                 <div className="card-content">
                   <h3>Số điện thoại</h3>
-                  <p>0987654321</p>
+                  <p>0398826650 - Minh Dang dep trai</p>
                 </div>
               </div>
               <div className="contact-card">
