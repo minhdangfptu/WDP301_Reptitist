@@ -50,14 +50,17 @@ class AuthService {
         throw new Error('No token found');
       }
 
+      console.log('Verifying token with backend...');
       const response = await axios.get(`${API_BASE_URL}/reptitist/auth/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
+      console.log('Token verification response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('Token verification error:', error.response?.data || error.message);
       throw new Error(error.response?.data?.message || 'Token verification failed');
     }
   }

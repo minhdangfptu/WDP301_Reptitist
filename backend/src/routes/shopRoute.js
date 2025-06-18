@@ -18,10 +18,12 @@ const {
   createFeedbackAndRating, 
   viewFeedbackAndRating, 
   deleteFeedbackAndRating, 
-  editFeedbackAndRating, getTopRatedProducts
+  editFeedbackAndRating, getTopRatedProducts,
+  checkProductAvailability
 } = require('../controllers/productController');
-const {addProductToCart, getCart, deleteProductFromCart, deleteAllProductFromCart} = require('../controllers/cartController');
 
+
+const {addProductToCart, getCart, deleteProductFromCart, deleteAllProductFromCart,countCartItems} = require('../controllers/cartController');
 const router = express.Router();
 
 // Product Category Management (for admin)
@@ -60,5 +62,8 @@ router.post('/cart/add-product', authUserIdOnly, addProductToCart);
 router.get('/my-cart', authUserIdOnly, getCart);
 router.delete('/cart/:cartItemId', authUserIdOnly, deleteProductFromCart);
 router.delete('/my-cart', authUserIdOnly, deleteAllProductFromCart);
+router.get('/cart/count', authUserIdOnly, countCartItems);
+router.get('/cart/product/check/:productId', checkProductAvailability);
+
 
 module.exports = router;

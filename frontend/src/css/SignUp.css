@@ -100,7 +100,7 @@
   height: 20px;
 }
 
-.divider {
+.signup-divider {
   display: flex;
   align-items: center;
   width: 100%;
@@ -110,19 +110,19 @@
   font-size: 14px;
 }
 
-.divider::before,
-.divider::after {
+.signup-divider::before,
+.signup-divider::after {
   content: "";
   flex: 1;
   height: 1px;
   background-color: #e0e0e0;
 }
 
-.divider::before {
+.signup-divider::before {
   margin-right: 15px;
 }
 
-.divider::after {
+.signup-divider::after {
   margin-left: 15px;
 }
 

@@ -6,20 +6,16 @@ const addProductToCart = async (req, res) => {
     const { product_id, quantity } = req.body;
     const user_id = req.userId; // Lấy user_id từ JWT
 
-    if (!product_id || !quantity) {
+    if (!product_id || quantity === undefined) {
       return res.status(400).json({ message: 'Missing required fields: product_id or quantity' });
     }
-    if (quantity <= 0) {
-      return res.status(400).json({ message: 'Quantity must be greater than zero' });
-    }
+
     const product = await Product.findById(product_id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
     const price = product.product_price;
-    const subtotal = price * quantity;
-
 
     // Tìm hoặc tạo giỏ hàng cho người dùng
     let cart = await Cart.findOne({ user_id });
@@ -36,22 +32,32 @@ const addProductToCart = async (req, res) => {
 
     if (existingItemIndex > -1) {
       // Nếu sản phẩm đã có, cập nhật số lượng
-      cart.cart_items[existingItemIndex].quantity += quantity;
-      cart.cart_items[existingItemIndex].price = price; // Cập nhật giá nếu cần
-      cart.cart_items[existingItemIndex].subtotal = cart.cart_items[existingItemIndex].price * cart.cart_items[existingItemIndex].quantity;
+      const newQuantity = cart.cart_items[existingItemIndex].quantity + quantity;
+      
+      // Nếu số lượng mới <= 0, xóa sản phẩm khỏi giỏ hàng
+      if (newQuantity <= 0) {
+        cart.cart_items.splice(existingItemIndex, 1);
+      } else {
+        // Cập nhật số lượng và giá
+        cart.cart_items[existingItemIndex].quantity = newQuantity;
+        cart.cart_items[existingItemIndex].price = price;
+        cart.cart_items[existingItemIndex].subtotal = price * newQuantity;
+      }
     } else {
-      // Nếu sản phẩm chưa có, thêm mới vào giỏ hàng
-      cart.cart_items.push({ product_id, quantity, price, subtotal });
+      // Nếu sản phẩm chưa có và số lượng > 0, thêm mới vào giỏ hàng
+      if (quantity > 0) {
+        const subtotal = price * quantity;
+        cart.cart_items.push({ product_id, quantity, price, subtotal });
+      }
     }
 
     await cart.save();
 
-    res.status(200).json({ message: 'Product added to cart successfully!', cart });
+    res.status(200).json({ message: 'Cart updated successfully!', cart });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to add product to cart', error: error.message });
+    res.status(500).json({ message: 'Failed to update cart', error: error.message });
   }
-
 };
 
 const getCart = async (req, res) => {
@@ -144,9 +150,25 @@ const deleteAllProductFromCart = async (req, res) => {
         return res.status(500).json({ message: 'Failed to delete cart item', error: error.message });
     }
 }
+const countCartItems = async (req, res) => {
+  try {
+    const user_id = req.userId;
+    const cart = await Cart.findOne({ user_id });
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+
+    const totalQuantity = cart.cart_items.reduce((total, item) => total + item.quantity, 0);
+    return res.status(200).json({ totalQuantity });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Failed to fetch cart count', error: error.message });
+  }
+};
 module.exports = {
   addProductToCart,
   getCart,
   deleteProductFromCart,
-  deleteAllProductFromCart
+  deleteAllProductFromCart,
+  countCartItems
 };
