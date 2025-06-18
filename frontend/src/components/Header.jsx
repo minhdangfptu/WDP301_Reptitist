@@ -6,10 +6,10 @@ import "../css/common.css";
 
 const Header = () => {
   const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const accountRef = useRef(null);
-  const { user, logout, hasRole, hasAnyRole } = useAuth();
+  const { user, logout, hasRole, hasAnyRole, loading } = useAuth();
   const navigate = useNavigate();
-  console.log("huhuhuhuhuhuhuhu");
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (accountRef.current && !accountRef.current.contains(event.target)) {
@@ -22,11 +22,14 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
+      setLoggingOut(true);
       await logout();
       setShowAccountMenu(false);
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
@@ -34,6 +37,15 @@ const Header = () => {
   const isShop = () => {
     return hasRole("shop") || user?.account_type?.type === "shop";
   };
+
+  if (loading || loggingOut) {
+    return (
+      <header className="header" style={{ width: '100%', zIndex: 1000, background: '#fff', minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src="/loading.gif" alt="Đang tải..." style={{ width: 48, height: 48 }} />
+        <span style={{ marginLeft: 16, fontWeight: 500, fontSize: 18 }}>{loggingOut ? 'Đang đăng xuất...' : 'Đang tải thông tin...'}</span>
+      </header>
+    );
+  }
 
   return (
     <header
@@ -63,17 +75,44 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link to="/Community" className="header__nav-link">
+              <Link
+                to="/Community"
+                className="header__nav-link"
+                onClick={e => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/Login");
+                  }
+                }}
+              >
                 CỘNG ĐỒNG
               </Link>
             </li>
             <li>
-              <Link to="/LibraryTopic" className="header__nav-link">
+              <Link
+                to="/LibraryTopic"
+                className="header__nav-link"
+                onClick={e => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/Login");
+                  }
+                }}
+              >
                 THƯ VIỆN
               </Link>
             </li>
             <li>
-              <Link to="/ShopLandingPage" className="header__nav-link">
+              <Link
+                to="/ShopLandingPage"
+                className="header__nav-link"
+                onClick={e => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/Login");
+                  }
+                }}
+              >
                 MUA SẮM
               </Link>
             </li>
@@ -85,7 +124,7 @@ const Header = () => {
             {user && (
               <li>
                 <Link to="/YourPet" className="header__nav-link">
-                  YOUR PET
+                  BÒ SÁT CỦA BẠN
                 </Link>
               </li>
             )}

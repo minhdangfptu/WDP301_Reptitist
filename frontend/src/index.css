@@ -1118,3 +1118,16 @@ textarea.form-control {
     text-align: center;
   }
 }
+
+.landing-main-title {
+  text-align: center;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #000000;
+  letter-spacing: 1px;
+  margin-bottom: 0.2em;
+  margin-top: 0.2em;
+  background-color: #000000;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
