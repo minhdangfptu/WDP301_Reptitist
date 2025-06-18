@@ -5,7 +5,7 @@ const Role = require('../models/Roles');
 const Cart = require('../models/Carts');
 
 // Determine the callback URL based on environment
-const callbackURL = `http://localhost:${process.env.PORT}/reptitist/auth/google/callback`;
+const callbackURL = `${process.env.BACKEND_URL}/reptitist/auth/google/callback`;
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
