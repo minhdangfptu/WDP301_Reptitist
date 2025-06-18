@@ -37,7 +37,12 @@ const LandingPage = () => {
               dàng hơn!
             </p>
             <div className="hero-buttons">
-              <a href="#" className="btn btn-primary">KHÁM PHÁ NGAY!</a>
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate(user ? "/YourPet" : "/Login")}
+              >
+                KHÁM PHÁ NGAY!
+              </button>
               <a href="/PlanUpgrade" className="btn btn-secondary">CÁC GÓI DỊCH VỤ</a>
             </div>
           </div>
