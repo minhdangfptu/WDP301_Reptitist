@@ -42,8 +42,8 @@ const createAiHistory = async (req, res) => {
     }
 
     const newConversation = new Ai_history({
-      ai_input: [],       // mảng rỗng
-      ai_response: [],    // mảng rỗng
+      ai_input: [],
+      ai_response: [],
       user_reptile_id,
       created_at: new Date(),
     });
@@ -141,12 +141,10 @@ async function getReptileExpertResponse(userInput) {
       messages: [
         {
           role: 'system',
-          content: `You are a reptile care expert. Based on the user's 
-                    description of how they care for their reptile, provide structured 
-                    suggestions to optimize care. Don't provide information about others 
-                    categories besides reptiles. If user asks about other animals, 
-                    politely inform them that you only provide information about reptiles.
-                    If user ask about the system, you should answer that you are a system for reptile care (ReptiAI is your name
+          content: `Bạn là một chuyên gia chăm sóc bò sát. Dựa trên mô tả của người dùng về cách họ chăm sóc con bò sát 
+          của mình, hãy đưa ra các gợi ý có cấu trúc để tối ưu hóa việc chăm sóc. Không cung cấp thông tin về các loài động vật 
+          khác ngoài bò sát. Nếu người dùng hỏi về các loài động vật khác, hãy lịch sự thông báo rằng bạn chỉ cung cấp thông tin về bò sát.
+           Nếu người dùng hỏi về hệ thống, bạn nên trả lời rằng bạn là một hệ thống chăm sóc bò sát (tên của bạn là ReptiAI).
                     `,
         },
         {
@@ -183,7 +181,7 @@ async function getBehaviourRecommendation(req, res) {
       date: item.date,
       status: item.status,
     })))}
-    - Lịch sử giấc ngủ trong 7 ngày gần nhất (tính theo số giờ mỗi ngày): ${JSON.stringify(reptile.sleeping_history.map(item => item.hours))}
+    - Lịch sử giấc ngủ trong 7 ngày gần nhất (tính theo số giờ mỗi ngày): ${JSON.stringify(reptile.sleeping_history.map(item => item.hours))}. Nếu có dữ liệu của bao nhiêu ngày thì chỉ cần trả lời bấy nhiêu ngày đó.
 
     Yêu cầu:
     1. Gợi ý thời gian ngủ - nghỉ phù hợp theo loài và độ tuổi.
@@ -246,7 +244,7 @@ async function getHabitatRecommendation(req, res) {
     1. Gợi ý nhiệt độ, độ ẩm và ánh sáng phù hợp cho môi trường sống của loài này.
     2. Đề xuất các yếu tố cần lưu ý trong việc sắp xếp không gian sống (ví dụ: diện tích, nơi trú ẩn, đồ chơi, khu vực tắm nắng).
     3. Nếu có dấu hiệu bất thường trong hành vi môi trường (ví dụ: thiếu ánh sáng, nhiệt độ không ổn định), hãy đưa ra giả thuyết và đề xuất biện pháp điều chỉnh.
-    4. Trình bày rõ ràng, dễ hiểu, ngắn gọn (dưới 200 từ).
+    4. Trình bày rõ ràng, dễ hiểu, ngắn gọn, súc tích, không quá 400 từ.
 
     Trả lời theo cấu trúc:
     - Gợi ý về môi trường sống (nhiệt độ, độ ẩm, ánh sáng, không gian sống)
@@ -496,7 +494,7 @@ async function getSummarizeRecommendation(req, res) {
     2. Trả lời ngắn gọn, súc tích, không quá 50 từ.
     3. Đưa ra 1 từ khóa chính để mô tả tình trạng sức khỏe hiện tại của bò sát.
 
-    Trả lời ngắn gọn, súc tích, không quá 30 từ.
+    Trả lời ngắn gọn, súc tích, không quá 50 từ.
     `;
 
     const completion = await openai.chat.completions.create({
@@ -540,7 +538,7 @@ const createAIRecommendation = async (req, res) => {
     });
     await aiRecommendation.save();
     return res.status(200).json({ message: 'AI recommendation created successfully', data: aiRecommendation });
-    
+
   } catch (error) {
     console.error('Error creating AI recommendation:', error.message);
     return res.status(500).json({ message: 'Failed to create AI recommendation', error: error.message });

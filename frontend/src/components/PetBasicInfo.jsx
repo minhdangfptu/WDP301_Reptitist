@@ -8,7 +8,7 @@ import {
   Container,
 } from "react-bootstrap";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { baseUrl } from '../config';
 
 function formatDate(dateString) {
@@ -27,6 +27,7 @@ const PetBasicInfo = ({ petInfo }) => {
     nutrition: "",
   });
   const { reptileId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (petInfo && petInfo.weight_history) {
@@ -162,7 +163,16 @@ const PetBasicInfo = ({ petInfo }) => {
     <>
       <Container maxWidth="xl">
         <div className="mb-5">
-          <h2 className="text-center fw-bold mb-4">THÔNG TIN CƠ BẢN</h2>
+          <div className="d-flex justify-content-center align-items-center mb-4" style={{ gap: 12 }}>
+            <h2 className="fw-bold mb-0" style={{ textAlign: 'center' }}>THÔNG TIN CƠ BẢN</h2>
+            <button
+              className="btn btn-outline-success btn-sm ms-2"
+              style={{ fontWeight: 500 }}
+              onClick={() => navigate(`/your-pet/edit/${reptileId}`)}
+            >
+              <i className="bi bi-pencil-square me-1"></i>Chỉnh sửa
+            </button>
+          </div>
           <Row className="g-4">
             {/* Profile Picture */}
             <Col xs={12} md={4} className="text-center">

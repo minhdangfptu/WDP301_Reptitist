@@ -274,9 +274,9 @@ const Login = () => {
 
             <div className="login-terms">
               Bằng cách tiếp tục, bạn đồng ý với{" "}
-              <a href="#">Điều khoản sử dụng</a> và{" "}
-              <a href="#">Chính sách bảo mật</a>, bao gồm việc sử dụng{" "}
-              <a href="#">Cookies</a>.
+              <a href="/policy-terms">Điều khoản sử dụng</a> và{" "}
+              <a href="/policy-terms">Chính sách bảo mật</a>, bao gồm việc sử dụng{" "}
+              <a href="/policy-terms">Cookies</a>.
             </div>
           </form>
         </div>
