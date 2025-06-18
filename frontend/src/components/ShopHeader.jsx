@@ -57,14 +57,16 @@ function ShopHeader() {
 
         <div className="shop-main-header">
           <div className="shop-logo-container">
-            <a href="/">
+            <a href="/ShopLandingPage">
               <img
                 src="/logo_knen.png"
                 alt="Reptisist Shop"
                 className="shop-logo"
               />
             </a>
-            <h1 className="shop-name">REPTISIST SHOP</h1>
+            <a href="/ShopLandingPage">
+              <h1 className="shop-name">REPTISIST SHOP</h1>
+            </a>
           </div>
 
           <div className="shop-search-container">

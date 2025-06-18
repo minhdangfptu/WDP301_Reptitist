@@ -40,9 +40,26 @@ const Header = () => {
 
   if (loading || loggingOut) {
     return (
-      <header className="header" style={{ width: '100%', zIndex: 1000, background: '#fff', minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img src="/loading.gif" alt="Đang tải..." style={{ width: 48, height: 48 }} />
-        <span style={{ marginLeft: 16, fontWeight: 500, fontSize: 18 }}>{loggingOut ? 'Đang đăng xuất...' : 'Đang tải thông tin...'}</span>
+      <header
+        className="header"
+        style={{
+          width: "100%",
+          zIndex: 1000,
+          background: "#fff",
+          minHeight: 80,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <img
+          src="/loading.gif"
+          alt="Đang tải..."
+          style={{ width: 48, height: 48 }}
+        />
+        <span style={{ marginLeft: 16, fontWeight: 500, fontSize: 18 }}>
+          {loggingOut ? "Đang đăng xuất..." : "Đang tải thông tin..."}
+        </span>
       </header>
     );
   }
@@ -78,7 +95,7 @@ const Header = () => {
               <Link
                 to="/Community"
                 className="header__nav-link"
-                onClick={e => {
+                onClick={(e) => {
                   if (!user) {
                     e.preventDefault();
                     navigate("/Login");
@@ -92,7 +109,7 @@ const Header = () => {
               <Link
                 to="/LibraryTopic"
                 className="header__nav-link"
-                onClick={e => {
+                onClick={(e) => {
                   if (!user) {
                     e.preventDefault();
                     navigate("/Login");
@@ -106,12 +123,6 @@ const Header = () => {
               <Link
                 to="/ShopLandingPage"
                 className="header__nav-link"
-                onClick={e => {
-                  if (!user) {
-                    e.preventDefault();
-                    navigate("/Login");
-                  }
-                }}
               >
                 MUA SẮM
               </Link>
