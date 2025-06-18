@@ -33,6 +33,7 @@ const UnderDevPage = () => {
       padding: "0.75rem 1.5rem",
       fontWeight: 500,
       transition: "all 0.3s ease",
+      display: "inline"
     },
     "@keyframes bounce": {
       "0%, 100%": {

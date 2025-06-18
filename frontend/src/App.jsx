@@ -219,6 +219,7 @@ const App = () => (
   <Provider store={store}>
     <ThemeProvider>
       <AuthProvider>
+        <CartProvider>
         <Router>
           <div className="app">
             <AppRoutes />
@@ -232,6 +233,7 @@ const App = () => (
               />
           </div>
         </Router>
+        </CartProvider>
       </AuthProvider>
     </ThemeProvider>
   </Provider>

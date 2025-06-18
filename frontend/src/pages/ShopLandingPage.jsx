@@ -18,6 +18,7 @@ import axios from "axios";
 import UnderDevPage from "./UnderDevPage";
 import ShopHeader from "../components/ShopHeader";
 import { baseUrl } from '../config';
+import { useCart } from "../context/CartContext";
 
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +30,7 @@ const ShopLandingPage = () => {
   const productsPerSlide = 6;
   const [newProducts, setNewProducts] = useState([]);
   const navigate = useNavigate();
+  const { cartCount = 0 } = useCart() || {};
 
   useEffect(() => {
     const fetchCategories = async () => {
