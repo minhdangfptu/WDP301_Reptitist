@@ -48,8 +48,14 @@ import CreateTreatmentPage from './pages/CreateTreatmentPage';
 import AddProduct from './pages/AddProduct';
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
+
+import CartPage from './pages/CartPage';
+import { ToastContainer } from 'react-toastify';
+import {CartProvider} from './context/CartContext';
+
 import PolicyPage from './pages/PolicyPage';
 import EditYourPetPage from './pages/EditYourPetPage';
+
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -156,8 +162,16 @@ const AppRoutes = () => (
     {/* Product routes */}
     
     <Route path="/products/create" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
-    <Route path="/ShopLandingPage" element={<ShopLandingPage />} />
-    <Route path="/product-detail/:productId" element={<ProductDetail />} />
+    <Route path="/ShopLandingPage" element={
+        <CartProvider>
+          <ShopLandingPage />
+        </CartProvider>
+        } />
+    <Route path="/product-detail/:productId" element={
+        <CartProvider>
+          <ProductDetail />
+        </CartProvider>
+        } />
     <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
     <Route path="/payment-processing" element={<ProtectedRoute><PaymentProcessing /></ProtectedRoute>} />
     <Route path="/products/search/:productName" element={<ListProductPage />} />
@@ -179,7 +193,11 @@ const AppRoutes = () => (
     <Route path="/create-treatment/:reptileId" element={<ProtectedRoute><CreateTreatmentPage /></ProtectedRoute>} />
     <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
     <Route path="/shop/products/create" element={<ProductForm />} />
+
+    <Route path="/my-cart" element={ <ProtectedRoute><CartPage /></ProtectedRoute>} />
+
     <Route path="/your-pet/edit/:reptileId" element={<ProtectedRoute><EditYourPetPage /></ProtectedRoute>} />
+
       
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
@@ -204,6 +222,14 @@ const App = () => (
         <Router>
           <div className="app">
             <AppRoutes />
+              <ToastContainer 
+                position="top-right" 
+                autoClose={3000} 
+                hideProgressBar={false} 
+                newestOnTop={false} 
+                closeOnClick 
+                pauseOnHover 
+              />
           </div>
         </Router>
       </AuthProvider>

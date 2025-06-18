@@ -9,9 +9,13 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 function ShopHeader() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const {cartCount} = useCart();
+  const {user} = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -83,11 +87,28 @@ function ShopHeader() {
           </div>
 
           <div className="shop-cart-container">
-            <a href="#" className="shop-cart-icon">
+            <a href="/my-cart" className="shop-cart-icon" style={{ position: "relative" }}>
               <ShoppingCart size={22} />
+              {user && cartCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    background: "red",
+                    color: "white",
+                    borderRadius: "50%",
+                    padding: "2px 6px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
             </a>
           </div>
         </div>
+        
 
         <nav className="shop-main-nav">
           <ul className="shop-nav-links">
@@ -113,9 +134,12 @@ function ShopHeader() {
             </li>
           </ul>
         </nav>
+        
       </header>
     </div>
+    
   );
+  
 }
 
 export default ShopHeader;

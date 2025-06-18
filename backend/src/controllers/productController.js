@@ -405,6 +405,25 @@ const getProductDetails = async (req, res) => {
     });
   }
 };
+const checkProductAvailability = async (req,res) => {
+  try{
+    const { productId } = req.params;
+    const product = await Product.findById(productId).select("product_status product_quantity");
+    if(!product){
+      return res.status(404).json({message: "Product not found"});
+    }
+    res.status(200).json({
+      product_status: product.product_status,
+      product_quantity: product.product_quantity
+    });
+  }catch(error){
+    console.error("Product availability check error:", error);
+    res.status(500).json({
+      message: "Failed to check product availability!",
+      error: error.message
+    });
+  }
+}
 
 // Feedback functions giữ nguyên
 const createFeedbackAndRating = async (req, res) => {
@@ -614,6 +633,9 @@ module.exports = {
   viewFeedbackAndRating, 
   editFeedbackAndRating,
   deleteFeedbackAndRating,
+  approveProduct,
+  getTopRatedProducts,
+  checkProductAvailability,
   getTopRatedProducts
 };
 

@@ -32,34 +32,35 @@ import {
 } from "../services/feedbackService";
 import ShopHeader from "../components/ShopHeader";
 import { baseUrl } from '../config';
+import AddToCartModal from "../components/AddToCartModal"
+import { addToCartService } from "../services/cartService"
+import { useCart } from "../context/CartContext"
 
 const ProductDetail = () => {
-  const { productId } = useParams();
-  const [showReportModal, setShowReportModal] = useState(false);
-  const { user } = useAuth();
-  const userId = user ? user.id : null;
-  const [newImages, setNewImages] = useState([]);
-  const [product, setProduct] = useState(null);
-  const [reviews, setReviews] = useState([]);
-  const [reviewsCount, setReviewsCount] = useState(0);
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [relatedProducts, setRelatedProducts] = useState([]);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedVariant, setSelectedVariant] = useState("");
-  const [activeTab, setActiveTab] = useState("description");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [newRating, setNewRating] = useState(0);
-  const [newComment, setNewComment] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editingReview, setEditingReview] = useState(null);
-  const [editRating, setEditRating] = useState(0);
-  const [editComment, setEditComment] = useState("");
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
-  const [submittingReview, setSubmittingReview] = useState(false);
-
+  const { productId } = useParams()
+  const { user } = useAuth()
+  const userId = user ? user.id : null
+  const [product, setProduct] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const [reviewsCount, setReviewsCount] = useState(0)
+  const [selectedImage, setSelectedImage] = useState(0)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [quantity, setQuantity] = useState(1)
+  const [selectedVariant, setSelectedVariant] = useState("")
+  const [activeTab, setActiveTab] = useState("description")
+  const [searchTerm, setSearchTerm] = useState("")
+  const [newRating, setNewRating] = useState(0)
+  const [newComment, setNewComment] = useState("")
+  // const [newImages, setNewImages] = useState([]);
+  const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [editingReview, setEditingReview] = useState(null)
+  const [editRating, setEditRating] = useState(0)
+  const [editComment, setEditComment] = useState("")
+  const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false)
+  const { cartCount } = useCart()
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -131,15 +132,7 @@ const ProductDetail = () => {
     if (newQuantity >= 1 && newQuantity <= product.product_quantity) {
       setQuantity(newQuantity);
     }
-  };
-
-  const handleAddToCart = () => {
-    console.log("Add to cart:", {
-      product: product.id,
-      quantity,
-      variant: selectedVariant,
-    });
-  };
+  }
 
   const handleBuyNow = () => {
     console.log("Buy now:", {
@@ -220,9 +213,28 @@ const ProductDetail = () => {
   };
 
   const handleCancelEdit = () => {
-    setEditingReview(null);
-    setEditRating(0);
-    setEditComment("");
+    setEditingReview(null)
+    setEditRating(0)
+    setEditComment("")
+  }
+
+  const handleAddToCart = async (productId, quantity) => {
+    console.log("Adding to cart:", { productId, quantity })
+
+    try {
+      await addToCartService(productId, quantity)
+      toast.success("Thêm vào giỏ hàng thành công!")
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error("Vui lòng điền đầy đủ thông tin sản phẩm")
+      } else if (error.response?.status === 500) {
+        toast.error("Đã có lỗi xảy ra, vui lòng thử lại sau")
+      } else if (error.response?.status === 401) {
+        toast.error("Bạn cần đăng nhập để thêm sản phẩm vào giỏ hàng")
+      }
+    }
+    setIsAddToCartModalOpen(false)
+
   };
 
   const handleSubmitReview = async () => {
@@ -517,10 +529,7 @@ const ProductDetail = () => {
             </div>
 
             <div className="product-detail-actions">
-              <button
-                className="product-detail-add-cart"
-                onClick={handleAddToCart}
-              >
+              <button className="product-detail-add-cart" onClick={() => setIsAddToCartModalOpen(true)}>
                 <ShoppingCart size={20} />
                 Thêm vào giỏ
               </button>
@@ -789,8 +798,16 @@ const ProductDetail = () => {
         </div>
       </div>
       <Footer />
+      {/* Add to Cart Modal */}
+      <AddToCartModal
+        isOpen={isAddToCartModalOpen}
+        onClose={() => setIsAddToCartModalOpen(false)}
+        product={product}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   );
-};
+}
+
 
 export default ProductDetail;

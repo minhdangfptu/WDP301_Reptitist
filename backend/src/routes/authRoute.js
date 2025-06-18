@@ -107,10 +107,22 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 router.get('/google/callback', 
-    passport.authenticate('google', { session: false }), 
+    passport.authenticate('google', { 
+        session: false, 
+        failureRedirect: `${process.env.FRONTEND_URL_LOCAL}/login?error=Authentication failed`
+    }), 
     async (req, res) => {
         try {
+            console.log('Google callback route handler started');
             const user = req.user;
+            
+            if (!user) {
+                console.error('No user found in request after Google authentication');
+                return res.redirect(`${process.env.FRONTEND_URL}/login?error=Authentication failed`);
+            }
+
+            console.log('User authenticated:', user._id);
+
             const accessToken = jwt.sign(
                 { id: user._id },
                 process.env.JWT_SECRET,
@@ -122,6 +134,8 @@ router.get('/google/callback',
                 { expiresIn: '30d' }
             );
 
+            console.log('Tokens generated for user:', user._id);
+
             // Store refresh token in user's refresh_tokens array
             const refreshTokenHashed = crypto.createHash('sha256').update(refreshToken).digest('hex');
             user.refresh_tokens.push({ 
@@ -132,10 +146,14 @@ router.get('/google/callback',
             });
             await user.save();
 
+            console.log('Refresh token stored for user:', user._id);
+
             // Redirect to frontend with tokens
-            res.redirect(`${process.env.FRONTEND_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`);
+            const redirectUrl = `${process.env.FRONTEND_URL}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}`;
+            console.log('Redirecting to:', redirectUrl);
+            res.redirect(redirectUrl);
         } catch (error) {
-            console.error(error);
+            console.error('Google callback error:', error);
             res.redirect(`${process.env.FRONTEND_URL}/login?error=Authentication failed`);
         }
     }
