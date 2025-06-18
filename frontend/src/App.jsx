@@ -174,8 +174,8 @@ const AppRoutes = () => (
         } />
     <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
     <Route path="/payment-processing" element={<ProtectedRoute><PaymentProcessing /></ProtectedRoute>} />
-    <Route path="/products/search/:productName" element={<ListProductPage />} />
-    <Route path="/products/category/:categoryId" element={<ListProductPage />} />
+    <Route path="/products/search/:productName" element={<CartProvider><ListProductPage /></CartProvider>} />
+    <Route path="/products/category/:categoryId" element={<CartProvider><ListProductPage /></CartProvider>} />
       
     {/* Protected routes - require login */}
     <Route path="/Profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
