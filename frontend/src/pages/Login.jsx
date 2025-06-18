@@ -245,7 +245,8 @@ const Login = () => {
             <button
               className="social-login-btn"
               onClick={handleGoogleLogin}
-              disabled={false}
+              disabled={true}
+              style={{ opacity: 0.6, cursor: "not-allowed" }}
           
             >
               <span className="google-icon">

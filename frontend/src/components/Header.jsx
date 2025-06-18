@@ -120,9 +120,15 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link
+            <Link
                 to="/ShopLandingPage"
                 className="header__nav-link"
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/Login");
+                  }
+                }}
               >
                 MUA SẮM
               </Link>
