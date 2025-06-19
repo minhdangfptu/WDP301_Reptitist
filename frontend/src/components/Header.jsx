@@ -58,7 +58,7 @@ const Header = () => {
           style={{ width: 48, height: 48 }}
         />
         <span style={{ marginLeft: 16, fontWeight: 500, fontSize: 18 }}>
-          {loggingOut ? "Đang đăng xuất..." : "Đang tải thông tin..."}
+          {loggingOut ? "Đang đăng xuất..." : "Chào mừng bạn đến với Reptitist Service"}
         </span>
       </header>
     );

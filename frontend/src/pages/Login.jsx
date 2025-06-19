@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/Login.css";
@@ -11,11 +11,17 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [recentLogins, setRecentLogins] = useState([]);
 
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
+
+  useEffect(() => {
+    const savedLogins = JSON.parse(localStorage.getItem("recentLogins")) || [];
+    setRecentLogins(savedLogins);
+  }, []);
 
   // Handle login form submission
   const handleSubmit = async (e) => {
@@ -42,6 +48,9 @@ const Login = () => {
 
       // Use AuthContext login function
       const result = await login(userName.trim(), password);
+      
+      const user_login_imageUrl = result.user.user_imageurl;
+      console.log("User login image URL:", user_login_imageUrl);
 
       console.log("Login result:", result);
 
@@ -55,6 +64,24 @@ const Login = () => {
           pauseOnHover: true,
           draggable: true,
         });
+        const newLogin = {
+          userName: userName.trim(),
+          avatar: user_login_imageUrl || "/default-avatar2.png",
+          lastLogin: new Date().toISOString(),
+        };
+
+        let recentLogins =
+          JSON.parse(localStorage.getItem("recentLogins")) || [];
+
+        recentLogins = recentLogins.filter(
+          (u) => u.userName !== newLogin.userName
+        );
+
+        recentLogins.unshift(newLogin);
+
+        recentLogins = recentLogins.slice(0, 3);
+        console.log("Recent logins:", recentLogins[0]);
+        localStorage.setItem("recentLogins", JSON.stringify(recentLogins));
 
         // Small delay to show success message before redirect
         setTimeout(() => {
@@ -126,12 +153,29 @@ const Login = () => {
             <p className="recent-subtitle">Bấm vào ảnh của bạn để tiếp tục</p>
 
             <div className="accounts-container">
-              {/* <div className="account-card">
-                                <div className="account-image">
-                                    <img src="/api/placeholder/90/90" alt="Mạnh Định" />
-                                </div>
-                                <p className="account-name">Mạnh Định</p>
-                            </div> */}
+              {recentLogins.map((account, index) => (
+                <div
+                  key={index}
+                  className="account-card"
+                  onClick={() => {
+                    setUserName(account.userName);
+                    setPassword("");
+                    toast.info(`Đã chọn ${account.userName}`, {
+                      autoClose: 2000,
+                    });
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="account-image">
+                    <img
+                      src={account.avatar || "/default-avatar.png"}
+                      alt={account.userName}
+                    />
+                  </div>
+                  <p className="account-name">{account.userName}</p>
+                </div>
+              ))}
+
               <a href="/SignUp">
                 <div className="account-card">
                   <div className="create-account">
@@ -189,7 +233,7 @@ const Login = () => {
                 value={userName}
                 onChange={(e) => {
                   setUserName(e.target.value);
-                  if (error) setError(null); // Clear error when user types
+                  if (error) setError(null);
                 }}
                 disabled={isLoading}
               />
@@ -207,7 +251,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (error) setError(null); 
+                  if (error) setError(null);
                 }}
                 disabled={isLoading}
               />
@@ -247,7 +291,6 @@ const Login = () => {
               onClick={handleGoogleLogin}
               disabled={true}
               style={{ opacity: 0.6, cursor: "not-allowed" }}
-          
             >
               <span className="google-icon">
                 <img
@@ -272,12 +315,11 @@ const Login = () => {
               Đăng nhập sử dụng Facebook
             </button>
 
-
             <div className="login-terms">
               Bằng cách tiếp tục, bạn đồng ý với{" "}
               <a href="/policy-terms">Điều khoản sử dụng</a> và{" "}
-              <a href="/policy-terms">Chính sách bảo mật</a>, bao gồm việc sử dụng{" "}
-              <a href="/policy-terms">Cookies</a>.
+              <a href="/policy-terms">Chính sách bảo mật</a>, bao gồm việc sử
+              dụng <a href="/policy-terms">Cookies</a>.
             </div>
           </form>
         </div>
