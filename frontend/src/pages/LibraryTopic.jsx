@@ -3,11 +3,13 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Library = () => {
   const [topics, setTopics] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
 
   useEffect(() => {
     axios
@@ -53,11 +55,14 @@ const Library = () => {
           <span>Thư viện kiến thức</span>
         </div>
 
-        <div className="d-flex justify-content-end mb-3">
-          <Link to="/library_topics/create">
-            <button className="btn btn-success">+ Tạo chủ đề</button>
-          </Link>
-        </div>
+        {/* Nút tạo chủ đề */}
+        {hasRole("admin") && (
+          <div className="d-flex justify-content-end mb-3">
+            <Link to="/library_topics/create">
+              <button className="btn btn-success">+ Tạo chủ đề</button>
+            </Link>
+          </div>
+        )}
       </div>
 
       <section className="library-section">
@@ -114,38 +119,41 @@ const Library = () => {
                   </Link>
 
                   <div className="card-title">{topic.topic_title}</div>
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Link to={`/library_topics/update/${topic._id}`}>
+                  {/* Nút cập nhật, xóa chủ đề */}
+                  {hasRole("admin") && (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Link to={`/library_topics/update/${topic._id}`}>
+                        <button
+                          style={{
+                            backgroundColor: "#ffc107",
+                            border: "none",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                          }}
+                        >
+                          Cập nhật
+                        </button>
+                      </Link>
                       <button
                         style={{
-                          backgroundColor: "#ffc107",
+                          backgroundColor: "#dc3545",
+                          color: "#fff",
                           border: "none",
                           padding: "4px 8px",
                           borderRadius: "4px",
                         }}
+                        onClick={() => handleDelete(topic._id)}
                       >
-                        Cập nhật
+                        Xoá
                       </button>
-                    </Link>
-                    <button
-                      style={{
-                        backgroundColor: "#dc3545",
-                        color: "#fff",
-                        border: "none",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                      }}
-                      onClick={() => handleDelete(topic._id)}
-                    >
-                      Xoá
-                    </button>
-                  </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {topics.length === 0 && (
