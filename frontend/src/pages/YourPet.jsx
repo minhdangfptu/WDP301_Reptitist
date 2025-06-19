@@ -74,7 +74,7 @@ const YourPet = () => {
     if (isConfirmed) {
       try {
         const response = await axios.delete(
-          `http://localhost:8080/reptitist/pet/${reptileId}`
+          `${baseUrl}/reptitist/pet/${reptileId}`
         );
         console.log("Pet deleted successfully", response.data);
         toast.success("Thú cưng đã được xóa thành công!");
