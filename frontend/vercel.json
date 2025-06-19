@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "build": {
+    "ignoreCommand": "if [ \"$VERCEL_GIT_BRANCH\" != \"main\" ]; then exit 1; fi"
+  }
 }
