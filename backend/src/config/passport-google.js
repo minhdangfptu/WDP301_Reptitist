@@ -5,13 +5,14 @@ const Role = require('../models/Roles');
 const Cart = require('../models/Carts');
 
 // Determine the callback URL based on environment
-const callbackURL = `${process.env.VITE_BACKEND_URL}/reptitist/auth/google/callback`;
+const callbackURL = `${process.env.VITE_BACKEND_URL}/reptitist/auth/google/callback`; // fix
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: callbackURL
 },
+
     async (accessToken, refreshToken, profile, done) => {
         try {
             console.log('Google OAuth callback received:', {
