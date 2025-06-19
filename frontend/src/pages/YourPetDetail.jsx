@@ -112,7 +112,7 @@ export default function YourPetDetail() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.2)", // Lớp phủ đen với opacity 20%
+            backgroundColor: "rgba(0, 0, 0, 0.2)", 
           }}
         ></div>
         <div className="hero-overlay" style={{ paddingBottom: "5px" }}>

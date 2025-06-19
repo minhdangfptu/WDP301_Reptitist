@@ -194,7 +194,7 @@ const AppRoutes = () => (
     <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
     <Route path="/shop/products/create" element={<ProductForm />} />
 
-    <Route path="/my-cart" element={ <ProtectedRoute><CartPage /></ProtectedRoute>} />
+    <Route path="/my-cart" element={ <ProtectedRoute><CartProvider><CartPage /></CartProvider></ProtectedRoute>} />
 
     <Route path="/your-pet/edit/:reptileId" element={<ProtectedRoute><EditYourPetPage /></ProtectedRoute>} />
 
