@@ -4,7 +4,7 @@ import { Form, Card, Table, Container } from "react-bootstrap";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { baseUrl } from '../config';
 const styles = {
   sectionCard: {
