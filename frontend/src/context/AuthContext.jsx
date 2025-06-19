@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
         setIsAuthenticated(true);
-        return { success: true, user: userData };
+        return { success: true };
       } else {
         debugLog('Login failed:', result.message);
         return { success: false, message: result.message };

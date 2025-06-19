@@ -48,9 +48,7 @@ const Login = () => {
 
       // Use AuthContext login function
       const result = await login(userName.trim(), password);
-      
-      const user_login_imageUrl = result.user.user_imageurl;
-      console.log("User login image URL:", user_login_imageUrl);
+      const user_login_imageUrl = "/default-avatar2.png";
 
       console.log("Login result:", result);
 
@@ -66,7 +64,7 @@ const Login = () => {
         });
         const newLogin = {
           userName: userName.trim(),
-          avatar: user_login_imageUrl || "/default-avatar2.png",
+          avatar: user_login_imageUrl ,
           lastLogin: new Date().toISOString(),
         };
 
@@ -158,7 +156,7 @@ const Login = () => {
                   key={index}
                   className="account-card"
                   onClick={() => {
-                    setUserName(account.userName);
+                    setUserName(account.userName); 
                     setPassword("");
                     toast.info(`Đã chọn ${account.userName}`, {
                       autoClose: 2000,
@@ -167,12 +165,10 @@ const Login = () => {
                   style={{ cursor: "pointer" }}
                 >
                   <div className="account-image">
-                    <img
-                      src={account.avatar || "/default-avatar.png"}
-                      alt={account.userName}
-                    />
+                    <img src={account.avatar || "/default-avatar.png"} alt={account.userName} />
                   </div>
                   <p className="account-name">{account.userName}</p>
+                  
                 </div>
               ))}
 
@@ -233,7 +229,7 @@ const Login = () => {
                 value={userName}
                 onChange={(e) => {
                   setUserName(e.target.value);
-                  if (error) setError(null);
+                  if (error) setError(null); 
                 }}
                 disabled={isLoading}
               />
