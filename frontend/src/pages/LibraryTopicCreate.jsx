@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { baseUrl } from '../config';      
+
 const CreateLibraryTopic = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -18,7 +18,7 @@ const CreateLibraryTopic = () => {
       topic_imageurl: [imageurl]
     };
     try {
-      await axios.post(`${baseUrl}/reptitist/topic-categories/library_topics`, newTopic);
+      await axios.post("http://localhost:8080/reptitist/library_topics", newTopic);
       navigate("/Library");
     } catch (error) {
       console.error("Lỗi khi tạo chủ đề:", error);

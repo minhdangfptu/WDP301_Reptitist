@@ -111,4 +111,16 @@ exports.deleteReptileById = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+exports.getReptilesByUser = async (req, res) => {
+  try {
+    const userId = req.user._id; 
+
+    const reptiles = await Reptile.find({ user_id: userId });
+
+    res.json(successResponse(reptiles));
+  } catch (err) {
+    console.error('Error fetching user reptiles:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 

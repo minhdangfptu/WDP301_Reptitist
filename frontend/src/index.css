@@ -6,7 +6,7 @@
 
 .dark-mode .page-title h1 {
   color: var(--text-primary);
-}
+} 
 
 :root {
   --primary-color: #0fa958;
@@ -15,7 +15,7 @@
   --light-text: #666;
   --white: #fff;
   --light-bg: #f5f5f5;
-  --border-radius: 100px;
+  --border-radius: 8px;
   --bg-primary: #ffffff;
   --bg-secondary: #f9fafb;
   --text-primary: #1f2937;
@@ -33,13 +33,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -81,7 +81,7 @@ body {
 /* Header styles */
 header {
   background-color: var(--white);
-  padding: 0px 0;
+  padding: 10px 0;
   border-bottom: 1px solid #eee;
 }
 
@@ -96,12 +96,33 @@ nav {
   margin-top: 15px;
 }
 
+.nav-links {
+  display: flex;
+  list-style: none;
+}
+
+.nav-links li {
+  margin-left: 20px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--text-color);
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.nav-links a:hover {
+  color: var(--primary-color);
+}
+
 .btn {
   display: inline-block;
-  padding: 8px 20px;
+  padding: 8px 16px;
   background-color: var(--primary-color);
   color: var(--white);
-  border-radius: 65px;
+  border-radius: var(--border-radius);
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
@@ -119,17 +140,17 @@ nav {
 }
 
 .btn:hover {
-  background-color: #004a26;
+  background-color: var(--secondary-color);
 }
 
 /* Improved hero/banner section for LandingPage */
 .hero {
-  width: 99vw;
-  min-height: 92vh;
+  width: 100vw;
+  min-height: 420px;
   padding: 0;
   margin: 0;
   position: relative;
-  background: url("/BGLandingPage.png") center/cover no-repeat;
+  background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/BGLandingPage.png') center/cover no-repeat;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -160,9 +181,9 @@ nav {
   font-weight: 800;
   margin-bottom: 24px;
   line-height: 1.2;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.25);
 }
-.hero-buttons {
+.hero-buttons{
   margin-top: 20px;
   display: flex;
   flex-direction: row;
@@ -170,9 +191,6 @@ nav {
 
 .hero .btn {
   margin-right: 16px;
-  background: var(--primary-color);
-  border-color: #006934;
-  border-width: 0.1px;
   font-size: 1.1rem;
   padding: 12px 28px;
   border-radius: 100px;
@@ -182,7 +200,7 @@ nav {
 .discount-badge {
   width: 120px;
   height: 120px;
-  background: var(--primary-color);
+  background: rgba(0, 255, 128, 0.7);
   border-radius: 100px;
   display: flex;
   flex-direction: column;
@@ -191,10 +209,10 @@ nav {
   position: absolute;
   top: 0;
   right: 0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
   z-index: 10;
-  margin-top: 300px;
-  margin-right: 80px;
+  margin-top: 80px;
+  margin-right: 100px;
 }
 
 .discount-badge img {
@@ -261,7 +279,6 @@ nav {
 }
 
 .about-flex {
-  padding-top: 3%;
   display: flex;
   align-items: center;
   gap: 30px;
@@ -274,20 +291,15 @@ nav {
 
 .about-image {
   flex: 1;
-  /* border-radius: var(--border-radius); */
+  border-radius: var(--border-radius);
   overflow: hidden;
   position: relative;
 }
 .about-title1 {
   font-size: 2rem;
+  font-weight: 600;
   align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: var(--primary-color);
-  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif,
-    Courier, monospace, sans-serif;
 }
-
 .about-image img {
   width: 100%;
   height: auto;
@@ -340,7 +352,7 @@ nav {
 
 .feature-card {
   background-color: var(--white);
-  /* border-radius: var(--border-radius); */
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -356,8 +368,6 @@ nav {
 }
 
 .feature-title {
-  justify-content: center;
-  align-items: center;
   font-weight: 600;
   margin-bottom: 5px;
   font-size: 16px;
@@ -378,7 +388,7 @@ nav {
   display: flex;
   gap: 20px;
   background-color: var(--white);
-  /* border-radius: var(--border-radius); */
+  border-radius: var(--border-radius);
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -395,8 +405,7 @@ nav {
 
 .featured-news-content {
   flex: 1;
-  
-  padding:20px 20px 20px 0px;
+  padding: 20px;
 }
 
 .news-title {
@@ -424,7 +433,7 @@ nav {
 .news-item-image {
   width: 80px;
   height: 80px;
-  /* border-radius: var(--border-radius); */
+  border-radius: var(--border-radius);
   overflow: hidden;
 }
 
@@ -512,6 +521,80 @@ footer {
   align-items: center;
 }
 
+/* Đặt lại margin và padding để tránh thừa */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Header */
+header {
+  background-color: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo img {
+  height: 60px;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+}
+
+.nav-links li {
+  margin-left: 25px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.nav-links a:hover {
+  color: #06a13d;
+}
+
+.btn-login {
+  background-color: #06a13d;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.btn-login:hover {
+  background-color: #048632;
+}
+
 /* Page Title */
 .page-title {
   background-color: #0fa958;
@@ -532,7 +615,7 @@ footer {
 }
 
 .page-title h1::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: 0;
   left: 50%;
@@ -558,7 +641,7 @@ footer {
 }
 
 .breadcrumb i {
-  margin: 5px 5px;
+  margin: 0 5px;
   color: #06a13d;
 }
 
@@ -703,7 +786,7 @@ footer {
 }
 
 .footer-logo {
-  margin-bottom: 15px;
+  margin-bottom: 15px; 
   margin-right: 80px;
 }
 
@@ -799,7 +882,68 @@ footer {
   }
 }
 
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Account Menu */
+
+.account-menu-wrapper {
+  position: relative;
+}
+
+.account-dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 10px 0;
+  list-style: none;
+  width: 150px;
+  z-index: 1000;
+}
+
+.account-dropdown li a {
+  display: block;
+  padding: 10px 20px;
+  color: #333;
+  text-decoration: none;
+}
+
+.account-dropdown li a:hover {
+  background-color: #f0f0f0;
+}
+
+.caret {
+  display: inline-block;
+  width: 0; 
+  height: 0; 
+  margin-left: 6px;
+  vertical-align: middle;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.caret-down {
+  border-top: 6px solid #333; /* Mũi tên xuống */
+  transform: rotate(0deg);
+}
+
+.caret-up {
+  border-bottom: 6px solid #333; /* Mũi tên lên */
+  transform: rotate(180deg);
+}
+
 /*---Sellerproduct---*/
 
 /* BestsellingProducts.css */
@@ -892,7 +1036,7 @@ footer {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
-
+  
   .product-item {
     border-bottom: none;
     margin-bottom: 0;
@@ -908,13 +1052,13 @@ footer {
   .product-list {
     grid-template-columns: 1fr;
   }
-
+  
   .product-image {
     width: 50px;
     height: 50px;
     min-width: 50px;
   }
-
+  
   .product-name {
     font-size: 12px;
   }
@@ -1092,17 +1236,17 @@ textarea.form-control {
   .contact-content {
     flex-direction: column;
   }
-
+  
   .contact-info,
   .contact-form {
     width: 100%;
   }
-
+  
   .contact-cards {
     flex-direction: column;
     margin-top: 20px;
   }
-
+  
   .contact-card {
     width: 100%;
     margin-bottom: 15px;
@@ -1113,22 +1257,9 @@ textarea.form-control {
   .contact-info .social-icons {
     justify-content: center;
   }
-
+  
   .contact-info h2,
   .contact-info p {
     text-align: center;
   }
-}
-
-.landing-main-title {
-  text-align: center;
-  font-size: 2.4rem;
-  font-weight: 800;
-  color: #000000;
-  letter-spacing: 1px;
-  margin-bottom: 0.2em;
-  margin-top: 0.2em;
-  background-color: #000000;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }

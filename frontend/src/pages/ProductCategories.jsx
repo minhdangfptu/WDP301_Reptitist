@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { baseUrl } from '../config';
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -14,7 +13,7 @@ const ProductCategories = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get(`${baseUrl}/reptitist/shop/category`);
+        const res = await axios.get("http://localhost:8080/reptitist/shop/category");
         setCategories(res.data);
       } catch (err) {
         console.error("Error fetching categories:", err);

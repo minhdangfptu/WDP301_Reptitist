@@ -5,7 +5,19 @@ import { jwtDecode } from "jwt-decode";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-import { baseUrl } from '../config';
+
+// Cấu hình Axios để gửi token trong header
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 const LibraryContent = () => {
   const { categoryId } = useParams();
   const [contents, setContents] = useState([]);
@@ -16,8 +28,8 @@ const LibraryContent = () => {
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const { user } = useAuth();
-  const isAdmin = user && user.role === "admin";
+
+  const { hasRole } = useAuth();
 
   // Lấy user_id từ token
   const getUserId = () => {
@@ -52,7 +64,7 @@ const LibraryContent = () => {
     const fetchCategory = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist//library-categories/${categoryId}`
+          `http://localhost:8080/reptitist/library_categories/${categoryId}`
         );
         console.log("Category:", response.data);
         setCategory(response.data);
@@ -64,7 +76,7 @@ const LibraryContent = () => {
     const fetchContents = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist/library-content`
+          "http://localhost:8080/reptitist/library_contents"
         );
         const filtered = response.data.filter((item) => {
           console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
@@ -88,7 +100,7 @@ const LibraryContent = () => {
     const fetchTopics = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist/topic-categories/library_topics`
+          "http://localhost:8080/reptitist/library_topics"
         );
         setTopics(response.data);
       } catch (err) {
@@ -169,7 +181,7 @@ const LibraryContent = () => {
         topic_category_id: category.topic_id // Sử dụng topic_id từ category hiện tại
       };
 
-      const apiUrl = `${baseUrl}/reptitist/library_contents`;
+      const apiUrl = "http://localhost:8080/reptitist/library_contents";
       console.log("API URL:", apiUrl);
       console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
       console.log("Headers:", {
@@ -261,7 +273,7 @@ const LibraryContent = () => {
     }
     try {
       const response = await axios.put(
-        `${baseUrl}/reptitist/library_contents/${selectedContentId}`,
+        `http://localhost:8080/reptitist/library_contents/${selectedContentId}`,
         {
           ...formData,
           category_content_id: categoryId
@@ -282,8 +294,8 @@ const LibraryContent = () => {
   const handleDelete = async () => {
     if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library_contents/${selectedContentId}`);
-        const response = await axios.get(`${baseUrl}/reptitist/library_contents`);
+        await axios.delete(`http://localhost:8080/reptitist/library_contents/${selectedContentId}`);
+        const response = await axios.get("http://localhost:8080/reptitist/library_contents");
         const filtered = response.data.filter((item) => {
           if (item.category_content_id && typeof item.category_content_id === "object") {
             if (item.category_content_id._id) {
@@ -369,7 +381,8 @@ const LibraryContent = () => {
               className="content-grid"
               style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
             >
-              {isAdmin && (
+              {/* Nút tạo mới nội dung */}
+              {hasRole("admin") && (
                 <div style={{ width: "100%", marginBottom: "10px" }}>
                   <button
                     style={{
@@ -481,7 +494,7 @@ const LibraryContent = () => {
                 </div>
               )}
 
-              {selectedContent && !isCreating && !isEditing && isAdmin && (
+              {selectedContent && !isCreating && !isEditing && hasRole("admin") && (
                 <div style={{ marginBottom: "10px" }}>
                   <button
                     style={{

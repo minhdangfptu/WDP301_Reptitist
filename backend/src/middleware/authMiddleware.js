@@ -80,8 +80,6 @@ const authUserIdOnly = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id || decoded.userId;
-    req.userRole = decoded.roleId || decoded.role_id;
-    console.log('Decoded userId:', req.userRole);
     next();
   } catch (err) {
     return res.status(403).json({ message: 'Invalid or expired token' });

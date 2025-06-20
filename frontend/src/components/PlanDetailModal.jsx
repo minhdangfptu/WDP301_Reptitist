@@ -1,11 +1,9 @@
 // PlanDetailModal.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import '../css/PlanDetailModal.css';
 
 const PlanDetailModal = ({ isOpen, onClose, planData, onPurchase }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('monthly'); // 'monthly' or 'yearly'
-  const navigate = useNavigate();
 
   if (!isOpen || !planData) return null;
 
@@ -62,14 +60,6 @@ const PlanDetailModal = ({ isOpen, onClose, planData, onPurchase }) => {
         planName: planData.name
       });
     }
-    // Chuyển hướng đến trang thanh toán
-    navigate('/payment-processing', {
-      state: {
-        period: selectedPeriod,
-        price: getCurrentPrice(),
-        planName: planData.name
-      }
-    });
   };
 
   return (

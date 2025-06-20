@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { baseUrl } from '../config';
 
 const CreateCategory = () => {
   const { topicId } = useParams();
@@ -24,7 +23,7 @@ const CreateCategory = () => {
     e.preventDefault();
 
     try {
-      await axios.post(`${baseUrl}/reptitist/library_categories/topic/${topicId}`, formData);
+      await axios.post(`http://localhost:8080/reptitist/library_categories/topic/${topicId}`, formData);
       navigate(`/libraryCategory/${topicId}`);
     } catch (err) {
       setError("Không thể tạo danh mục. Vui lòng thử lại.");

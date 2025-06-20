@@ -28,7 +28,7 @@ const diseaseSchema = new mongoose.Schema({
 
 // Main schema: reptiles
 const reptileSchema = new mongoose.Schema({
-  specific_name: { type: String, required: true },           
+  specific_name: { type: String, required: true },           // _specific_name_ thay vì _scientific_name_ như trước
   common_name: { type: String, required: true },
   reptile_category: reptileCategorySchema,
   breed_or_morph: { type: String },

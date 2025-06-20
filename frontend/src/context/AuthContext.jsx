@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-console */
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
 
@@ -7,7 +5,6 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Debug function
@@ -22,7 +19,7 @@ export const AuthProvider = ({ children }) => {
     // Listen for logout events from axios interceptor
     const handleLogout = () => {
       debugLog('Received logout event from axios interceptor');
-      logout();
+      setUser(null);
     };
 
     window.addEventListener('auth:logout', handleLogout);
@@ -35,31 +32,31 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token');
+      const token = localStorage.getItem('token');
       
       if (!token) {
         debugLog('No token found in localStorage');
-        setIsAuthenticated(false);
-        setUser(null);
         setLoading(false);
-        return false;
+        return;
       }
 
       debugLog('Token found, verifying with server...');
+      
       // Verify token and get user data
-      const verifiedUserData = await authService.verifyToken();
-
-      debugLog('Token verification successful:', verifiedUserData);
-      setUser(verifiedUserData);
-      setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(verifiedUserData));
-      return true;
+      const userData = await authService.verifyToken();
+      
+      debugLog('Token verification successful:', userData);
+      setUser(userData);
+      
+      // Update localStorage with fresh user data
+      localStorage.setItem('user', JSON.stringify(userData));
+      
     } catch (error) {
       debugLog('Auth verification failed:', error.message);
+      
+      // Clear invalid auth data
       authService.clearTokens();
       setUser(null);
-      setIsAuthenticated(false);
-      return false;
     } finally {
       setLoading(false);
     }
@@ -68,16 +65,15 @@ export const AuthProvider = ({ children }) => {
   const login = async (username, password) => {
     try {
       debugLog('Login attempt for username:', username);
+      
       const result = await authService.login(username, password);
-
+      
       if (result.success) {
         debugLog('Login successful:', result.user);
-        const { user: userData, access_token, refresh_token } = result;
-        localStorage.setItem('access_token', access_token);
-        if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
-        localStorage.setItem('user', JSON.stringify(userData));
+        // Ensure we have complete user data
+        const userData = await authService.verifyToken();
         setUser(userData);
-        setIsAuthenticated(true);
+        localStorage.setItem('user', JSON.stringify(userData));
         return { success: true };
       } else {
         debugLog('Login failed:', result.message);
@@ -87,7 +83,7 @@ export const AuthProvider = ({ children }) => {
       debugLog('Login error:', error.message);
       return {
         success: false,
-        message: error.message || 'Đăng nhập thất bại',
+        message: error.message || 'Đăng nhập thất bại'
       };
     }
   };
@@ -95,14 +91,16 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       debugLog('Registration attempt for:', userData.email);
+      
       const result = await authService.register(userData);
+      
       debugLog('Registration result:', result.success ? 'success' : result.message);
       return result;
     } catch (error) {
       debugLog('Registration error:', error.message);
       return {
         success: false,
-        message: error.message || 'Đăng ký thất bại',
+        message: error.message || 'Đăng ký thất bại'
       };
     }
   };
@@ -110,125 +108,69 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       debugLog('Logout attempt...');
+      
       await authService.logout();
+      
       debugLog('Logout successful');
     } catch (error) {
       debugLog('Logout error:', error.message);
     } finally {
-      // Clear local data regardless of server response
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      // Always clear local data regardless of server response
       setUser(null);
-      setIsAuthenticated(false);
-      debugLog('User state and localStorage cleared');
+      debugLog('User state cleared');
     }
   };
 
-  const updateUser = async (updatedUserData, updateRole = false) => {
+  // Fixed updateUser function
+  const updateUser = (updatedUserData) => {
+    debugLog('Updating user data:', updatedUserData);
+    
     try {
-      debugLog('Updating user data:', updatedUserData);
-
-      if (updateRole && updatedUserData.role) {
-        debugLog('Updating user role:', updatedUserData.role);
-        // Call API to update role
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-role`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-          },
-          body: JSON.stringify({ role: updatedUserData.role }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update role');
-        }
-      }
-
       // Merge new data with existing user data
-      const newUserData = {
-        ...user,
+      const newUserData = { 
+        ...user, 
         ...updatedUserData,
+        // Ensure we don't lose important fields
         id: user?.id || updatedUserData?.id,
         username: user?.username || updatedUserData?.username,
         email: user?.email || updatedUserData?.email,
-        role: user?.role || updatedUserData?.role,
+        role: user?.role || updatedUserData?.role
       };
-
-      // Update state and localStorage
+      
+      // Update state
       setUser(newUserData);
+      
+      // Update localStorage
       localStorage.setItem('user', JSON.stringify(newUserData));
+      
       debugLog('User data updated successfully:', newUserData);
+      
       return { success: true, user: newUserData };
     } catch (error) {
-      debugLog('Error updating user data:', error.message);
+      debugLog('Error updating user data:', error);
       return { success: false, error: error.message };
     }
   };
 
-  const updateUserRole = async (userData) => {
-    try {
-      debugLog('Updating user role:', userData);
-      
-      // Call API to update role and account type
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/update-role`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({
-          role: userData.role,
-          account_type: userData.account_type
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update role');
-      }
-
-      const updatedUserData = await response.json();
-      
-      // Update state and localStorage
-      setUser(prevUser => ({
-        ...prevUser,
-        ...updatedUserData,
-        role: userData.role,
-        account_type: userData.account_type
-      }));
-      
-      localStorage.setItem('user', JSON.stringify({
-        ...JSON.parse(localStorage.getItem('user')),
-        role: userData.role,
-        account_type: userData.account_type
-      }));
-      
-      debugLog('User role updated successfully:', updatedUserData);
-      
-      return { success: true, user: updatedUserData };
-    } catch (error) {
-      debugLog('Error updating user role:', error.message);
-      return { success: false, error: error.message };
-    }
-  };
-
+  // Function to refresh user data from server
   const refreshUserData = async () => {
     try {
       debugLog('Refreshing user data from server...');
+      
       const userData = await authService.verifyToken();
+      
       debugLog('User data refreshed successfully:', userData);
       setUser(userData);
-      setIsAuthenticated(true);
       localStorage.setItem('user', JSON.stringify(userData));
+      
       return { success: true, user: userData };
     } catch (error) {
       debugLog('Error refreshing user data:', error.message);
-      setIsAuthenticated(false);
       return { success: false, error: error.message };
     }
   };
 
+  // Check if user has required role
   const hasRole = (requiredRole) => {
     if (!user) {
       debugLog('hasRole check failed: no user');
@@ -239,6 +181,7 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+  // Check if user has any of the required roles
   const hasAnyRole = (requiredRoles) => {
     if (!user) {
       debugLog('hasAnyRole check failed: no user');
@@ -249,67 +192,26 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
-  const loginWithGoogle = async () => {
-    try {
-      debugLog('Initiating Google login...');
-      const response = await authService.loginWithGoogle();
-      if (response.success) {
-        debugLog('Google login successful');
-        await checkAuthStatus();
-        return { success: true };
-      } else {
-        debugLog('Google login failed:', response.message);
-        return { success: false, message: response.message };
-      }
-    } catch (error) {
-      debugLog('Google login failed:', error);
-      return {
-        success: false,
-        message: 'Đăng nhập Google thất bại'
-      };
-    }
-  };
-
-  const isShop = () => {
-    const result = user?.role === 'shop';
-    debugLog('isShop:', result);
-    return result;
-  };
-
-  const isAdmin = () => {
-    const result = user?.role === 'admin';
-    debugLog('isAdmin:', result);
-    return result;
-  };
-
-  const isPremium = () => {
-    const result = user?.account_type?.level === 'premium' || user?.role === 'shop';
-    debugLog('isPremium:', result);
-    return result;
-  };
-
   const value = {
     user,
-    isAuthenticated,
     loading,
     login,
     register,
     logout,
     updateUser,
-    updateUserRole,
     refreshUserData,
     hasRole,
     hasAnyRole,
-    isShop,
-    isAdmin,
-    isPremium,
-    checkAuthStatus,
-    loginWithGoogle,
+    checkAuthStatus
   };
 
   debugLog('AuthProvider rendering with user:', user ? user.username : 'null');
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {

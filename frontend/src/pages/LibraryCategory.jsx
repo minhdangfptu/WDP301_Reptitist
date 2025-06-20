@@ -4,7 +4,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-import { baseUrl } from '../config';
+
 const LibraryCategory = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [topic, setTopic] = useState(null);
@@ -14,13 +14,13 @@ const LibraryCategory = () => {
   const { id } = useParams();
   const [openIndex, setOpenIndex] = useState(null);
   const topicId = id;
-  const { user } = useAuth();
-  const isAdmin = user && user.role === "admin";
+  const { hasRole } = useAuth();
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         console.log(topicId, 'topicId');
-        const response = await axios.get(`${baseUrl}/reptitist/library-categories/topic/${topicId}`);
+        const response = await axios.get(`http://localhost:8080/reptitist/library_categories/topic/${topicId}`);
         setAllCategories(response.data);
       } catch (err) {
         setError("Lỗi khi tải danh sách danh mục");
@@ -29,7 +29,7 @@ const LibraryCategory = () => {
 
     const fetchTopic = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`);
+        const response = await axios.get(`http://localhost:8080/reptitist/library_topics/${topicId}`);
         setTopic(response.data);
       } catch (err) {
         setError("Lỗi khi tải thông tin chủ đề");
@@ -44,7 +44,7 @@ const LibraryCategory = () => {
   const handleDelete = async (categoryId) => {
     if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library-categories/${categoryId}`);
+        await axios.delete(`http://localhost:8080/reptitist/library_categories/${categoryId}`);
         setAllCategories(allCategories.filter((cat) => cat._id !== categoryId));
       } catch (error) {
         alert("Lỗi khi xoá danh mục.");
@@ -76,13 +76,14 @@ const LibraryCategory = () => {
           <span>{topic?.topic_title || "Chủ đề không xác định"}</span>
         </div>
 
-        <div className="d-flex justify-content-end mb-3">
-          {isAdmin && (
+        {/* Nút tạo danh mục */}
+        {hasRole("admin") && (
+          <div className="d-flex justify-content-end mb-3">
             <Link to={`/library_categories/create/${topicId}`}>
               <button className="btn btn-success">+ Tạo danh mục</button>
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <section className="library-section">
@@ -136,42 +137,41 @@ const LibraryCategory = () => {
                   </Link>
 
                   <div className="card-title">{cat.category_content}</div>
-                  <div
-                    style={{
-                      marginTop: "10px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {isAdmin && (
-                      <>
-                        <Link to={`/library_categories/update/${cat._id}`}>
-                          <button
-                            style={{
-                              backgroundColor: "#ffc107",
-                              border: "none",
-                              padding: "4px 8px",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            Cập nhật
-                          </button>
-                        </Link>
+                  {/* Nút cập nhật, xóa danh mục */}
+                  {hasRole("admin") && (
+                    <div
+                      style={{
+                        marginTop: "10px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Link to={`/library_categories/update/${cat._id}`}>
                         <button
                           style={{
-                            backgroundColor: "#dc3545",
-                            color: "#fff",
+                            backgroundColor: "#ffc107",
                             border: "none",
                             padding: "4px 8px",
                             borderRadius: "4px",
                           }}
-                          onClick={() => handleDelete(cat._id)}
                         >
-                          Xoá
+                          Cập nhật
                         </button>
-                      </>
-                    )}
-                  </div>
+                      </Link>
+                      <button
+                        style={{
+                          backgroundColor: "#dc3545",
+                          color: "#fff",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                        }}
+                        onClick={() => handleDelete(cat._id)}
+                      >
+                        Xoá
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
               {allCategories.length === 0 && (

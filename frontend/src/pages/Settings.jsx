@@ -8,7 +8,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import '../css/Settings.css';
 import '../css/dark-mode.css';
 
-
 const Settings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -99,12 +98,8 @@ const Settings = () => {
               <div className="profile-user-info">
                 <div className="profile-avatar">
                   <img
-                    src={user.user_imageurl || "/images/default-avatar.png"}
+                    src={user.user_imageurl || "/api/placeholder/64/64"}
                     alt="Profile"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/images/default-avatar.png";
-                    }}
                   />
                 </div>
                 <div className="profile-user-details">

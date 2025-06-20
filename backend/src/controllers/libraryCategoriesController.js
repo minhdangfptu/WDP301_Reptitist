@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const LibraryCategory = require('../models/Library_category'); // Đảm bảo đúng tên model
-const LibraryTopic = require('../models/Library_topics');
+const LibraryCategory = require('../models/library_category'); // Đảm bảo đúng tên model
+const LibraryTopic = require('../models/library_topics');
 
 // Tạo danh mục mới
 exports.createCategory = async (req, res) => {

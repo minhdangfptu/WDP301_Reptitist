@@ -22,7 +22,4 @@ export const logoutApi = (refreshToken) => {
     return axiosClient.post('/logout', {
         refreshToken
     });
-};
-export const googleLoginApi = () => {
-    return axiosClient.get('/auth/google');
-};
+}

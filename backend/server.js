@@ -1,15 +1,14 @@
-const dotenv = require('dotenv');
-dotenv.config();
 const express = require('express');
 const { connect } = require('mongoose');
 const router = require('./src/routes');
+const dotenv = require('dotenv');
 const morgan = require('morgan');
 var cors = require('cors');
 const bodyParser = require('body-parser');
 const connectDB = require('./src/config/db.js');
 
 const app = express();
-const passport = require('passport');
+dotenv.config();
 
 // CORS configuration - QUAN TRỌNG!
 const corsOptions = {
@@ -17,9 +16,7 @@ const corsOptions = {
     'http://localhost:3000', // React development server
     'http://localhost:5173', // Vite development server  
     'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
-    process.env.FRONTEND_URL1,
-    process.env.FRONTEND_URL2
+    'http://127.0.0.1:5173'
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

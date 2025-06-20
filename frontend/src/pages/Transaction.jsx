@@ -6,9 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Transaction.css';
-import { baseUrl } from '../config';
+
 const Transaction = () => {
-  const { user, hasRole } = useAuth();
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,44 +23,61 @@ const Transaction = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('refresh_token');
-      if (!token) {
-        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        setLoading(false);
-        return;
-      }
-
+      const token = localStorage.getItem('token');
       const response = await axios.get(
-        `${baseUrl}/reptitist/transactions?range=${dateRange}`,
+        `http://localhost:8080/reptitist/transactions?range=${dateRange}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
           }
         }
       );
-      
-      if (response.data && response.data.transactions) {
-        setTransactions(response.data.transactions);
-        setError('');
-      } else {
-        setTransactions([]);
-      }
+      setTransactions(response.data.transactions || []);
+      setError('');
     } catch (err) {
       console.error('Error fetching transactions:', err);
-      if (err.response?.status === 401) {
-        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-      } else if (err.response?.status === 404) {
-        // No transactions found is not an error
-        setTransactions([]);
-        setError('');
-      } else {
-        setError('Không thể tải lịch sử giao dịch. Vui lòng thử lại sau.');
-        setTransactions([]);
-      }
+      setError('Không thể tải lịch sử giao dịch');
+      // Set mock data for demo if API fails
+      setTransactions(getMockTransactions());
     } finally {
       setLoading(false);
     }
   };
+
+  const getMockTransactions = () => [
+    {
+      _id: '1',
+      transaction_type: 'deposit',
+      amount: 100000,
+      description: 'Nạp tiền vào ví',
+      status: 'completed',
+      transaction_date: new Date(Date.now() - 1000 * 60 * 60 * 2) // 2 hours ago
+    },
+    {
+      _id: '2',
+      transaction_type: 'purchase',
+      amount: -50000,
+      description: 'Mua thức ăn cho bò sát',
+      status: 'completed',
+      transaction_date: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+    },
+    {
+      _id: '3',
+      transaction_type: 'refund',
+      amount: 25000,
+      description: 'Hoàn tiền đơn hàng #12345',
+      status: 'completed',
+      transaction_date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2) // 2 days ago
+    },
+    {
+      _id: '4',
+      transaction_type: 'purchase',
+      amount: -75000,
+      description: 'Thanh toán dịch vụ tư vấn',
+      status: 'pending',
+      transaction_date: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3) // 3 days ago
+    }
+  ];
 
   const formatAmount = (amount) => {
     const absAmount = Math.abs(amount);
@@ -70,7 +87,6 @@ const Transaction = () => {
 
   const getAmountClass = (amount, status) => {
     if (status === 'pending') return 'pending';
-    if (status === 'failed') return 'failed';
     return amount > 0 ? 'positive' : 'negative';
   };
 
@@ -79,23 +95,13 @@ const Transaction = () => {
       return (
         <div className="arrow-icon pending">
           <svg className="arrow-svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9V6h2v3h3v2h-3v3H9v-3H6V9h3z" />
+            <path d="M10 2L3 9h4v9h6V9h4L10 2z" />
           </svg>
         </div>
       );
     }
 
-    if (status === 'failed') {
-      return (
-        <div className="arrow-icon failed">
-          <svg className="arrow-svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" />
-          </svg>
-        </div>
-      );
-    }
-
-    if (amount > 0 || type === 'refund') {
+    if (amount > 0) {
       return (
         <div className="arrow-icon positive">
           <svg className="arrow-svg" fill="currentColor" viewBox="0 0 20 20">
@@ -143,28 +149,6 @@ const Transaction = () => {
         hour: '2-digit',
         minute: '2-digit'
       });
-    }
-  };
-
-  const getTransactionTypeDisplay = (type) => {
-    switch (type) {
-      case 'deposit': return 'Nạp tiền';
-      case 'purchase': return 'Mua hàng';
-      case 'refund': return 'Hoàn tiền';
-      case 'shop_upgrade': return 'Nâng cấp Shop';
-      case 'premium_upgrade': return 'Nâng cấp Premium';
-      case 'withdrawal': return 'Rút tiền';
-      default: return type;
-    }
-  };
-
-  const getStatusDisplay = (status) => {
-    switch (status) {
-      case 'completed': return 'Hoàn thành';
-      case 'pending': return 'Đang chờ';
-      case 'failed': return 'Thất bại';
-      case 'refunded': return 'Đã hoàn tiền';
-      default: return status;
     }
   };
 
@@ -222,52 +206,6 @@ const Transaction = () => {
     }).format(balance || 0);
   };
 
-  // Helper function to get user account type display
-  const getUserAccountTypeDisplay = () => {
-    if (!user) return 'Customer';
-    
-    // Check role first for admin
-    if (hasRole('admin')) {
-      return 'Administrator';
-    }
-    
-    // Check account_type for shop
-    if (user.account_type?.type === 'shop') {
-      const level = user.account_type?.level;
-      if (level === 'premium') {
-        return 'Premium Shop Partner';
-      } else {
-        return 'Shop Partner';
-      }
-    }
-    
-    // Check account type level for customers
-    if (user.account_type?.level === 'premium') {
-      return 'Premium Customer';
-    }
-    
-    return 'Customer';
-  };
-
-  // Helper function to check if user should see upgrade option
-  const shouldShowUpgrade = () => {
-    if (!user) return false;
-    
-    // Don't show upgrade for admin
-    if (hasRole('admin')) return false;
-    
-    // Don't show upgrade if already shop or premium
-    if (user.account_type?.type === 'shop') return false;
-    if (user.account_type?.level === 'premium') return false;
-    
-    return true;
-  };
-
-  // Check if user is shop
-  const isShop = () => {
-    return user?.account_type?.type === 'shop';
-  };
-
   if (!user) {
     return (
       <>
@@ -321,20 +259,15 @@ const Transaction = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  {shouldShowUpgrade() ? (
+                  {user.account_type?.type === 'premium' ? (
+                    <div className="profile-badge-container">
+                      <span className="profile-badge-text">Premium Customer</span>
+                    </div>
+                  ) : (
                     <Link to="/PlanUpgrade" className="profile-badge-container">
-                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
+                      <span className="profile-badge-text">Customer</span>
                       <span className="upgrade-button">Upgrade account</span>
                     </Link>
-                  ) : (
-                    <div className="profile-badge-container">
-                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
-                      {isShop() && (
-                        <span className="shop-features-link">
-                          <Link to="/ProductManagement">Quản lý cửa hàng</Link>
-                        </span>
-                      )}
-                    </div>
                   )}
                 </div>
               </div>
@@ -371,17 +304,9 @@ const Transaction = () => {
                   <div className="billing-item">
                     <span className="billing-label">Loại tài khoản:</span>
                     <span className="billing-value">
-                      {getUserAccountTypeDisplay()}
+                      {user.account_type?.type === 'premium' ? 'Premium' : 'Thường'}
                     </span>
                   </div>
-                  {isShop() && user.account_type?.expires_at && (
-                    <div className="billing-item">
-                      <span className="billing-label">Hết hạn:</span>
-                      <span className="billing-value">
-                        {new Date(user.account_type.expires_at).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -404,7 +329,6 @@ const Transaction = () => {
                       <option value="7days">7 ngày qua</option>
                       <option value="30days">30 ngày qua</option>
                       <option value="90days">3 tháng qua</option>
-                      <option value="1year">1 năm qua</option>
                     </select>
                   </div>
                 </div>
@@ -412,41 +336,15 @@ const Transaction = () => {
                 <div className="transactions-list">
                   {loading ? (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                      <div className="loading-spinner" style={{ 
-                        width: '40px', 
-                        height: '40px', 
-                        border: '4px solid #f3f3f3',
-                        borderTop: '4px solid #3498db',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite',
-                        margin: '0 auto 16px'
-                      }}></div>
-                      Đang tải giao dịch...
+                      Đang tải...
                     </div>
                   ) : error ? (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#dc3545' }}>
-                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
                       {error}
-                      <button 
-                        onClick={fetchTransactions}
-                        style={{
-                          marginTop: '16px',
-                          padding: '8px 16px',
-                          backgroundColor: '#007bff',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Thử lại
-                      </button>
                     </div>
                   ) : Object.keys(groupedTransactions).length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                      <div style={{ fontSize: '48px', marginBottom: '16px' }}>💳</div>
-                      <h4>Chưa có giao dịch nào</h4>
-                      <p>Lịch sử giao dịch của bạn sẽ được hiển thị ở đây</p>
+                      Không có giao dịch nào trong khoảng thời gian này
                     </div>
                   ) : (
                     Object.entries(groupedTransactions).map(([dateGroup, dayTransactions]) => (
@@ -459,36 +357,14 @@ const Transaction = () => {
                             </div>
                             <div className="transaction-details">
                               <div className="company-name">
-                                {getTransactionTypeDisplay(transaction.transaction_type)}
-                              </div>
-                              <div className="transaction-description">
-                                {transaction.description || 'Không có mô tả'}
+                                {transaction.description || transaction.transaction_type}
                               </div>
                               <div className="transaction-date">
                                 {formatDate(transaction.transaction_date)}
                               </div>
-                              <div className="transaction-status">
-                                Trạng thái: {getStatusDisplay(transaction.status)}
-                              </div>
                             </div>
                             <div className={`transaction-amount ${getAmountClass(transaction.amount, transaction.status)}`}>
-                              {transaction.status === 'pending' ? (
-                                <div>
-                                  <div>Đang xử lý</div>
-                                  <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                                    {formatAmount(transaction.amount)}
-                                  </div>
-                                </div>
-                              ) : transaction.status === 'failed' ? (
-                                <div>
-                                  <div>Thất bại</div>
-                                  <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                                    {formatAmount(transaction.amount)}
-                                  </div>
-                                </div>
-                              ) : (
-                                formatAmount(transaction.amount)
-                              )}
+                              {transaction.status === 'pending' ? 'Đang xử lý' : formatAmount(transaction.amount)}
                             </div>
                           </div>
                         ))}
@@ -501,23 +377,6 @@ const Transaction = () => {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        .transaction-item .transaction-amount.failed {
-          color: #dc3545;
-        }
-        
-        .arrow-icon.failed {
-          background-color: #dc3545;
-          color: white;
-        }
-      `}</style>
-      
       <Footer />
     </>
   );
