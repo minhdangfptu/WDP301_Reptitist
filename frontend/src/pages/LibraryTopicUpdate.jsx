@@ -32,7 +32,7 @@ const UpdateLibraryTopic = () => {
         topic_description: description,
         topic_imageurl: [imageurl],
       });
-      navigate("/Library");
+      navigate("/LibraryTopic");
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error);
     }
