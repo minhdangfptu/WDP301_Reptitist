@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import "../css/SignUp3.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SignUp3 = () => {
   const navigate = useNavigate();
@@ -23,13 +25,11 @@ const SignUp3 = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Redirect if not verified or no email
   useEffect(() => {
-    console.log("SignUp3 - Email:", email, "Verified:", isVerified); // Debug log
+    console.log("SignUp3 - Email:", email, "Verified:", isVerified); 
     
     if (!email || !isVerified) {
-      // Show alert and redirect
-      alert("Vui lòng xác thực email trước khi tiếp tục đăng ký.");
+      toast.error("Vui lòng xác thực email trước khi tiếp tục đăng ký.");
       navigate('/SignUp2');
     }
   }, [email, isVerified, navigate]);
@@ -70,6 +70,8 @@ const SignUp3 = () => {
       newErrors.password = "Mật khẩu phải có ít nhất 8 ký tự";
     } else if (!/(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
       newErrors.password = "Mật khẩu phải chứa ít nhất 1 chữ hoa và 1 số";
+    } else if (formData.password.length > 50) {
+      newErrors.password = "Mật khẩu không được quá 50 ký tự";
     }
     
     // Confirm password validation
@@ -109,7 +111,7 @@ const SignUp3 = () => {
       
       if (result.success) {
         // Registration successful
-        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
         navigate('/Login');
       } else {
         // Registration failed
@@ -117,13 +119,18 @@ const SignUp3 = () => {
           setErrors({ username: "Tên người dùng đã tồn tại" });
         } else if (result.message.includes('Email already exists')) {
           setErrors({ submit: "Email đã được đăng ký" });
+        } else if (result.message.includes('Invalid password')) {
+          setErrors({ password: "Mật khẩu không hợp lệ" });
         } else {
           setErrors({ submit: result.message || "Đăng ký thất bại. Vui lòng thử lại." });
         }
+        toast.error(result.message || "Đăng ký thất bại. Vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Error during registration:", error);
-      setErrors({ submit: "Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại." });
+      setErrors({ 
+        submit: error.message || "Lỗi kết nối. Vui lòng kiểm tra kết nối mạng và thử lại." 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -160,6 +167,18 @@ const SignUp3 = () => {
 
   return (
     <div className="signup3-body">
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="signup3-container">
         <div className="signup3-content">
           <div className="signup3-logo">

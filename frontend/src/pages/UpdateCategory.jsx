@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { baseUrl } from '../config';
 
 const UpdateCategory = () => {
   const { id } = useParams();
@@ -17,7 +18,7 @@ const UpdateCategory = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/reptitist/library_categories/${id}`)
+      .get(`${baseUrl}/reptitist/library_categories/${id}`)
       .then((response) => {
         console.log(response.data); // Kiểm tra dữ liệu trả về
         setFormData(response.data);
@@ -32,7 +33,7 @@ const UpdateCategory = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:8080/reptitist/library_categories/${id}`, formData);
+      await axios.put(`${baseUrl}/reptitist/library_categories/${id}`, formData);
       navigate(`/libraryCategory/${formData.topic_id._id}`);
     } catch (err) {
       setError("Không thể cập nhật danh mục. Vui lòng thử lại.");
