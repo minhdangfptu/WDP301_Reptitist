@@ -114,9 +114,9 @@ exports.getCategoriesByTopicId = async (req, res) => {
     const { topicId } = req.params;
 
     const categories = await LibraryCategory.find({ topic_id: topicId });
-    if (!categories || categories.length === 0) {
-      return res.status(404).json({ message: 'Không tìm thấy danh mục cho chủ đề này' });
-    }
+    // if (!categories || categories.length === 0) {
+    //   return res.status(404).json({ message: 'Không tìm thấy danh mục cho chủ đề này' });
+    // }
 
     res.status(200).json(categories);
   } catch (error) {
