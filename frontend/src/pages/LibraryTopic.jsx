@@ -9,6 +9,7 @@ import { baseUrl } from '../config';
 
 const Library = () => {
   const [topics, setTopics] = useState([]);
+  const [reptiles, setReptiles] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -16,18 +17,36 @@ const Library = () => {
   const isAdmin = user && user.role === "admin";
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true); 
     axios
       .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
         setTopics(response.data);
-        setLoading(false);
+        getAllReptileInformation()
+          .then((reptilesData) => {
+            setReptiles(reptilesData);
+            setLoading(false); 
+          })
+          .catch((error) => {
+            setError('Lỗi khi tải dữ liệu về bò sát');
+            setLoading(false); 
+          });
       })
       .catch((error) => {
-        console.error("Lỗi khi lấy danh sách chủ đề:", error);
-        setLoading(false);
+        console.error('Lỗi khi lấy danh sách chủ đề:', error);
+        setError('Lỗi khi tải dữ liệu về chủ đề');
+        setLoading(false); 
       });
   }, []);
+ const getAllReptileInformation = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/reptitist/info/get-all-reptile`);
+      return response.data.data
+      console.log(response.data, 'reptile data');
+    } catch (err) {
+      throw new Error('Lỗi khi tải dữ liệu');
+    }
+  };
 
   const toggleTopic = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -74,29 +93,28 @@ const Library = () => {
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content d-flex">
-            {/* Sidebar */}
-            <div className="sidebar me-5" style={{ width: "250px" }}>
+          <div className="library-content" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '30px' }}>
+            <div className="sidebar">
               <h2 className="sidebar-title">Chủ đề thư viện</h2>
               <ul className="sidebar-menu list-unstyled">
                 {topics.map((topic, idx) => (
-                  <li key={topic._id} style={{ marginBottom: "10px" }}>
+                  <li key={topic._id} style={{ marginBottom: '10px' }}>
                     <div
-                      onClick={() => toggleTopic(idx)}
+                      onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
                       style={{
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
                       <span>{topic.topic_title}</span>
                       <span
                         style={{
-                          transform: openIndex === idx ? "rotate(90deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                          display: "inline-block",
+                          transform: openIndex === idx ? 'rotate(90deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease',
+                          display: 'inline-block',
                         }}
                       >
                         ▶
@@ -104,10 +122,10 @@ const Library = () => {
                     </div>
 
                     {openIndex === idx && (
-                      <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
+                      <ul style={{ paddingLeft: '15px', marginTop: '5px' }}>
                         <li>
                           <Link to={`/libraryCategory/${topic._id}`}>
-                            {topic.topic_description || "Chưa có mô tả"}
+                            {topic.topic_description || 'Chưa có mô tả'}
                           </Link>
                         </li>
                       </ul>
@@ -116,21 +134,18 @@ const Library = () => {
                 ))}
               </ul>
               {isAdmin && (
-                <div style={{ marginTop: "20px" }}>
+                <div style={{ marginTop: '20px' }}>
                   <Link to="/library_topics/create">
                     <button
                       style={{
-                        width: "100%",
-                        padding: "8px 16px",
-                        backgroundColor: "#28a745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s ease",
-                        ":hover": {
-                          backgroundColor: "#218838"
-                        }
+                        width: '100%',
+                        padding: '8px 16px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease',
                       }}
                     >
                       + Tạo chủ đề
@@ -138,16 +153,18 @@ const Library = () => {
                   </Link>
                 </div>
               )}
+              <h2 className="sidebar-title mt-4">Thư viện chuyên sâu</h2>
             </div>
 
-            {/* Content Grid */}
-            <div style={{ flex: 1 }}>
+            {/* Content Grid for Topics and Reptiles */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              {/* First row for topics */}
               <div
                 className="content-grid"
-                style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "20px"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '20px',
                 }}
               >
                 {topics.map((topic) => (
@@ -155,92 +172,61 @@ const Library = () => {
                     className="category-card"
                     key={topic._id}
                     style={{
-                      width: "100%",
-                      height: "auto",
-                      border: "1px solid #ccc",
-                      borderRadius: "8px",
-                      padding: "15px",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      transition: "transform 0.2s ease",
-                      ":hover": {
-                        transform: "translateY(-5px)"
-                      }
+                      width: '100%',
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      padding: '15px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease',
                     }}
                   >
                     <Link to={`/libraryCategory/${topic._id}`}>
-                      <div className="card-image" style={{ cursor: "pointer" }}>
+                      <div className="card-image" style={{ cursor: 'pointer' }}>
                         <img
-                          src={topic.topic_imageurl?.[0] || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                          src={topic.topic_imageurl?.[0] || 'https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png'}
                           alt={topic.topic_title}
                           style={{
-                            width: "100%",
-                            height: "200px",
-                            objectFit: "cover",
-                            borderRadius: "4px",
+                            width: '100%',
+                            height: '200px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
                           }}
                         />
                       </div>
                     </Link>
 
-                    <div className="card-title" style={{ 
-                      marginTop: "15px", 
-                      fontWeight: "bold",
-                      fontSize: "1.1rem",
-                      color: "#333"
-                    }}>
+                    <div className="card-title" style={{ marginTop: '15px', fontWeight: 'bold', fontSize: '1.1rem' }}>
                       {topic.topic_title}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: "15px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "10px"
-                      }}
-                    >
-                      {isAdmin && (
-                        <>
-                          <Link to={`/library_topics/update/${topic._id}`} style={{ flex: 1 }}>
-                            <button
-                              style={{
-                                width: "100%",
-                                backgroundColor: "#ffc107",
-                                border: "none",
-                                padding: "8px 12px",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                transition: "background-color 0.2s ease"
-                              }}
-                            >
-                              Cập nhật
-                            </button>
-                          </Link>
-                          <button
-                            style={{
-                              flex: 1,
-                              backgroundColor: "#dc3545",
-                              color: "#fff",
-                              border: "none",
-                              padding: "8px 12px",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              transition: "background-color 0.2s ease"
-                            }}
-                            onClick={() => handleDelete(topic._id)}
-                          >
-                            Xoá
-                          </button>
-                        </>
-                      )}
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Second row for reptiles */}
+              <div className="reptile-info">
+                <h3>Danh sách các loài bò sát</h3>
+                {reptiles.length === 0 ? (
+                  <p>Không có thông tin bò sát để hiển thị.</p>
+                ) : (
+                  <ul>
+                    {reptiles.map((reptile) => (
+                      <li key={reptile._id}>
+                        <h4>{reptile.common_name}</h4>
+                        <p><strong>Mô tả:</strong> {reptile.reptile_description}</p>
+                        <p><strong>Tuổi thọ:</strong> {reptile.lifespan_years} năm</p>
+                        <p><strong>Nhà ở tự nhiên:</strong> {reptile.natural_habitat}</p>
+                        <p><strong>Chế độ ăn:</strong> {reptile.diet}</p>
+                        <p><strong>Thức ăn được khuyến nghị:</strong> {reptile.recommended_foods.join(', ')}</p>
+                        <p><strong>Bệnh thường gặp:</strong> {reptile.disease.day}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
         </div>
       </section>
-
 
       <Footer />
     </>

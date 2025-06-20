@@ -11,6 +11,7 @@ const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRouter'); 
+const reptileRoutes = require('./reptile');
 
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
@@ -23,5 +24,6 @@ router.use('/library-categories', libraryCategoriesRoute);
 router.use('/library-content', libraryContentRoute);
 router.use('/topic-categories', topicCategoryRoutes);
 router.use('/transactions', transactionRoute);
+router.use('/info', reptileRoutes);
 
 module.exports= router;
