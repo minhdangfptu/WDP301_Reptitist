@@ -136,6 +136,21 @@ const LibraryContent = () => {
     }));
   };
 
+  const handleImageFileChange = (index) => (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => {
+          const newImages = [...(prev.image_urls || [])];
+          newImages[index] = reader.result;
+          return { ...prev, image_urls: newImages };
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCreate = async (e) => {
     e.preventDefault();
     console.log("Bắt đầu handleCreate");
@@ -439,15 +454,20 @@ const LibraryContent = () => {
                       />
                     </div>
                     <div style={{ marginBottom: "10px" }}>
-                      <label>URL hình ảnh:</label>
-                      <input
-                        type="text"
-                        name="image_urls"
-                        value={formData.image_urls.join(", ")}
-                        onChange={handleFormChange}
-                        style={{ width: "100%", padding: "5px" }}
-                        placeholder="Nhập các URL hình ảnh, phân cách bằng dấu phẩy"
-                      />
+                      <label>Hình ảnh (tối đa 3 ảnh, mỗi ảnh 1 file):</label>
+                      {[0,1,2].map((idx) => (
+                        <div key={idx} style={{ marginBottom: 8 }}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageFileChange(idx)}
+                            style={{ width: "100%", padding: "5px" }}
+                          />
+                          {formData.image_urls && formData.image_urls[idx] && (
+                            <img src={formData.image_urls[idx]} alt={`preview-${idx}`} style={{ maxWidth: 80, maxHeight: 80, border: '1px solid #ccc', marginTop: 4 }} />
+                          )}
+                        </div>
+                      ))}
                     </div>
                     <div style={{ marginBottom: "10px" }}>
                       <button
