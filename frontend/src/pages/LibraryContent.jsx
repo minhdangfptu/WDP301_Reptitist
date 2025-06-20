@@ -330,6 +330,13 @@ const LibraryContent = () => {
     }
   };
 
+  // Lấy tên chủ đề từ topics dựa vào category.topic_id
+  const topicTitle = React.useMemo(() => {
+    if (!category?.topic_id || !Array.isArray(topics)) return null;
+    const found = topics.find(t => t._id === (category.topic_id._id || category.topic_id));
+    return found ? found.topic_title : null;
+  }, [category, topics]);
+
   if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
   if (error) return <div className="text-danger text-center my-5">{error}</div>;
 
@@ -349,8 +356,8 @@ const LibraryContent = () => {
           <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
           <a href="/LibraryTopic">Thư viện kiến thức</a>{" "}
           <i className="fas fa-angle-right"></i>{" "}
-          <a href={`/LibraryCategory/${category?.topic_id}`}>
-            {category?.topic_title || "Chủ đề không xác định"}
+          <a href={category?.topic_id ? `/LibraryCategory/${category.topic_id._id || category.topic_id}` : '#'}>
+            {topicTitle || "Chủ đề không xác định"}
           </a>{" "}
           <i className="fas fa-angle-right"></i>{" "}
           <span>{category?.category_content || "Danh mục không xác định"}</span>
