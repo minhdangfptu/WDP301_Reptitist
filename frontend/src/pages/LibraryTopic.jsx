@@ -1,54 +1,59 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import axios from "axios";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { baseUrl } from '../config';
 
-const menuData = [
-  {
-    title: "Hướng dẫn chăm sóc",
-    imageUrl: "/prorep3.png",
-    submenu: [
-      "Khái quát về bò sát",
-      "Kỹ thuật nuôi dưỡng",
-      "Môi trường sống",
-      "Thức ăn và dinh dưỡng",
-    ],
-  },
-  {
-    title: "Bài viết y học",
-    imageUrl: "/prorep3.png",
-    submenu: ["Sơ cứu cơ bản", "Thuốc và liều lượng", "Các nghiên cứu mới"],
-  },
-  {
-    title: "Bò sát phổ biến",
-    imageUrl: "/prorep3.png",
-    submenu: ["Rồng Úc", "Rắn", "Thằn lằn", "Tắc kè", "Rùa"],
-  },
-  {
-    title: "Bệnh lý thường gặp tại VN",
-    imageUrl: "/prorep3.png",
-    submenu: ["Bệnh về da", "Bệnh về hô hấp", "Bệnh về tiêu hóa", "Ký sinh trùng"],
-  },
-  {
-    title: "Cách điều trị",
-    imageUrl: "/prorep3.png",
-    submenu: ["Phương pháp tự nhiên", "Dùng thuốc", "Thủ thuật phẫu thuật"],
-  },
-  {
-    title: "Trang bị & Phụ kiện",
-    imageUrl: "/prorep3.png",
-    submenu: ["Bể nuôi và lồng", "Hệ thống sưởi và ánh sáng", "Đồ trang trí", "Dụng cụ cho ăn"],
-  },
-];
 
-const LibraryTopic = () => {
-  const [openIndexes, setOpenIndexes] = useState({});
+const Library = () => {
+  const [topics, setTopics] = useState([]);
+  const [openIndex, setOpenIndex] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user && user.role === "admin";
 
-  const toggleSubmenu = (index) => {
-    setOpenIndexes((prev) => ({
-      ...prev,
-      [index]: !prev[index],
-    }));
+  useEffect(() => {
+    setLoading(true);
+    axios
+      .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
+      .then((response) => {
+        setTopics(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy danh sách chủ đề:", error);
+        setLoading(false);
+      });
+  }, []);
+
+  const toggleTopic = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
   };
+
+  const handleDelete = async (topicId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
+      try {
+        await axios.delete(`${baseUrl}/reptitist/library_topics/${topicId}`);
+        setTopics(topics.filter((topic) => topic._id !== topicId));
+        alert("Xóa chủ đề thành công!");
+      } catch (error) {
+        console.error("Lỗi khi xóa chủ đề:", error);
+        alert("Có lỗi xảy ra khi xóa chủ đề!");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <img src="/loading.gif" alt="Loading" style={{ width: 50, height: 50, marginRight: 12 }} />
+        Đang tải danh sách chủ đề...
+      </div>
+    );
+  }
 
   return (
     <>
@@ -62,65 +67,184 @@ const LibraryTopic = () => {
 
       <div className="container">
         <div className="breadcrumb">
-          <a href="/LandingPage">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
-          <a href="/LibraryTopic">Thư viện kiến thức</a>
+          <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right"></i>{" "}
+          <span>Thư viện kiến thức</span>
         </div>
       </div>
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content">
+          <div className="library-content d-flex">
             {/* Sidebar */}
-            <div className="sidebar">
-              <h2 className="sidebar-title">Thư viện kiến thức</h2>
-              <ul className="sidebar-menu">
-                {menuData.map((item, idx) => (
-                  <li key={idx}>
-                    <div className="menu-item" onClick={() => toggleSubmenu(idx)} style={{ cursor: "pointer", userSelect: "none" }}>
-                      <a href="#" className="menu-link">{item.title}</a>
-                      <span
-                        className={`caret ${openIndexes[idx] ? "caret-up" : "caret-down"}`}
-                        aria-hidden="true"
-                      ></span>
-                    </div>
-                    <ul
-                      className="submenu"
-                      style={{ display: openIndexes[idx] ? "block" : "none" }}
+            <div className="sidebar me-5" style={{ width: "250px" }}>
+              <h2 className="sidebar-title">Chủ đề thư viện</h2>
+              <ul className="sidebar-menu list-unstyled">
+                {topics.map((topic, idx) => (
+                  <li key={topic._id} style={{ marginBottom: "10px" }}>
+                    <div
+                      onClick={() => toggleTopic(idx)}
+                      style={{
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
                     >
-                      {item.submenu.map((sub, i) => (
-                        <li key={i}>
-                          <a href={sub === "Khái quát về bò sát" ? "/LibraryCategory" : "#"}>
-                            {sub}
-                          </a>
+                      <span>{topic.topic_title}</span>
+                      <span
+                        style={{
+                          transform: openIndex === idx ? "rotate(90deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                          display: "inline-block",
+                        }}
+                      >
+                        ▶
+                      </span>
+                    </div>
+
+                    {openIndex === idx && (
+                      <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
+                        <li>
+                          <Link to={`/libraryCategory/${topic._id}`}>
+                            {topic.topic_description || "Chưa có mô tả"}
+                          </Link>
                         </li>
-                      ))}
-                    </ul>
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
+              {isAdmin && (
+                <div style={{ marginTop: "20px" }}>
+                  <Link to="/library_topics/create">
+                    <button
+                      style={{
+                        width: "100%",
+                        padding: "8px 16px",
+                        backgroundColor: "#28a745",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s ease",
+                        ":hover": {
+                          backgroundColor: "#218838"
+                        }
+                      }}
+                    >
+                      + Tạo chủ đề
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Content Grid */}
-            <div className="content-grid">
-              {menuData.map((item, idx) => (
-                <div className="category-card" key={idx}>
-                  <div className="card-image">
-                    <img
-                      src={item.imageUrl}
-                      alt={item.title}
-                    />
+            <div style={{ flex: 1 }}>
+              <div
+                className="content-grid"
+                style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: "20px"
+                }}
+              >
+                {topics.map((topic) => (
+                  <div
+                    className="category-card"
+                    key={topic._id}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      padding: "15px",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      transition: "transform 0.2s ease",
+                      ":hover": {
+                        transform: "translateY(-5px)"
+                      }
+                    }}
+                  >
+                    <Link to={`/libraryCategory/${topic._id}`}>
+                      <div className="card-image" style={{ cursor: "pointer" }}>
+                        <img
+                          src={topic.topic_imageurl?.[0] || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                          alt={topic.topic_title}
+                          style={{
+                            width: "100%",
+                            height: "200px",
+                            objectFit: "cover",
+                            borderRadius: "4px",
+                          }}
+                        />
+                      </div>
+                    </Link>
+
+                    <div className="card-title" style={{ 
+                      marginTop: "15px", 
+                      fontWeight: "bold",
+                      fontSize: "1.1rem",
+                      color: "#333"
+                    }}>
+                      {topic.topic_title}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: "15px",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: "10px"
+                      }}
+                    >
+                      {isAdmin && (
+                        <>
+                          <Link to={`/library_topics/update/${topic._id}`} style={{ flex: 1 }}>
+                            <button
+                              style={{
+                                width: "100%",
+                                backgroundColor: "#ffc107",
+                                border: "none",
+                                padding: "8px 12px",
+                                borderRadius: "4px",
+                                cursor: "pointer",
+                                transition: "background-color 0.2s ease"
+                              }}
+                            >
+                              Cập nhật
+                            </button>
+                          </Link>
+                          <button
+                            style={{
+                              flex: 1,
+                              backgroundColor: "#dc3545",
+                              color: "#fff",
+                              border: "none",
+                              padding: "8px 12px",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              transition: "background-color 0.2s ease"
+                            }}
+                            onClick={() => handleDelete(topic._id)}
+                          >
+                            Xoá
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="card-title">{item.title}</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
+
 
       <Footer />
     </>
   );
 };
 
-export default LibraryTopic;
+export default Library;

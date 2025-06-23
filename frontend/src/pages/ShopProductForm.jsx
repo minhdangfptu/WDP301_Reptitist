@@ -6,6 +6,7 @@ import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import '../css/ProductForm.css';
+import { baseUrl } from '../config';
 
 const ShopProductForm = () => {
   const { user, hasRole } = useAuth();
@@ -21,7 +22,7 @@ const ShopProductForm = () => {
     product_quantity: '',
     product_category_id: '',
     product_imageurl: '',
-    product_status: 'available' // Sản phẩm tự động available
+    product_status: 'available' 
   });
 
   const [categories, setCategories] = useState([]);
@@ -91,7 +92,7 @@ const ShopProductForm = () => {
   // Fetch categories
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8080/reptitist/shop/category');
+      const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
       setCategories(response.data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -112,7 +113,7 @@ const ShopProductForm = () => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/reptitist/shop/my-products/${productId}`,
+        `${baseUrl}/reptitist/shop/my-products/${productId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -370,7 +371,7 @@ const ShopProductForm = () => {
       if (isEdit) {
         // Update existing product
         response = await axios.put(
-          `http://localhost:8080/reptitist/shop/my-products/${productId}`,
+          `${baseUrl}/reptitist/shop/my-products/${productId}`,
           submitData,
           {
             headers: {
@@ -382,7 +383,7 @@ const ShopProductForm = () => {
       } else {
         // Create new product
         response = await axios.post(
-          'http://localhost:8080/reptitist/shop/products/create',
+          `${baseUrl}/reptitist/shop/products/create`,
           submitData,
           {
             headers: {

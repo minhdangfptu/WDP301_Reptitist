@@ -1,202 +1,594 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import SellProduct from "../components/SellProduct";
-import { bestsellingProducts } from "../data/productData";
-import "../css/LibraryDetail2.css";
-
+import { useAuth } from "../context/AuthContext";
+import { baseUrl } from '../config';
 const LibraryContent = () => {
   const { categoryId } = useParams();
-  const [mainImage, setMainImage] = useState("/Gecko1.png");
+  const [contents, setContents] = useState([]);
+  const [category, setCategory] = useState(null);
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedContentId, setSelectedContentId] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user && user.role === "admin";
 
-  // Data for reptile articles (menu bên trái)
-  const reptileArticles = [
-    { id: 1, name: "Bóng Nam Phi (Iguanas)", count: 46 },
-    { id: 2, name: "Bóng Úc Úc", count: 49 },
-    { id: 3, name: "Kỳ đà cảnh", count: 50 },
-    { id: 4, name: "Thằn lằn mắt lồi", count: 45 },
-    { id: 5, name: "Thằn lằn bò sừng", count: 48 },
-    { id: 6, name: "Trăn Gấm", count: 45 },
-    { id: 7, name: "Minh Đặng", count: 45 },
-    { id: 8, name: "Rùa sulcata", count: 45 },
-    { id: 9, name: "Cá sấu cảnh", count: 45 },
-    { id: 10, name: "Các loài bò sát khác", count: null }
-  ];
-
-  // Data for related articles
-  const relatedArticles = [
-    {
-      id: 1,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Khám phá thế giới đa dạng của các loài bò sát có vỏ với nhiều hoạt tiết tuyệt đẹp, từ rùa cạn đến rùa biển, rùa vàng và nhiều loài rùa khác...",
-      imageUrl: "/prorep1.png"
-    },
-    {
-      id: 2,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Các loài rùa với những đặc tính khác nhau và môi trường sống đa dạng. Tìm hiểu về chế độ ăn, sinh sản và cách chăm sóc rùa đúng cách...",
-      imageUrl: "/prorep1.png"
-    },
-    {
-      id: 3, 
-      title: "Loài bò sát không vỏ đặc sắc",
-      description: "Tìm hiểu về các loài bò sát không vỏ như rắn, thằn lằn, tắc kè và kỳ đà. Khám phá đặc điểm sinh học, tập tính và nhu cầu của chúng...",
-      imageUrl: "/prorep1.png"
-    },
-    {
-      id: 4,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Phân loại giữa các loài rùa nước ngọt, rùa cạn và cách nhận biết. Tìm hiểu về sức khỏe và dinh dưỡng của loài bò sát có vỏ và các bệnh thường gặp...",
-      imageUrl: "/prorep1.png"
+  // Lấy user_id từ token
+  const getUserId = () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        return decoded.id; // Thay đổi từ user_id thành id
+      } catch (err) {
+        console.error("Lỗi giải mã token:", err);
+        return null;
+      }
     }
-  ];
-
-  // Thumbnail images data
-  const thumbnailImages = [
-    "/Gecko1.png",
-    "/Gecko2.png",
-    "/Gecko3.png"
-  ];
-
-  const handleThumbnailClick = (imageUrl) => {
-    setMainImage(imageUrl);
+    return null;
   };
 
+  const userId = getUserId();
+
+  const [formData, setFormData] = useState({
+    title: "",
+    content: "",
+    image_urls: [],
+    user_id: userId,
+    topic_category_id: "",
+    category_content_id: categoryId
+  });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(true);
+
+    const fetchCategory = async () => {
+      try {
+        const response = await axios.get(
+          `${baseUrl}/reptitist//library-categories/${categoryId}`
+        );
+        console.log("Category:", response.data);
+        setCategory(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải thông tin danh mục");
+      }
+    };
+
+    const fetchContents = async () => {
+      try {
+        const response = await axios.get(
+          `${baseUrl}/reptitist/library-content`
+        );
+        const filtered = response.data.filter((item) => {
+          console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
+          if (item.category_content_id && typeof item.category_content_id === "object") {
+            if (item.category_content_id._id) {
+              return String(item.category_content_id._id) === String(categoryId);
+            }
+            if (item.category_content_id.$oid) {
+              return item.category_content_id.$oid === categoryId;
+            }
+          }
+          return String(item.category_content_id) === String(categoryId);
+        });
+        console.log("Contents:", filtered);
+        setContents(filtered);
+      } catch (err) {
+        setError("Lỗi khi tải nội dung thư viện");
+      }
+    };
+
+    const fetchTopics = async () => {
+      try {
+        const response = await axios.get(
+          `${baseUrl}/reptitist/topic-categories/library_topics`
+        );
+        setTopics(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải danh sách chủ đề");
+      }
+    };
+
+    Promise.all([fetchCategory(), fetchContents(), fetchTopics()]).then(() => {
+      setLoading(false);
+    });
+  }, [categoryId]);
+
+  // Cập nhật formData khi userId thay đổi
+  useEffect(() => {
+    const currentUserId = getUserId();
+    setFormData(prev => ({
+      ...prev,
+      user_id: currentUserId
+    }));
+  }, []);
+
+  const handleSelectContent = (contentId) => {
+    setSelectedContentId(contentId);
+    setIsCreating(false);
+    setIsEditing(false);
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "image_urls" ? value.split(",").map(url => url.trim()) : value
+    }));
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+    console.log("Bắt đầu handleCreate");
+    console.log("userId:", userId);
+    console.log("Token:", localStorage.getItem("token"));
+    console.log("categoryId:", categoryId);
+    console.log("Category:", category);
+    
+    // Kiểm tra đăng nhập
+    if (!userId) {
+      console.log("Chưa đăng nhập");
+      setError("Vui lòng đăng nhập để tạo nội dung");
+      navigate('/login', { state: { from: `/LibraryContent/${categoryId}` } });
+      return;
+    }
+    
+    // Kiểm tra dữ liệu trước khi gửi
+    if (!formData.title.trim()) {
+      console.log("Thiếu tiêu đề");
+      setError("Vui lòng nhập tiêu đề");
+      return;
+    }
+    if (!formData.content.trim()) {
+      console.log("Thiếu nội dung");
+      setError("Vui lòng nhập nội dung");
+      return;
+    }
+    
+    if (!category?.topic_id) {
+      console.log("Không tìm thấy topic_id");
+      setError("Không tìm thấy thông tin chủ đề");
+      return;
+    }
+    
+    try {
+      console.log("Bắt đầu gửi request");
+      // Chuẩn bị dữ liệu gửi đi
+      const dataToSend = {
+        ...formData,
+        category_content_id: categoryId,
+        image_urls: Array.isArray(formData.image_urls) ? formData.image_urls : [],
+        user_id: userId,
+        topic_category_id: category.topic_id // Sử dụng topic_id từ category hiện tại
+      };
+
+      const apiUrl = `${baseUrl}/reptitist/library_contents`;
+      console.log("API URL:", apiUrl);
+      console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
+      console.log("Headers:", {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json"
+      });
+
+      const response = await axios.post(apiUrl, dataToSend);
+      console.log("Phản hồi từ server:", response.data);
+      
+      // Reset form và cập nhật danh sách
+      setIsCreating(false);
+      setFormData({
+        title: "",
+        content: "",
+        image_urls: [],
+        user_id: userId,
+        topic_category_id: category.topic_id,
+        category_content_id: categoryId
+      });
+      
+      // Cập nhật danh sách nội dung
+      console.log("Cập nhật danh sách nội dung");
+      const contentsResponse = await axios.get(apiUrl);
+      const filtered = contentsResponse.data.filter((item) => {
+        if (item.category_content_id && typeof item.category_content_id === "object") {
+          if (item.category_content_id._id) {
+            return String(item.category_content_id._id) === String(categoryId);
+          }
+          if (item.category_content_id.$oid) {
+            return String(item.category_content_id.$oid) === String(categoryId);
+          }
+        }
+        return String(item.category_content_id) === String(categoryId);
+      });
+      setContents(filtered);
+      
+      // Hiển thị thông báo thành công
+      setError(null);
+      alert("Tạo nội dung thành công!");
+      
+    } catch (err) {
+      console.error("Chi tiết lỗi:", {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        headers: err.response?.headers,
+        config: {
+          url: err.config?.url,
+          method: err.config?.method,
+          data: err.config?.data,
+          headers: err.config?.headers
+        }
+      });
+      setError(err.response?.data?.message || "Lỗi khi tạo nội dung. Vui lòng kiểm tra lại thông tin.");
+    }
+  };
+
+  // Thêm log cho form submit
+  const handleFormSubmit = (e) => {
+    console.log("Form submit");
+    if (isCreating) {
+      handleCreate(e);
+    } else if (isEditing) {
+      handleUpdate(e);
+    }
+  };
+
+  const handleEdit = () => {
+    const content = contents.find((item) => item._id === selectedContentId);
+    if (content) {
+      setFormData({
+        title: content.title,
+        content: content.content,
+        image_urls: content.image_urls,
+        user_id: userId || content.user_id,
+        topic_category_id: content.topic_category_id,
+        category_content_id: categoryId
+      });
+      setIsEditing(true);
+    }
+  };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!formData.topic_category_id) {
+      setError("Vui lòng chọn chủ đề");
+      return;
+    }
+    try {
+      const response = await axios.put(
+        `${baseUrl}/reptitist/library_contents/${selectedContentId}`,
+        {
+          ...formData,
+          category_content_id: categoryId
+        }
+      );
+      setContents((prevContents) =>
+        prevContents.map((item) =>
+          item._id === selectedContentId ? { ...item, ...response.data.content } : item
+        )
+      );
+      setIsEditing(false);
+      setSelectedContentId(null);
+    } catch (err) {
+      setError("Lỗi khi cập nhật nội dung");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
+      try {
+        await axios.delete(`${baseUrl}/reptitist/library_contents/${selectedContentId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/library_contents`);
+        const filtered = response.data.filter((item) => {
+          if (item.category_content_id && typeof item.category_content_id === "object") {
+            if (item.category_content_id._id) {
+              return String(item.category_content_id._id) === String(categoryId);
+            }
+            if (item.category_content_id.$oid) {
+              return String(item.category_content_id.$oid) === String(categoryId);
+            }
+          }
+          return String(item.category_content_id) === String(categoryId);
+        });
+        setContents(filtered);
+        setSelectedContentId(null);
+      } catch (err) {
+        setError("Lỗi khi xóa nội dung");
+      }
+    }
+  };
+
+  if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
+  if (error) return <div className="text-danger text-center my-5">{error}</div>;
+
+  const selectedContent = contents.find((item) => item._id === selectedContentId);
+
   return (
-    <div className="gecko-detail-page">
+    <>
       <Header />
-      
-      {/* Page Title Banner */}
-      <div className="page-title-banner">
-        <h1>THƯ VIỆN KIẾN THỨC</h1>
+      <div className="page-title">
+        <div className="container">
+          <h1>THƯ VIỆN KIẾN THỨC</h1>
+        </div>
       </div>
-      
-      {/* Container */}
+
       <div className="container">
-        {/* Breadcrumb */}
         <div className="breadcrumb">
-          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/LibraryTopic">Thư viện kiến thức</a> &gt; <a href="/LibraryCategory">Bò sát phổ biến ở Việt Nam</a> &gt; <span>Thằn lằn da báo</span>
-        </div>
-        
-        <div className="content-wrapper">
-          {/* Sidebar */}
-          <div className="sidebar">
-            <h3 className="sidebar-title">Chuyên mục bài viết</h3>
-            <ul className="article-list">
-              {reptileArticles.map(article => (
-                <li key={article.id}>
-                  <a href={`#${article.id}`}>
-                    {article.name} {article.count && <span className="count">({article.count})</span>}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            
-            {/* Sử dụng component SellProduct */}
-            <SellProduct products={bestsellingProducts} />
-          </div>
-          
-          {/* Main Content */}
-          <div className="main-content">
-            <h1 className="article-title">Thằn lằn Da Báo Leopard Gecko</h1>
-            <div className="article-meta">
-              <span>Đăng bởi: admin</span> | <span>Cập nhật: 15/05/2023</span> | <span>Lượt xem: 2,435</span>
-            </div>
-            
-            <div className="article-content">
-              <div className="article-gallery">
-                <div className="main-image">
-                  <img src={mainImage} alt="Thằn lằn Da Báo vàng" />
-                </div>
-                <div className="thumbnail-images">
-                  {thumbnailImages.map((imageUrl, index) => (
-                    <img 
-                      key={index}
-                      src={imageUrl} 
-                      alt={`Thằn lằn Da Báo ${index + 1}`}
-                      onClick={() => handleThumbnailClick(imageUrl)}
-                      style={{ 
-                        cursor: 'pointer',
-                        border: mainImage === imageUrl ? '2px solid #007bff' : 'none'
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-              
-              <p className="article-description">
-                Thằn lằn da báo (Leopard Gecko) là loài bò sát nhỏ thuộc họ Eublepharidae, sống chủ yếu ở vùng Trung Đông và Nam Á. Chúng là loài thú cưng phổ biến do dễ chăm sóc, tính cách hiền lành và đa dạng về màu sắc.
-              </p>
-              
-              <div className="article-info-box">
-                <h3>Thông tin cơ bản:</h3>
-                <ul>
-                  <li><strong>Tên khoa học:</strong> Eublepharis macularius</li>
-                  <li><strong>Họ:</strong> Eublepharidae</li>
-                  <li><strong>Kích thước:</strong> 20-25cm</li>
-                  <li><strong>Tuổi thọ:</strong> 10-20 năm</li>
-                  <li><strong>Sinh sản:</strong> Đẻ trứng</li>
-                  <li><strong>Chế độ ăn:</strong> Côn trùng (dế, gián, sâu...)</li>
-                </ul>
-              </div>
-              
-              <p>
-                Thằn lằn da báo có nhiều biến thể màu sắc khác nhau như: Normal, Albino, Tangerine, Blizzard, Giant... Chúng là loài dễ nuôi, phù hợp với người mới bắt đầu nuôi bò sát. Nhiệt độ chuồng nuôi tối ưu từ 25-32°C với khu vực ấm và khu vực mát.
-              </p>
-              
-              <h2>Nên mua ở đâu chúng?</h2>
-              <p>
-                Bạn có thể mua Thằn lằn da báo tại các cửa hàng thú cưng uy tín, hoặc từ những người nuôi có kinh nghiệm. Tại Việt Nam, giá của một con Thằn lằn da báo thường dao động từ 500.000đ đến vài triệu đồng tùy theo loại và độ hiếm.
-              </p>
-              <p>
-                Khi mua, cần chú ý lựa chọn những con khỏe mạnh, có mắt sáng, không có dấu hiệu bệnh tật. Thằn lằn da báo khỏe mạnh thường có đuôi mập, da sáng bóng và hoạt động linh hoạt.
-              </p>
-              <p>
-                Nếu bạn mới bắt đầu nuôi, nên chọn những con đã được thuần hóa tốt, quen với việc tiếp xúc với con người. Điều này giúp bạn dễ dàng chăm sóc và tạo mối quan hệ tốt với thú cưng của mình.
-              </p>
-            </div>
-            
-            <div className="article-comment-section">
-              <h3>Để lại bình luận</h3>
-              <div className="comment-form">
-                <div className="form-group">
-                  <textarea className="form-control" rows="4" placeholder="Nội dung bình luận..."></textarea>
-                </div>
-                <div className="form-row">
-                  <div className="form-group half">
-                    <input type="text" className="form-control" placeholder="Họ tên" />
-                  </div>
-                  <div className="form-group half">
-                    <input type="email" className="form-control" placeholder="Email" />
-                  </div>
-                </div>
-                <button className="btn btn-primary">ĐĂNG BÌNH LUẬN</button>
-              </div>
-            </div>
-            
-            <div className="related-articles">
-              <h2>Bài viết cùng chuyên mục</h2>
-              <div className="article-cards">
-                {relatedArticles.map(article => (
-                  <div key={article.id} className="related-article-card">
-                    <div className="card-image">
-                      <img src={article.imageUrl} alt={article.title} />
-                    </div>
-                    <div className="card-content">
-                      <h3 className="card-title">{article.title}</h3>
-                      <p className="card-description">{article.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/LibraryTopic">Thư viện kiến thức</a>{" "}
+          <i className="fas fa-angle-right"></i>{" "}
+          <a href={`/LibraryCategory/${category?.topic_id}`}>
+            {category?.topic_title || "Chủ đề không xác định"}
+          </a>{" "}
+          <i className="fas fa-angle-right"></i>{" "}
+          <span>{category?.category_content || "Danh mục không xác định"}</span>
         </div>
       </div>
-      
+
+      <section className="library-section">
+        <div className="container">
+          <div className="library-content">
+            <div className="sidebar">
+              <h2 className="sidebar-title">Chuyên mục bài viết</h2>
+              <ul className="sidebar-menu">
+                {contents.length > 0 ? (
+                  contents.map((item) => (
+                    <li key={item._id}>
+                      <div className="menu-item">
+                        <a
+                          href="#"
+                          className={`menu-link ${selectedContentId === item._id ? "active" : ""}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleSelectContent(item._id);
+                          }}
+                        >
+                          {item.title}
+                        </a>
+                      </div>
+                    </li>
+                  ))
+                ) : (
+                  <li>
+                    <div className="menu-item">
+                      <a href="#" className="menu-link">
+                        Chưa có bài viết
+                      </a>
+                    </div>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            <div
+              className="content-grid"
+              style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
+            >
+              {isAdmin && (
+                <div style={{ width: "100%", marginBottom: "10px" }}>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#28a745",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer"
+                    }}
+                    onClick={() => {
+                      setIsCreating(true);
+                      setIsEditing(false);
+                      setSelectedContentId(null);
+                    }}
+                  >
+                    Tạo mới nội dung
+                  </button>
+                </div>
+              )}
+
+              {(isCreating || isEditing) && (
+                <div style={{ width: "100%", marginBottom: "20px" }}>
+                  <form
+                    onSubmit={handleFormSubmit}
+                    style={{
+                      padding: "20px",
+                      border: "1px solid #ccc",
+                      borderRadius: "5px",
+                      backgroundColor: "#f9f9f9"
+                    }}
+                  >
+                    <h3>{isCreating ? "Tạo nội dung mới" : "Cập nhật nội dung"}</h3>
+                    <div style={{ marginBottom: "10px" }}>
+                      <label>Tiêu đề:</label>
+                      <input
+                        type="text"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleFormChange}
+                        style={{ width: "100%", padding: "5px" }}
+                        required
+                      />
+                    </div>
+                    
+                    <div style={{ marginBottom: "10px" }}>
+                      <label>Nội dung:</label>
+                      <textarea
+                        name="content"
+                        value={formData.content}
+                        onChange={handleFormChange}
+                        style={{ width: "100%", padding: "5px", height: "100px" }}
+                        required
+                      />
+                    </div>
+                    <div style={{ marginBottom: "10px" }}>
+                      <label>URL hình ảnh:</label>
+                      <input
+                        type="text"
+                        name="image_urls"
+                        value={formData.image_urls.join(", ")}
+                        onChange={handleFormChange}
+                        style={{ width: "100%", padding: "5px" }}
+                        placeholder="Nhập các URL hình ảnh, phân cách bằng dấu phẩy"
+                      />
+                    </div>
+                    <div style={{ marginBottom: "10px" }}>
+                      <button
+                        type="submit"
+                        style={{
+                          padding: "10px 20px",
+                          backgroundColor: isCreating ? "#28a745" : "#007bff",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "5px",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {isCreating ? "Tạo" : "Cập nhật"}
+                      </button>
+                      <button
+                        type="button"
+                        style={{
+                          padding: "10px 20px",
+                          backgroundColor: "#6c757d",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "5px",
+                          marginLeft: "10px",
+                          cursor: "pointer"
+                        }}
+                        onClick={() => {
+                          setIsCreating(false);
+                          setIsEditing(false);
+                          setFormData({
+                            title: "",
+                            content: "",
+                            image_urls: [],
+                            user_id: userId,
+                            topic_category_id: "",
+                            category_content_id: categoryId
+                          });
+                        }}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {selectedContent && !isCreating && !isEditing && isAdmin && (
+                <div style={{ marginBottom: "10px" }}>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      marginRight: "10px",
+                      cursor: "pointer"
+                    }}
+                    onClick={handleEdit}
+                  >
+                    Cập nhật
+                  </button>
+                  <button
+                    style={{
+                      padding: "10px 20px",
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px",
+                      cursor: "pointer"
+                    }}
+                    onClick={handleDelete}
+                  >
+                    Xóa
+                  </button>
+                </div>
+              )}
+
+              {selectedContent && !isCreating && !isEditing ? (
+                <div style={{ width: "100%" }}>
+                  <div className="mb-4 p-3 border rounded">
+                    {selectedContent.image_urls && selectedContent.image_urls.length > 0 && (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(2, 1fr)",
+                          gridTemplateRows: "repeat(2, 1fr)",
+                          gap: "10px",
+                          maxWidth: "710px",
+                          marginBottom: "10px"
+                        }}
+                      >
+                        {selectedContent.image_urls.slice(0, 3).map((img, index) => (
+                          <img
+                            key={index}
+                            src={img}
+                            alt={`image-${index}`}
+                            style={{
+                              maxWidth: "100%",
+                              height: "auto",
+                              objectFit: "cover",
+                              ...(index === 0
+                                ? { gridColumn: "1 / 2", gridRow: "1 / 3", width: "500px", height: "300px" }
+                                : index === 1
+                                ? { gridColumn: "2 / 3", gridRow: "1 / 2", width: "200px", height: "145px" }
+                                : { gridColumn: "2 / 3", gridRow: "2 / 3", width: "200px", height: "145px" })
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div dangerouslySetInnerHTML={{ __html: selectedContent.content }} />
+                  </div>
+                </div>
+              ) : (
+                contents.length === 0 ? (
+                  <div className="text-center" style={{ width: "100%" }}>
+                    <p>Chưa có nội dung nào trong danh mục này.</p>
+                  </div>
+                ) : (
+                  contents.map((item) => (
+                    <div
+                      className="category-card"
+                      key={item._id}
+                      style={{ width: "220px", cursor: "pointer" }}
+                      onClick={() => handleSelectContent(item._id)}
+                    >
+                      <div className="card-image">
+                        <img
+                          src={
+                            item.image_urls && item.image_urls.length > 0
+                              ? item.image_urls[0]
+                              : "/default.jpg"
+                          }
+                          alt={item.title}
+                          style={{
+                            width: "100%",
+                            height: "180px",
+                            objectFit: "cover"
+                          }}
+                        />
+                      </div>
+                      <div className="card-title">{item.title}</div>
+                    </div>
+                  ))
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <Footer />
-    </div>
+    </>
   );
 };
 

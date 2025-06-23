@@ -7,6 +7,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
 
+import { baseUrl } from '../config';
+
+
 const AdminShopManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
@@ -89,13 +92,13 @@ const AdminShopManagement = () => {
   // Fetch shops
   const fetchShops = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn');
         return;
       }
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/shops', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/shops`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -116,10 +119,10 @@ const AdminShopManagement = () => {
   // Fetch reports
   const fetchReports = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/reports', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/reports`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -137,10 +140,10 @@ const AdminShopManagement = () => {
   // Fetch statistics
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/stats', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -157,10 +160,10 @@ const AdminShopManagement = () => {
   // Fetch shop products
   const fetchShopProducts = async (shopId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
-      const response = await axios.get(`http://localhost:8080/reptitist/admin/shops/${shopId}/products`, {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/shops/${shopId}/products`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -183,11 +186,11 @@ const AdminShopManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/admin/products/${productId}`,
+        `${baseUrl}/reptitist/admin/products/${productId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -212,11 +215,11 @@ const AdminShopManagement = () => {
   // Handle report action
   const handleReportAction = async (reportId, action, note = '') => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.post(
-        `http://localhost:8080/reptitist/admin/reports/${reportId}/handle`,
+        `${baseUrl}/reptitist/admin/reports/${reportId}/handle`,
         {
           action, // 'approve' or 'reject'
           adminNote: note
@@ -246,12 +249,12 @@ const AdminShopManagement = () => {
   // Handle toggle shop status
   const toggleShopStatus = async (shopData) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const newStatus = !shopData.isActive;
       const response = await axios.patch(
-        `http://localhost:8080/reptitist/admin/users/${shopData._id}/status`,
+        `${baseUrl}/reptitist/admin/users/${shopData._id}/status`,
         { isActive: newStatus },
         {
           headers: {

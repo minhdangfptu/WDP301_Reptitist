@@ -1,4 +1,5 @@
-// context/AuthContext.jsx
+/* eslint-disable no-undef */
+/* eslint-disable no-console */
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
 
@@ -35,14 +36,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('access_token');
-      const userData = localStorage.getItem('user');
-
-      if (!token || !userData) {
-        debugLog('No token or user data found in localStorage');
+      
+      if (!token) {
+        debugLog('No token found in localStorage');
         setIsAuthenticated(false);
         setUser(null);
         setLoading(false);
-        return;
+        return false;
       }
 
       debugLog('Token found, verifying with server...');
@@ -53,11 +53,13 @@ export const AuthProvider = ({ children }) => {
       setUser(verifiedUserData);
       setIsAuthenticated(true);
       localStorage.setItem('user', JSON.stringify(verifiedUserData));
+      return true;
     } catch (error) {
       debugLog('Auth verification failed:', error.message);
       authService.clearTokens();
       setUser(null);
       setIsAuthenticated(false);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -70,9 +72,9 @@ export const AuthProvider = ({ children }) => {
 
       if (result.success) {
         debugLog('Login successful:', result.user);
-        const { user: userData, token, refreshToken } = result;
-        localStorage.setItem('access_token', token);
-        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+        const { user: userData, access_token, refresh_token } = result;
+        localStorage.setItem('access_token', access_token);
+        if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
         setIsAuthenticated(true);
@@ -247,6 +249,27 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+  const loginWithGoogle = async () => {
+    try {
+      debugLog('Initiating Google login...');
+      const response = await authService.loginWithGoogle();
+      if (response.success) {
+        debugLog('Google login successful');
+        await checkAuthStatus();
+        return { success: true };
+      } else {
+        debugLog('Google login failed:', response.message);
+        return { success: false, message: response.message };
+      }
+    } catch (error) {
+      debugLog('Google login failed:', error);
+      return {
+        success: false,
+        message: 'Đăng nhập Google thất bại'
+      };
+    }
+  };
+
   const isShop = () => {
     const result = user?.role === 'shop';
     debugLog('isShop:', result);
@@ -281,6 +304,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin,
     isPremium,
     checkAuthStatus,
+    loginWithGoogle,
   };
 
   debugLog('AuthProvider rendering with user:', user ? user.username : 'null');

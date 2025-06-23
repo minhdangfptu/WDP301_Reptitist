@@ -6,6 +6,12 @@ import { useAuth } from "../context/AuthContext";
 import { ToastContainer, toast } from 'react-toastify'; 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { baseUrl } from '../config';  
+
+const getToday = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
 
 const CreateNewPet = () => {
   const { user } = useAuth();
@@ -22,7 +28,7 @@ const CreateNewPet = () => {
     description: "",
     user_reptile_imageurl: "",
     age: "",
-    follow_since: "",
+    follow_since: getToday(),
     current_weight: "",
     weight_history: [],
     sleeping_status: [],
@@ -114,7 +120,7 @@ const CreateNewPet = () => {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post("http://localhost:8080/reptitist/pet/", petData);
+      const response = await axios.post(`${baseUrl}/reptitist/pet/`, petData);
       console.log("Pet created successfully", response.data);
       setSubmitResult({
         success: true,
@@ -134,7 +140,7 @@ const CreateNewPet = () => {
         description: "",
         user_reptile_imageurl: "",
         age: "",
-        follow_since: "",
+        follow_since: getToday(),
         current_weight: "",
         weight_history: [],
         sleeping_status: [],

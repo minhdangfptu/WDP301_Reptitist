@@ -185,7 +185,7 @@ export default function TrackingHealth({ petInfo }) {
               </Table>
               {petInfo.sleeping_status && petInfo.sleeping_status.length > 0 && (
                 <div className="mt-2">
-                  <Badge bg="secondary">Trạng thái gần nhất: {petInfo.sleeping_status[0].status}</Badge>
+                  <Badge bg="secondary">Giấc ngủ: {petInfo.sleeping_status[0].status}</Badge>
                 </div>
               )}
             </Card.Body>

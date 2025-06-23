@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import '../css/Settings.css';
 import '../css/dark-mode.css';
 
+
 const Settings = () => {
   const { user } = useAuth();
   const navigate = useNavigate();

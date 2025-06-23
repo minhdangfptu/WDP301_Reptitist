@@ -1,119 +1,191 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import Sellerproduct from "../components/SellProduct";
-import { bestsellingProducts } from "../data/productData";
-import "../css/LibraryDetail.css";
-
+import { useAuth } from "../context/AuthContext";
+import { baseUrl } from '../config';
 const LibraryCategory = () => {
+  const [allCategories, setAllCategories] = useState([]);
+  const [topic, setTopic] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const [openIndex, setOpenIndex] = useState(null);
+  const topicId = id;
+  const { user } = useAuth();
+  const isAdmin = user && user.role === "admin";
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        console.log(topicId, 'topicId');
+        const response = await axios.get(`${baseUrl}/reptitist/library-categories/topic/${topicId}`);
+        setAllCategories(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải danh sách danh mục");
+      }
+    };
 
-  // Data for reptile categories
-  const reptileCategories = [
-    {
-      id: 1,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Khám phá thế giới đa dạng của các loài bò sát có vỏ với nhiều hoạt tiết tuyệt đẹp, từ rùa cạn đến rùa biển, rùa vàng và nhiều loài rùa khác. Tìm hiểu về đặc tính và môi trường sống.",
-      imageUrl: "/prorep2.png"
-    },
-    {
-      id: 2,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Các loài rùa với những đặc tính khác nhau và môi trường sống đa dạng. Tìm hiểu về chế độ ăn, sinh sản và cách chăm sóc rùa đúng cách trong môi trường nuôi nhốt.",
-      imageUrl: "/prorep2.png"
-    },
-    {
-      id: 3, 
-      title: "Loài bò sát không vỏ đặc sắc",
-      description: "Tìm hiểu về các loài bò sát không vỏ như rắn, thằn lằn, tắc kè và kỳ đà. Khám phá đặc điểm sinh học, tập tính và nhu cầu của chúng để xây dựng môi trường sống phù hợp.",
-      imageUrl: "/prorep2.png"
-    },
-    {
-      id: 4,
-      title: "Loài bò sát có vỏ đa dạng hoạt tiết",
-      description: "Phân loại giữa các loài rùa nước ngọt, rùa cạn và cách nhận biết. Tìm hiểu về sức khỏe và dinh dưỡng của loài bò sát có vỏ và các bệnh thường gặp trong quá trình nuôi.",
-      imageUrl: "/prorep2.png"
+    const fetchTopic = async () => {
+      try {
+        const response = await axios.get(`${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`);
+        setTopic(response.data);
+      } catch (err) {
+        setError("Lỗi khi tải thông tin chủ đề");
+      }
+    };
+
+    Promise.all([fetchCategories(), fetchTopic()]).then(() => {
+      setLoading(false);
+    });
+  }, [topicId]);
+
+  const handleDelete = async (categoryId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
+      try {
+        await axios.delete(`${baseUrl}/reptitist/library-categories/${categoryId}`);
+        setAllCategories(allCategories.filter((cat) => cat._id !== categoryId));
+      } catch (error) {
+        alert("Lỗi khi xoá danh mục.");
+      }
     }
-  ];
-
-  // Data for reptile articles
-  const reptileArticles = [
-    { id: 1, name: "Bóng Nam Phi (Iguanas)", count: 46 },
-    { id: 2, name: "Bóng Úc Úc", count: 49 },
-    { id: 3, name: "Kỳ đà cảnh", count: 50 },
-    { id: 4, name: "Thằn lằn mắt lồi", count: 45 },
-    { id: 5, name: "Thằn lằn bò sừng", count: 48 },
-    { id: 6, name: "Trăn Gấm", count: 45 },
-    { id: 7, name: "Mèo cánh", count: 45 },
-    { id: 8, name: "Rùa sulcata", count: 45 },
-    { id: 9, name: "Cá sấu cảnh", count: 45 },
-    { id: 10, name: "Các loài bò sát khác", count: null }
-  ];
-
-  const handleCardClick = (categoryId) => {
-    navigate(`/LibraryContent/${categoryId}`);
   };
 
+  const toggleTopic = (idx) => {
+    setOpenIndex(openIndex === idx ? null : idx);
+  };
+
+  if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
+  if (error) return <div className="text-danger text-center my-5">{error}</div>;
+
   return (
-    <div className="library-page">
+    <>
       <Header />
-      
-      {/* Page Title Banner */}
-      <div className="page-title-banner">
-        <h1>THƯ VIỆN KIẾN THỨC</h1>
+
+      <div className="page-title">
+        <div className="container">
+          <h1>THƯ VIỆN KIẾN THỨC</h1>
+        </div>
       </div>
-      
-      {/* Breadcrumb */}
+
       <div className="container">
         <div className="breadcrumb">
-          <a href="/LandingPage">Trang chủ</a> &gt; <a href="/LibraryTopic">Thư viện kiến thức</a> &gt; <span>Bò sát phổ biến ở Việt Nam</span>
+          <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/LibraryTopic">Thư viện kiến thức</a> <i className="fas fa-angle-right"></i>{" "}
+          <span>{topic?.topic_title || "Chủ đề không xác định"}</span>
         </div>
-        
-        <div className="library-content">
-          {/* Sidebar */}
-          <div className="sidebar">
-            <h3 className="sidebar-title">Chuyên mục bài viết</h3>
-            <ul className="article-list">
-              {reptileArticles.map(article => (
-                <li key={article.id}>
-                  <a href={`#${article.id}`}>
-                    {article.name} {article.count && <span className="count">({article.count})</span>}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            
-            {/* Sử dụng component Sellerproduct */}
-            <Sellerproduct products={bestsellingProducts} />
-          </div>
-          
-          {/* Main Content */}
-          <div className="main-content">
-            <div className="reptile-categories">
-              {reptileCategories.map(category => (
-                <div 
-                  key={category.id} 
-                  className="category-card"
-                  onClick={() => handleCardClick(category.id)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="category-image">
-                    <img src={category.imageUrl} alt={category.title} />
-                  </div>
-                  <div className="category-content">
-                    <h3 className="category-title">{category.title}</h3>
-                    <p className="category-description">{category.description}</p>
+
+        <div className="d-flex justify-content-end mb-3">
+          {isAdmin && (
+            <Link to={`/library_categories/create/${topicId}`}>
+              <button className="btn btn-success">+ Tạo danh mục</button>
+            </Link>
+          )}
+        </div>
+      </div>
+
+      <section className="library-section">
+        <div className="container">
+          <div className="library-content">
+            {/* Sidebar */}
+            <div className="sidebar">
+              <h2 className="sidebar-title">Thư viện kiến thức</h2>
+              <ul className="sidebar-menu list-unstyled">
+                {allCategories.map((cat, idx) => (
+                  <li key={cat._id}>
+                    <div
+                      className="menu-item"
+                      onClick={() => toggleTopic(idx)}
+                      style={{ cursor: "pointer", userSelect: "none" }}
+                    >
+                      <Link to="#" className="menu-link">
+                        {cat.category_content}
+                      </Link>
+                      <span
+                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
+                        aria-hidden="true"
+                      ></span>
+                    </div>
+                    <ul
+                      className="submenu"
+                      style={{ display: openIndex === idx ? "block" : "none" }}
+                    >
+                      <li>
+                        <Link to={`/librarycontent/${cat._id}`}>
+                          {cat.category_description || "Chưa có mô tả"}
+                        </Link>
+                      </li>
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Content Grid */}
+            <div className="content-grid">
+              {allCategories.map((cat) => (
+                <div className="category-card" key={cat._id}>
+                  <Link to={`/librarycontent/${cat._id}`}>
+                    <div className="card-image" style={{ cursor: "pointer" }}>
+                      <img
+                        src={cat.category_imageurl || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                        alt={cat.category_content}
+                      />
+                    </div>
+                  </Link>
+
+                  <div className="card-title">{cat.category_content}</div>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    {isAdmin && (
+                      <>
+                        <Link to={`/library_categories/update/${cat._id}`}>
+                          <button
+                            style={{
+                              backgroundColor: "#ffc107",
+                              border: "none",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                            }}
+                          >
+                            Cập nhật
+                          </button>
+                        </Link>
+                        <button
+                          style={{
+                            backgroundColor: "#dc3545",
+                            color: "#fff",
+                            border: "none",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                          }}
+                          onClick={() => handleDelete(cat._id)}
+                        >
+                          Xoá
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
+              {allCategories.length === 0 && (
+                <div className="col-12 text-center mt-4">
+                  <p>Không có danh mục nào để hiển thị.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
-      </div>
-      
+      </section>
+
       <Footer />
-    </div>
+    </>
   );
 };
 

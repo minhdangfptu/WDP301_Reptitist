@@ -7,8 +7,8 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
-
-// Internal CSS styles
+import { baseUrl } from '../config';
+// Internal CSS styles  
 const styles = {
   pageContainer: {
     minHeight: "100vh",
@@ -374,7 +374,7 @@ function ReptileHealthTrackingPage() {
     };
     try {
       await axios.put(
-        `http://localhost:8080/reptitist/pet/health-history/${reptileId}`,
+        `${baseUrl}/reptitist/pet/health-history/${reptileId}`,
         data
       );
       toast.success("Đã lưu dữ liệu điều trị!");
@@ -412,7 +412,10 @@ function ReptileHealthTrackingPage() {
                 <h1 style={styles.mainTitle}>Thêm dữ liệu theo dõi sức khỏe</h1>
                 <p style={styles.subtitle}>
                   Ghi lại thông tin sức khỏe chi tiết cho thú cưng của bạn
+                  <div style={{ fontSize: 12, color: "red" }}>Lưu ý: Đây là dữ liệu để AI có thể học hỏi và cải thiện dữ liệu của bạn. 
+                    <br></br>Dữ liệu theo dõi sức khỏe không thể sửa đổi. Vui lòng kiểm tra kỹ trước khi lưu.</div>
                 </p>
+                
               </div>
             </div>
           </div>

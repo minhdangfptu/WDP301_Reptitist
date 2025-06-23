@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
 import '../css/Profile.css';
 import { useNavigate } from 'react-router-dom';
+import { baseUrl } from '../config';
 
 const Profile = () => {
   const { user, updateUser, hasRole } = useAuth();
@@ -52,7 +53,7 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       
       if (!token) {
         toast.error('Không tìm thấy token xác thực');
@@ -64,7 +65,7 @@ const Profile = () => {
 
       // Gọi API cập nhật profile
       const response = await axios.put(
-        'http://localhost:8080/reptitist/auth/profile',
+        `${baseUrl}/reptitist/auth/profile`,
         {
           fullname: editForm.fullname.trim(),
           phone_number: editForm.phone_number.trim(),
@@ -242,7 +243,7 @@ const Profile = () => {
       
       console.log('Converting image to base64...');
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         return;
@@ -250,7 +251,7 @@ const Profile = () => {
 
       // Send base64 data to backend
       const response = await axios.post(
-        'http://localhost:8080/reptitist/auth/upload-avatar',
+        `${baseUrl}/reptitist/auth/upload-avatar`,
         {
           imageData: base64Data
         },
@@ -298,7 +299,7 @@ const Profile = () => {
   };
 
   const getAvatarUrl = (imageUrl) => {
-    if (!imageUrl) return "/api/placeholder/64/64";
+      if (!imageUrl) return "/api/placeholder/64/64";
     
     // If it's a base64 string, return as is
     if (imageUrl.startsWith('data:image/')) {
@@ -311,7 +312,7 @@ const Profile = () => {
     }
     
     // If it's a path, construct full URL
-    return `http://localhost:8080${imageUrl}`;
+    return `${baseUrl}${imageUrl}`;
   };
 
   // Helper function to get user account type display

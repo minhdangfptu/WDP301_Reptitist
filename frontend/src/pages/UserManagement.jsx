@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import '../css/UserManagement.css';
+import { baseUrl } from '../config';
 
 const UserManagement = () => {
   const { user, hasRole } = useAuth();
@@ -125,16 +126,16 @@ const UserManagement = () => {
   // Fetch users
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn');
         return;
       }
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/users', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/users`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data) {
@@ -152,13 +153,13 @@ const UserManagement = () => {
   // Fetch statistics
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:8080/reptitist/admin/stats', {
+      const response = await axios.get(`${baseUrl}/reptitist/admin/stats`, {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (response.data?.users) {
@@ -177,7 +178,7 @@ const UserManagement = () => {
 
       const newStatus = !userData.isActive;
       const response = await axios.patch(
-        `http://localhost:8080/reptitist/admin/users/${userData._id}/status`,
+        `${baseUrl}/reptitist/admin/users/${userData._id}/status`,
         { isActive: newStatus },
         {
           headers: {
@@ -209,15 +210,15 @@ const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.delete(
-        `http://localhost:8080/reptitist/admin/users/${selectedUser._id}`,
+        `${baseUrl}/reptitist/admin/users/${selectedUser._id}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -369,11 +370,11 @@ const UserManagement = () => {
     if (!selectedUser) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) return;
 
       const response = await axios.patch(
-        `http://localhost:8080/reptitist/admin/users/${selectedUser._id}/account-type`,
+        `${baseUrl}/reptitist/admin/users/${selectedUser._id}/account-type`,
         accountTypeForm,
         {
           headers: {
