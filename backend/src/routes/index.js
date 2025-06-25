@@ -11,7 +11,9 @@ const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRouter'); 
+const userRoute = require('./userRoute');
 
+router.use('/user', userRoute);
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/pet', userReptileRoutes);

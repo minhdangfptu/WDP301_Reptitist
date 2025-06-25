@@ -1,0 +1,246 @@
+.user-manual-container {
+    min-height: 90vh;
+    background-color: #f8f9fa;
+    padding: 2rem 2rem 0 2rem;
+
+  }
+  
+  .user-manual-video-section {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .user-manual-video-placeholder {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background-color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .user-manual-video-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .user-manual-video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-manual-video-placeholder:hover .user-manual-video-overlay {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  
+  .user-manual-play-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    padding: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-manual-video-placeholder:hover .user-manual-play-button {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+  
+  .user-manual-video-label {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
+  
+  .user-manual-content-section {
+    padding: 1.5rem;
+  }
+  
+  .user-manual-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+  
+  .user-manual-description {
+    color: #6b7280;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  
+  .user-manual-view-more-button {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    color: white !important;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-manual-view-more-button:hover {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+  }
+  
+  .user-manual-download-section {
+    margin-bottom: 1rem;
+  }
+  
+  .user-manual-download-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 1rem;
+  }
+  
+  .user-manual-download-card {
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .user-manual-download-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .user-manual-card-body {
+    padding: 1rem;
+  }
+  
+  .user-manual-card-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .user-manual-card-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .user-manual-icon-container {
+    padding: 0.5rem;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .user-manual-download-card:hover .user-manual-icon-container {
+    background-color: #dcfce7;
+  }
+  
+  .user-manual-card-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #6b7280;
+    transition: color 0.3s ease;
+  }
+  
+  .user-manual-download-card:hover .user-manual-card-icon {
+    color: #059669;
+  }
+  
+  .user-manual-card-text-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-manual-card-title {
+    font-weight: 500;
+    color: #1f2937;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    margin: 0;
+  }
+  
+  .user-manual-card-subtitle {
+    color: #059669;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+  
+  .user-manual-download-button {
+    background-color: transparent !important;
+    border: none !important;
+    padding: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .user-manual-download-card:hover .user-manual-download-button {
+    opacity: 1;
+  }
+  
+  .user-manual-download-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #6b7280;
+  }
+  
+  .user-manual-play-icon {
+    width: 3rem;
+    height: 3rem;
+    color: white;
+    fill: white;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 991.98px) {
+    .user-manual-container {
+      padding: 1rem;
+    }
+  
+    .user-manual-video-section {
+      margin-bottom: 1.5rem;
+    }
+  
+    .user-manual-content-section {
+      padding: 1rem;
+    }
+  
+    .user-manual-title {
+      font-size: 1.25rem;
+    }
+  }
+  
+  @media (max-width: 575.98px) {
+    .user-manual-container {
+      padding: 0.5rem;
+    }
+  
+    .user-manual-content-section {
+      padding: 0.75rem;
+    }
+  
+    .user-manual-card-body {
+      padding: 0.75rem;
+    }
+  
+    .user-manual-card-left {
+      gap: 0.5rem;
+    }
+  }
+  

@@ -52,7 +52,7 @@ const LibraryContent = () => {
     const fetchCategory = async () => {
       try {
         const response = await axios.get(
-          `${baseUrl}/reptitist//library-categories/${categoryId}`
+          `${baseUrl}/reptitist/library-categories/${categoryId}`
         );
         console.log("Category:", response.data);
         setCategory(response.data);
@@ -169,7 +169,7 @@ const LibraryContent = () => {
         topic_category_id: category.topic_id // Sử dụng topic_id từ category hiện tại
       };
 
-      const apiUrl = `${baseUrl}/reptitist/library_contents`;
+      const apiUrl = `${baseUrl}/reptitist/library-content`;
       console.log("API URL:", apiUrl);
       console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
       console.log("Headers:", {
@@ -261,7 +261,7 @@ const LibraryContent = () => {
     }
     try {
       const response = await axios.put(
-        `${baseUrl}/reptitist/library_contents/${selectedContentId}`,
+        `${baseUrl}/reptitist/library-contents/${selectedContentId}`,
         {
           ...formData,
           category_content_id: categoryId
@@ -282,8 +282,8 @@ const LibraryContent = () => {
   const handleDelete = async () => {
     if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library_contents/${selectedContentId}`);
-        const response = await axios.get(`${baseUrl}/reptitist/library_contents`);
+        await axios.delete(`${baseUrl}/reptitist/library-contents/${selectedContentId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/library-contents`);
         const filtered = response.data.filter((item) => {
           if (item.category_content_id && typeof item.category_content_id === "object") {
             if (item.category_content_id._id) {

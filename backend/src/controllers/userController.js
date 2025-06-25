@@ -1,6 +1,7 @@
-const User = require("../models/User")
-const jwt = require("jsonwebtoken")
-
+const User = require("../models/users")
+const nodemailer = require('nodemailer');
+const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
 // Generate JWT token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -296,7 +297,68 @@ const updateUser = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+const getAllUserSignUpInWeek = async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const users = await User.find({
+      created_at: { $gte: sevenDaysAgo }
+    }).select('_id username');
+
+    res.status(200).json({
+      users,
+      total: users.length
+    });
+  } catch (error) {
+    console.error('Get all user sign up in week error:', error);
+    res.status(500).json({
+      message: 'Không thể lấy danh sách người dùng đăng kí trong tuần',
+      error: error.message
+    });
+  }
+}
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .select('_id username')
+      .sort({ created_at: -1 });
+
+    res.status(200).json({
+      users,
+      total: users.length
+    });
+  } catch (error) {
+    console.error('Get all users error:', error);
+    res.status(500).json({
+      message: 'Không thể lấy danh sách người dùng',
+      error: error.message
+    });
+  }
+};
+
+const changeUserPasswordByEmail = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    user.password_hashed = hashedPassword;
+    await user.save();
+
+    // Revoke all refresh tokens
+    user.refresh_tokens = [];
+    await user.save();
+    res.json({ message: "Password changed successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 module.exports = {
   registerUser,
@@ -310,5 +372,8 @@ module.exports = {
   deleteUser,
   getUserById,
   updateUser,
+  getAllUserSignUpInWeek,
+  getAllUsers,
+  changeUserPasswordByEmail,
 }
 

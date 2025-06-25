@@ -316,8 +316,8 @@ const SignUp3 = () => {
           
           <div className="signup3-terms">
             Bằng cách đăng ký, bạn đồng ý với{" "}
-            <a href="#" style={{ color: '#0fa958' }}>Điều khoản sử dụng</a> và{" "}
-            <a href="#" style={{ color: '#0fa958' }}>Chính sách bảo mật</a> của chúng tôi.
+            <a href="/policy-terms" style={{ color: '#0fa958' }}>Điều khoản sử dụng</a> và{" "}
+            <a href="/policy-terms" style={{ color: '#0fa958' }}>Chính sách bảo mật</a> của chúng tôi.
           </div>
         </div>
         

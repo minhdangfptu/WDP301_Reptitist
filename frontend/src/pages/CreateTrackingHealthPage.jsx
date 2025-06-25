@@ -439,7 +439,7 @@ function ReptileHealthTrackingPage() {
                       type="number"
                       value={currentWeight}
                       onChange={(e) => setCurrentWeight(e.target.value)}
-                      placeholder="Nhập cân nặng..."
+                      placeholder="Nhập cân nặng hiện tại của bò sát"
                       style={styles.formInput}
                       required
                       min={0}
@@ -497,7 +497,7 @@ function ReptileHealthTrackingPage() {
                                   )
                                 )
                               }
-                              placeholder="Trạng thái ngủ..."
+                              placeholder="Trạng thái ngủ của bò sát (mất ngủ, ngủ ít, ngủ nhiều, ngủ bình thường)"
                               style={styles.formInput}
                               required
                             />
@@ -638,7 +638,7 @@ function ReptileHealthTrackingPage() {
                                   )
                                 )
                               }
-                              placeholder="Số giờ..."
+                              placeholder="Số giờ ngủ của bò sát"
                               style={styles.formInput}
                               required
                               min={0}
@@ -1023,7 +1023,7 @@ function ReptileHealthTrackingPage() {
                             minWidth: 100,
                           }}
                         >
-                          Số lượng
+                          Số lượng 
                         </th>
                         <th
                           style={{
@@ -1031,7 +1031,7 @@ function ReptileHealthTrackingPage() {
                             minWidth: "80px",
                           }}
                         >
-                          Nhịn ăn
+                          Có nhịn ăn ?
                         </th>
                         <th
                           style={{
@@ -1106,7 +1106,7 @@ function ReptileHealthTrackingPage() {
                                   )
                                 )
                               }
-                              placeholder="Số lượng..."
+                              placeholder="Số lượng (bát, lít, kg, g, ml, ...)"
                               style={styles.formInput}
                               required
                             />
