@@ -95,14 +95,9 @@ const userSchema = new mongoose.Schema({
   },
   account_type: {
     type: {
-      type: String,
-      default: 'customer',  
-      enum: ['customer','shop']    
-    },
-    level: {
-      type: String,
-      default: 'normal',
-      enum: ['normal', 'premium']
+      type: Number,
+      default: 1,  
+      enum: [1,2,3,4]    
     },
     activated_at: {
       type: Date,
