@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ShoppingCart } from "lucide-react"
+import { Package, ShoppingCart } from "lucide-react"
 import CartItem from "../components/CartItem"
 import CartSummary from "../components/CartSummary"
 import CustomHeader from "../components/CustomHeader"
@@ -12,6 +12,9 @@ import { isProductAvailable } from "../utils/cartUtils"
 import { getCartService, deleteProductFromCartService, checkProductAvailabilityService, addToCartService } from "../services/cartService"
 import { toast } from "react-toastify"
 import axios from "axios"
+import ShopHeader from "../components/ShopHeader"
+import { Link } from "react-router-dom"
+import Footer from "../components/Footer"
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([])
@@ -234,7 +237,7 @@ const CartPage = () => {
 
   return (
     <>
-      <CustomHeader pageTitle="Giỏ Hàng" pageIcon={ShoppingCart} />
+      <ShopHeader />
       <div className="cart-page">
         <div className="container">
           <div className={`cart-content ${cartItems.length === 0 ? 'empty' : ''}`}>
@@ -296,6 +299,7 @@ const CartPage = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   )
 }

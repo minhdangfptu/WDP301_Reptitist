@@ -58,7 +58,7 @@ const Header = () => {
           style={{ width: 48, height: 48 }}
         />
         <span style={{ marginLeft: 16, fontWeight: 500, fontSize: 18 }}>
-          {loggingOut ? "Đang đăng xuất..." : "Đang tải thông tin..."}
+          {loggingOut ? "Đang đăng xuất..." : "Chào mừng bạn đến với Reptitist Service"}
         </span>
       </header>
     );
@@ -120,9 +120,15 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <Link
+            <Link
                 to="/ShopLandingPage"
                 className="header__nav-link"
+                onClick={(e) => {
+                  if (!user) {
+                    e.preventDefault();
+                    navigate("/Login");
+                  }
+                }}
               >
                 MUA SẮM
               </Link>

@@ -23,7 +23,7 @@ const Transaction = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setLoading(false);

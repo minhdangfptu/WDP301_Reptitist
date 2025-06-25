@@ -195,7 +195,7 @@ const Security = () => {
     setErrors({});
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       
       await axios.post(
         `${baseUrl}/reptitist/auth/change-password-email`,

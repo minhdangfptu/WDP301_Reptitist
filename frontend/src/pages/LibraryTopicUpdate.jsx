@@ -14,7 +14,7 @@ const UpdateLibraryTopic = () => {
 
   useEffect(() => {
     axios
-      .get(`${baseUrl}/reptitist/topic-categories/library_topics/${id}`)
+      .get(`${baseUrl}/reptitist//topic-categories/library_topics/${id}`)
       .then((res) => {
         const topic = res.data;
         setTitle(topic.topic_title || "");
@@ -27,12 +27,12 @@ const UpdateLibraryTopic = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${baseUrl}/reptitist/library_topics/${id}`, {
+      await axios.put(`${baseUrl}/reptitist/topic-categories/library_topics/${id}`, {
         topic_title: title,
         topic_description: description,
         topic_imageurl: [imageurl],
       });
-      navigate("/Library");
+      navigate("/LibraryTopic");
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error);
     }

@@ -53,7 +53,7 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       
       if (!token) {
         toast.error('Không tìm thấy token xác thực');
@@ -243,7 +243,7 @@ const Profile = () => {
       
       console.log('Converting image to base64...');
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         return;
