@@ -222,7 +222,7 @@ const ContactUs = () => {
                 <div className="card-icon"><i className="fas fa-phone-alt"></i></div>
                 <div className="card-content">
                   <h3>Số điện thoại</h3>
-                  <p>0398826650 - Minh Dang dep trai</p>
+                  <p>0398826650</p>
                 </div>
               </div>
               <div className="contact-card">
