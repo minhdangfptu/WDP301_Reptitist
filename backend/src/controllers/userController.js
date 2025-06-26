@@ -1,5 +1,4 @@
-const User = require("../models/users")
-const nodemailer = require('nodemailer');
+const User = require("../models/users");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 // Generate JWT token
