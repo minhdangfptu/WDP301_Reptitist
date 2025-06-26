@@ -108,10 +108,10 @@ const ContactUs = () => {
               <h2>Góp ý cho chúng tôi</h2>
               <p>Chúng tôi luôn sẵn sàng lắng nghe mọi ý kiến đóng góp của bạn để phát triển dịch vụ ngày càng tốt hơn.</p>
               <div className="social-icons">
-                <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
-                <a href="#" className="social-icon"><i className="fab fa-instagram"></i></a>
-                <a href="#" className="social-icon"><i className="fab fa-youtube"></i></a>
-                <a href="#" className="social-icon"><i className="fab fa-tiktok"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61576867780640" className="social-icon"><i className="fab fa-facebook-f"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61576867780640" className="social-icon"><i className="fab fa-instagram"></i></a>
+                <a href="https://www.youtube.com/@ServiceReptitist" className="social-icon"><i className="fab fa-youtube"></i></a>
+                <a href="https://www.youtube.com/@ServiceReptitist" className="social-icon"><i className="fab fa-tiktok"></i></a>
               </div>
               <p style={{ marginTop: '20px', marginBottom: '10px', textAlign: 'left' }}>
                 Hoặc gửi ý kiến, phản hồi qua Google Form

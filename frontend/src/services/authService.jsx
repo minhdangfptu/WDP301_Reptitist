@@ -5,12 +5,16 @@ const API_BASE_URL = baseUrl;
 
 class AuthService {
   // Login method
-  async login(username, password) {
+  async login(userNameOrEmail, password) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/reptitist/auth/login`, {
-        username,
-        password
-      });
+      // Kiểm tra có phải email không
+      const isEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(userNameOrEmail);
+      console.log(isEmail);
+      const payload = isEmail
+        ? { email: userNameOrEmail, password }
+        : { username: userNameOrEmail, password };
+      console.log(payload);
+      const response = await axios.post(`${API_BASE_URL}/reptitist/auth/login`, payload);
       
       const { access_token, refresh_token, user: userData } = response.data;
       

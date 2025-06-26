@@ -65,10 +65,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (username, password) => {
+  const login = async (userNameOrEmail, password) => {
     try {
-      debugLog('Login attempt for username:', username);
-      const result = await authService.login(username, password);
+      debugLog('Login attempt for:', userNameOrEmail);
+      const result = await authService.login(userNameOrEmail, password);
 
       if (result.success) {
         debugLog('Login successful:', result.user);

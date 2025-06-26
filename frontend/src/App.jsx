@@ -55,6 +55,9 @@ import {CartProvider} from './context/CartContext';
 
 import PolicyPage from './pages/PolicyPage';
 import EditYourPetPage from './pages/EditYourPetPage';
+import UserManual from './pages/UserManual';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 
 // Loading spinner
@@ -135,6 +138,9 @@ const AppRoutes = () => (
     <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
     <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
     <Route path="/policy-terms" element={<PolicyPage />} />
+    <Route path="/user-manual" element={<UserManual />} />
+    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+    <Route path="/reset-password" element={<ResetPasswordPage />} />
     
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
