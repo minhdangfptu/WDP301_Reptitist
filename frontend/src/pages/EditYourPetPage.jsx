@@ -5,6 +5,35 @@ import { Form, Button, Card, Container, Row, Col } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { baseUrl } from "../config";
+
+const REPTILE_SPECIES = [
+  "Rùa cạn",
+  "Rùa nước",
+  "Rắn cảnh",
+  "Thằn lằn",
+  "Kỳ nhông",
+  "Tắc kè",
+  "Kỳ đà",
+  "Rồng Úc",
+  "Rồng Nam Mỹ (Iguana)",
+  "Rắn sữa (Milk Snake)",
+  "Rắn ngô (Corn Snake)",
+  "Rắn vua (King Snake)",
+  "Tắc kè báo (Leopard Gecko)",
+  "Thằn lằn bóng (Blue-tongue Skink)",
+  "Tắc kè đuôi béo (Fat-tailed Gecko)",
+  "Tắc kè Tokay",
+  "Rùa tai đỏ",
+  "Rùa vàng",
+  "Rùa hộp",
+  "Rắn mamba",
+  "Rắn lục",
+  "Rắn hổ mang",
+  "Rắn hổ trâu",
+  "Kỳ tôm (Axolotl - lưỡng cư)",
+  "Khác"
+];
 
 const EditYourPetPage = () => {
   const { reptileId } = useParams();
@@ -22,23 +51,24 @@ const EditYourPetPage = () => {
   });
   const [previewImage, setPreviewImage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [otherSpecies, setOtherSpecies] = useState("");
 
   // Lấy thông tin thú cưng hiện tại
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/reptitist/pet/${reptileId}`)
+      .get(`${baseUrl}/reptitist/pet/${reptileId}`)
       .then((res) => {
         const data = res.data;
-        console.log(data);
         setPetData({
           reptile_name: data.reptile_name || "",
-          reptile_species: data.reptile_species || "",
+          reptile_species: REPTILE_SPECIES.includes(data.reptile_species) ? data.reptile_species : "",
           name: data.name || "",
           description: data.description || "",
           user_reptile_imageurl: data.user_reptile_imageurl || "",
           age: data.age || "",
           current_weight: data.current_weight || "",
         });
+        setOtherSpecies(REPTILE_SPECIES.includes(data.reptile_species) ? "" : data.reptile_species || "");
         setPreviewImage(data.user_reptile_imageurl || "");
       })
       .catch(() => {
@@ -107,7 +137,10 @@ const EditYourPetPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await axios.put(`http://localhost:8080/reptitist/pet/update-reptile/${reptileId}`, petData);
+      await axios.put(`${baseUrl}/reptitist/pet/update-reptile/${reptileId}`, {
+        ...petData,
+        reptile_species: petData.reptile_species === "" ? otherSpecies : petData.reptile_species,
+      });
       toast.success("Cập nhật thành công!");
       setTimeout(() => {
         navigate(-1); // Quay lại trang trước
@@ -182,13 +215,35 @@ const EditYourPetPage = () => {
                   </Form.Group>
                   <Form.Group className="mb-3" controlId="reptile_species">
                     <Form.Label className="fw-medium">Loài <span className="text-danger">*</span></Form.Label>
-                    <Form.Control
-                      type="text"
+                    <Form.Select
                       name="reptile_species"
-                      value={petData.reptile_species}
-                      onChange={handleChange}
+                      value={petData.reptile_species || (otherSpecies ? "Khác" : "")}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === "Khác") {
+                          setPetData(prev => ({ ...prev, reptile_species: "" }));
+                        } else {
+                          setPetData(prev => ({ ...prev, reptile_species: value }));
+                          setOtherSpecies("");
+                        }
+                      }}
                       required
-                    />
+                    >
+                      <option value="">-- Chọn loài bò sát --</option>
+                      {REPTILE_SPECIES.map((species, idx) => (
+                        <option key={idx} value={species}>{species}</option>
+                      ))}
+                    </Form.Select>
+                    {(petData.reptile_species === "" && (otherSpecies !== "" || (petData.reptile_species === "" && otherSpecies === ""))) && (
+                      <Form.Control
+                        className="mt-2"
+                        type="text"
+                        placeholder="Nhập loài bò sát khác"
+                        value={otherSpecies}
+                        onChange={(e) => setOtherSpecies(e.target.value)}
+                        required
+                      />
+                    )}
                   </Form.Group>
                 </Col>
                 {/* Cột 3: Thông tin 2 */}
@@ -204,23 +259,25 @@ const EditYourPetPage = () => {
                     />
                   </Form.Group>
                   <Form.Group className="mb-3" controlId="age">
-                    <Form.Label className="fw-medium">Tuổi</Form.Label>
+                    <Form.Label className="fw-medium">Tuổi (tháng)</Form.Label>
                     <Form.Control
                       type="number"
                       name="age"
                       value={petData.age}
                       onChange={handleChange}
                       min={0}
+                      placeholder="Nhập tuổi theo tháng"
                     />
                   </Form.Group>
                   <Form.Group className="mb-3" controlId="current_weight">
-                    <Form.Label className="fw-medium">Cân nặng hiện tại</Form.Label>
+                    <Form.Label className="fw-medium">Cân nặng hiện tại (kilogram) </Form.Label>
                     <Form.Control
                       type="number"
                       name="current_weight"
                       value={petData.current_weight}
                       onChange={handleChange}
                       min={0}
+                      placeholder="Nhập tuổi theo Kilogram"
                     />
                   </Form.Group>
                 </Col>
