@@ -21,11 +21,11 @@ const LibraryContent = () => {
 
   // Lấy user_id từ token
   const getUserId = () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token");
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        return decoded.id; // Thay đổi từ user_id thành id
+        return decoded.id;
       } catch (err) {
         console.error("Lỗi giải mã token:", err);
         return null;
@@ -128,7 +128,7 @@ const LibraryContent = () => {
     e.preventDefault();
     console.log("Bắt đầu handleCreate");
     console.log("userId:", userId);
-    console.log("Token:", localStorage.getItem("token"));
+    console.log("Token:", localStorage.getItem("access_token"));
     console.log("categoryId:", categoryId);
     console.log("Category:", category);
     
@@ -173,7 +173,7 @@ const LibraryContent = () => {
       console.log("API URL:", apiUrl);
       console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
       console.log("Headers:", {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         "Content-Type": "application/json"
       });
 
@@ -261,7 +261,7 @@ const LibraryContent = () => {
     }
     try {
       const response = await axios.put(
-        `${baseUrl}/reptitist/library-contents/${selectedContentId}`,
+        `${baseUrl}/reptitist/library-content/${selectedContentId}`,
         {
           ...formData,
           category_content_id: categoryId
@@ -282,8 +282,8 @@ const LibraryContent = () => {
   const handleDelete = async () => {
     if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library-contents/${selectedContentId}`);
-        const response = await axios.get(`${baseUrl}/reptitist/library-contents`);
+        await axios.delete(`${baseUrl}/reptitist/library-content/${selectedContentId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/library-content`);
         const filtered = response.data.filter((item) => {
           if (item.category_content_id && typeof item.category_content_id === "object") {
             if (item.category_content_id._id) {
@@ -426,15 +426,37 @@ const LibraryContent = () => {
                       />
                     </div>
                     <div style={{ marginBottom: "10px" }}>
-                      <label>URL hình ảnh:</label>
-                      <input
-                        type="text"
-                        name="image_urls"
-                        value={formData.image_urls.join(", ")}
-                        onChange={handleFormChange}
-                        style={{ width: "100%", padding: "5px" }}
-                        placeholder="Nhập các URL hình ảnh, phân cách bằng dấu phẩy"
-                      />
+                      <label>Hình ảnh (tối đa 3 ảnh, mỗi ảnh 1 ô chọn)</label>
+                      {[0, 1, 2].map(idx => (
+                        <div key={idx} style={{ marginBottom: 8 }}>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={e => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setFormData(prev => {
+                                    const newImages = [...(prev.image_urls || [])];
+                                    newImages[idx] = reader.result;
+                                    return { ...prev, image_urls: newImages };
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="form-control"
+                          />
+                          {formData.image_urls && formData.image_urls[idx] && (
+                            <img
+                              src={formData.image_urls[idx]}
+                              alt={`Preview ${idx + 1}`}
+                              style={{ maxWidth: 120, maxHeight: 120, borderRadius: 4, marginTop: 4 }}
+                            />
+                          )}
+                        </div>
+                      ))}
                     </div>
                     <div style={{ marginBottom: "10px" }}>
                       <button
