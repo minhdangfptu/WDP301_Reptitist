@@ -18,7 +18,7 @@ const UpdateCategory = () => {
 
   useEffect(() => {
     axios
-      .get(`${baseUrl}/reptitist/library_categories/${id}`)
+      .get(`${baseUrl}/reptitist/library-categories/${id}`)
       .then((response) => {
         console.log(response.data); // Kiểm tra dữ liệu trả về
         setFormData(response.data);
