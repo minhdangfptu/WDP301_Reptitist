@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Header from "../components/Header";
@@ -308,6 +308,10 @@ const LibraryContent = () => {
 
   const selectedContent = contents.find((item) => item._id === selectedContentId);
 
+  // Tìm topic title cho breadcrumb
+  const topicObj = topics.find(t => t._id === (category?.topic_id?._id || category?.topic_id));
+  const topicTitle = topicObj?.topic_title || "Chủ đề không xác định";
+
   return (
     <>
       <Header />
@@ -319,12 +323,12 @@ const LibraryContent = () => {
 
       <div className="container">
         <div className="breadcrumb">
-          <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
-          <a href="/LibraryTopic">Thư viện kiến thức</a>{" "}
+          <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right"></i>{" "}
+          <Link to="/LibraryTopic">Thư viện kiến thức</Link>{" "}
           <i className="fas fa-angle-right"></i>{" "}
-          <a href={`/LibraryCategory/${category?.topic_id}`}>
-            {category?.topic_title || "Chủ đề không xác định"}
-          </a>{" "}
+          <Link to={`/LibraryCategory/${category?.topic_id?._id || category?.topic_id}`}>
+            {topicTitle}
+          </Link>{" "}
           <i className="fas fa-angle-right"></i>{" "}
           <span>{category?.category_content || "Danh mục không xác định"}</span>
         </div>
