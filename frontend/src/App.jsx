@@ -59,6 +59,7 @@ import UserManual from './pages/UserManual';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 
+
 // Loading spinner
 const LoadingSpinner = () => (
   <div style={{
