@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import { baseUrl } from '../config';      
 const CreateLibraryTopic = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -18,21 +18,10 @@ const CreateLibraryTopic = () => {
       topic_imageurl: [imageurl]
     };
     try {
-      await axios.post("http://localhost:8080/reptitist/library_topics", newTopic);
+      await axios.post(`${baseUrl}/reptitist/topic-categories/library_topics`, newTopic);
       navigate("/Library");
     } catch (error) {
       console.error("Lỗi khi tạo chủ đề:", error);
-    }
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageurl(reader.result); // base64 string
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -71,16 +60,14 @@ const CreateLibraryTopic = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: "16px" }}>
-            <label>Hình ảnh (chọn file)</label>
+            <label>Hình ảnh (URL)</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
+              type="text"
+              value={imageurl}
+              onChange={(e) => setImageurl(e.target.value)}
               className="form-control"
+              placeholder="Nhập đường dẫn hình ảnh..."
             />
-            {imageurl && (
-              <img src={imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
-            )}
           </div>
 
           <button type="submit" className="btn btn-success">

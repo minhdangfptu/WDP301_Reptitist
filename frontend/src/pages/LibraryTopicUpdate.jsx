@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { baseUrl } from '../config';
 
 const UpdateLibraryTopic = () => {
   const [title, setTitle] = useState("");
@@ -13,7 +14,7 @@ const UpdateLibraryTopic = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8080/reptitist/library_topics/${id}`)
+      .get(`${baseUrl}/reptitist//topic-categories/library_topics/${id}`)
       .then((res) => {
         const topic = res.data;
         setTitle(topic.topic_title || "");
@@ -26,25 +27,14 @@ const UpdateLibraryTopic = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:8080/reptitist/library_topics/${id}`, {
+      await axios.put(`${baseUrl}/reptitist/topic-categories/library_topics/${id}`, {
         topic_title: title,
         topic_description: description,
         topic_imageurl: [imageurl],
       });
-      navigate("/Library");
+      navigate("/LibraryTopic");
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error);
-    }
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageurl(reader.result); // base64 string
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -83,16 +73,14 @@ const UpdateLibraryTopic = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: "16px" }}>
-            <label>Hình ảnh (chọn file)</label>
+            <label>Hình ảnh (URL)</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
+              type="text"
+              value={imageurl}
+              onChange={(e) => setImageurl(e.target.value)}
               className="form-control"
+              placeholder="Cập nhật đường dẫn hình ảnh..."
             />
-            {imageurl && (
-              <img src={imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
-            )}
           </div>
 
           <button type="submit" className="btn btn-warning">

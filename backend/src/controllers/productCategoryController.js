@@ -2,27 +2,38 @@ const ProductCategory = require('../models/Products_categories');
 
 const createCategory = async (req, res) => {
     try {
-        const {product_category_name, product_category_imageurl } = req.body;
+        const categories = Array.isArray(req.body) ? req.body : [req.body];
+        const createdCategories = [];
 
-        const nameExists = await ProductCategory.findOne({ product_category_name });
-        if (nameExists) {
-            return res.status(400).json({ message: 'Product category name already exists' });
+        for (const categoryData of categories) {
+            const { product_category_name, product_category_imageurl } = categoryData;
+
+            const nameExists = await ProductCategory.findOne({ product_category_name });
+            if (nameExists) {
+                return res.status(400).json({ 
+                    message: `Product category name "${product_category_name}" already exists`,
+                    existingCategory: nameExists
+                });
+            }
+
+            const category = new ProductCategory({
+                product_category_name,
+                product_category_imageurl
+            });
+
+            await category.save();
+            createdCategories.push(category);
         }
 
-
-        const category = new ProductCategory({
-            product_category_name,
-            product_category_imageurl
+        res.status(201).json({ 
+            message: categories.length > 1 ? 'Product categories created successfully!' : 'Product category created successfully!', 
+            createdCategories 
         });
-
-        await category.save();
-
-        res.status(201).json({ message: 'Product category created successfully!', 'Created category': category });
 
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            message: 'Failed to create product category!',
+            message: 'Failed to create product category(ies)!',
             error: error.message
         });
     }

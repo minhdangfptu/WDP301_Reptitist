@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const LibraryCategory = require('../models/library_category'); // Đảm bảo đúng tên model
-const LibraryTopic = require('../models/library_topics');
+const LibraryCategory = require('../models/Library_category'); // Đảm bảo đúng tên model
+const LibraryTopic = require('../models/Library_topics');
 
 // Tạo danh mục mới
 exports.createCategory = async (req, res) => {
@@ -114,9 +114,9 @@ exports.getCategoriesByTopicId = async (req, res) => {
     const { topicId } = req.params;
 
     const categories = await LibraryCategory.find({ topic_id: topicId });
-    // if (!categories || categories.length === 0) {
-    //   return res.status(404).json({ message: 'Không tìm thấy danh mục cho chủ đề này' });
-    // }
+    if (!categories || categories.length === 0) {
+      return res.status(404).json({ message: 'Không tìm thấy danh mục cho chủ đề này' });
+    }
 
     res.status(200).json(categories);
   } catch (error) {
