@@ -33,7 +33,7 @@ const UpdateCategory = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${baseUrl}/reptitist/library_categories/${id}`, formData);
+      await axios.put(`${baseUrl}/reptitist/library-categories/${id}`, formData);
       navigate(`/libraryCategory/${formData.topic_id._id}`);
     } catch (err) {
       setError("Không thể cập nhật danh mục. Vui lòng thử lại.");
@@ -69,14 +69,25 @@ const UpdateCategory = () => {
             />
           </div>
           <div className="form-group mb-3">
-            <label>URL hình ảnh</label>
+            <label>Hình ảnh (chọn file)</label>
             <input
-              type="text"
-              name="category_imageurl"
-              value={formData.category_imageurl}
-              onChange={handleChange}
+              type="file"
+              accept="image/*"
+              onChange={e => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setFormData(prev => ({ ...prev, category_imageurl: reader.result }));
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
               className="form-control"
             />
+            {formData.category_imageurl && (
+              <img src={formData.category_imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
+            )}
           </div>
           <button type="submit" className="btn btn-warning">
             Cập nhật danh mục
