@@ -36,7 +36,7 @@ const Library = () => {
   const handleDelete = async (topicId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library_topics/${topicId}`);
+        await axios.delete(`${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`);
         setTopics(topics.filter((topic) => topic._id !== topicId));
         alert("Xóa chủ đề thành công!");
       } catch (error) {

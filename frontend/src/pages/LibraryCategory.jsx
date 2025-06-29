@@ -23,7 +23,7 @@ const LibraryCategory = () => {
         const response = await axios.get(`${baseUrl}/reptitist/library-categories/topic/${topicId}`);
         setAllCategories(response.data);
       } catch (err) {
-        setError("Lỗi khi tải danh sách danh mục");
+        setAllCategories([]);
       }
     };
 

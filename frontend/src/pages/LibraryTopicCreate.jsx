@@ -19,7 +19,7 @@ const CreateLibraryTopic = () => {
     };
     try {
       await axios.post(`${baseUrl}/reptitist/topic-categories/library_topics`, newTopic);
-      navigate("/Library");
+      navigate("/LibraryTopic");
     } catch (error) {
       console.error("Lỗi khi tạo chủ đề:", error);
     }
