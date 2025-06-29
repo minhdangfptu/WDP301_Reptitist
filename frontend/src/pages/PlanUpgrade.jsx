@@ -64,38 +64,35 @@ const PlanUpgrade = () => {
       name: 'Miễn phí',
       price: 0,
       period: 'VNĐ/tháng',
-      description: 'Cùng khám phá sự hỗ trợ cơ bản của Reptitist trong chăm sóc bò sát của bạn hằng ngày',
+      description: 'Khám phá những tiện ích cơ bản của Reptitist để chăm sóc bò sát mỗi ngày một cách dễ dàng và hiệu quả.',
       features: [
-        'Tìm kiếm thông tin về bò sát',
-        'Kết nối với cộng đồng bò sát',
-        'Truy cập thư viện kiến thức có giới hạn',
-        'Mua các sản phẩm chăm sóc bò sát',
-        'Khám phá tin tức quan trọng về bò sát'
+        'Tìm kiếm thông tin về các loài bò sát',
+        'Truy cập thư viện kiến thức đa dạng',
+        'Mua sắm các sản phẩm chăm sóc bò sát',
+        'Cập nhật tin tức mới nhất về thế giới bò sát'
       ],
-      buttonText: 'Kế hoạch hiện tại của bạn',
+      buttonText: 'Đây là gói bạn đang sử dụng',
       buttonStyle: 'outline',
       isCurrent: true
     },
     premium: {
       name: 'Premium',
-      price: 9000,
-      oneTimePrice: 99000,
-      period: 'VNĐ',
-      description: 'Sử dụng Reptitist một cách năng suất và sáng tạo với quyền truy cập được mở rộng!',
+      price: 79000,
+      oneTimePrice: 749000,
+      period: 'VNĐ/tháng',
+      description: 'Nâng tầm trải nghiệm cùng Reptitist với nhiều quyền lợi mở rộng, hỗ trợ bạn chăm sóc bò sát thông minh hơn',
       popular: true,
       features: [
-        'Mọi thứ đều miễn phí',
+        'Bao gồm tất cả tính năng của gói Miễn phí',
         'Trợ lý ảo AI hỗ trợ 24/7',
         'Truy cập không giới hạn thư viện kiến thức',
-        'Tìm kiếm chuyên sâu thông tin bò sát',
-        'Kết nối nâng cao với cộng đồng',
-        'Cá nhân hoá hồ sơ người dùng',
-        'Cá nhân hoá hồ sơ bò sát',
-        'Hệ sinh thái chăm sóc bò sát toàn diện',
-        'Mua các sản phẩm chăm sóc bò sát',
-        'Các công cụ hỗ trợ nhắc nhở và nhật ký'
+        'Tìm kiếm chuyên sâu về bò sát',
+        'Cá nhân hóa hồ sơ người dùng và bò sát',
+        'Hệ sinh thái chăm sóc toàn diện',
+        'Mua sắm sản phẩm chuyên biệt cho bò sát',
+        'Góp ý và đề xuất cho bò sát của bạn'
       ],
-      buttonText: 'Tìm hiểu chi tiết',
+      buttonText: 'Khám phá chi tiết',
       buttonStyle: 'primary'
     }
   };
@@ -106,16 +103,13 @@ const PlanUpgrade = () => {
       price: 199000,
       oneTimePrice: 1990000,
       period: 'VNĐ/tháng',
-      description: 'Tối ưu hoá hiệu quả kinh doanh nhỏ không gian làm việc của Reptitist.',
+      description: 'Giải pháp tối ưu cho các cửa hàng nhỏ, giúp bạn kết nối với cộng đồng và quản lý kinh doanh hiệu quả.',
       features: [
-        'Mọi tính năng của Gói Cá nhân',
-        'Kết nối với cộng đồng bò sát rộng lớn',
-        'Số lượng sản phẩm giới hạn',
-        'Giải hạn thêm gia FLASH SALE',
-        'Hỗ trợ khách hàng hàng đầu',
-        'Thông kê báo cáo của hàng cơ bản'
+        'Tận hưởng mọi tính năng của Gói Cá nhân',
+        'Đăng bán số lượng sản phẩm giới hạn',
+        'Báo cáo thống kê cơ bản cho cửa hàng'
       ],
-      buttonText: 'Tìm hiểu chi tiết',
+      buttonText: 'Khám phá chi tiết',
       buttonStyle: 'outline'
     },
     premium: {
@@ -123,19 +117,19 @@ const PlanUpgrade = () => {
       price: 299000,
       oneTimePrice: 2990000,
       period: 'VNĐ/tháng',
-      description: 'Trải nghiệm mọi trường kinh doanh chăm sóc bò sát chuyên nghiệp.',
+      description: 'Trải nghiệm giải pháp kinh doanh chuyên nghiệp, mở rộng quy mô và nâng cao hiệu quả với nhiều đặc quyền nổi bật.',
       popular: true,
       features: [
-        'Mọi tính năng của Gói Cá nhân',
-        'Kết nối với cộng đồng bò sát rộng lớn',
-        'Số lượng sản phẩm KHÔNG giới hạn',
-        'KHÔNG giới hạn FLASH SALE',
+        'Bao gồm mọi tính năng của Gói Cá nhân',
+        'Kết nối sâu rộng với cộng đồng bò sát',
+        'Đăng bán sản phẩm không giới hạn',
+        'Không giới hạn tham gia FLASH SALE',
         'Hỗ trợ khách hàng ưu tiên',
-        'Thông kê báo cáo của hàng đầy đủ',
+        'Báo cáo thống kê chi tiết cho cửa hàng',
         'Ưu tiên hiển thị trên trang chủ',
-        'Đề xuất quảng cáo'
+        'Được đề xuất quảng cáo nổi bật'
       ],
-      buttonText: 'Tìm hiểu chi tiết',
+      buttonText: 'Khám phá chi tiết',
       buttonStyle: 'primary'
     }
   };

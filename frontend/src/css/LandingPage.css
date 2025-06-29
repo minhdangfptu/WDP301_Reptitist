@@ -1,0 +1,423 @@
+/* LandingPage.css */
+.lp-page {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.lp-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Hero Section */
+.lp-hero {
+  position: relative;
+  min-height: 600px;
+  background-image: url('../assets/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+.lp-hero__content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.lp-hero__title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.lp-hero__description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.lp-hero__buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.lp-btn {
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.lp-btn--primary {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.lp-btn--primary:hover {
+  background-color: #45a049;
+  transform: translateY(-2px);
+}
+
+.lp-btn--secondary {
+  background-color: transparent;
+  color: white;
+  border: 2px solid white;
+}
+
+.lp-btn--secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.lp-btn--text {
+  color: #4CAF50;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.lp-btn--text:hover {
+  text-decoration: underline;
+}
+
+.lp-hero__discount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.lp-hero__discount-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.lp-hero__discount-text {
+  font-size: 0.9rem;
+}
+
+/* About Section */
+.lp-about {
+  padding: 4rem 0;
+  background-color: white;
+}
+
+.lp-about__title {
+  font-size: 2.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.lp-about__flex {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+}
+
+.lp-about__content {
+  flex: 1;
+}
+
+.lp-about__text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #666;
+}
+
+.lp-about__image {
+  flex: 1;
+  position: relative;
+}
+
+.lp-about__play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lp-about__play-button:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Features Section */
+.lp-features {
+  padding: 4rem 0;
+  background-color: #f8f8f8;
+}
+
+.lp-features__title {
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.lp-features__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.lp-feature {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.lp-feature:hover {
+  transform: translateY(-5px);
+}
+
+.lp-feature__icon {
+  width: 60px;
+  height: 60px;
+  background: #4CAF50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.lp-feature__title {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.lp-feature__description {
+  color: #666;
+  line-height: 1.6;
+}
+
+/* News Section */
+.lp-news {
+  padding: 4rem 0;
+  background-color: white;
+}
+
+.lp-news__title {
+  font-size: 2rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.lp-news__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.lp-news__featured {
+  background: #f8f8f8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lp-news__featured-image img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.lp-news__featured-content {
+  padding: 2rem;
+}
+
+.lp-news__featured-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.lp-news__featured-excerpt {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.lp-news__recent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.lp-news__item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8f8f8;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.lp-news__item:hover {
+  transform: translateX(5px);
+}
+
+.lp-news__item-image img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.lp-news__item-title {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.lp-news__item-date {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .lp-hero__title {
+    font-size: 2.5rem;
+  }
+
+  .lp-hero__description {
+    font-size: 1rem;
+  }
+
+  .lp-hero__buttons {
+    flex-direction: column;
+  }
+
+  .lp-about__flex {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .lp-news__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .lp-features__grid {
+    grid-template-columns: 1fr;
+  }
+} 
+.floating-help-container {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.help-bubble {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0fa958;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  cursor: pointer;
+  font-size: 32px;
+  color: #fff;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.25s cubic-bezier(.4,0,.2,1);
+}
+.help-bubble:hover {
+  background: #00843d;
+  box-shadow: 0 8px 32px rgba(15,169,88,0.18);
+  transform: translateY(-4px) scale(1.05);
+}
+
+.help-dialog {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom: 8px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  padding: 18px 20px;
+  min-width: 220px;
+  gap: 12px;
+  position: relative;
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(.4,0,.2,1);
+}
+.help-dialog.show {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.help-dialog-btn {
+  width: 100%;
+  padding: 10px 0;
+  border-radius: 8px;
+  border: none;
+  background: #f3f4f6;
+  color: #222;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.help-dialog-btn.main {
+  background: #0fa958;
+  color: #fff;
+}
+.help-dialog-btn:hover {
+  background: #0fa958;
+  color: #fff;
+}
+.first-login-popup-overlay {
+  position: fixed;
+  z-index: 20000;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.first-login-popup {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 32px 28px 24px 28px;
+  min-width: 320px;
+  max-width: 90vw;
+  text-align: center;
+  animation: popupIn 0.25s cubic-bezier(.4,0,.2,1);
+}
+@keyframes popupIn {
+  from { opacity: 0; transform: scale(0.95);}
+  to { opacity: 1; transform: scale(1);}
+}

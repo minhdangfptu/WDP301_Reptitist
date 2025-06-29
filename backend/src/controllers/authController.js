@@ -61,8 +61,7 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        
-        // Support login with both username and email
+
         let existUser;
         if (email) {
             existUser = await User.findOne({ email }).populate('role_id');

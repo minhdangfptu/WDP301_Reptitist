@@ -5,19 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-
-// Cấu hình Axios để gửi token trong header
-axios.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
+import { baseUrl } from '../config';
 const LibraryContent = () => {
   const { categoryId } = useParams();
   const [contents, setContents] = useState([]);
@@ -28,8 +16,8 @@ const LibraryContent = () => {
   const [selectedContentId, setSelectedContentId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
-  const { hasRole } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = user && user.role === "admin";
 
   // Lấy user_id từ token
   const getUserId = () => {
@@ -64,7 +52,7 @@ const LibraryContent = () => {
     const fetchCategory = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/reptitist/library_categories/${categoryId}`
+          `${baseUrl}/reptitist/library-categories/${categoryId}`
         );
         console.log("Category:", response.data);
         setCategory(response.data);
@@ -76,7 +64,7 @@ const LibraryContent = () => {
     const fetchContents = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/library_contents"
+          `${baseUrl}/reptitist/library-content`
         );
         const filtered = response.data.filter((item) => {
           console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
@@ -100,7 +88,7 @@ const LibraryContent = () => {
     const fetchTopics = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/reptitist/library_topics"
+          `${baseUrl}/reptitist/topic-categories/library_topics`
         );
         setTopics(response.data);
       } catch (err) {
@@ -134,21 +122,6 @@ const LibraryContent = () => {
       ...prev,
       [name]: name === "image_urls" ? value.split(",").map(url => url.trim()) : value
     }));
-  };
-
-  const handleImageFileChange = (index) => (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => {
-          const newImages = [...(prev.image_urls || [])];
-          newImages[index] = reader.result;
-          return { ...prev, image_urls: newImages };
-        });
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleCreate = async (e) => {
@@ -196,7 +169,7 @@ const LibraryContent = () => {
         topic_category_id: category.topic_id // Sử dụng topic_id từ category hiện tại
       };
 
-      const apiUrl = "http://localhost:8080/reptitist/library_contents";
+      const apiUrl = `${baseUrl}/reptitist/library-content`;
       console.log("API URL:", apiUrl);
       console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
       console.log("Headers:", {
@@ -288,7 +261,7 @@ const LibraryContent = () => {
     }
     try {
       const response = await axios.put(
-        `http://localhost:8080/reptitist/library_contents/${selectedContentId}`,
+        `${baseUrl}/reptitist/library-contents/${selectedContentId}`,
         {
           ...formData,
           category_content_id: categoryId
@@ -309,8 +282,8 @@ const LibraryContent = () => {
   const handleDelete = async () => {
     if (window.confirm("Bạn có chắc muốn xóa nội dung này?")) {
       try {
-        await axios.delete(`http://localhost:8080/reptitist/library_contents/${selectedContentId}`);
-        const response = await axios.get("http://localhost:8080/reptitist/library_contents");
+        await axios.delete(`${baseUrl}/reptitist/library-contents/${selectedContentId}`);
+        const response = await axios.get(`${baseUrl}/reptitist/library-contents`);
         const filtered = response.data.filter((item) => {
           if (item.category_content_id && typeof item.category_content_id === "object") {
             if (item.category_content_id._id) {
@@ -329,13 +302,6 @@ const LibraryContent = () => {
       }
     }
   };
-
-  // Lấy tên chủ đề từ topics dựa vào category.topic_id
-  const topicTitle = React.useMemo(() => {
-    if (!category?.topic_id || !Array.isArray(topics)) return null;
-    const found = topics.find(t => t._id === (category.topic_id._id || category.topic_id));
-    return found ? found.topic_title : null;
-  }, [category, topics]);
 
   if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
   if (error) return <div className="text-danger text-center my-5">{error}</div>;
@@ -356,8 +322,8 @@ const LibraryContent = () => {
           <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
           <a href="/LibraryTopic">Thư viện kiến thức</a>{" "}
           <i className="fas fa-angle-right"></i>{" "}
-          <a href={category?.topic_id ? `/LibraryCategory/${category.topic_id._id || category.topic_id}` : '#'}>
-            {topicTitle || "Chủ đề không xác định"}
+          <a href={`/LibraryCategory/${category?.topic_id}`}>
+            {category?.topic_title || "Chủ đề không xác định"}
           </a>{" "}
           <i className="fas fa-angle-right"></i>{" "}
           <span>{category?.category_content || "Danh mục không xác định"}</span>
@@ -403,8 +369,7 @@ const LibraryContent = () => {
               className="content-grid"
               style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
             >
-              {/* Nút tạo mới nội dung */}
-              {hasRole("admin") && (
+              {isAdmin && (
                 <div style={{ width: "100%", marginBottom: "10px" }}>
                   <button
                     style={{
@@ -461,20 +426,15 @@ const LibraryContent = () => {
                       />
                     </div>
                     <div style={{ marginBottom: "10px" }}>
-                      <label>Hình ảnh (tối đa 3 ảnh, mỗi ảnh 1 file):</label>
-                      {[0,1,2].map((idx) => (
-                        <div key={idx} style={{ marginBottom: 8 }}>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageFileChange(idx)}
-                            style={{ width: "100%", padding: "5px" }}
-                          />
-                          {formData.image_urls && formData.image_urls[idx] && (
-                            <img src={formData.image_urls[idx]} alt={`preview-${idx}`} style={{ maxWidth: 80, maxHeight: 80, border: '1px solid #ccc', marginTop: 4 }} />
-                          )}
-                        </div>
-                      ))}
+                      <label>URL hình ảnh:</label>
+                      <input
+                        type="text"
+                        name="image_urls"
+                        value={formData.image_urls.join(", ")}
+                        onChange={handleFormChange}
+                        style={{ width: "100%", padding: "5px" }}
+                        placeholder="Nhập các URL hình ảnh, phân cách bằng dấu phẩy"
+                      />
                     </div>
                     <div style={{ marginBottom: "10px" }}>
                       <button
@@ -521,7 +481,7 @@ const LibraryContent = () => {
                 </div>
               )}
 
-              {selectedContent && !isCreating && !isEditing && hasRole("admin") && (
+              {selectedContent && !isCreating && !isEditing && isAdmin && (
                 <div style={{ marginBottom: "10px" }}>
                   <button
                     style={{
