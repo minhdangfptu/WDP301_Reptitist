@@ -384,6 +384,14 @@ const LibraryContent = () => {
                       setIsCreating(true);
                       setIsEditing(false);
                       setSelectedContentId(null);
+                      setFormData({
+                        title: "",
+                        content: "",
+                        image_urls: [],
+                        user_id: userId,
+                        topic_category_id: category?.topic_id || "",
+                        category_content_id: categoryId
+                      });
                     }}
                   >
                     Tạo mới nội dung
