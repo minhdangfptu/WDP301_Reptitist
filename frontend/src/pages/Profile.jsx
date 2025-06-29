@@ -9,9 +9,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
 import '../css/Profile.css';
 import { useNavigate } from 'react-router-dom';
+import { baseUrl } from '../config';
 
 const Profile = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, hasRole } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +53,7 @@ const Profile = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       
       if (!token) {
         toast.error('Không tìm thấy token xác thực');
@@ -64,7 +65,7 @@ const Profile = () => {
 
       // Gọi API cập nhật profile
       const response = await axios.put(
-        'http://localhost:8080/reptitist/auth/profile',
+        `${baseUrl}/reptitist/auth/profile`,
         {
           fullname: editForm.fullname.trim(),
           phone_number: editForm.phone_number.trim(),
@@ -242,7 +243,7 @@ const Profile = () => {
       
       console.log('Converting image to base64...');
 
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         return;
@@ -250,7 +251,7 @@ const Profile = () => {
 
       // Send base64 data to backend
       const response = await axios.post(
-        'http://localhost:8080/reptitist/auth/upload-avatar',
+        `${baseUrl}/reptitist/auth/upload-avatar`,
         {
           imageData: base64Data
         },
@@ -298,7 +299,7 @@ const Profile = () => {
   };
 
   const getAvatarUrl = (imageUrl) => {
-    if (!imageUrl) return "/api/placeholder/64/64";
+      if (!imageUrl) return "/api/placeholder/64/64";
     
     // If it's a base64 string, return as is
     if (imageUrl.startsWith('data:image/')) {
@@ -311,7 +312,53 @@ const Profile = () => {
     }
     
     // If it's a path, construct full URL
-    return `http://localhost:8080${imageUrl}`;
+    return `${baseUrl}${imageUrl}`;
+  };
+
+  // Helper function to get user account type display
+  const getUserAccountTypeDisplay = () => {
+    if (!user) return 'Customer';
+    
+    // Check role first for admin
+    if (hasRole('admin')) {
+      return 'Administrator';
+    }
+    
+    // Check account_type for shop
+    if (user.account_type?.type === 'shop') {
+      const level = user.account_type?.level;
+      if (level === 'premium') {
+        return 'Premium Shop Partner';
+      } else {
+        return 'Shop Partner';
+      }
+    }
+    
+    // Check account type level for customers
+    if (user.account_type?.level === 'premium') {
+      return 'Premium Customer';
+    }
+    
+    return 'Customer';
+  };
+
+  // Helper function to check if user should see upgrade option
+  const shouldShowUpgrade = () => {
+    if (!user) return false;
+    
+    // Don't show upgrade for admin
+    if (hasRole('admin')) return false;
+    
+    // Don't show upgrade if already shop or premium
+    if (user.account_type?.type === 'shop') return false;
+    if (user.account_type?.level === 'premium') return false;
+    
+    return true;
+  };
+
+  // Check if user is shop
+  const isShop = () => {
+    return user?.account_type?.type === 'shop';
   };
 
   if (!user || !isDataLoaded) {
@@ -408,15 +455,20 @@ const Profile = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  {user.account_type?.type === 'premium' ? (
-                    <div className="profile-badge-container">
-                      <span className="profile-badge-text">Premium Customer</span>
-                    </div>
-                  ) : (
+                  {shouldShowUpgrade() ? (
                     <Link to="/PlanUpgrade" className="profile-badge-container">
-                      <span className="profile-badge-text">Customer</span>
+                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
                       <span className="upgrade-button">Upgrade account</span>
                     </Link>
+                  ) : (
+                    <div className="profile-badge-container">
+                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
+                      {isShop() && (
+                        <span className="shop-features-link">
+                          <Link to="/ProductManagement">Quản lý cửa hàng</Link>
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -555,6 +607,37 @@ const Profile = () => {
                 </div>
               </div>
             </div>
+
+            {/* Account Type Information */}
+            {isShop() && (
+              <div className="account-type-section">
+                <h3 className="section-title">Thông tin đối tác</h3>
+                <div className="account-type-info">
+                  <div className="account-type-item">
+                    <span className="account-type-label">Loại tài khoản:</span>
+                    <span className="account-type-value">
+                      {user.account_type?.level === 'premium' ? 'Premium Shop Partner' : 'Shop Partner'}
+                    </span>
+                  </div>
+                  {user.account_type?.activated_at && (
+                    <div className="account-type-item">
+                      <span className="account-type-label">Ngày kích hoạt:</span>
+                      <span className="account-type-value">
+                        {new Date(user.account_type.activated_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                  )}
+                  {user.account_type?.expires_at && (
+                    <div className="account-type-item">
+                      <span className="account-type-label">Ngày hết hạn:</span>
+                      <span className="account-type-value">
+                        {new Date(user.account_type.expires_at).toLocaleDateString('vi-VN')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Delivery Information Section */}
             <div className="delivery-section">

@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { baseUrl } from '../config';
 
 const CreateCategory = () => {
   const { topicId } = useParams();
@@ -23,21 +24,10 @@ const CreateCategory = () => {
     e.preventDefault();
 
     try {
-      await axios.post(`http://localhost:8080/reptitist/library_categories/topic/${topicId}`, formData);
+      await axios.post(`${baseUrl}/reptitist/library_categories/topic/${topicId}`, formData);
       navigate(`/libraryCategory/${topicId}`);
     } catch (err) {
       setError("Không thể tạo danh mục. Vui lòng thử lại.");
-    }
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, category_imageurl: reader.result }));
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -70,16 +60,14 @@ const CreateCategory = () => {
             />
           </div>
           <div className="form-group mb-3">
-            <label>Hình ảnh (chọn file)</label>
+            <label>URL hình ảnh</label>
             <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
+              type="text"
+              name="category_imageurl"
+              value={formData.category_imageurl}
+              onChange={handleChange}
               className="form-control"
             />
-            {formData.category_imageurl && (
-              <img src={formData.category_imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
-            )}
           </div>
           <button type="submit" className="btn btn-success">
             Tạo danh mục
