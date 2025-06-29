@@ -1,0 +1,429 @@
+/* PaymentProcessing.css */
+.payment-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  }
+  
+  .payment-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .payment-header {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .payment-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 16px;
+  }
+  
+  .payment-timer {
+    display: flex;
+    align-items: center;
+    background: #fef3c7;
+    color: #d97706;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: 1px solid #fbbf24;
+  }
+  
+  .payment-plan-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    background: #f9fafb;
+    padding: 20px;
+    border-radius: 12px;
+    margin-top: 16px;
+  }
+  
+  .payment-info-item {
+    text-align: center;
+  }
+  
+  .payment-info-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  
+  .payment-info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  .payment-info-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #059669;
+  }
+  
+  .payment-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  
+  .payment-section {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .payment-section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .bank-info-item {
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border-left: 4px solid;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+  }
+  
+  .bank-info-item.bank {
+    background: #dbeafe;
+    border-left-color: #3b82f6;
+  }
+  
+  .bank-info-item.account {
+    background: #d1fae5;
+    border-left-color: #10b981;
+  }
+  
+  .bank-info-item.name {
+    background: #e9d5ff;
+    border-left-color: #8b5cf6;
+  }
+  
+  .bank-info-item.amount {
+    background: #fed7aa;
+    border-left-color: #f97316;
+  }
+  
+  .bank-info-item.content {
+    background: #fee2e2;
+    border-left-color: #ef4444;
+  }
+  
+  .bank-info-label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    opacity: 0.8;
+  }
+  
+  .bank-info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  .bank-info-amount {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  
+  .copy-button {
+    padding: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  
+  .copy-button:hover {
+    opacity: 1;
+  }
+  
+  .qr-section {
+    text-align: center;
+  }
+  
+  .qr-code-container {
+    background: #f9fafb;
+    padding: 24px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    display: inline-block;
+  }
+  
+  .qr-code {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .qr-description {
+    color: #6b7280;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  
+  .payment-confirm-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .payment-confirm-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #047857, #065f46);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(5, 150, 105, 0.4);
+  }
+  
+  .payment-confirm-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .payment-confirm-btn .loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .loading-spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  .payment-note {
+    color: #6b7280;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  
+  .payment-warning {
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    padding: 16px;
+    border-radius: 12px;
+    margin-top: 20px;
+  }
+  
+  .payment-warning p {
+    color: #92400e;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .payment-guide {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .payment-guide-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 20px;
+  }
+  
+  .payment-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 24px;
+  }
+  
+  .payment-guide-step {
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .payment-guide-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+  }
+  
+  .payment-guide-step:nth-child(1) .payment-guide-icon {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  }
+  
+  .payment-guide-step:nth-child(2) .payment-guide-icon {
+    background: linear-gradient(135deg, #10b981, #047857);
+  }
+  
+  .payment-guide-step:nth-child(3) .payment-guide-icon {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  }
+  
+  .payment-guide-step h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+  
+  .payment-guide-step p {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+  }
+  
+  .success-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+  }
+  
+  .success-container {
+    background: white;
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .success-icon {
+    width: 64px;
+    height: 64px;
+    color: #10b981;
+    margin: 0 auto 16px;
+  }
+  
+  .success-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 8px;
+  }
+  
+  .success-message {
+    color: #6b7280;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+  
+  .success-redirect {
+    font-size: 14px;
+    color: #9ca3af;
+    font-style: italic;
+  }
+  
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .payment-section {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  .payment-section:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .payment-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    .payment-plan-info {
+      grid-template-columns: 1fr;
+    }
+    
+    .payment-guide-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    
+    .payment-container {
+      padding: 16px;
+    }
+    
+    .payment-section {
+      padding: 20px;
+    }
+    
+    .payment-title {
+      font-size: 24px;
+    }
+    
+    .success-container {
+      padding: 32px 24px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .bank-info-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .copy-button {
+      align-self: flex-end;
+    }
+    
+    .payment-timer {
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+  }

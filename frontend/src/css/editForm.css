@@ -1,0 +1,225 @@
+/* Edit Review Form Styles */
+.edit-review-form {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .edit-review-form:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .edit-form-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .edit-form-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .edit-form-title svg {
+    color: #3498db;
+  }
+  
+  .feedback-rating {
+    margin-bottom: 20px;
+  }
+  
+  .feedback-rating label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-size: 16px;
+  }
+  
+  .star-rating-select {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  
+  .star-rating-select .star-filled,
+  .star-rating-select .star-empty {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #ffc107;
+  }
+  
+  .star-rating-select .star-empty {
+    color: #dee2e6;
+  }
+  
+  .star-rating-select .star-filled:hover,
+  .star-rating-select .star-empty:hover {
+    transform: scale(1.2);
+    filter: drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4));
+  }
+  
+  .rating-text {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 4px;
+  }
+  
+  .feedback-comment {
+    margin-bottom: 24px;
+  }
+  
+  .feedback-comment label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+  
+  .feedback-comment textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s ease;
+    background: white;
+  }
+  
+  .feedback-comment textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  }
+  
+  .feedback-comment textarea::placeholder {
+    color: #adb5bd;
+  }
+  
+  .character-count {
+    text-align: right;
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+  }
+  
+  .edit-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+  }
+  
+  .save-edit-btn,
+  .cancel-edit-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px;
+    justify-content: center;
+  }
+  
+  .save-edit-btn {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+  }
+  
+  .save-edit-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #218838, #1ea085);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+  }
+  
+  .save-edit-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .cancel-edit-btn {
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+  }
+  
+  .cancel-edit-btn:hover {
+    background: #e9ecef;
+    color: #495057;
+    transform: translateY(-1px);
+  }
+  
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .edit-review-form {
+      padding: 16px;
+      margin: 12px 0;
+    }
+  
+    .edit-actions {
+      flex-direction: column;
+    }
+  
+    .save-edit-btn,
+    .cancel-edit-btn {
+      width: 100%;
+    }
+  }
+  
+  /* Animation for form appearance */
+  .edit-review-form {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
