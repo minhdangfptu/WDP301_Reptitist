@@ -13,7 +13,7 @@ import { baseUrl } from '../config';
 const AdminShopManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
-  
+
   // State management
   const [shops, setShops] = useState([]);
   const [filteredShops, setFilteredShops] = useState([]);
@@ -27,7 +27,7 @@ const AdminShopManagement = () => {
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
   const [activeTab, setActiveTab] = useState('shops'); // 'shops' or 'reports'
-  
+
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
@@ -36,7 +36,7 @@ const AdminShopManagement = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [shopProducts, setShopProducts] = useState([]);
   const [adminNote, setAdminNote] = useState('');
-  
+
   // Statistics
   const [stats, setStats] = useState({
     users: {
@@ -446,7 +446,7 @@ const AdminShopManagement = () => {
         pauseOnHover
         theme="light"
       />
-      
+
       <div className="um-user-list-container">
         {/* Page Header */}
         <div className="um-page-header">
@@ -478,7 +478,7 @@ const AdminShopManagement = () => {
                 <span className="um-stat-label">Tổng Shop</span>
               </div>
             </div>
-            
+
             <div className="um-stat-card um-stat-total">
               <div className="um-stat-icon">
                 <i className="fas fa-box"></i>
@@ -537,7 +537,7 @@ const AdminShopManagement = () => {
             <button
               className={`um-btn ${activeTab === 'shops' ? 'um-btn-primary' : 'um-btn-secondary'}`}
               onClick={() => setActiveTab('shops')}
-              style={{ 
+              style={{
                 minWidth: '200px',
                 borderRadius: '25px',
                 fontWeight: '600'
@@ -549,7 +549,7 @@ const AdminShopManagement = () => {
             <button
               className={`um-btn ${activeTab === 'reports' ? 'um-btn-primary' : 'um-btn-secondary'}`}
               onClick={() => setActiveTab('reports')}
-              style={{ 
+              style={{
                 minWidth: '200px',
                 borderRadius: '25px',
                 fontWeight: '600'
@@ -579,7 +579,7 @@ const AdminShopManagement = () => {
                   />
                   <i className="fas fa-search um-search-icon"></i>
                 </div>
-                
+
                 <div className="um-filter-group">
                   <label>Trạng thái:</label>
                   <select
@@ -724,7 +724,7 @@ const AdminShopManagement = () => {
                                 </div>
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-contact-info">
                                 <div className="um-email">
@@ -739,7 +739,7 @@ const AdminShopManagement = () => {
                                 )}
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-balance-info">
                                 <span className="um-balance">{shop.productCount || 0}</span>
@@ -749,7 +749,7 @@ const AdminShopManagement = () => {
                                 </small>
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-balance-info">
                                 <span className={`um-balance ${shop.reportedCount > 0 ? 'text-danger' : ''}`}>
@@ -761,7 +761,7 @@ const AdminShopManagement = () => {
                                 </small>
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-date-info">
                                 <span className="um-date">
@@ -769,7 +769,7 @@ const AdminShopManagement = () => {
                                 </span>
                               </div>
                             </td>
-                            
+
                             <td>
                               <button
                                 onClick={() => toggleShopStatus(shop)}
@@ -788,7 +788,7 @@ const AdminShopManagement = () => {
                                 )}
                               </button>
                             </td>
-                            
+
                             <td>
                               <div className="um-action-buttons">
                                 <button
@@ -801,7 +801,7 @@ const AdminShopManagement = () => {
                                 >
                                   <i className="fas fa-eye"></i>
                                 </button>
-                                
+
                                 <button
                                   onClick={() => {
                                     setSelectedShop(shop);
@@ -827,7 +827,7 @@ const AdminShopManagement = () => {
                       <div className="um-pagination-info">
                         Hiển thị {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredShops.length)} của {filteredShops.length} shop
                       </div>
-                      
+
                       <div className="um-pagination-controls">
                         <button
                           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -837,7 +837,7 @@ const AdminShopManagement = () => {
                           <i className="fas fa-chevron-left"></i>
                           Trước
                         </button>
-                        
+
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                           <button
                             key={page}
@@ -847,7 +847,7 @@ const AdminShopManagement = () => {
                             {page}
                           </button>
                         ))}
-                        
+
                         <button
                           onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                           disabled={currentPage === totalPages}
@@ -918,7 +918,7 @@ const AdminShopManagement = () => {
                             </div>
                           </div>
                         </td>
-                        
+
                         <td>
                           <div className="um-contact-info">
                             <div className="um-email">
@@ -931,7 +931,7 @@ const AdminShopManagement = () => {
                             </div>
                           </div>
                         </td>
-                        
+
                         <td>
                           <div className="um-contact-info">
                             <div className="um-email">
@@ -944,21 +944,18 @@ const AdminShopManagement = () => {
                             </div>
                           </div>
                         </td>
-                        
+
                         <td>
                           <div className="um-balance-info">
-                            <span className="um-balance">{report.reason}</span>
-                            {report.description && (
-                              <small className="um-account-type">
-                                {report.description.length > 30 
-                                  ? `${report.description.substring(0, 30)}...` 
-                                  : report.description
-                                }
-                              </small>
-                            )}
+                            <span className="um-balance">
+                              {report.reason.length > 50
+                                ? `${report.reason.substring(0, 50)}...`
+                                : report.reason
+                              }
+                            </span>
                           </div>
                         </td>
-                        
+
                         <td>
                           <div className="um-date-info">
                             <span className="um-date">
@@ -966,15 +963,15 @@ const AdminShopManagement = () => {
                             </span>
                           </div>
                         </td>
-                        
+
                         <td>
                           <span className={`um-role-badge ${getReportStatusBadgeColor(report.status)}`}>
                             {report.status === 'pending' ? 'Chờ xử lý' :
-                             report.status === 'approved' ? 'Đã chấp nhận' :
-                             report.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
+                              report.status === 'approved' ? 'Đã chấp nhận' :
+                                report.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
                           </span>
                         </td>
-                        
+
                         <td>
                           <div className="um-action-buttons">
                             <button
@@ -988,26 +985,7 @@ const AdminShopManagement = () => {
                             >
                               <i className="fas fa-eye"></i>
                             </button>
-                            
-                            {report.status === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => handleReportAction(report._id, 'approve', '')}
-                                  className="um-btn-action um-btn-edit"
-                                  title="Chấp nhận báo cáo"
-                                >
-                                  <i className="fas fa-check"></i>
-                                </button>
-                                
-                                <button
-                                  onClick={() => handleReportAction(report._id, 'reject', '')}
-                                  className="um-btn-action um-btn-delete"
-                                  title="Từ chối báo cáo"
-                                >
-                                  <i className="fas fa-times"></i>
-                                </button>
-                              </>
-                            )}
+
                           </div>
                         </td>
                       </tr>
@@ -1028,14 +1006,14 @@ const AdminShopManagement = () => {
                   <i className="fas fa-store"></i>
                   Chi tiết Shop
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowShopDetailModal(false)}
                   className="um-close-btn"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="um-modal-body">
                 <div className="um-user-detail-container">
                   <div className="um-detail-header">
@@ -1132,7 +1110,7 @@ const AdminShopManagement = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="um-modal-footer">
                 <div className="um-quick-actions">
                   <button
@@ -1175,14 +1153,14 @@ const AdminShopManagement = () => {
                   <i className="fas fa-box"></i>
                   Sản phẩm của {selectedShop.username}
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowProductsModal(false)}
                   className="um-close-btn"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="um-modal-body">
                 {shopProducts.length === 0 ? (
                   <div className="um-empty-state">
@@ -1238,8 +1216,8 @@ const AdminShopManagement = () => {
                             <td>
                               <span className={`um-role-badge ${getStatusBadgeColor(product.product_status)}`}>
                                 {product.product_status === 'available' ? 'Đang bán' :
-                                 product.product_status === 'reported' ? 'Bị báo cáo' :
-                                 product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
+                                  product.product_status === 'reported' ? 'Bị báo cáo' :
+                                    product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
                               </span>
                             </td>
                             <td>
@@ -1263,7 +1241,7 @@ const AdminShopManagement = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="um-modal-footer">
                 <button
                   onClick={() => setShowProductsModal(false)}
@@ -1286,14 +1264,14 @@ const AdminShopManagement = () => {
                   <i className="fas fa-flag"></i>
                   Chi tiết báo cáo
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowReportModal(false)}
                   className="um-close-btn"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="um-modal-body">
                 <div className="um-detail-section">
                   <h4 className="um-section-title">
@@ -1329,8 +1307,8 @@ const AdminShopManagement = () => {
                       <label>Trạng thái:</label>
                       <span className={`um-role-badge ${getReportStatusBadgeColor(selectedReport.status)}`}>
                         {selectedReport.status === 'pending' ? 'Chờ xử lý' :
-                         selectedReport.status === 'approved' ? 'Đã chấp nhận' :
-                         selectedReport.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
+                          selectedReport.status === 'approved' ? 'Đã chấp nhận' :
+                            selectedReport.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -1363,7 +1341,7 @@ const AdminShopManagement = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="um-modal-footer">
                 {selectedReport.status === 'pending' ? (
                   <>
@@ -1400,7 +1378,7 @@ const AdminShopManagement = () => {
           </div>
         )}
       </div>
-      
+
       <Footer />
     </>
   );
