@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import axios from 'axios';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const axiosClient = axios.create({
   baseURL: `${baseUrl}/reptitist`,
   headers: {
@@ -13,7 +13,7 @@ const axiosClient = axios.create({
 // Request interceptor - Thêm token vào mọi request
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +37,7 @@ axiosClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
+        const refreshToken = localStorage.getItem('refresh_token');
         
         if (!refreshToken) {
           throw new Error('No refresh token available');
@@ -60,7 +60,7 @@ axiosClient.interceptors.response.use(
 
         if (newAccessToken) {
           // Lưu token mới
-          localStorage.setItem('token', newAccessToken);
+          localStorage.setItem('access_token', newAccessToken);
           
           // Thêm token mới vào request gốc
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -75,8 +75,8 @@ axiosClient.interceptors.response.use(
         console.error('Token refresh failed:', refreshError);
         
         // Clear tokens và redirect về login
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
         
         // Dispatch custom event để AuthContext biết user đã logout

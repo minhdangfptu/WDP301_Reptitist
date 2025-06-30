@@ -36,14 +36,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const token = localStorage.getItem('access_token');
-      const userData = localStorage.getItem('user');
-
-      if (!token || !userData) {
-        debugLog('No token or user data found in localStorage');
+      
+      if (!token) {
+        debugLog('No token found in localStorage');
         setIsAuthenticated(false);
         setUser(null);
         setLoading(false);
-        return;
+        return false;
       }
 
       debugLog('Token found, verifying with server...');
@@ -54,26 +53,28 @@ export const AuthProvider = ({ children }) => {
       setUser(verifiedUserData);
       setIsAuthenticated(true);
       localStorage.setItem('user', JSON.stringify(verifiedUserData));
+      return true;
     } catch (error) {
       debugLog('Auth verification failed:', error.message);
       authService.clearTokens();
       setUser(null);
       setIsAuthenticated(false);
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const login = async (username, password) => {
+  const login = async (userNameOrEmail, password) => {
     try {
-      debugLog('Login attempt for username:', username);
-      const result = await authService.login(username, password);
+      debugLog('Login attempt for:', userNameOrEmail);
+      const result = await authService.login(userNameOrEmail, password);
 
       if (result.success) {
         debugLog('Login successful:', result.user);
-        const { user: userData, token, refreshToken } = result;
-        localStorage.setItem('access_token', token);
-        if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+        const { user: userData, access_token, refresh_token } = result;
+        localStorage.setItem('access_token', access_token);
+        if (refresh_token) localStorage.setItem('refresh_token', refresh_token);
         localStorage.setItem('user', JSON.stringify(userData));
         setUser(userData);
         setIsAuthenticated(true);

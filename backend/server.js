@@ -17,7 +17,9 @@ const corsOptions = {
     'http://localhost:3000', // React development server
     'http://localhost:5173', // Vite development server  
     'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173'
+    'http://127.0.0.1:5173',
+    process.env.FRONTEND_URL,
+    process.env.FRONTEND_URL2
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -25,6 +27,14 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
+let visitCount = 0
+
+app.use((req, res, next) => {
+  visitCount++;
+  next();
+});
+
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
@@ -45,6 +55,10 @@ app.use('/reptitist', router);
 
 router.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
+});
+
+app.get('/visits', (req, res) => {
+  res.json({ count: visitCount });
 });
 
 app.listen(process.env.PORT, () => {

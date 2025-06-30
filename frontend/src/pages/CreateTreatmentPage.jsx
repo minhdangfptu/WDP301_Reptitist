@@ -4,8 +4,8 @@ import { Form, Card, Table, Container } from "react-bootstrap";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
-import { toast } from "react-toastify";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { toast, ToastContainer } from "react-toastify";
+import { baseUrl } from '../config';
 const styles = {
   sectionCard: {
     backgroundColor: "rgba(255, 255, 255, 0.8)",

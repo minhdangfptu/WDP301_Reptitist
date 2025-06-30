@@ -10,7 +10,7 @@ import Footer from '../components/Footer';
 import NavigationBar from '../components/NavigationBar';
 import { useAuth } from '../context/AuthContext';
 import '../css/Security.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const Security = () => {
   const { user, logout } = useAuth();
@@ -195,7 +195,7 @@ const Security = () => {
     setErrors({});
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       
       await axios.post(
         `${baseUrl}/reptitist/auth/change-password-email`,

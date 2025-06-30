@@ -7,7 +7,7 @@ import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 // Internal CSS styles  
 const styles = {
   pageContainer: {
@@ -412,7 +412,10 @@ function ReptileHealthTrackingPage() {
                 <h1 style={styles.mainTitle}>Thêm dữ liệu theo dõi sức khỏe</h1>
                 <p style={styles.subtitle}>
                   Ghi lại thông tin sức khỏe chi tiết cho thú cưng của bạn
+                  <div style={{ fontSize: 12, color: "red" }}>Lưu ý: Đây là dữ liệu để AI có thể học hỏi và cải thiện dữ liệu của bạn. 
+                    <br></br>Dữ liệu theo dõi sức khỏe không thể sửa đổi. Vui lòng kiểm tra kỹ trước khi lưu.</div>
                 </p>
+                
               </div>
             </div>
           </div>
@@ -436,7 +439,7 @@ function ReptileHealthTrackingPage() {
                       type="number"
                       value={currentWeight}
                       onChange={(e) => setCurrentWeight(e.target.value)}
-                      placeholder="Nhập cân nặng..."
+                      placeholder="Nhập cân nặng hiện tại của bò sát"
                       style={styles.formInput}
                       required
                       min={0}
@@ -494,7 +497,7 @@ function ReptileHealthTrackingPage() {
                                   )
                                 )
                               }
-                              placeholder="Trạng thái ngủ..."
+                              placeholder="Trạng thái ngủ của bò sát (mất ngủ, ngủ ít, ngủ nhiều, ngủ bình thường)"
                               style={styles.formInput}
                               required
                             />
@@ -635,7 +638,7 @@ function ReptileHealthTrackingPage() {
                                   )
                                 )
                               }
-                              placeholder="Số giờ..."
+                              placeholder="Số giờ ngủ của bò sát"
                               style={styles.formInput}
                               required
                               min={0}
@@ -1020,7 +1023,7 @@ function ReptileHealthTrackingPage() {
                             minWidth: 100,
                           }}
                         >
-                          Số lượng
+                          Số lượng 
                         </th>
                         <th
                           style={{
@@ -1028,7 +1031,7 @@ function ReptileHealthTrackingPage() {
                             minWidth: "80px",
                           }}
                         >
-                          Nhịn ăn
+                          Có nhịn ăn ?
                         </th>
                         <th
                           style={{
@@ -1103,7 +1106,7 @@ function ReptileHealthTrackingPage() {
                                   )
                                 )
                               }
-                              placeholder="Số lượng..."
+                              placeholder="Số lượng (bát, lít, kg, g, ml, ...)"
                               style={styles.formInput}
                               required
                             />

@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Transaction.css';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const Transaction = () => {
   const { user, hasRole } = useAuth();
   const [transactions, setTransactions] = useState([]);
@@ -23,7 +23,7 @@ const Transaction = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setLoading(false);

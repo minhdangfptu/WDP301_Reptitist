@@ -17,7 +17,7 @@ import { Container } from "react-bootstrap";
 import axios from "axios";
 import UnderDevPage from "./UnderDevPage";
 import ShopHeader from "../components/ShopHeader";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const ShopLandingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");

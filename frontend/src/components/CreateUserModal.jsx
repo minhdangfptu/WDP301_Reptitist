@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const CreateUserModal = ({ isOpen, onClose, onUserCreated }) => {
   const [formData, setFormData] = useState({
     username: '',

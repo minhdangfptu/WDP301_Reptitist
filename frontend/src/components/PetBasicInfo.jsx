@@ -8,8 +8,8 @@ import {
   Container,
 } from "react-bootstrap";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { useParams, useNavigate } from "react-router-dom";
+import { baseUrl } from '../config';
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -27,6 +27,7 @@ const PetBasicInfo = ({ petInfo }) => {
     nutrition: "",
   });
   const { reptileId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (petInfo && petInfo.weight_history) {
@@ -162,7 +163,16 @@ const PetBasicInfo = ({ petInfo }) => {
     <>
       <Container maxWidth="xl">
         <div className="mb-5">
-          <h2 className="text-center fw-bold mb-4">THÔNG TIN CƠ BẢN</h2>
+          <div className="d-flex justify-content-center align-items-center mb-4" style={{ gap: 12 }}>
+            <h2 className="fw-bold mb-0" style={{ textAlign: 'center' }}>THÔNG TIN CƠ BẢN</h2>
+            <button
+              className="btn btn-outline-success btn-sm ms-2"
+              style={{ fontWeight: 500 }}
+              onClick={() => navigate(`/your-pet/edit/${reptileId}`)}
+            >
+              <i className="bi bi-pencil-square me-1"></i>Chỉnh sửa
+            </button>
+          </div>
           <Row className="g-4">
             {/* Profile Picture */}
             <Col xs={12} md={4} className="text-center">
@@ -209,7 +219,7 @@ const PetBasicInfo = ({ petInfo }) => {
                       </div>
                       <div className="mb-3 d-flex justify-content-between">
                         <span className="fw-medium">Cân nặng hiện tại</span>
-                        <span>{petInfo.current_weight} gam</span>
+                        <span>{petInfo.current_weight} kilogram</span>
                       </div>
                     </Col>
                     <div className="mb-3 d-flex justify-content-between">
@@ -238,7 +248,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <i className="bi bi-three-dots"></i>
                 </Button>
               </div>
-              <div className="text-center small fw-medium">Năm 2024</div>
+              <div className="text-center small fw-medium">Năm 2025</div>
             </Card.Header>
             <Card.Body>
               <div style={{ height: "13rem" }} className="mb-3">
@@ -364,7 +374,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Hành vi</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.behavior || "Đang tải..."}
+                  {recommendDetails.behavior || "Chưa có dữ liệu"}
                 </p>
               </div>
 
@@ -376,7 +386,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Môi trường sống</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.habitat || "Đang tải..."}
+                  {recommendDetails.habitat || "Chưa có dữ liệu"}
                 </p>
               </div>
 
@@ -388,7 +398,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Điều trị</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.treatment || "Đang tải..."}
+                  {recommendDetails.treatment || "Chưa có dữ liệu"}
                 </p>
               </div>
 
@@ -400,7 +410,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Dinh dưỡng</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.nutrition || "Đang tải..."}
+                  {recommendDetails.nutrition || "Chưa có dữ liệu"}
                 </p>
               </div>
             </Card.Body>

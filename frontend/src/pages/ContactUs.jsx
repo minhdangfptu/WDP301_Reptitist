@@ -12,7 +12,6 @@ const ContactUs = () => {
   const [formData, setFormData] = useState({
     user_name: '',
     user_email: '',
-    user_phone: '',
     subject: '',
     message: ''
   });
@@ -24,7 +23,6 @@ const ContactUs = () => {
         ...prev,
         user_name: user.username || '',
         user_email: user.email || '',
-        user_phone: user.phone_number || ''
       }));
     }
   }, [user]);
@@ -35,12 +33,6 @@ const ContactUs = () => {
     return emailRegex.test(email);
   };
 
-  // Hàm kiểm tra số điện thoại hợp lệ
-  const isValidPhone = (phone) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    return phoneRegex.test(phone);
-  };
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -48,115 +40,56 @@ const ContactUs = () => {
     });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Kiểm tra các trường bắt buộc
-    if (!formData.user_name || !formData.user_email || !formData.user_phone || !formData.subject || !formData.message) {
-      toast.error('Vui lòng điền đầy đủ thông tin!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+  
+    if (!formData.user_name || !formData.user_email || !formData.subject || !formData.message) {
+      toast.error('Vui lòng điền đầy đủ thông tin!');
       return;
     }
-
-    // Kiểm tra email hợp lệ
+  
     if (!isValidEmail(formData.user_email)) {
-      toast.error('Email không hợp lệ!', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error('Email không hợp lệ!');
       return;
     }
+  
+    // Tạo body
+    const emailBody = `
+  ===========================================
+  THÔNG TIN LIÊN HỆ - GÓP Ý TỚI WEBSITE REPTITIST
+  ===========================================
+  
+  👤 THÔNG TIN NGƯỜI GỬI
+  ----------------------
+  • Họ và tên: ${formData.user_name}
+  • Email: ${formData.user_email}
 
-    // Kiểm tra số điện thoại hợp lệ
-    if (!isValidPhone(formData.user_phone)) {
-      toast.error('Số điện thoại không hợp lệ! Vui lòng nhập 10 chữ số.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      return;
-    }
+  📝 NỘI DUNG GÓP Ý - PHẢN HỒI
+  -------------------
+  ${formData.message}
+  
+  ===========================================
+  Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
+  ===========================================
+    `;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=reptitist.service@gmail.com&su=${encodeURIComponent(`[REPTITIST - GÓP Ý - PHẢN HỒI] ${formData.subject}`)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(gmailUrl, '_blank');
+  
 
-    setLoading(true);
-
-    try {
-      // Tạo nội dung email với bố cục đẹp hơn
-      const emailBody = `
-===========================================
-THÔNG TIN LIÊN HỆ - GÓP Ý TỚI WEBSITE REPTITIST
-===========================================
-
-👤 THÔNG TIN NGƯỜI GỬI
-----------------------
-• Họ và tên: ${formData.user_name}
-• Email: ${formData.user_email}
-• Số điện thoại: ${formData.user_phone}
-
-📝 NỘI DUNG GÓP Ý - PHẢN HỒI
--------------------
-${formData.message}
-
-===========================================
-Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
-===========================================
-      `;
-
-      // Tạo URL Gmail với thông tin đã điền sẵn
-      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=reptitist.service@gmail.com&su=${encodeURIComponent(`[REPTITIST - GÓP Ý - PHẢN HỒI] ${formData.subject}`)}&body=${encodeURIComponent(emailBody)}`;
-
-      // Mở Gmail trong tab mới
-      window.open(gmailUrl, '_blank');
-
-      toast.success('Đang mở Gmail...', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-      
-      // Reset form
-      setFormData({
-        user_name: '',
-        user_email: '',
-        user_phone: '',
-        subject: '',
-        message: ''
-      });
-      
-      // Reset form ref
-      if (form.current) {
-        form.current.reset();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Có lỗi xảy ra. Vui lòng thử lại sau.', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    } finally {
-      setLoading(false);
+    toast.success('Đang mở Gmail...');
+  
+    setFormData({
+      user_name: '',
+      user_email: '',
+      subject: '',
+      message: ''
+    });
+  
+    if (form.current) {
+      form.current.reset();
     }
   };
+  
 
   return (
     <>
@@ -164,22 +97,54 @@ Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
 
       <div className="page-title">
         <div className="container">
-          <h1>LIÊN HỆ</h1>
+          <h1>GÓP Ý - PHẢN HỒI</h1>
         </div>
       </div>
 
-      <section className="contact-section">
+      <section style={{marginTop: '30px'}} className="contact-section">
         <div className="container">
           <div className="contact-content">
             <div className="contact-info">
-              <h2>Liên hệ với chúng tôi</h2>
+              <h2>Góp ý cho chúng tôi</h2>
               <p>Chúng tôi luôn sẵn sàng lắng nghe mọi ý kiến đóng góp của bạn để phát triển dịch vụ ngày càng tốt hơn.</p>
               <div className="social-icons">
-                <a href="#" className="social-icon"><i className="fab fa-facebook-f"></i></a>
-                <a href="#" className="social-icon"><i className="fab fa-instagram"></i></a>
-                <a href="#" className="social-icon"><i className="fab fa-youtube"></i></a>
-                <a href="#" className="social-icon"><i className="fab fa-tiktok"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61576867780640" className="social-icon"><i className="fab fa-facebook-f"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=61576867780640" className="social-icon"><i className="fab fa-instagram"></i></a>
+                <a href="https://www.youtube.com/@ServiceReptitist" className="social-icon"><i className="fab fa-youtube"></i></a>
+                <a href="https://www.youtube.com/@ServiceReptitist" className="social-icon"><i className="fab fa-tiktok"></i></a>
               </div>
+              <p style={{ marginTop: '20px', marginBottom: '10px', textAlign: 'left' }}>
+                Hoặc gửi ý kiến, phản hồi qua Google Form
+              </p>
+              <a 
+                href="https://forms.gle/FdUEYMKnZ5i4yCjP7" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{
+                  display: 'block',
+                  width: '40%',
+                  textAlign: 'center',
+                  fontWeight: '400',
+                  padding: '7px 5px',
+                  backgroundColor: 'transparent',
+                  color: '#0fa958',
+                  border: '1px solid #0fa958',
+                  textDecoration: 'none',
+                  borderRadius: '30px',
+                  marginTop: '10px',
+                  transition: 'background-color 0.3s, color 0.3s',
+                }}
+                onMouseOver={e => {
+                  e.target.style.backgroundColor = '#0fa958';
+                  e.target.style.color = '#fff';
+                }}
+                onMouseOut={e => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#0fa958';
+                }}
+              >
+                Google Form
+              </a>
             </div>
             <div className="contact-form">
               <form ref={form} onSubmit={handleSubmit}>
@@ -202,18 +167,6 @@ Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
                     className="form-control"
                     placeholder="Email"
                     value={formData.user_email}
-                    onChange={handleChange}
-                    required
-                    readOnly={!!user}
-                  />
-                </div>
-                <div className="form-group">
-                  <input
-                    type="tel"
-                    name="user_phone"
-                    className="form-control"
-                    placeholder="Số điện thoại"
-                    value={formData.user_phone}
                     onChange={handleChange}
                     required
                     readOnly={!!user}
@@ -262,14 +215,14 @@ Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
                 <div className="card-icon"><i className="fas fa-map-marker-alt"></i></div>
                 <div className="card-content">
                   <h3>Địa chỉ của tôi</h3>
-                  <p>DELTA Building, FPT University, Hòa Lạc, Hà Nội</p>
+                  <p>DELTA Building, FPT University</p>
                 </div>
               </div>
               <div className="contact-card">
                 <div className="card-icon"><i className="fas fa-phone-alt"></i></div>
                 <div className="card-content">
                   <h3>Số điện thoại</h3>
-                  <p>0987654321</p>
+                  <p>0398826650</p>
                 </div>
               </div>
               <div className="contact-card">

@@ -11,7 +11,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AIChatPage from "./AIChatPage";
 import TrackingHealth from "../components/TrackingHealth";
 import ImproveSuggestion from "../components/ImproveSuggestion";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 export default function YourPetDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -112,7 +112,7 @@ export default function YourPetDetail() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.2)", // Lớp phủ đen với opacity 20%
+            backgroundColor: "rgba(0, 0, 0, 0.2)", 
           }}
         ></div>
         <div className="hero-overlay" style={{ paddingBottom: "5px" }}>

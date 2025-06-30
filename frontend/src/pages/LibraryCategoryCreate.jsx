@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 const LibraryCategoryCreate = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const LibraryCategoryCreate = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     axios
-      .post(`${baseUrl}/reptitist/library_categories`, formData)
+      .post(`${baseUrl}/reptitist/library-categories`, formData)
       .then(() => {
         alert("Tạo danh mục thành công");
         navigate(`${baseUrl}/reptitist/library_categories/${id}`);

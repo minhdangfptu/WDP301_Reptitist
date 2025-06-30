@@ -19,7 +19,7 @@ import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { useParams } from "react-router-dom";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 
 const AIChatPage = ({ onClose }) => {
   const [activeTab, setActiveTab] = useState("chat");

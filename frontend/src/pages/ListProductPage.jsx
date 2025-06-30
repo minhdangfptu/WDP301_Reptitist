@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import ShopHeader from "../components/ShopHeader";
 import { useAuth } from "../context/AuthContext";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
 // Mock data for products
 const mockProducts = [
   {

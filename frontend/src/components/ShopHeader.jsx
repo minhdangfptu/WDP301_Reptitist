@@ -7,16 +7,21 @@ import {
   Facebook,
   ChevronLeft,
   ChevronRight,
+  Package,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 function ShopHeader() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const { cartCount } = useCart();
+  const { user } = useAuth();
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-        console.log(searchTerm);
+      console.log(searchTerm);
       navigate(`/products/search/${encodeURIComponent(searchTerm.trim())}`);
     }
   };
@@ -49,22 +54,34 @@ function ShopHeader() {
             <a href="#" className="shop-top-action">
               <HelpCircle size={16} /> Hỗ trợ
             </a>
-            <a href="#" className="shop-top-action">
-              <User size={16} /> Tài khoản
-            </a>
+            {user ? (
+              <span
+                className="shop-top-action"
+                style={{ fontWeight: "bold", color: "white" }}
+              >
+                <User size={16} style={{ marginRight: 4 }} />
+                {user.fullname || user.username || user.email}
+              </span>
+            ) : (
+              <a href="/Login" className="shop-top-action">
+                <User size={16} /> Tài khoản
+              </a>
+            )}
           </div>
         </div>
 
         <div className="shop-main-header">
           <div className="shop-logo-container">
-            <a href="/">
+            <a href="/ShopLandingPage">
               <img
                 src="/logo_knen.png"
                 alt="Reptisist Shop"
                 className="shop-logo"
               />
             </a>
-            <h1 className="shop-name">REPTISIST SHOP</h1>
+            <a href="/ShopLandingPage">
+              <h1 className="shop-name">REPTISIST SHOP</h1>
+            </a>
           </div>
 
           <div className="shop-search-container">
@@ -80,9 +97,47 @@ function ShopHeader() {
             </button>
           </div>
 
-          <div className="shop-cart-container">
-            <a href="#" className="shop-cart-icon">
+          <div className="shop-cart-container" style={{ display: "flex", alignItems: "center" }}>
+            <a
+              href="/my-cart"
+              className="shop-cart-icon"
+              style={{ position: "relative", display: "flex", alignItems: "center", color: "white", textDecoration: "none", fontWeight: 400, fontSize: 15 }}
+            >
               <ShoppingCart size={22} />
+              {user && cartCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "-8px",
+                    right: "60px",
+                    background: "red",
+                    color: "white",
+                    borderRadius: "50%",
+                    padding: "2px 6px",
+                    fontSize: "12px",
+                  }}
+                >
+                  {cartCount}
+                </span>
+              )}
+              <span style={{ marginLeft: 8 }}>Giỏ hàng</span>
+            </a>
+          </div>
+          <div className="shop-orders-container" style={{ marginLeft: 16 }}>
+            <a
+              href="/my-orders"
+              className="shop-orders-link"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                color: "white",
+                fontWeight: "400",
+                textDecoration: "none",
+                fontSize: 15,
+              }}
+            >
+              <Package size={22} style={{ marginRight: 6 }} />
+              Đơn hàng
             </a>
           </div>
         </div>
@@ -91,22 +146,24 @@ function ShopHeader() {
           <ul className="shop-nav-links">
             <li>
               <a href="#" className="shop-nav-link">
-                Chuồng & phụ kiện chuồng
+                Reptitist Shop - Nơi cung cấp thiết bị, dụng cụ nuôi, thức ăn,
+                dinh dưỡng, sản phẩm vệ sinh & chăm sóc sức khỏe cho động vật
+                nhà
               </a>
             </li>
             <li>
               <a href="#" className="shop-nav-link">
-                Thiết bị & dụng cụ nuôi
+                Liên hệ cộng tác
               </a>
             </li>
             <li>
               <a href="#" className="shop-nav-link">
-                Thức ăn & Dinh dưỡng
+                Đăng ký trở thành người bán
               </a>
             </li>
             <li>
               <a href="#" className="shop-nav-link">
-                Sản phẩm vệ sinh & chăm sóc sức khỏe
+                Kết nối với đội ngũ Reptitist chuyên nghiệp
               </a>
             </li>
           </ul>

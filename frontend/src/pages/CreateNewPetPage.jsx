@@ -6,6 +6,41 @@ import { useAuth } from "../context/AuthContext";
 import { ToastContainer, toast } from 'react-toastify'; 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { baseUrl } from '../config';  
+
+const REPTILE_SPECIES = [
+  "Rùa cạn",
+  "Rùa nước",
+  "Rắn cảnh",
+  "Thằn lằn",
+  "Kỳ nhông",
+  "Tắc kè",
+  "Kỳ đà",
+  "Rồng Úc",
+  "Rồng Nam Mỹ (Iguana)",
+  "Rắn sữa (Milk Snake)",
+  "Rắn ngô (Corn Snake)",
+  "Rắn vua (King Snake)",
+  "Tắc kè báo (Leopard Gecko)",
+  "Thằn lằn bóng (Blue-tongue Skink)",
+  "Tắc kè đuôi béo (Fat-tailed Gecko)",
+  "Tắc kè Tokay",
+  "Rùa tai đỏ",
+  "Rùa vàng",
+  "Rùa hộp",
+  "Rắn mamba",
+  "Rắn lục",
+  "Rắn hổ mang",
+  "Rắn hổ trâu",
+  "Kỳ tôm (Axolotl - lưỡng cư)",
+  "Khác"
+];
+
+
+const getToday = () => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+};
 
 const CreateNewPet = () => {
   const { user } = useAuth();
@@ -22,7 +57,7 @@ const CreateNewPet = () => {
     description: "",
     user_reptile_imageurl: "",
     age: "",
-    follow_since: "",
+    follow_since: getToday(),
     current_weight: "",
     weight_history: [],
     sleeping_status: [],
@@ -34,6 +69,7 @@ const CreateNewPet = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitResult, setSubmitResult] = useState({ success: false, message: "" });
   const navigate = useNavigate();
+  const [otherSpecies, setOtherSpecies] = useState("");
 
   // Helper function to convert file to base64
   const fileToBase64 = (file) => {
@@ -103,18 +139,31 @@ const CreateNewPet = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPetData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    if (name === "reptile_species") {
+      setPetData((prevData) => ({
+        ...prevData,
+        reptile_species: value === "Khác" ? "" : value,
+      }));
+      if (value !== "Khác") setOtherSpecies("");
+    } else {
+      setPetData((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const submitData = {
+      ...petData,
+      reptile_species: petData.reptile_species === "" ? otherSpecies : petData.reptile_species,
+    };
+
     try {
-      const response = await axios.post(`${baseUrl}/reptitist/pet/`, petData);
+      const response = await axios.post(`${baseUrl}/reptitist/pet/`, submitData);
       console.log("Pet created successfully", response.data);
       setSubmitResult({
         success: true,
@@ -134,7 +183,7 @@ const CreateNewPet = () => {
         description: "",
         user_reptile_imageurl: "",
         age: "",
-        follow_since: "",
+        follow_since: getToday(),
         current_weight: "",
         weight_history: [],
         sleeping_status: [],
@@ -143,6 +192,7 @@ const CreateNewPet = () => {
         nutrition_history: [],
       });
       setPreviewImage('');
+      setOtherSpecies("");
     } catch (error) {
       console.error("Error creating pet", error);
       setSubmitResult({
@@ -219,15 +269,28 @@ const CreateNewPet = () => {
                         <InputGroup.Text className="bg-white">
                           <i className="bi bi-diagram-3"></i>
                         </InputGroup.Text>
-                        <Form.Control
-                          type="text"
-                          placeholder="Nhập loài bò sát"
+                        <Form.Select
                           name="reptile_species"
-                          value={petData.reptile_species}
+                          value={petData.reptile_species || (otherSpecies ? "Khác" : "")}
                           onChange={handleChange}
                           required
-                        />
+                        >
+                          <option value="">-- Chọn loài bò sát --</option>
+                          {REPTILE_SPECIES.map((species, idx) => (
+                            <option key={idx} value={species}>{species}</option>
+                          ))}
+                        </Form.Select>
                       </InputGroup>
+                      {(petData.reptile_species === "" && otherSpecies !== "") || (petData.reptile_species === "" && otherSpecies === "" && document.querySelector('select[name="reptile_species"]')?.value === "Khác") ? (
+                        <Form.Control
+                          className="mt-2"
+                          type="text"
+                          placeholder="Nhập loài bò sát khác"
+                          value={otherSpecies}
+                          onChange={(e) => setOtherSpecies(e.target.value)}
+                          required
+                        />
+                      ) : null}
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="description">
@@ -306,7 +369,7 @@ const CreateNewPet = () => {
                           onChange={handleChange}
                           required
                         />
-                        <InputGroup.Text className="bg-white">năm</InputGroup.Text>
+                        <InputGroup.Text className="bg-white">Tháng</InputGroup.Text>
                       </InputGroup>
                     </Form.Group>
 
@@ -339,7 +402,7 @@ const CreateNewPet = () => {
                           value={petData.current_weight}
                           onChange={handleChange}
                         />
-                        <InputGroup.Text className="bg-white">gram</InputGroup.Text>
+                        <InputGroup.Text className="bg-white">kilogram</InputGroup.Text>
                       </InputGroup>
                     </Form.Group>
                   </Card.Body>

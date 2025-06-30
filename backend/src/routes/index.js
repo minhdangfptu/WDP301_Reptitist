@@ -10,15 +10,14 @@ const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
-const adminRoute = require('./adminRoute.js');
+const adminRoute = require('./adminRouter'); 
+const userRoute = require('./userRoute');
 
+router.use('/user', userRoute);
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/pet', userReptileRoutes);
 router.use('/reptile-info', reptileInfoRoute);
-router.use('/library_categories', libraryCategoriesRoute);
-router.use('/library_contents', libraryContentRoute);
-router.use('/', topicCategoryRoutes);
 router.use('/order', orderRoute);
 router.use('/admin', adminRoute);
 router.use('/ai', aiRoute);

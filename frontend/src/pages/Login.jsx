@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/Login.css";
@@ -11,11 +11,17 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [recentLogins, setRecentLogins] = useState([]);
 
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const togglePassword = () => setShowPassword((prev) => !prev);
+
+  useEffect(() => {
+    const savedLogins = JSON.parse(localStorage.getItem("recentLogins")) || [];
+    setRecentLogins(savedLogins);
+  }, []);
 
   // Handle login form submission
   const handleSubmit = async (e) => {
@@ -42,6 +48,7 @@ const Login = () => {
 
       // Use AuthContext login function
       const result = await login(userName.trim(), password);
+      const user_login_imageUrl = "/default-avatar2.png";
 
       console.log("Login result:", result);
 
@@ -55,6 +62,24 @@ const Login = () => {
           pauseOnHover: true,
           draggable: true,
         });
+        const newLogin = {
+          userName: userName.trim(),
+          avatar: user_login_imageUrl ,
+          lastLogin: new Date().toISOString(),
+        };
+
+        let recentLogins =
+          JSON.parse(localStorage.getItem("recentLogins")) || [];
+
+        recentLogins = recentLogins.filter(
+          (u) => u.userName !== newLogin.userName
+        );
+
+        recentLogins.unshift(newLogin);
+
+        recentLogins = recentLogins.slice(0, 3);
+        console.log("Recent logins:", recentLogins[0]);
+        localStorage.setItem("recentLogins", JSON.stringify(recentLogins));
 
         // Small delay to show success message before redirect
         setTimeout(() => {
@@ -115,26 +140,56 @@ const Login = () => {
         <div className="login-content">
           {/* Phần đăng nhập gần đây */}
           <div className="recent-logins">
-            <div className="login-logo">
-              <img src="../public/logo1.png" alt="Reptisist Logo" />
+            <div
+              className="login-logo"
+              style={{ justifyContent: "center", alignItems: "center" }}
+            >
+              <img src="/logo1.png" alt="Reptisist Logo" />
             </div>
 
             <h2 className="recent-title">Đăng nhập gần đây</h2>
             <p className="recent-subtitle">Bấm vào ảnh của bạn để tiếp tục</p>
 
             <div className="accounts-container">
-              {/* <div className="account-card">
-                                <div className="account-image">
-                                    <img src="/api/placeholder/90/90" alt="Mạnh Định" />
-                                </div>
-                                <p className="account-name">Mạnh Định</p>
-                            </div> */}
+              {recentLogins.map((account, index) => (
+                <div
+                  key={index}
+                  className="account-card"
+                  onClick={() => {
+                    setUserName(account.userName); 
+                    setPassword("");
+                    toast.info(`Đã chọn ${account.userName}`, {
+                      autoClose: 2000,
+                    });
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <div className="account-image">
+                    <img src={account.avatar || "/default-avatar.png"} alt={account.userName} />
+                  </div>
+                  <p
+                    className="account-name"
+                    style={{
+                      wordBreak: "break-all",
+                      whiteSpace: "normal",
+                      textAlign: "center",
+                      maxWidth: "100px",
+                      margin: "0 auto",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {account.userName}
+                  </p>
+                  
+                </div>
+              ))}
+
               <a href="/SignUp">
                 <div className="account-card">
                   <div className="create-account">
                     <span className="plus-icon">
-                        <div style={{marginBottom: "4px"}}>+</div>
-                        </span>
+                      <div style={{ marginBottom: "4px" }}>+</div>
+                    </span>
                   </div>
                   <p className="account-name">Tạo tài khoản</p>
                 </div>
@@ -186,7 +241,7 @@ const Login = () => {
                 value={userName}
                 onChange={(e) => {
                   setUserName(e.target.value);
-                  if (error) setError(null); // Clear error when user types
+                  if (error) setError(null); 
                 }}
                 disabled={isLoading}
               />
@@ -204,7 +259,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
-                  if (error) setError(null); // Clear error when user types
+                  if (error) setError(null);
                 }}
                 disabled={isLoading}
               />
@@ -222,7 +277,7 @@ const Login = () => {
             </div>
 
             <div className="forgot-password">
-              <a href="#">Quên mật khẩu?</a>
+              <a href="/forgot-password">Quên mật khẩu?</a>
             </div>
 
             <button
@@ -239,10 +294,10 @@ const Login = () => {
 
             <div className="login-divider">HOẶC</div>
 
-            <a
-              href="#"
+            <button
               className="social-login-btn"
               onClick={handleGoogleLogin}
+              disabled={false}
             >
               <span className="google-icon">
                 <img
@@ -251,23 +306,27 @@ const Login = () => {
                 />
               </span>
               Đăng nhập sử dụng Google
-            </a>
-
-            <a href="#" className="social-login-btn">
-              <span className="login-facebook-icon">
+            </button>
+            <button
+              className="social-login-btn"
+              onClick={handleGoogleLogin}
+              disabled={true}
+              style={{ opacity: 0.6, cursor: "not-allowed" }}
+            >
+              <span className="google-icon">
                 <img
                   src="https://upload.wikimedia.org/wikipedia/commons/0/05/Facebook_Logo_%282019%29.png"
                   alt="Facebook"
                 />
               </span>
               Đăng nhập sử dụng Facebook
-            </a>
+            </button>
 
             <div className="login-terms">
               Bằng cách tiếp tục, bạn đồng ý với{" "}
-              <a href="#">Điều khoản sử dụng</a> và{" "}
-              <a href="#">Chính sách bảo mật</a>, bao gồm việc sử dụng{" "}
-              <a href="#">Cookies</a>.
+              <a href="/policy-terms">Điều khoản sử dụng</a> và{" "}
+              <a href="/policy-terms">Chính sách bảo mật</a>, bao gồm việc sử
+              dụng <a href="/policy-terms">Cookies</a>.
             </div>
           </form>
         </div>

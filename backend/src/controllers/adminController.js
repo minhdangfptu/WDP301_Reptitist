@@ -67,6 +67,10 @@ const getAllShops = async (req, res) => {
             .skip(skip)
             .limit(parseInt(limit));
 
+        if (!shops || shops.length === 0) {
+            return res.status(404).json({ message: 'Không có shop nào' });
+        }
+
         const total = await User.countDocuments(query);
 
         // Lấy thống kê sản phẩm cho mỗi shop

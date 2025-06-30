@@ -8,7 +8,8 @@ import { ArrowLeft, CheckCircle, Copy, Clock, CreditCard } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/PaymentProcessing.css';
 import axios from 'axios';
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
+import { baseUrl } from '../config';
+
 const PaymentProcessing = () => {
   const navigate = useNavigate();
   const location = useLocation();
