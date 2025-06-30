@@ -167,7 +167,19 @@ const Login = () => {
                   <div className="account-image">
                     <img src={account.avatar || "/default-avatar.png"} alt={account.userName} />
                   </div>
-                  <p className="account-name">{account.userName}</p>
+                  <p
+                    className="account-name"
+                    style={{
+                      wordBreak: "break-all",
+                      whiteSpace: "normal",
+                      textAlign: "center",
+                      maxWidth: "100px",
+                      margin: "0 auto",
+                      fontSize: "14px",
+                    }}
+                  >
+                    {account.userName}
+                  </p>
                   
                 </div>
               ))}
@@ -265,7 +277,7 @@ const Login = () => {
             </div>
 
             <div className="forgot-password">
-              <a href="#">Quên mật khẩu?</a>
+              <a href="/forgot-password">Quên mật khẩu?</a>
             </div>
 
             <button

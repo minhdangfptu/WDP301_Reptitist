@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-
+import { Row, Col } from "react-bootstrap";
 const TermsAndPolicies = () => (
   <>
     <Header />
@@ -87,8 +87,18 @@ const TermsAndPolicies = () => (
       <p>
         Nếu bạn có bất kỳ câu hỏi nào về điều khoản hoặc chính sách, vui lòng liên hệ: <b>reptitist.service@gmail.com</b>
       </p>
-      <div style={{ marginTop: 40, color: "#006934", fontSize: 14 }}>
+      <div style={{ marginTop: 40, color: "#006934", fontSize: 14, textAlign: "center", alignItems: "center"}}>
+        <Row>
+        <Col>
         <a href="/Login" style={{ cursor: "pointer" }}>Quay lại trang Đăng nhập</a>
+        </Col>
+        <Col>
+        <a href="/" style={{ cursor: "pointer" }}>Quay lại trang chủ</a>
+        </Col>
+        <Col>
+        <a href="/" style={{ cursor: "pointer" }}>Quay lại trang Đăng ký</a>
+        </Col>
+        </Row>
       </div>
     </div>
     <Footer />

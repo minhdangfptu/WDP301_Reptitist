@@ -219,7 +219,7 @@ const PetBasicInfo = ({ petInfo }) => {
                       </div>
                       <div className="mb-3 d-flex justify-content-between">
                         <span className="fw-medium">Cân nặng hiện tại</span>
-                        <span>{petInfo.current_weight} gam</span>
+                        <span>{petInfo.current_weight} kilogram</span>
                       </div>
                     </Col>
                     <div className="mb-3 d-flex justify-content-between">
@@ -248,7 +248,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <i className="bi bi-three-dots"></i>
                 </Button>
               </div>
-              <div className="text-center small fw-medium">Năm 2024</div>
+              <div className="text-center small fw-medium">Năm 2025</div>
             </Card.Header>
             <Card.Body>
               <div style={{ height: "13rem" }} className="mb-3">

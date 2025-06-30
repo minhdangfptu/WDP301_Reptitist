@@ -150,7 +150,7 @@ const SignUp2 = () => {
     }
 
     // So sánh mã (cả hai đều là string)
-    console.log("Verifying code:", code.trim(), "vs", verificationCode); // Debug log
+    console.log("Verifying code:", code.trim(), "vs", verificationCode); 
 
     if (code.trim() === verificationCode) {
       toast.success("Xác thực thành công! Đang chuyển hướng...", {
@@ -388,11 +388,11 @@ const SignUp2 = () => {
           {/* Terms */}
           <div className="signup2-terms">
             Bằng cách tiếp tục, bạn đồng ý với{" "}
-            <a href="#" style={{ color: "#0fa958" }}>
+            <a href="/policy-terms" style={{ color: "#0fa958" }}>
               Điều khoản sử dụng
             </a>{" "}
             và{" "}
-            <a href="#" style={{ color: "#0fa958" }}>
+            <a href="/policy-terms" style={{ color: "#0fa958" }}>
               Chính sách bảo mật
             </a>{" "}
             của chúng tôi.
@@ -400,7 +400,6 @@ const SignUp2 = () => {
         </div>
 
         <div className="signup2-image">
-          {/* The image will be loaded via CSS background */}
         </div>
       </div>
     </div>
