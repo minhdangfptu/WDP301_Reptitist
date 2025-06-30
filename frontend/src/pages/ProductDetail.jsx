@@ -16,6 +16,7 @@ import {
   User,
   HelpCircle,
   Facebook,
+  Flag,
 } from "lucide-react";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -35,6 +36,8 @@ import { baseUrl } from '../config';
 import AddToCartModal from "../components/AddToCartModal"
 import { addToCartService } from "../services/cartService"
 import { useCart } from "../context/CartContext"
+import ReportProductModal from "../components/ReportProductModal";
+import { reportProductService } from "../services/reportService";
 
 const ProductDetail = () => {
   const { productId } = useParams()
@@ -61,6 +64,7 @@ const ProductDetail = () => {
   const [editComment, setEditComment] = useState("")
   const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false)
   const { cartCount } = useCart()
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -353,6 +357,26 @@ const ProductDetail = () => {
     return stars;
   };
 
+const handleReportSubmit = async (reason, description) => {
+  if (!user) {
+    toast.error("Vui lòng đăng nhập để báo cáo sản phẩm.");
+    return;
+  }
+  if (!product || !product._id) {
+    toast.error("Không tìm thấy thông tin sản phẩm.");
+    return;
+  }
+  try {
+    console.log('Sending report payload:', { product_id: product._id, reason, description });
+    await reportProductService(product._id, reason, description);
+    toast.success("Báo cáo của bạn đã được gửi thành công. Cảm ơn bạn đã đóng góp!");
+    setIsReportModalOpen(false);
+  } catch (error) {
+    console.error("Failed to submit report:", error);
+    toast.error(error.message || "Gửi báo cáo thất bại. Vui lòng thử lại.");
+  }
+};
+
   if (loading) {
     return (
       <div
@@ -408,7 +432,7 @@ const ProductDetail = () => {
               <div className="product-detail-image-actions">
                 <button
                   className="product-detail-action-btn"
-                  onClick={() => setShowReportModal(true)}
+                  onClick={() => setIsReportModalOpen(true)}
                   title="Báo cáo sản phẩm"
                 >
                   🚩
@@ -804,6 +828,11 @@ const ProductDetail = () => {
         onClose={() => setIsAddToCartModalOpen(false)}
         product={product}
         onAddToCart={handleAddToCart}
+      />
+      <ReportProductModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
       />
     </div>
   );

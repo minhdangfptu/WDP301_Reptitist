@@ -12,6 +12,7 @@ const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRouter'); 
 const userRoute = require('./userRoute');
+const productReportRoute = require('./productReportRoute');
 
 router.use('/user', userRoute);
 router.use('/auth',authRoute);
@@ -25,5 +26,6 @@ router.use('/library-categories', libraryCategoriesRoute);
 router.use('/library-content', libraryContentRoute);
 router.use('/topic-categories', topicCategoryRoutes);
 router.use('/transactions', transactionRoute);
+router.use('/product-reports', productReportRoute);
 
 module.exports= router;
