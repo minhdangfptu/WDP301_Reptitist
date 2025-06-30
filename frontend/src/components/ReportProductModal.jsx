@@ -1,6 +1,6 @@
 // src/components/ReportProductModal.jsx
 import React, { useState } from 'react';
-import './ReportProductModal.css';
+import '../css/ReportProductModal.css';
 
 const ReportProductModal = ({ isOpen, onClose, onSubmit, productName }) => {
   const [reason, setReason] = useState('spam');
