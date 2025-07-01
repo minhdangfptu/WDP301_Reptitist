@@ -912,9 +912,7 @@ const AdminShopManagement = () => {
                               <span className="um-username">
                                 {report.product_id?.product_name || 'Sản phẩm đã xóa'}
                               </span>
-                              <small className="um-user-id">
-                                ID: {report.product_id?._id?.slice(-8) || 'N/A'}
-                              </small>
+                              
                             </div>
                           </div>
                         </td>
