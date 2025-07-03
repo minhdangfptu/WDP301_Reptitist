@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 // Pages
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
+import AboutUs from './pages/AboutUs';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SignUp2 from './pages/SignUp2';
@@ -58,6 +59,7 @@ import EditYourPetPage from './pages/EditYourPetPage';
 import UserManual from './pages/UserManual';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import AdminTransactionManagement from './pages/AdminTransactionManagement';
 
 
 // Loading spinner
@@ -141,6 +143,7 @@ const AppRoutes = () => (
     <Route path="/user-manual" element={<UserManual />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/reset-password" element={<ResetPasswordPage />} />
+    <Route path="/AboutUs" element={<AboutUs />} />
     
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
@@ -212,6 +215,7 @@ const AppRoutes = () => (
     <Route path="/LibraryManagement" element={<ProtectedRoute requiredRole="admin"><LibraryManagement /></ProtectedRoute>} />
     <Route path="/admin/products/create" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
+    <Route path="/AdminTransactionManagement" element={<ProtectedRoute requiredRole="admin"><AdminTransactionManagement /></ProtectedRoute>} />
       
     {/* Auth callback route */}
     <Route path="/auth/callback" element={<AuthCallback />} />

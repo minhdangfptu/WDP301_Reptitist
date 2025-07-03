@@ -75,7 +75,48 @@ const getTransactions = asyncHandler(async (req, res) => {
   res.status(200).json({ transactions });
 });
 
+// @desc    Get all transactions (admin only)
+// @route   GET /api/transactions/all
+// @access  Admin
+const getAllTransactions = asyncHandler(async (req, res) => {
+  const transactions = await Transaction.find({})
+    .populate({ path: 'user_id', select: 'username' })
+    .sort({ transaction_date: -1 });
+  res.status(200).json({ transactions });
+});
+
+// @desc    Delete a transaction (admin only, only if pending)
+// @route   DELETE /api/transactions/:id
+// @access  Admin
+const deleteTransaction = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const tx = await Transaction.findById(id);
+  if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+  if (tx.status !== 'pending') return res.status(400).json({ message: 'Chỉ được xóa giao dịch khi trạng thái là pending' });
+  await tx.deleteOne();
+  res.json({ message: 'Xóa giao dịch thành công' });
+});
+
+// @desc    Update a transaction (admin only)
+// @route   PUT /api/transactions/:id
+// @access  Admin
+const updateTransaction = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const tx = await Transaction.findById(id);
+  if (!tx) return res.status(404).json({ message: 'Transaction not found' });
+  // Chỉ cho phép sửa một số trường cơ bản
+  const allowedFields = ['amount', 'transaction_type', 'status', 'description'];
+  allowedFields.forEach(field => {
+    if (req.body[field] !== undefined) tx[field] = req.body[field];
+  });
+  await tx.save();
+  res.json({ message: 'Cập nhật giao dịch thành công', transaction: tx });
+});
+
 module.exports = {
   createTransaction,
   getTransactions,
+  getAllTransactions,
+  deleteTransaction,
+  updateTransaction,
 }; 

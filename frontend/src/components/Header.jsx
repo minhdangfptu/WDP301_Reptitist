@@ -138,6 +138,11 @@ const Header = () => {
                 LIÊN HỆ
               </Link>
             </li>
+            <li>
+              <Link to="/AboutUs" className="header__nav-link">
+                VỀ CHÚNG TÔI
+              </Link>
+            </li>
             {user && (
               <li>
                 <Link to="/YourPet" className="header__nav-link">
@@ -222,6 +227,15 @@ const Header = () => {
                     >
                       Giao dịch
                     </Link>
+                    {user && hasRole && hasRole('admin') && (
+                      <Link
+                        to="/AdminTransactionManagement"
+                        className="header__dropdown-item"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Quản lý giao dịch
+                      </Link>
+                    )}
                     {hasRole("admin") && (
                       <>
                         <div className="header__dropdown-divider"></div>
