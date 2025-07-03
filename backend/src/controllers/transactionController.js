@@ -2,15 +2,19 @@ const Transaction = require('../models/Transactions');
 const moment = require('moment');
 const crypto = require('crypto');
 const qs = require('qs');
+const { env } = require('process');
 
 function sortObject(obj) {
   let sorted = {};
   let keys = Object.keys(obj).sort();
-  for (let key of keys) { 
+  for (let key of keys) {
     sorted[key] = obj[key];
   }
   return sorted;
 }
+
+// Lấy return URL động (ngrok hoặc production)
+
 
 const createPaymentURL = async (req, res) => {
   try {
@@ -18,7 +22,7 @@ const createPaymentURL = async (req, res) => {
 
     const orderId = moment().format('HHmmss');
     const createDate = moment().format('YYYYMMDDHHmmss');
-    const ipAddr = req.ip;
+    const ipAddr = '127.0.0.1';
 
     const vnp_Params = {
       vnp_Version: '2.1.0',
@@ -27,21 +31,23 @@ const createPaymentURL = async (req, res) => {
       vnp_Locale: 'vn',
       vnp_CurrCode: 'VND',
       vnp_TxnRef: orderId,
-      vnp_OrderInfo: description || 'Thanh toán đơn hàng',
+      vnp_OrderInfo: description || 'Thanh toan don hang',
       vnp_OrderType: 'other',
       vnp_Amount: parseInt(amount) * 100,
-      vnp_ReturnUrl: process.env.VNP_RETURN_URL,
+      vnp_ReturnUrl: process.env.VNPAY_RETURN_URL || 'http://localhost:8080/reptitist/transactions/vnpay_return',
       vnp_IpAddr: ipAddr,
       vnp_CreateDate: createDate
     };
-
-    const signData = qs.stringify(sortObject(vnp_Params), { encode: false });
+    console.log('vnp_Params:', vnp_Params);
+    const signData = qs.stringify(sortObject(vnp_Params), { encode:true, format: 'RFC3986' });
+    console.log('Sign Data:', signData);
     const hmac = crypto.createHmac('sha512', process.env.VNP_HASHSECRET);
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+    console.log('Signed Hash:', signed);
     vnp_Params.vnp_SecureHash = signed;
 
-    const paymentUrl = process.env.VNP_URL + '?' + qs.stringify(vnp_Params, { encode: false });
-
+    const paymentUrl = process.env.VNP_URL + '?' + qs.stringify(vnp_Params, { encode: true, format: 'RFC3986'});
+    console.log('Payment URL:', paymentUrl);
     await Transaction.create({
       amount: parseInt(amount),
       fee: 0,
@@ -49,7 +55,7 @@ const createPaymentURL = async (req, res) => {
       transaction_type: 'payment',
       status: 'pending',
       description,
-      items: items ? JSON.parse(items) : [],
+      items: typeof items === 'string' ? items : JSON.stringify(items),
       user_id,
       vnp_txn_ref: orderId
     });
@@ -68,27 +74,33 @@ const handlePaymentReturn = async (req, res) => {
   delete vnp_Params.vnp_SecureHash;
   delete vnp_Params.vnp_SecureHashType;
 
-  const signData = qs.stringify(sortObject(vnp_Params), { encode: false });
+  const sortedParams = sortObject(vnp_Params);
+  const signData = Object.entries(sortedParams)
+    .map(([key, val]) => `${key}=${decodeURIComponent(val)}`)
+    .join('&');
   const hmac = crypto.createHmac('sha512', process.env.VNP_HASHSECRET);
   const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
 
-  if (signed === secureHash) {
-    const transaction = await Transaction.findOne({ vnp_txn_ref: vnp_Params.vnp_TxnRef });
-
-    if (transaction) {
-      transaction.status = vnp_Params.vnp_ResponseCode === '00' ? 'completed' : 'failed';
-      transaction.vnp_response_code = vnp_Params.vnp_ResponseCode;
-      transaction.vnp_transaction_no = vnp_Params.vnp_TransactionNo;
-      transaction.raw_response = vnp_Params;
-      await transaction.save();
-
-      return res.status(200).send(`Giao dịch ${transaction.status === 'completed' ? 'thành công' : 'thất bại'}!`);
-    }
-
-    return res.status(404).send('Không tìm thấy giao dịch.');
-  } else {
-    res.status(400).send('Sai mã hash xác thực.');
+  if (signed !== secureHash) {
+    // Sai mã hash -> redirect về frontend báo lỗi
+    return res.redirect(`${process.env.FRONTEND_RETURN_URL}?status=invalid`);
   }
+
+  const transaction = await Transaction.findOne({ vnp_txn_ref: vnp_Params.vnp_TxnRef });
+
+  if (!transaction) {
+    return res.redirect(`${process.env.FRONTEND_RETURN_URL}?status=notfound`);
+  }
+
+  // Cập nhật trạng thái
+  transaction.status = vnp_Params.vnp_ResponseCode === '00' ? 'completed' : 'failed';
+  transaction.vnp_response_code = vnp_Params.vnp_ResponseCode;
+  transaction.vnp_transaction_no = vnp_Params.vnp_TransactionNo;
+  transaction.raw_response = vnp_Params;
+  await transaction.save();
+
+  // ✅ Redirect về frontend kèm trạng thái và mã giao dịch
+  return res.redirect(`${process.env.FRONTEND_RETURN_URL}?status=${transaction.status}&txnRef=${transaction.vnp_txn_ref}`);
 };
 
 const getTransactionHistory = async (req, res) => {
@@ -100,7 +112,8 @@ const getTransactionHistory = async (req, res) => {
   }
 };
 
-const refundTransaction = async (req, res) => {try {
+const refundTransaction = async (req, res) => {
+  try {
     const { transaction_id } = req.params;
     const original = await Transaction.findById(transaction_id);
 

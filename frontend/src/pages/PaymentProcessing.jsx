@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../css/PaymentProcessing.css';
 import axios from 'axios';
 import { baseUrl } from '../config';
+import { createPayment } from '../services/paymentService';
 
 const PaymentProcessing = () => {
   const navigate = useNavigate();
@@ -103,7 +104,7 @@ const PaymentProcessing = () => {
           net_amount: price,
           transaction_type: planType === 'partner' ? 'shop_upgrade' : 'premium_upgrade',
           status: 'completed',
-          description: `Thanh toán nâng cấp ${planName} ${period === 'monthly' ? 'hàng tháng' : 'hàng năm'}`,
+          description: `Thanh toan nang cap ${planName} ${period === 'monthly' ? 'hang thang' : 'hang nam'}`,
           items: JSON.stringify({
             plan_name: planName,
             plan_type: planType,
@@ -217,6 +218,42 @@ const PaymentProcessing = () => {
       setIsProcessing(false);
     }
   };
+
+  const handleVNPayPayment = async () => {
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem('token');
+  
+      const paymentParams = {
+        amount: price,
+        user_id: user.id,
+        items: JSON.stringify({
+          plan_name: planName,
+          plan_type: planType,
+          period,
+          price
+        }),
+        description: `Thanh toán nâng cấp ${planName} (${period === 'monthly' ? 'hàng tháng' : 'hàng năm'})`
+      };
+  
+      const res = await createPayment(paymentParams);
+      
+  
+      if (res && res.paymentUrl) {
+        window.location.href = res.paymentUrl;
+      } else {
+        toast.error('Không lấy được link thanh toán VNPay!');
+        console.log(res);
+      }
+    } catch (err) {
+      toast.error('Có lỗi khi tạo thanh toán VNPay!:');
+      console.error(err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  
+  
 
   if (paymentCompleted) {
     return (
@@ -383,6 +420,15 @@ const PaymentProcessing = () => {
                   ) : (
                     'Xác nhận thanh toán'
                   )}
+                </button>
+                {/* Nút thanh toán VNPay */}
+                <button
+                  className="payment-confirm-btn vnpay-btn"
+                  style={{ marginTop: 12, background: '#0a68fe', color: '#fff' }}
+                  onClick={handleVNPayPayment}
+                  disabled={isProcessing}
+                >
+                  Thanh toán với VNPay
                 </button>
               </div>
             </div>
