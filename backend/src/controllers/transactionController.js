@@ -1,81 +1,172 @@
 const Transaction = require('../models/Transactions');
-const asyncHandler = require('express-async-handler');
+const moment = require('moment');
+const crypto = require('crypto');
+const qs = require('qs');
 
-// @desc    Create a new transaction
-// @route   POST /api/transactions
-// @access  Private
-const createTransaction = asyncHandler(async (req, res) => {
-  const { amount, net_amount, fee, currency, transaction_type, status, description, items, is_test, user_id } = req.body;
-
-  // Get user ID from either request body or auth middleware
-  const userId = user_id || req.user?.id;
-
-  if (!amount || !transaction_type || !status || !userId) {
-    res.status(400);
-    throw new Error('Vui lòng điền đầy đủ các trường bắt buộc: amount, transaction_type, status, user_id.');
+function sortObject(obj) {
+  let sorted = {};
+  let keys = Object.keys(obj).sort();
+  for (let key of keys) { 
+    sorted[key] = obj[key];
   }
+  return sorted;
+}
 
-  const transaction = await Transaction.create({
-    amount,
-    net_amount: net_amount || amount,
-    fee: fee || 0,
-    currency: currency || 'VND',
-    transaction_type,
-    status,
-    description,
-    items,
-    user_id: userId,
-    is_test: is_test || false,
-    transaction_date: new Date()
-  });
+const createPaymentURL = async (req, res) => {
+  try {
+    const { amount, user_id, items, description } = req.query;
 
-  if (transaction) {
-    res.status(201).json({
-      message: 'Giao dịch được tạo thành công',
-      transaction,
+    const orderId = moment().format('HHmmss');
+    const createDate = moment().format('YYYYMMDDHHmmss');
+    const ipAddr = req.ip;
+
+    const vnp_Params = {
+      vnp_Version: '2.1.0',
+      vnp_Command: 'pay',
+      vnp_TmnCode: process.env.VNP_TMNCODE,
+      vnp_Locale: 'vn',
+      vnp_CurrCode: 'VND',
+      vnp_TxnRef: orderId,
+      vnp_OrderInfo: description || 'Thanh toán đơn hàng',
+      vnp_OrderType: 'other',
+      vnp_Amount: parseInt(amount) * 100,
+      vnp_ReturnUrl: process.env.VNP_RETURN_URL,
+      vnp_IpAddr: ipAddr,
+      vnp_CreateDate: createDate
+    };
+
+    const signData = qs.stringify(sortObject(vnp_Params), { encode: false });
+    const hmac = crypto.createHmac('sha512', process.env.VNP_HASHSECRET);
+    const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+    vnp_Params.vnp_SecureHash = signed;
+
+    const paymentUrl = process.env.VNP_URL + '?' + qs.stringify(vnp_Params, { encode: false });
+
+    await Transaction.create({
+      amount: parseInt(amount),
+      fee: 0,
+      currency: 'VND',
+      transaction_type: 'payment',
+      status: 'pending',
+      description,
+      items: items ? JSON.parse(items) : [],
+      user_id,
+      vnp_txn_ref: orderId
     });
+
+    res.status(201).json({ paymentUrl });
+  } catch (error) {
+    console.error('Error creating payment URL:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+const handlePaymentReturn = async (req, res) => {
+  const vnp_Params = req.query;
+  const secureHash = vnp_Params.vnp_SecureHash;
+
+  delete vnp_Params.vnp_SecureHash;
+  delete vnp_Params.vnp_SecureHashType;
+
+  const signData = qs.stringify(sortObject(vnp_Params), { encode: false });
+  const hmac = crypto.createHmac('sha512', process.env.VNP_HASHSECRET);
+  const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+
+  if (signed === secureHash) {
+    const transaction = await Transaction.findOne({ vnp_txn_ref: vnp_Params.vnp_TxnRef });
+
+    if (transaction) {
+      transaction.status = vnp_Params.vnp_ResponseCode === '00' ? 'completed' : 'failed';
+      transaction.vnp_response_code = vnp_Params.vnp_ResponseCode;
+      transaction.vnp_transaction_no = vnp_Params.vnp_TransactionNo;
+      transaction.raw_response = vnp_Params;
+      await transaction.save();
+
+      return res.status(200).send(`Giao dịch ${transaction.status === 'completed' ? 'thành công' : 'thất bại'}!`);
+    }
+
+    return res.status(404).send('Không tìm thấy giao dịch.');
   } else {
-    res.status(400);
-    throw new Error('Dữ liệu giao dịch không hợp lệ');
+    res.status(400).send('Sai mã hash xác thực.');
   }
-});
+};
 
-// @desc    Get user transactions
-// @route   GET /api/transactions
-// @access  Private
-const getTransactions = asyncHandler(async (req, res) => {
-  const { range } = req.query;
-  const userId = req.user.id;
-
-  let startDate;
-  const now = new Date();
-
-  switch (range) {
-    case '7days':
-      startDate = new Date(now.setDate(now.getDate() - 7));
-      break;
-    case '30days':
-      startDate = new Date(now.setMonth(now.getMonth() - 1));
-      break;
-    case '90days':
-      startDate = new Date(now.setMonth(now.getMonth() - 3));
-      break;
-    case '1year':
-      startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-      break;
-    default:
-      startDate = new Date(0); // All time
+const getTransactionHistory = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({ user_id: req.params.userId }).sort({ createdAt: -1 });
+    res.status(200).json(transactions);
+  } catch (error) {
+    res.status(500).json({ error: 'Không thể lấy lịch sử giao dịch' });
   }
+};
 
-  const transactions = await Transaction.find({
-    user_id: userId,
-    transaction_date: { $gte: startDate }
-  }).sort({ transaction_date: -1 });
+const refundTransaction = async (req, res) => {try {
+    const { transaction_id } = req.params;
+    const original = await Transaction.findById(transaction_id);
 
-  res.status(200).json({ transactions });
-});
+    if (!original || original.status !== 'completed') {
+      return res.status(400).json({ error: 'Giao dịch không hợp lệ để hoàn tiền.' });
+    }
 
+    // Tạo giao dịch hoàn tiền mới
+    const refund = await Transaction.create({
+      amount: -original.amount,
+      fee: 0,
+      currency: original.currency,
+      transaction_type: 'refund',
+      status: 'refunded',
+      description: `Hoàn tiền cho giao dịch ${original._id}`,
+      items: original.items,
+      user_id: original.user_id,
+      refund_transaction_id: original._id,
+      vnp_txn_ref: `refund_${original.vnp_txn_ref}`,
+      vnp_response_code: '00',
+      vnp_transaction_no: null,
+      raw_response: null
+    });
+
+    // Cập nhật trạng thái giao dịch gốc nếu muốn
+    original.status = 'refunded';
+    await original.save();
+
+    res.status(201).json({
+      message: 'Hoàn tiền thành công',
+      refund_transaction: refund
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Lỗi hoàn tiền' });
+  }
+};
+const filterTransactionHistory = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { start_date, end_date, status } = req.query;
+
+    const filter = { user_id: userId };
+
+    if (status) filter.status = status;
+
+    if (start_date || end_date) {
+      filter.createdAt = {};
+      if (start_date) filter.createdAt.$gte = new Date(start_date);
+      if (end_date) filter.createdAt.$lte = new Date(end_date);
+    }
+
+    const transactions = await Transaction.find(filter).sort({ createdAt: -1 });
+
+    if (!transactions.length) return res.status(204).send();
+
+    return res.status(200).json(transactions);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Lỗi server khi lọc lịch sử giao dịch' });
+  }
+};
 module.exports = {
-  createTransaction,
-  getTransactions,
-}; 
+  createPaymentURL,
+  handlePaymentReturn,
+  getTransactionHistory,
+  refundTransaction,
+  filterTransactionHistory
+};
