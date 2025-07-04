@@ -1,7 +1,13 @@
 import React from "react";
 import "../css/SignUp.css";
+import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
+  const {loginWithGoogle} = useAuth();
+  const handleGoogleLogin = (e) => {
+    e.preventDefault();
+    loginWithGoogle();
+  };
   return (
     <div className="signup-body">
       <div className="signup-container">
@@ -22,8 +28,8 @@ const Signup = () => {
           </p>
           <button
             className="social-login-btn"
-            disabled={true}
-            style={{ opacity: 0.6, cursor: "not-allowed" }}
+            disabled={false}
+            onClick={handleGoogleLogin}
           >
             <span className="google-icon">
               <img
