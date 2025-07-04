@@ -311,7 +311,6 @@ export const AuthProvider = ({ children }) => {
     isPremium,
     checkAuthStatus,
     loginWithGoogle,
-    // Thêm các hàm phân quyền mới
     canUseAI,
     canPersonalizeReptile,
     canSellProduct,
