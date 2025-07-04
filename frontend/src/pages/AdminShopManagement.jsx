@@ -556,7 +556,7 @@ const AdminShopManagement = () => {
               }}
             >
               <i className="fas fa-flag"></i>
-              Báo cáo sản phẩm ({reports.filter(r => r.status === 'pending').length})
+              Báo cáo chờ xử lý ({reports.filter(r => r.status === 'pending').length})
             </button>
           </div>
         </div>
