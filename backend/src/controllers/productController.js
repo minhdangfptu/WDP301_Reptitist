@@ -71,7 +71,7 @@ const createProduct = async (req, res) => {
 const getMyProducts = async (req, res) => {
   try {
     // Kiểm tra user có phải là shop không
-    if (!req.user || req.user.role_id?.role_name !== 'shop') {
+    if (!req.user || req.user.account_type?.type !== 'shop') {
       return res.status(403).json({
         message: 'Chỉ có Shop mới có thể xem sản phẩm của mình'
       });
@@ -256,7 +256,7 @@ const reportProduct = async (req, res) => {
 const getMyProductStats = async (req, res) => {
   try {
     // Kiểm tra user có phải là shop không
-    if (!req.user || req.user.role_id?.role_name !== 'shop') {
+    if (!req.user || req.user.account_type?.type !== 'shop') {
       return res.status(403).json({
         message: 'Chỉ có Shop mới có thể xem thống kê'
       });

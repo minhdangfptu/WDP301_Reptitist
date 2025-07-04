@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../css/NavigationBar.css';
+import { useAuth } from '../context/AuthContext';
 
 const NavigationBar = () => {
   const [activeItem, setActiveItem] = useState('personal');
   const navigate = useNavigate();
+  const { user, hasRole } = useAuth();
 
   const handleMenuClick = (itemId, path) => {
     setActiveItem(itemId);
@@ -70,6 +72,12 @@ const NavigationBar = () => {
             </div>
             <span className="menu-text">Cài đặt</span>
           </div>
+
+          {hasRole && hasRole('admin') && (
+            <li>
+              <a href="/AdminTransactionManagement">Quản lý giao dịch</a>
+            </li>
+          )}
         </nav>
       </div>
     </div>

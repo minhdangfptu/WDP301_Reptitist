@@ -120,7 +120,7 @@ const Header = () => {
               </Link>
             </li>
             <li>
-            <Link
+              <Link
                 to="/ShopLandingPage"
                 className="header__nav-link"
                 onClick={(e) => {
@@ -136,6 +136,11 @@ const Header = () => {
             <li>
               <Link to="/ContactUs" className="header__nav-link">
                 LIÊN HỆ
+              </Link>
+            </li>
+            <li>
+              <Link to="/AboutUs" className="header__nav-link">
+                VỀ CHÚNG TÔI
               </Link>
             </li>
             {user && (
@@ -155,9 +160,8 @@ const Header = () => {
             <div className="header__account-menu-text">
               <span>{user ? user.fullname || user.username : "Tài khoản"}</span>
               <span
-                className={`header__caret ${
-                  showAccountMenu ? "header__caret--up" : ""
-                }`}
+                className={`header__caret ${showAccountMenu ? "header__caret--up" : ""
+                  }`}
               >
                 ▼
               </span>
@@ -165,119 +169,124 @@ const Header = () => {
 
             {showAccountMenu && (
               <div className="header__dropdown">
-                {!user ? (
-                  <>
-                    <Link
-                      to="/Login"
-                      className="header__dropdown-item"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Đăng nhập
-                    </Link>
-                    <Link
-                      to="/SignUp"
-                      className="header__dropdown-item"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Đăng ký
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <div className="header__dropdown-header">
-                      Xin chào, {user.fullname || user.username}!
-                      {isShop() && (
-                        <span className="header__shop-badge">
-                          {user.account_type?.level === "premium"
-                            ? "Shop Premium"
-                            : "Shop"}
-                        </span>
-                      )}
-                    </div>
-                    <Link
-                      to="/Profile"
-                      className="header__dropdown-item"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Hồ sơ
-                    </Link>
-                    <Link
-                      to="/Security"
-                      className="header__dropdown-item"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Bảo mật
-                    </Link>
-                    <Link
-                      to="/Settings"
-                      className="header__dropdown-item"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Cài đặt
-                    </Link>
-                    <Link
-                      to="/Transaction"
-                      className="header__dropdown-item"
-                      onClick={() => setShowAccountMenu(false)}
-                    >
-                      Giao dịch
-                    </Link>
-                    {hasRole("admin") && (
-                      <>
-                        <div className="header__dropdown-divider"></div>
-                        <div className="header__dropdown-section-title">
-                          Quản trị viên
-                        </div>
-                        <Link
-                          to="/UserManagement"
-                          className="header__dropdown-item"
-                          onClick={() => setShowAccountMenu(false)}
-                        >
-                          Quản lý người dùng
-                        </Link>
-                        <Link
-                          to="/AdminShopManagement"
-                          className="header__dropdown-item"
-                          onClick={() => setShowAccountMenu(false)}
-                        >
-                          Quản lý Shop
-                        </Link>
-                      </>
-                    )}
+                {/* Header Section */}
+                <div className="header__dropdown-header">
+                  <div>Xin chào, {user.fullname || user.username}!</div>
+                  {isShop() && (
+                    <span className="header__shop-badge">
+                      {user.account_type?.level === "premium" ? "Shop Premium" : "Shop"}
+                    </span>
+                  )}
+                </div>
 
-                    {isShop() && (
-                      <>
-                        <div className="header__dropdown-divider"></div>
-                        <div className="header__dropdown-section-title">
-                          Cửa hàng
-                        </div>
-                        <Link
-                          to="/ShopDashboard"
-                          className="header__dropdown-item"
-                          onClick={() => setShowAccountMenu(false)}
-                        >
-                          Dashboard Shop
-                        </Link>
-                        <Link
-                          to="/ProductManagement"
-                          className="header__dropdown-item"
-                          onClick={() => setShowAccountMenu(false)}
-                        >
-                          Quản lý sản phẩm
-                        </Link>
-                      </>
-                    )}
-                    <div
-                      className="header__dropdown-logout"
-                      onClick={() => {
-                        handleLogout();
-                        setShowAccountMenu(false);
-                      }}
-                    >
-                      Đăng xuất
+                {/* Personal Menu Section */}
+                <div className="header__dropdown-section">
+                  <Link
+                    to="/Profile"
+                    className="header__dropdown-item"
+                    onClick={() => setShowAccountMenu(false)}
+                  >
+                    Hồ sơ cá nhân
+                  </Link>
+                  <Link
+                    to="/Security"
+                    className="header__dropdown-item"
+                    onClick={() => setShowAccountMenu(false)}
+                  >
+                    Bảo mật tài khoản
+                  </Link>
+                  <Link
+                    to="/Settings"
+                    className="header__dropdown-item"
+                    onClick={() => setShowAccountMenu(false)}
+                  >
+                    Cài đặt
+                  </Link>
+                  <Link
+                    to="/Transaction"
+                    className="header__dropdown-item"
+                    onClick={() => setShowAccountMenu(false)}
+                  >
+                    Lịch sử giao dịch
+                  </Link>
+                </div>
+
+                {/* Shop Management Section */}
+                {isShop() && (
+                  <>
+                    <div className="header__dropdown-divider"></div>
+                    <div className="header__dropdown-section-title header__dropdown-section-title--shop">
+                      Quản lý cửa hàng
+                    </div>
+                    <div className="header__dropdown-section">
+                      <Link
+                        to="/ShopDashboard"
+                        className="header__dropdown-item header__dropdown-item--shop"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Dashboard Shop
+                      </Link>
+                      <Link
+                        to="/ProductManagement"
+                        className="header__dropdown-item header__dropdown-item--shop"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Quản lý sản phẩm
+                      </Link>
+                      <Link
+                        to="/OrderManagement"
+                        className="header__dropdown-item header__dropdown-item--shop"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Quản lý đơn hàng
+                      </Link>
                     </div>
                   </>
                 )}
+
+                {/* Admin Management Section */}
+                {hasRole("admin") && (
+                  <>
+                    <div className="header__dropdown-divider"></div>
+                    <div className="header__dropdown-section-title header__dropdown-section-title--admin">
+                      Quản trị hệ thống
+                    </div>
+                    <div className="header__dropdown-section">
+                      <Link
+                        to="/UserManagement"
+                        className="header__dropdown-item header__dropdown-item--admin"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Quản lý người dùng
+                      </Link>
+                      <Link
+                        to="/AdminShopManagement"
+                        className="header__dropdown-item header__dropdown-item--admin"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Quản lý Shop
+                      </Link>
+                      <Link
+                        to="/AdminTransactionManagement"
+                        className="header__dropdown-item header__dropdown-item--admin"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Quản lý giao dịch
+                      </Link>
+                    </div>
+                  </>
+                )}
+
+                {/* Logout Section */}
+                <div
+                  className="header__dropdown-logout"
+                  onClick={() => {
+                    handleLogout();
+                    setShowAccountMenu(false);
+                  }}
+                >
+                  Đăng xuất
+                </div>
               </div>
             )}
           </div>
