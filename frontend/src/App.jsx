@@ -135,9 +135,12 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 };
 
 // AccountTypeRoute: Route guard follow account_type.type
-const AccountTypeRoute = ({ canAccess, redirectTo = "/PlanUpgrade", children }) => {
-  const { loading } = useAuth();
+const AccountTypeRoute = ({ canAccess, children }) => {
+  const { loading, user } = useAuth();
   if (loading) return <LoadingSpinner />;
+  // Nếu không phải role 'user' thì cho truy cập bình thường
+  if (user?.role !== 'user') return children;
+  // Nếu là user thì kiểm tra quyền
   if (!canAccess()) return <AccessDenied />;
   return children;
 };
