@@ -212,7 +212,10 @@
 .header__dropdown-section-title--admin {
   color: #e53e3e;
 }
-
+.header__nav-link--active {
+  color: #11ae5f !important; /* hoặc màu xanh bạn muốn */
+  font-weight: 600;
+}
 .header__dropdown-section-title--admin::before {
   background-color: #e53e3e;
 }

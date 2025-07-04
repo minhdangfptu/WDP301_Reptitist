@@ -8,6 +8,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "../config.js";
 import "../css/LandingPage.css";
+import SupportButton from "../components/SupportButton.jsx";
 
 const LandingPage = () => {
   const [top1LatestContents, setTop1LatestContents] = useState(null);
@@ -420,35 +421,6 @@ const LandingPage = () => {
 
       <Footer />
 
-      {/* Floating Help Bubble & Dialog */}
-      <div className="floating-help-container">
-        {!showHelpDialog && (
-          <div
-            className="help-bubble"
-            onMouseEnter={() => setShowHelpDialog(true)}
-          >
-            ?
-          </div>
-        )}
-        <div
-          className={`help-dialog${showHelpDialog ? " show" : ""}`}
-          onMouseLeave={() => setShowHelpDialog(false)}
-          onMouseEnter={() => setShowHelpDialog(true)}
-        >
-          <button
-            className="help-dialog-btn"
-            onClick={() => navigate("/ContactUs")}
-          >
-            Gửi phản hồi
-          </button>
-          <button
-            className="help-dialog-btn"
-            onClick={() => navigate("/user-manual")}
-          >
-            Xem hướng dẫn
-          </button>
-        </div>
-      </div>
 
       {showFirstLoginPopup && (
         <div className="first-login-popup-overlay">

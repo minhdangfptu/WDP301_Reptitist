@@ -38,7 +38,7 @@ import CreateLibraryTopic from './pages/LibraryTopicCreate';
 import UpdateLibraryTopic from './pages/LibraryTopicUpdate';
 import CreateCategory from './pages/CreateCategory';
 import UpdateCategory from './pages/UpdateCategory';
-import ProductForm from './pages/ShopProductForm';
+import ProductForm from './pages/ShopAddProductPage';
 import ShopProductManagement from './pages/ShopProductManagement';
 import LibraryManagement from './pages/LibraryManagement';
 import AdminShopManagement from './pages/AdminShopManagement';
@@ -46,7 +46,7 @@ import PaymentProcessing from './pages/PaymentProcessing';
 import ProductManagement from './pages/ProductManagement';
 import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
-import AddProduct from './pages/AddProduct';
+
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
 
@@ -61,7 +61,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminTransactionManagement from './pages/AdminTransactionManagement';
 import AccessDenied from './components/AccessDenied';
-
+import ContactUsButton from './components/SupportButton';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -143,7 +143,9 @@ const AccountTypeRoute = ({ canAccess, redirectTo = "/PlanUpgrade", children }) 
 };
 
 const AppRoutes = () => (
+  
   <Routes>
+    
     {/* Public */}
     <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
     <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
@@ -154,6 +156,7 @@ const AppRoutes = () => (
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
     <Route path="/ContactUs" element={<ContactUs />} />
+    <Route path="/AboutUs" element={<AboutUs />} />
     <Route path="/Login" element={<PublicRoute><Login /></PublicRoute>} />
     <Route path="/SignUp" element={<PublicRoute><SignUp /></PublicRoute>} />
     <Route path="/SignUp2" element={<PublicRoute><SignUp2 /></PublicRoute>} />
@@ -179,7 +182,7 @@ const AppRoutes = () => (
     <Route path="/products/create" element={
       <ProtectedRoute>
         <AccountTypeRoute canAccess={useAuth().canSellProduct}>
-          <AddProduct />
+          <ProductForm/>
         </AccountTypeRoute>
       </ProtectedRoute>
     } />
@@ -277,6 +280,7 @@ const App = () => (
         <Router>
           <div className="app">
             <AppRoutes />
+            <ContactUsButton />
             <ToastContainer
               position="top-right"
               autoClose={3000}
