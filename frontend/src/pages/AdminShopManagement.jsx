@@ -30,6 +30,7 @@ const AdminShopManagement = () => {
   const [searchReportProductName, setSearchReportProductName] = useState('');
   const [hiddenProducts, setHiddenProducts] = useState([]);
   const [approvedReports, setApprovedReports] = useState([]);
+  const [searchHiddenProductName, setSearchHiddenProductName] = useState('');
 
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
@@ -467,6 +468,12 @@ const AdminShopManagement = () => {
       toast.error('Không thể cập nhật trạng thái sản phẩm');
     }
   };
+
+  // Lọc sản phẩm bị ẩn theo tên
+  const filteredHiddenProducts = hiddenProducts.filter(product => {
+    if (!searchHiddenProductName) return true;
+    return (product.product_name || '').toLowerCase().includes(searchHiddenProductName.toLowerCase());
+  });
 
   // Check admin access
   if (!hasRole('admin')) {
@@ -1085,10 +1092,23 @@ const AdminShopManagement = () => {
             <div className="um-table-header">
               <h3>
                 <i className="fas fa-eye-slash"></i>
-                Sản phẩm đã bị ẩn ({hiddenProducts.length})
+                Sản phẩm đã bị ẩn ({filteredHiddenProducts.length})
               </h3>
             </div>
-            {hiddenProducts.length === 0 ? (
+            {/* Search hidden products */}
+            <div className="um-filters-section" style={{ marginBottom: '10px' }}>
+              <div className="um-search-box">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
+                  value={searchHiddenProductName}
+                  onChange={e => setSearchHiddenProductName(e.target.value)}
+                  className="um-search-input"
+                />
+                <i className="fas fa-search um-search-icon"></i>
+              </div>
+            </div>
+            {filteredHiddenProducts.length === 0 ? (
               <div className="um-empty-state">
                 <i className="fas fa-eye-slash um-empty-icon"></i>
                 <h3>Không có sản phẩm bị ẩn</h3>
@@ -1109,7 +1129,7 @@ const AdminShopManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {hiddenProducts.map(product => {
+                    {filteredHiddenProducts.map(product => {
                       // Tìm báo cáo được duyệt gần nhất cho sản phẩm này
                       const relatedReports = approvedReports.filter(r => r.product_id?._id === product._id);
                       let reason = 'Không có ghi chú';
