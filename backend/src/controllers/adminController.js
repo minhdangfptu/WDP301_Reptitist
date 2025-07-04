@@ -785,6 +785,24 @@ const getHiddenProducts = async (req, res) => {
     }
 };
 
+// Admin cập nhật trạng thái sản phẩm
+const updateProductStatusByAdmin = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const { product_status } = req.body;
+        if (!product_status) {
+            return res.status(400).json({ message: 'Thiếu trạng thái sản phẩm' });
+        }
+        const product = await Product.findByIdAndUpdate(productId, { product_status }, { new: true });
+        if (!product) {
+            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+        }
+        res.status(200).json({ message: 'Cập nhật trạng thái thành công', product });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
 // Export controller functions
 module.exports = {
     checkAdminRole,
@@ -802,5 +820,6 @@ module.exports = {
     toggleUserStatus,
     createUser,
     updateUserAccountType,
-    getHiddenProducts
+    getHiddenProducts,
+    updateProductStatusByAdmin
 };

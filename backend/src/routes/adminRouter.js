@@ -16,7 +16,8 @@ const {
     deleteUser,
     toggleUserStatus,
     updateUserAccountType,
-    getHiddenProducts
+    getHiddenProducts,
+    updateProductStatusByAdmin
 } = require('../controllers/adminController');
 
 // Apply auth middleware to all admin routes
@@ -38,6 +39,7 @@ router.get('/shops/:shopId/products', getShopProducts); // GET /admin/shops/:sho
 
 // Product management routes (admin can only delete)
 router.get('/products', getHiddenProducts); // GET /admin/products?status=not_available - Lấy sản phẩm bị ẩn
+router.put('/products/:productId/status', updateProductStatusByAdmin); // PUT /admin/products/:productId/status - Cập nhật trạng thái sản phẩm
 router.delete('/products/:productId', deleteProductByAdmin); // DELETE /admin/products/:id - Xóa sản phẩm
 
 // Report management routes

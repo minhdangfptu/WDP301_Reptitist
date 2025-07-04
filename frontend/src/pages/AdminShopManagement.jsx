@@ -449,6 +449,22 @@ const AdminShopManagement = () => {
     return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
   });
 
+  // Thêm hàm chuyển trạng thái sản phẩm
+  const handleToggleProductStatus = async (productId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('refresh_token');
+      if (!token) return;
+      const newStatus = currentStatus === 'not_available' ? 'available' : 'not_available';
+      await axios.put(`${baseUrl}/reptitist/admin/products/${productId}/status`, { product_status: newStatus }, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      toast.success('Cập nhật trạng thái sản phẩm thành công!');
+      fetchHiddenProductsAndReports(); // Refresh list
+    } catch (error) {
+      toast.error('Không thể cập nhật trạng thái sản phẩm');
+    }
+  };
+
   // Check admin access
   if (!hasRole('admin')) {
     return (
@@ -1080,6 +1096,7 @@ const AdminShopManagement = () => {
                       <th>Ngày tạo</th>
                       <th>Lý do ẩn</th>
                       <th>Trạng thái</th>
+                      <th>Hành động</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1107,7 +1124,24 @@ const AdminShopManagement = () => {
                           <td>{product.user_id?.username || 'N/A'}</td>
                           <td>{formatDate(product.createdAt)}</td>
                           <td>{reason}</td>
-                          <td><span className="um-role-badge um-badge-default">Đã bị ẩn</span></td>
+                          <td><span className="um-role-badge um-badge-default">{product.product_status === 'not_available' ? 'Đã bị ẩn' : 'Đang bán'}</span></td>
+                          <td>
+                            <button
+                              className={`um-status-btn ${product.product_status === 'not_available' ? 'um-status-inactive' : 'um-status-active'}`}
+                              onClick={() => handleToggleProductStatus(product._id, product.product_status)}
+                            >
+                              {product.product_status === 'not_available' ? (
+                                <>
+                                  <i className="fas fa-eye"></i> Bỏ ẩn
+                                </>
+                              ) : (
+                                <>
+                                  <i className="fas fa-eye-slash"></i> Ẩn
+                                </>
+                              )}
+                            </button>
+                          </td>
+                          
                         </tr>
                       );
                     })}
