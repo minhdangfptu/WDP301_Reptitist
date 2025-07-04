@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../css/Header.css";
 import "../css/common.css";
@@ -10,6 +10,7 @@ const Header = () => {
   const accountRef = useRef(null);
   const { user, logout, hasRole, hasAnyRole, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (accountRef.current && !accountRef.current.contains(event.target)) {
@@ -33,10 +34,6 @@ const Header = () => {
     }
   };
 
-  // Check if user is a shop (either role is shop or account_type is shop)
-  const isShop = () => {
-    return hasRole("shop") || user?.account_type?.type === "shop";
-  };
 
   if (loading || loggingOut) {
     return (
@@ -87,14 +84,17 @@ const Header = () => {
           </Link>
           <ul className="header__nav-links">
             <li>
-              <Link to="/" className="header__nav-link">
+              <Link
+                to="/"
+                className={`header__nav-link${location.pathname === "/" ? " header__nav-link--active" : ""}`}
+              >
                 TRANG CHỦ
               </Link>
             </li>
             <li>
               <Link
                 to="/Community"
-                className="header__nav-link"
+                className={`header__nav-link${location.pathname === "/Community" ? " header__nav-link--active" : ""}`}
                 onClick={(e) => {
                   if (!user) {
                     e.preventDefault();
@@ -108,7 +108,7 @@ const Header = () => {
             <li>
               <Link
                 to="/LibraryTopic"
-                className="header__nav-link"
+                className={`header__nav-link${location.pathname === "/LibraryTopic" ? " header__nav-link--active" : ""}`}
                 onClick={(e) => {
                   if (!user) {
                     e.preventDefault();
@@ -122,7 +122,7 @@ const Header = () => {
             <li>
               <Link
                 to="/ShopLandingPage"
-                className="header__nav-link"
+                className={`header__nav-link${location.pathname === "/ShopLandingPage" ? " header__nav-link--active" : ""}`}
                 onClick={(e) => {
                   if (!user) {
                     e.preventDefault();
@@ -133,23 +133,19 @@ const Header = () => {
                 MUA SẮM
               </Link>
             </li>
-            <li>
-              <Link to="/ContactUs" className="header__nav-link">
-                LIÊN HỆ
-              </Link>
-            </li>
-            <li>
-              <Link to="/AboutUs" className="header__nav-link">
-                VỀ CHÚNG TÔI
-              </Link>
-            </li>
             {user && (
               <li>
-                <Link to="/YourPet" className="header__nav-link">
-                  BÒ SÁT CỦA BẠN
+                <Link to="/YourPet" className={`header__nav-link${location.pathname === "/YourPet" ? " header__nav-link--active" : ""}`}>
+                  THÚ CƯNG
                 </Link>
               </li>
             )}
+            <li>
+              <Link to="/AboutUs" className={`header__nav-link${location.pathname === "/AboutUs" ? " header__nav-link--active" : ""}`}>
+                VỀ CHÚNG TÔI
+              </Link>
+            </li>
+            
           </ul>
 
           <div
@@ -158,10 +154,9 @@ const Header = () => {
             onClick={() => setShowAccountMenu(!showAccountMenu)}
           >
             <div className="header__account-menu-text">
-              <span>{user ? user.fullname || user.username : "Tài khoản"}</span>
+              <span>{user ? user?.fullname || user?.username : "Tài khoản"}</span>
               <span
-                className={`header__caret ${showAccountMenu ? "header__caret--up" : ""
-                  }`}
+                className={`header__caret ${showAccountMenu ? "header__caret--up" : ""}`}
               >
                 ▼
               </span>
@@ -169,124 +164,146 @@ const Header = () => {
 
             {showAccountMenu && (
               <div className="header__dropdown">
-                {/* Header Section */}
-                <div className="header__dropdown-header">
-                  <div>Xin chào, {user.fullname || user.username}!</div>
-                  {isShop() && (
-                    <span className="header__shop-badge">
-                      {user.account_type?.level === "premium" ? "Shop Premium" : "Shop"}
-                    </span>
-                  )}
-                </div>
-
-                {/* Personal Menu Section */}
-                <div className="header__dropdown-section">
-                  <Link
-                    to="/Profile"
-                    className="header__dropdown-item"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    Hồ sơ cá nhân
-                  </Link>
-                  <Link
-                    to="/Security"
-                    className="header__dropdown-item"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    Bảo mật tài khoản
-                  </Link>
-                  <Link
-                    to="/Settings"
-                    className="header__dropdown-item"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    Cài đặt
-                  </Link>
-                  <Link
-                    to="/Transaction"
-                    className="header__dropdown-item"
-                    onClick={() => setShowAccountMenu(false)}
-                  >
-                    Lịch sử giao dịch
-                  </Link>
-                </div>
-
-                {/* Shop Management Section */}
-                {isShop() && (
+                {user ? (
                   <>
-                    <div className="header__dropdown-divider"></div>
-                    <div className="header__dropdown-section-title header__dropdown-section-title--shop">
-                      Quản lý cửa hàng
-                    </div>
+                    {/* Personal Menu Section */}
+                    <div className="header__dropdown-divider" style={{opacity: 0, padding: 0, paddingTop: "10px", margin: 0}}></div>
+                        <div style={{color: "#11ae5f"}} className="header__dropdown-section-title ">
+                          Quản lý tài khoản
+                        </div>
                     <div className="header__dropdown-section">
                       <Link
-                        to="/ShopDashboard"
-                        className="header__dropdown-item header__dropdown-item--shop"
+                        to="/Profile"
+                        className="header__dropdown-item"
                         onClick={() => setShowAccountMenu(false)}
                       >
-                        Dashboard Shop
+                        Hồ sơ cá nhân
                       </Link>
                       <Link
-                        to="/ProductManagement"
-                        className="header__dropdown-item header__dropdown-item--shop"
+                        to="/Security"
+                        className="header__dropdown-item"
                         onClick={() => setShowAccountMenu(false)}
                       >
-                        Quản lý sản phẩm
+                        Bảo mật tài khoản
                       </Link>
                       <Link
-                        to="/OrderManagement"
-                        className="header__dropdown-item header__dropdown-item--shop"
+                        to="/Settings"
+                        className="header__dropdown-item"
                         onClick={() => setShowAccountMenu(false)}
                       >
-                        Quản lý đơn hàng
+                        Cài đặt
                       </Link>
+                      <Link
+                        to="/Transaction"
+                        className="header__dropdown-item"
+                        onClick={() => setShowAccountMenu(false)}
+                      >
+                        Lịch sử giao dịch
+                      </Link>
+                    </div>
+
+                    {/* Shop Management Section cho account_type >= 3 */}
+                    {user?.account_type.type >= 3 && (
+                      <>
+                        <div className="header__dropdown-divider"></div>
+                        <div className="header__dropdown-section-title header__dropdown-section-title--shop">
+                          Quản lý cửa hàng
+                        </div>
+                        <div className="header__dropdown-section">
+                          <Link
+                            to="/ShopDashboard"
+                            className="header__dropdown-item header__dropdown-item--shop"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Tổng quan thông tin cửa hàng
+                          </Link>
+                          <Link
+                            to="/ProductManagement"
+                            className="header__dropdown-item header__dropdown-item--shop"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý sản phẩm
+                          </Link>
+                          <Link
+                            to="/OrderManagement"
+                            className="header__dropdown-item header__dropdown-item--shop"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý đơn hàng
+                          </Link>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Admin Management Section */}
+                    {hasRole("admin") && (
+                      <>
+                        <div className="header__dropdown-divider"></div>
+                        <div className="header__dropdown-section-title header__dropdown-section-title--admin">
+                          Quản trị hệ thống
+                        </div>
+                        <div className="header__dropdown-section">
+                          <Link
+                            to="/UserManagement"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý người dùng
+                          </Link>
+                          <Link
+                            to="/AdminShopManagement"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý cừa hàng
+                          </Link>
+                          <Link
+                            to="/AdminTransactionManagement"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý giao dịch
+                          </Link>
+                          <Link
+                            to="/ProductManagement"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý sản phẩm
+                          </Link>
+                        </div>
+                      </>
+                    )}
+
+                    {/* Logout Section */}
+                    <div
+                      className="header__dropdown-logout"
+                      onClick={() => {
+                        handleLogout();
+                        setShowAccountMenu(false);
+                      }}
+                    >
+                      Đăng xuất
                     </div>
                   </>
+                ) : (
+                  <div className="header__dropdown-section">
+                    <Link
+                      to="/Login"
+                      className="header__dropdown-item"
+                      onClick={() => setShowAccountMenu(false)}
+                    >
+                      Đăng nhập
+                    </Link>
+                    <Link
+                      to="/Register"
+                      className="header__dropdown-item"
+                      onClick={() => setShowAccountMenu(false)}
+                    >
+                      Đăng ký
+                    </Link>
+                  </div>
                 )}
-
-                {/* Admin Management Section */}
-                {hasRole("admin") && (
-                  <>
-                    <div className="header__dropdown-divider"></div>
-                    <div className="header__dropdown-section-title header__dropdown-section-title--admin">
-                      Quản trị hệ thống
-                    </div>
-                    <div className="header__dropdown-section">
-                      <Link
-                        to="/UserManagement"
-                        className="header__dropdown-item header__dropdown-item--admin"
-                        onClick={() => setShowAccountMenu(false)}
-                      >
-                        Quản lý người dùng
-                      </Link>
-                      <Link
-                        to="/AdminShopManagement"
-                        className="header__dropdown-item header__dropdown-item--admin"
-                        onClick={() => setShowAccountMenu(false)}
-                      >
-                        Quản lý Shop
-                      </Link>
-                      <Link
-                        to="/AdminTransactionManagement"
-                        className="header__dropdown-item header__dropdown-item--admin"
-                        onClick={() => setShowAccountMenu(false)}
-                      >
-                        Quản lý giao dịch
-                      </Link>
-                    </div>
-                  </>
-                )}
-
-                {/* Logout Section */}
-                <div
-                  className="header__dropdown-logout"
-                  onClick={() => {
-                    handleLogout();
-                    setShowAccountMenu(false);
-                  }}
-                >
-                  Đăng xuất
-                </div>
               </div>
             )}
           </div>

@@ -84,7 +84,7 @@ const PaymentProcessing = () => {
     setIsProcessing(true);
     
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('refresh_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setIsProcessing(false);
