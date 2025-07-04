@@ -27,6 +27,7 @@ const AdminShopManagement = () => {
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
   const [activeTab, setActiveTab] = useState('shops'); // 'shops' or 'reports'
+  const [searchReportProductName, setSearchReportProductName] = useState('');
 
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
@@ -409,6 +410,13 @@ const AdminShopManagement = () => {
       searchInputRef.current.focus();
     }
   };
+
+  // Filtered reports by product name
+  const filteredReports = reports.filter(report => {
+    if (!searchReportProductName) return true;
+    const productName = report.product_id?.product_name || '';
+    return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
+  });
 
   // Check admin access
   if (!hasRole('admin')) {
@@ -873,7 +881,21 @@ const AdminShopManagement = () => {
               </h3>
             </div>
 
-            {reports.length === 0 ? (
+            {/* Search by product name */}
+            <div className="um-filters-section" style={{ marginBottom: '10px' }}>
+              <div className="um-search-box">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
+                  value={searchReportProductName}
+                  onChange={e => setSearchReportProductName(e.target.value)}
+                  className="um-search-input"
+                />
+                <i className="fas fa-search um-search-icon"></i>
+              </div>
+            </div>
+
+            {filteredReports.length === 0 ? (
               <div className="um-empty-state">
                 <i className="fas fa-flag um-empty-icon"></i>
                 <h3>Không có báo cáo nào</h3>
@@ -894,7 +916,7 @@ const AdminShopManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {reports.map(report => (
+                    {filteredReports.map(report => (
                       <tr key={report._id} className="um-table-row">
                         <td>
                           <div className="um-user-info">
