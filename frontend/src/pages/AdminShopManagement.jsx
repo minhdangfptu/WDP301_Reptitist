@@ -1074,6 +1074,7 @@ const AdminShopManagement = () => {
                 <table className="um-users-table">
                   <thead>
                     <tr>
+                      <th>Ảnh</th>
                       <th>Tên sản phẩm</th>
                       <th>Shop</th>
                       <th>Ngày tạo</th>
@@ -1087,12 +1088,21 @@ const AdminShopManagement = () => {
                       const relatedReports = approvedReports.filter(r => r.product_id?._id === product._id);
                       let reason = 'Không có ghi chú';
                       if (relatedReports.length > 0) {
-                        // Sắp xếp lấy báo cáo gần nhất
                         relatedReports.sort((a, b) => new Date(b.resolved_at || b.createdAt) - new Date(a.resolved_at || a.createdAt));
                         reason = relatedReports[0].admin_note || 'Không có ghi chú';
                       }
                       return (
                         <tr key={product._id} className="um-table-row">
+                          <td>
+                            <div className="um-user-avatar-container">
+                              <img
+                                src={product.product_imageurl?.[0] || '/images/default-product.png'}
+                                alt={product.product_name}
+                                className="um-user-avatar"
+                                onError={e => { e.target.src = '/images/default-product.png'; }}
+                              />
+                            </div>
+                          </td>
                           <td>{product.product_name}</td>
                           <td>{product.user_id?.username || 'N/A'}</td>
                           <td>{formatDate(product.createdAt)}</td>
