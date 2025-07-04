@@ -28,6 +28,8 @@ const AdminShopManagement = () => {
   const [sortDirection, setSortDirection] = useState('desc');
   const [activeTab, setActiveTab] = useState('shops'); // 'shops' or 'reports'
   const [searchReportProductName, setSearchReportProductName] = useState('');
+  const [hiddenProducts, setHiddenProducts] = useState([]);
+  const [approvedReports, setApprovedReports] = useState([]);
 
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
@@ -179,6 +181,35 @@ const AdminShopManagement = () => {
       setShopProducts([]);
     }
   };
+
+  // Fetch hidden products và approved reports
+  const fetchHiddenProductsAndReports = async () => {
+    try {
+      const token = localStorage.getItem('refresh_token');
+      if (!token) return;
+      // Lấy sản phẩm bị ẩn
+      const productRes = await axios.get(`${baseUrl}/reptitist/admin/products?status=not_available`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      // Lấy báo cáo đã được duyệt
+      const reportRes = await axios.get(`${baseUrl}/reptitist/admin/reports?status=approved`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setHiddenProducts(productRes.data?.products || []);
+      setApprovedReports(reportRes.data?.reports || []);
+    } catch (error) {
+      setHiddenProducts([]);
+      setApprovedReports([]);
+    }
+  };
+
+  // Auto fetch hidden products when switching tab
+  useEffect(() => {
+    if (activeTab === 'hiddenProducts') {
+      fetchHiddenProductsAndReports();
+    }
+    // eslint-disable-next-line
+  }, [activeTab]);
 
   // Handle delete product by admin
   const handleDeleteProduct = async (productId) => {
@@ -566,6 +597,14 @@ const AdminShopManagement = () => {
               <i className="fas fa-flag"></i>
               Báo cáo chờ xử lý ({reports.filter(r => r.status === 'pending').length})
             </button>
+            <button
+              className={`um-btn ${activeTab === 'hiddenProducts' ? 'um-btn-primary' : 'um-btn-secondary'}`}
+              onClick={() => setActiveTab('hiddenProducts')}
+              style={{ minWidth: '200px', borderRadius: '25px', fontWeight: '600' }}
+            >
+              <i className="fas fa-eye-slash"></i>
+              Sản phẩm đã bị ẩn ({hiddenProducts.length})
+            </button>
           </div>
         </div>
 
@@ -871,7 +910,7 @@ const AdminShopManagement = () => {
               )}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'reports' ? (
           // Reports Management Tab
           <div className="um-table-section">
             <div className="um-table-header">
@@ -1010,6 +1049,58 @@ const AdminShopManagement = () => {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          // Hidden Products Tab
+          <div className="um-table-section">
+            <div className="um-table-header">
+              <h3>
+                <i className="fas fa-eye-slash"></i>
+                Sản phẩm đã bị ẩn ({hiddenProducts.length})
+              </h3>
+            </div>
+            {hiddenProducts.length === 0 ? (
+              <div className="um-empty-state">
+                <i className="fas fa-eye-slash um-empty-icon"></i>
+                <h3>Không có sản phẩm bị ẩn</h3>
+                <p>Chưa có sản phẩm nào bị ẩn khỏi hệ thống</p>
+              </div>
+            ) : (
+              <div className="um-table-container">
+                <table className="um-users-table">
+                  <thead>
+                    <tr>
+                      <th>Tên sản phẩm</th>
+                      <th>Shop</th>
+                      <th>Ngày tạo</th>
+                      <th>Lý do ẩn</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {hiddenProducts.map(product => {
+                      // Tìm báo cáo được duyệt gần nhất cho sản phẩm này
+                      const relatedReports = approvedReports.filter(r => r.product_id?._id === product._id);
+                      let reason = 'Không có ghi chú';
+                      if (relatedReports.length > 0) {
+                        // Sắp xếp lấy báo cáo gần nhất
+                        relatedReports.sort((a, b) => new Date(b.resolved_at || b.createdAt) - new Date(a.resolved_at || a.createdAt));
+                        reason = relatedReports[0].admin_note || 'Không có ghi chú';
+                      }
+                      return (
+                        <tr key={product._id} className="um-table-row">
+                          <td>{product.product_name}</td>
+                          <td>{product.user_id?.username || 'N/A'}</td>
+                          <td>{formatDate(product.createdAt)}</td>
+                          <td>{reason}</td>
+                          <td><span className="um-role-badge um-badge-default">Đã bị ẩn</span></td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

@@ -770,6 +770,21 @@ const updateUserAccountType = async (req, res) => {
     }
 };
 
+// Lấy sản phẩm bị ẩn (not_available)
+const getHiddenProducts = async (req, res) => {
+    try {
+        const { status } = req.query;
+        let filter = {};
+        if (status) {
+            filter.product_status = status;
+        }
+        const products = await Product.find(filter).populate('user_id', 'username');
+        res.json({ products });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
 // Export controller functions
 module.exports = {
     checkAdminRole,
@@ -786,5 +801,6 @@ module.exports = {
     deleteUser,
     toggleUserStatus,
     createUser,
-    updateUserAccountType
+    updateUserAccountType,
+    getHiddenProducts
 };
