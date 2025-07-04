@@ -278,12 +278,8 @@ const handleProductReport = async (req, res) => {
                 product_status: 'available'
             });
 
-            await ProductReport.findByIdAndUpdate(reportId, {
-                status: 'rejected',
-                admin_note: adminNote,
-                resolved_at: new Date(),
-                resolved_by: req.user._id
-            });
+            // Xóa báo cáo sau khi từ chối
+            await ProductReport.findByIdAndDelete(reportId);
 
             res.status(200).json({
                 message: 'Đã từ chối báo cáo và khôi phục sản phẩm',
