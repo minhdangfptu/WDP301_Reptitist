@@ -449,6 +449,9 @@ const AdminShopManagement = () => {
     return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
   });
 
+  // Lọc báo cáo chờ xử lý
+  const pendingReports = reports.filter(report => report.status === 'pending');
+
   // Thêm hàm chuyển trạng thái sản phẩm
   const handleToggleProductStatus = async (productId, currentStatus) => {
     try {
@@ -611,7 +614,7 @@ const AdminShopManagement = () => {
               }}
             >
               <i className="fas fa-flag"></i>
-              Báo cáo chờ xử lý ({reports.filter(r => r.status === 'pending').length})
+              Báo cáo chờ xử lý ({pendingReports.length})
             </button>
             <button
               className={`um-btn ${activeTab === 'hiddenProducts' ? 'um-btn-primary' : 'um-btn-secondary'}`}
@@ -932,7 +935,7 @@ const AdminShopManagement = () => {
             <div className="um-table-header">
               <h3>
                 <i className="fas fa-flag"></i>
-                Báo cáo sản phẩm ({reports.length})
+                Báo cáo sản phẩm ({pendingReports.length})
               </h3>
             </div>
 
@@ -950,7 +953,7 @@ const AdminShopManagement = () => {
               </div>
             </div>
 
-            {filteredReports.length === 0 ? (
+            {pendingReports.length === 0 ? (
               <div className="um-empty-state">
                 <i className="fas fa-flag um-empty-icon"></i>
                 <h3>Không có báo cáo nào</h3>
@@ -971,100 +974,106 @@ const AdminShopManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredReports.map(report => (
-                      <tr key={report._id} className="um-table-row">
-                        <td>
-                          <div className="um-user-info">
-                            <div className="um-user-avatar-container">
-                              <img
-                                src={report.product_id?.product_imageurl?.[0] || '/images/default-product.png'}
-                                alt={report.product_id?.product_name}
-                                className="um-user-avatar"
-                                onError={(e) => {
-                                  e.target.src = '/images/default-product.png';
-                                }}
-                              />
+                    {pendingReports
+                      .filter(report => {
+                        if (!searchReportProductName) return true;
+                        const productName = report.product_id?.product_name || '';
+                        return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
+                      })
+                      .map(report => (
+                        <tr key={report._id} className="um-table-row">
+                          <td>
+                            <div className="um-user-info">
+                              <div className="um-user-avatar-container">
+                                <img
+                                  src={report.product_id?.product_imageurl?.[0] || '/images/default-product.png'}
+                                  alt={report.product_id?.product_name}
+                                  className="um-user-avatar"
+                                  onError={(e) => {
+                                    e.target.src = '/images/default-product.png';
+                                  }}
+                                />
+                              </div>
+                              <div className="um-user-details">
+                                <span className="um-username">
+                                  {report.product_id?.product_name || 'Sản phẩm đã xóa'}
+                                </span>
+                                
+                              </div>
                             </div>
-                            <div className="um-user-details">
-                              <span className="um-username">
-                                {report.product_id?.product_name || 'Sản phẩm đã xóa'}
+                          </td>
+
+                          <td>
+                            <div className="um-contact-info">
+                              <div className="um-email">
+                                <i className="fas fa-user"></i>
+                                {report.reporter_id?.username || 'N/A'}
+                              </div>
+                              <div className="um-phone">
+                                <i className="fas fa-envelope"></i>
+                                {report.reporter_id?.email || 'N/A'}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="um-contact-info">
+                              <div className="um-email">
+                                <i className="fas fa-store"></i>
+                                {report.shop_id?.username || 'N/A'}
+                              </div>
+                              <div className="um-phone">
+                                <i className="fas fa-envelope"></i>
+                                {report.shop_id?.email || 'N/A'}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="um-balance-info">
+                              <span className="um-balance">
+                                {report.reason.length > 50
+                                  ? `${report.reason.substring(0, 50)}...`
+                                  : report.reason
+                                }
                               </span>
-                              
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td>
-                          <div className="um-contact-info">
-                            <div className="um-email">
-                              <i className="fas fa-user"></i>
-                              {report.reporter_id?.username || 'N/A'}
+                          <td>
+                            <div className="um-date-info">
+                              <span className="um-date">
+                                {formatDate(report.createdAt)}
+                              </span>
                             </div>
-                            <div className="um-phone">
-                              <i className="fas fa-envelope"></i>
-                              {report.reporter_id?.email || 'N/A'}
-                            </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td>
-                          <div className="um-contact-info">
-                            <div className="um-email">
-                              <i className="fas fa-store"></i>
-                              {report.shop_id?.username || 'N/A'}
-                            </div>
-                            <div className="um-phone">
-                              <i className="fas fa-envelope"></i>
-                              {report.shop_id?.email || 'N/A'}
-                            </div>
-                          </div>
-                        </td>
-
-                        <td>
-                          <div className="um-balance-info">
-                            <span className="um-balance">
-                              {report.reason.length > 50
-                                ? `${report.reason.substring(0, 50)}...`
-                                : report.reason
-                              }
+                          <td>
+                            <span className={`um-role-badge ${getReportStatusBadgeColor(report.status)}`}>
+                              {report.status === 'pending' ? 'Chờ xử lý' :
+                                report.status === 'approved' ? 'Đã chấp nhận' :
+                                  report.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
                             </span>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td>
-                          <div className="um-date-info">
-                            <span className="um-date">
-                              {formatDate(report.createdAt)}
-                            </span>
-                          </div>
-                        </td>
+                          <td>
+                            <div className="um-action-buttons">
+                              <button
+                                onClick={() => {
+                                  setSelectedReport(report);
+                                  setAdminNote('');
+                                  setShowReportModal(true);
+                                }}
+                                className="um-btn-action um-btn-view"
+                                title="Xem chi tiết"
+                              >
+                                <i className="fas fa-eye"></i>
+                              </button>
 
-                        <td>
-                          <span className={`um-role-badge ${getReportStatusBadgeColor(report.status)}`}>
-                            {report.status === 'pending' ? 'Chờ xử lý' :
-                              report.status === 'approved' ? 'Đã chấp nhận' :
-                                report.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
-                          </span>
-                        </td>
-
-                        <td>
-                          <div className="um-action-buttons">
-                            <button
-                              onClick={() => {
-                                setSelectedReport(report);
-                                setAdminNote('');
-                                setShowReportModal(true);
-                              }}
-                              className="um-btn-action um-btn-view"
-                              title="Xem chi tiết"
-                            >
-                              <i className="fas fa-eye"></i>
-                            </button>
-
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
