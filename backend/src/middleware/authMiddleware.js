@@ -26,7 +26,7 @@ const authMiddleware = async (req, res, next) => {
         // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         
-        // Tìm user và populate role
+        // Tìm user và populate role - QUAN TRỌNG!
         const user = await User.findById(decoded.id)
             .select('-password_hashed -refresh_tokens -__v')
             .populate('role_id', 'role_name role_description');
@@ -44,6 +44,17 @@ const authMiddleware = async (req, res, next) => {
                 success: false 
             });
         }
+
+        // Debug logging - Important for troubleshooting
+        console.log('Auth Middleware - User authenticated:', {
+            userId: user._id,
+            username: user.username,
+            email: user.email,
+            role_id: user.role_id,
+            role_name: user.role_id?.role_name,
+            account_type: user.account_type,
+            isActive: user.isActive
+        });
 
         // Thêm user info vào request
         req.user = user;
@@ -70,24 +81,23 @@ const authMiddleware = async (req, res, next) => {
         });
     }
 };
+
 const authUserIdOnly = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Access denied! No token provided.' });
-  }
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ message: 'Access denied! No token provided.' });
+    }
 
-  const token = authHeader.split(' ')[1];
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id || decoded.userId;
-    req.userRole = decoded.roleId || decoded.role_id;
-    console.log('Decoded userId:', req.userRole);
-    next();
-  } catch (err) {
-    return res.status(403).json({ message: 'Invalid or expired token' });
-  }
+    const token = authHeader.split(' ')[1];
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.userId = decoded.id || decoded.userId;
+        req.userRole = decoded.roleId || decoded.role_id;
+        console.log('Decoded userId:', req.userId);
+        next();
+    } catch (err) {
+        return res.status(403).json({ message: 'Invalid or expired token' });
+    }
 };
-
-
 
 module.exports = { authMiddleware, authUserIdOnly };

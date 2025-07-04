@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { createPaymentURL,
+const { 
+    createPaymentURL,
     handlePaymentReturn,
     getTransactionHistory,
     refundTransaction,
@@ -9,7 +10,8 @@ const { createPaymentURL,
     getAllTransactions,
     getTransactionById,
     updateTransaction,
-    deleteTransaction } = require('../controllers/transactionController');
+    deleteTransaction 
+} = require('../controllers/transactionController');
 
 const {
     authMiddleware,
@@ -19,15 +21,19 @@ const validateObjectId = require('../middleware/validateObjectId');
 const { ensureOwnUserData } = require('../middleware/ensureOwner');
 const roleMiddleware = require('../middleware/roleMiddleware');
 
+// Payment routes
 router.get(
     '/create',
     authMiddleware,
     createPaymentURL
 );
+
 router.get(
     '/return',
     handlePaymentReturn
 );
+
+// User transaction routes
 router.get(
     '/history/:userId',
     authUserIdOnly,
@@ -35,6 +41,7 @@ router.get(
     ensureOwnUserData,
     getTransactionHistory
 );
+
 router.get(
     '/history/filter/:userId',
     authUserIdOnly,
@@ -42,12 +49,15 @@ router.get(
     ensureOwnUserData,
     filterTransactionHistory
 );
+
+// Admin routes - FIXED
 router.get(
     '/all',
     authMiddleware,
     roleMiddleware('admin'),
     getAllTransactions
 );
+
 router.get(
     '/:id',
     authMiddleware,
@@ -55,6 +65,7 @@ router.get(
     validateObjectId,
     getTransactionById
 );
+
 router.put(
     '/:id',
     authMiddleware,
@@ -62,6 +73,7 @@ router.put(
     validateObjectId,
     updateTransaction
 );
+
 router.delete(
     '/:id',
     authMiddleware,
@@ -69,6 +81,8 @@ router.delete(
     validateObjectId,
     deleteTransaction
 );
+
+// Refund route
 router.post(
     '/refund/:transaction_id',
     authMiddleware,

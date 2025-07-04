@@ -8,73 +8,123 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tool
 import '../css/AdminTransactionManagement.css';
 
 const AdminTransactionManagement = () => {
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, loading: authLoading } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   // Filter states
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [userFilter, setUserFilter] = useState('');
-  // Xóa/sửa
+  
+  // Modal states
   const [deleteId, setDeleteId] = useState(null);
   const [editTx, setEditTx] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    if (user && hasRole('admin')) {
+
+    if (user && !authLoading) {
       fetchTransactions();
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('refresh_token');
+      setError('');
+      
+      // Thử cả access_token và refresh_token
+      let token = localStorage.getItem('access_token');
+      if (!token) {
+        token = localStorage.getItem('refresh_token');
+      }
+      
+      if (!token) {
+        setError('Không tìm thấy token xác thực. Vui lòng đăng nhập lại.');
+        return;
+      }
+
+
+
       const response = await axios.get(`${baseUrl}/reptitist/transactions/all`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
+
       setTransactions(response.data.transactions || []);
-      setError('');
+      
     } catch (err) {
       console.error('Error fetching transactions:', err);
-      setError('Không thể tải dữ liệu giao dịch.');
+      console.error('Error response:', err.response);
+      
+      if (err.response?.status === 401) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        // Có thể redirect về login
+        // window.location.href = '/login';
+      } else if (err.response?.status === 403) {
+        setError('Bạn không có quyền truy cập API này. Kiểm tra role Admin.');
+      } else if (err.response?.status === 404) {
+        setError('API endpoint không tồn tại.');
+      } else {
+        setError(err.response?.data?.error || err.message || 'Không thể tải dữ liệu giao dịch.');
+      }
       setTransactions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Xử lý filter thực tế
+  // Filter transactions
   const filterTransactions = () => {
     let filtered = [...transactions];
-    if (statusFilter !== 'all') filtered = filtered.filter(tx => tx.status === statusFilter);
+    
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(tx => tx.status === statusFilter);
+    }
+    
+    // Filter by user
     if (userFilter.trim()) {
       filtered = filtered.filter(tx => {
-        const username = tx.user_id?.username || tx.user_id?.email || 'N/A';
-        return username.toLowerCase().includes(userFilter.trim().toLowerCase());
+        const userData = tx.user_id;
+        if (!userData) return false;
+        
+        const searchTerm = userFilter.trim().toLowerCase();
+        const username = userData.username?.toLowerCase() || '';
+        const email = userData.email?.toLowerCase() || '';
+        const userId = userData._id?.toLowerCase() || '';
+        
+        return username.includes(searchTerm) || 
+               email.includes(searchTerm) || 
+               userId.includes(searchTerm);
       });
     }
+    
+    // Filter by date
     if (dateFilter !== 'all') {
       const now = new Date();
       let startDate;
+      
       switch (dateFilter) {
         case 'today':
           startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           break;
         case 'week':
-          startDate = new Date(now.setDate(now.getDate() - 7));
+          startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
           break;
         case 'month':
-          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
           break;
         case 'year':
-          startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+          startDate = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
           break;
         default:
           startDate = null;
       }
+      
       if (startDate) {
         filtered = filtered.filter(tx => {
           const txDate = new Date(tx.createdAt || tx.transaction_date);
@@ -82,80 +132,139 @@ const AdminTransactionManagement = () => {
         });
       }
     }
+    
     return filtered;
   };
+
   const filteredTransactions = filterTransactions();
 
-  // Biểu đồ
-  const statusCounts = filteredTransactions.reduce((acc, tx) => {
-    acc[tx.status] = (acc[tx.status] || 0) + 1;
-    return acc;
-  }, {});
-  const barChartData = Object.entries(statusCounts).map(([status, count]) => ({ 
-    name: getStatusText(status), 
-    value: count 
-  }));
-  
-  const typeCounts = filteredTransactions.reduce((acc, tx) => {
-    acc[tx.transaction_type] = (acc[tx.transaction_type] || 0) + 1;
-    return acc;
-  }, {});
-  const pieChartData = Object.entries(typeCounts).map(([type, count]) => ({ 
-    name: getTypeText(type), 
-    value: count 
-  }));
-  
-  const dateSums = {};
-  filteredTransactions.forEach(tx => {
-    const date = new Date(tx.createdAt || tx.transaction_date).toLocaleDateString('vi-VN');
-    dateSums[date] = (dateSums[date] || 0) + tx.amount;
-  });
-  const lineChartData = Object.entries(dateSums).map(([date, sum]) => ({ name: date, value: sum }));
+  // Helper functions - Move these up before prepareChartData
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'completed': return 'Hoàn thành';
+      case 'pending': return 'Đang chờ';
+      case 'failed': return 'Thất bại';
+      case 'refunded': return 'Đã hoàn tiền';
+      default: return status || 'N/A';
+    }
+  };
 
-  // Xử lý xóa
+  const getTypeText = (type) => {
+    switch (type) {
+      case 'payment': return 'Thanh toán';
+      case 'refund': return 'Hoàn tiền';
+      case 'premium_upgrade': return 'Nâng cấp Premium';
+      case 'subscription': return 'Đăng ký dịch vụ';
+      case 'topup': return 'Nạp tiền';
+      default: return type || 'N/A';
+    }
+  };
+
+  // Chart data preparation
+  const prepareChartData = () => {
+    // Status distribution
+    const statusCounts = filteredTransactions.reduce((acc, tx) => {
+      acc[tx.status] = (acc[tx.status] || 0) + 1;
+      return acc;
+    }, {});
+    
+    const barChartData = Object.entries(statusCounts).map(([status, count]) => ({ 
+      name: getStatusText(status), 
+      value: count,
+      status: status
+    }));
+    
+    // Transaction type distribution
+    const typeCounts = filteredTransactions.reduce((acc, tx) => {
+      acc[tx.transaction_type] = (acc[tx.transaction_type] || 0) + 1;
+      return acc;
+    }, {});
+    
+    const pieChartData = Object.entries(typeCounts).map(([type, count]) => ({ 
+      name: getTypeText(type), 
+      value: count,
+      type: type
+    }));
+    
+    // Daily transaction amounts
+    const dailyData = {};
+    filteredTransactions.forEach(tx => {
+      const date = new Date(tx.createdAt || tx.transaction_date).toLocaleDateString('vi-VN');
+      if (!dailyData[date]) {
+        dailyData[date] = { total: 0, count: 0 };
+      }
+      dailyData[date].total += Math.abs(tx.amount || 0);
+      dailyData[date].count += 1;
+    });
+    
+    const lineChartData = Object.entries(dailyData)
+      .map(([date, data]) => ({ 
+        name: date, 
+        value: data.total,
+        count: data.count
+      }))
+      .sort((a, b) => new Date(a.name.split('/').reverse().join('-')) - new Date(b.name.split('/').reverse().join('-')));
+
+    return { barChartData, pieChartData, lineChartData };
+  };
+
+  const { barChartData, pieChartData, lineChartData } = prepareChartData();
+
+  // Delete transaction
   const handleDelete = async (id) => {
+    if (!id) return;
+    
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('refresh_token');
+      const token = localStorage.getItem('access_token');
       await axios.delete(`${baseUrl}/reptitist/transactions/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
       setDeleteId(null);
-      fetchTransactions();
+      await fetchTransactions();
+      
     } catch (err) {
       console.error('Error deleting transaction:', err);
-      alert(err?.response?.data?.error || 'Xóa thất bại');
+      const errorMessage = err.response?.data?.error || 'Không thể xóa giao dịch';
+      alert(errorMessage);
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Xử lý sửa
+  // Edit transaction functions
   const openEdit = (tx) => {
     setEditTx(tx);
     setEditForm({
-      status: tx.status,
+      status: tx.status || 'pending',
       description: tx.description || '',
     });
   };
   
   const handleEditChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
   };
   
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    if (!editTx) return;
+    
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('refresh_token');
+      const token = localStorage.getItem('access_token');
       await axios.put(`${baseUrl}/reptitist/transactions/${editTx._id}`, editForm, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+      
       setEditTx(null);
-      fetchTransactions();
+      await fetchTransactions();
+      
     } catch (err) {
       console.error('Error updating transaction:', err);
-      alert(err?.response?.data?.error || 'Cập nhật thất bại');
+      const errorMessage = err.response?.data?.error || 'Không thể cập nhật giao dịch';
+      alert(errorMessage);
     } finally {
       setActionLoading(false);
     }
@@ -163,6 +272,7 @@ const AdminTransactionManagement = () => {
 
   // Helper functions
   const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return 'N/A';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -183,29 +293,71 @@ const AdminTransactionManagement = () => {
     switch (type) {
       case 'payment': return 'type-payment';
       case 'refund': return 'type-refund';
+      case 'premium_upgrade': return 'type-subscription';
+      case 'subscription': return 'type-subscription';
+      case 'topup': return 'type-topup';
       default: return 'type-payment';
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'completed': return 'Hoàn thành';
-      case 'pending': return 'Đang chờ';
-      case 'failed': return 'Thất bại';
-      case 'refunded': return 'Đã hoàn tiền';
-      default: return status;
+  const formatDateTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      return {
+        date: date.toLocaleDateString('vi-VN'),
+        time: date.toLocaleTimeString('vi-VN')
+      };
+    } catch (error) {
+      return { date: 'N/A', time: 'N/A' };
     }
   };
 
-  const getTypeText = (type) => {
-    switch (type) {
-      case 'payment': return 'Thanh toán';
-      case 'refund': return 'Hoàn tiền';
-      default: return type;
-    }
+  const getUserDisplayName = (userData) => {
+    if (!userData) return 'N/A';
+    return userData.username || userData.email || `User-${userData._id?.slice(-6)}` || 'Unknown';
   };
 
-  if (!user || !hasRole('admin')) {
+  // Access control - Cải thiện logic kiểm tra quyền với debug chi tiết
+  if (authLoading) {
+    return (
+      <>
+        <Header />
+        <div className="admin-transaction-management">
+          <div className="pm-loading-state">
+            <div className="loading-spinner"></div>
+            <p>Đang xác thực người dùng...</p>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <Header />
+        <div className="admin-transaction-management">
+          <div className="um-no-access">
+            <i className="fas fa-exclamation-triangle um-warning-icon"></i>
+            <h2>Chưa đăng nhập</h2>
+            <p>Vui lòng đăng nhập để truy cập trang này.</p>
+            <a href="/login" className="pm-btn pm-btn-primary">
+              <i className="fas fa-sign-in-alt"></i>
+              Đăng nhập
+            </a>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+
+
+  if (!hasRole('admin')) {
     return (
       <>
         <Header />
@@ -214,6 +366,9 @@ const AdminTransactionManagement = () => {
             <i className="fas fa-exclamation-triangle um-warning-icon"></i>
             <h2>Không có quyền truy cập</h2>
             <p>Bạn không có quyền xem trang này. Chỉ có Admin mới có thể truy cập.</p>
+            
+
+            
             <a href="/" className="pm-btn pm-btn-primary">
               <i className="fas fa-home"></i>
               Về trang chủ
@@ -229,6 +384,8 @@ const AdminTransactionManagement = () => {
     <>
       <Header />
       <div className="admin-transaction-management">
+
+
         {/* Page Header */}
         <div className="pm-page-header">
           <div className="pm-page-header-content">
@@ -270,9 +427,9 @@ const AdminTransactionManagement = () => {
                 >
                   <option value="all">Tất cả thời gian</option>
                   <option value="today">Hôm nay</option>
-                  <option value="week">Tuần này</option>
-                  <option value="month">Tháng này</option>
-                  <option value="year">Năm nay</option>
+                  <option value="week">7 ngày qua</option>
+                  <option value="month">30 ngày qua</option>
+                  <option value="year">365 ngày qua</option>
                 </select>
               </div>
               
@@ -281,11 +438,21 @@ const AdminTransactionManagement = () => {
                 <input 
                   className="pm-search-input" 
                   type="text" 
-                  placeholder="Tìm theo tên user..." 
+                  placeholder="Tìm theo tên user, email, hoặc ID..." 
                   value={userFilter} 
                   onChange={e => setUserFilter(e.target.value)}
                 />
               </div>
+              
+              <button 
+                className="pm-btn pm-btn-primary" 
+                onClick={fetchTransactions}
+                disabled={loading}
+                style={{ padding: '10px 16px' }}
+              >
+                <i className="fas fa-sync-alt"></i>
+                {loading ? 'Đang tải...' : 'Làm mới'}
+              </button>
             </div>
           </div>
         </div>
@@ -328,9 +495,15 @@ const AdminTransactionManagement = () => {
                   <LineChart data={lineChartData}>
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Tooltip formatter={(value) => [formatCurrency(value), 'Tổng tiền']} />
                     <Legend />
-                    <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#10b981" 
+                      strokeWidth={3} 
+                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }} 
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -381,7 +554,9 @@ const AdminTransactionManagement = () => {
         {/* Transaction table */}
         <div className="pm-table-section">
           <div>
-            <h2>Danh sách giao dịch ({filteredTransactions.length})</h2>
+            <h2>
+              Danh sách giao dịch ({filteredTransactions.length}/{transactions.length})
+            </h2>
             {loading ? (
               <div className="pm-loading-state">
                 <div className="loading-spinner"></div>
@@ -391,11 +566,15 @@ const AdminTransactionManagement = () => {
               <div style={{ color: '#ef4444', textAlign: 'center', padding: '40px' }}>
                 <i className="fas fa-exclamation-circle" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
                 <p>{error}</p>
+                <button className="pm-btn pm-btn-primary" onClick={fetchTransactions} style={{ marginTop: '16px' }}>
+                  <i className="fas fa-retry"></i>
+                  Thử lại
+                </button>
               </div>
             ) : filteredTransactions.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
                 <i className="fas fa-inbox" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
-                <p>Không có giao dịch nào</p>
+                <p>Không có giao dịch nào phù hợp với bộ lọc</p>
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
@@ -408,90 +587,103 @@ const AdminTransactionManagement = () => {
                       <th>Số tiền</th>
                       <th>Trạng thái</th>
                       <th>Ngày giao dịch</th>
+                      <th>Mô tả</th>
                       <th>Hành động</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTransactions.map(tx => (
-                      <tr key={tx._id} className="pm-table-row">
-                        <td>
-                          <span className="transaction-id">{tx.vnp_txn_ref || tx._id.slice(-8)}</span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{
-                              width: '32px',
-                              height: '32px',
-                              borderRadius: '50%',
-                              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: 'white',
-                              fontSize: '14px',
-                              fontWeight: '600'
-                            }}>
-                              {(tx.user_id?.username || tx.user_id?.email || 'U').charAt(0).toUpperCase()}
+                    {filteredTransactions.map(tx => {
+                      const dateTime = formatDateTime(tx.createdAt || tx.transaction_date);
+                      const userDisplayName = getUserDisplayName(tx.user_id);
+                      
+                      return (
+                        <tr key={tx._id} className="pm-table-row">
+                          <td>
+                            <span className="transaction-id">
+                              {tx.vnp_txn_ref || tx._id?.slice(-8) || 'N/A'}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: '14px',
+                                fontWeight: '600'
+                              }}>
+                                {userDisplayName.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: '600', color: '#1f2937' }}>
+                                  {userDisplayName}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                                  ID: {tx.user_id?._id?.slice(-8) || 'N/A'}
+                                </div>
+                              </div>
                             </div>
+                          </td>
+                          <td>
+                            <span className={getTypeBadgeClass(tx.transaction_type)}>
+                              {getTypeText(tx.transaction_type)}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`transaction-amount ${(tx.amount || 0) >= 0 ? 'positive' : 'negative'}`}>
+                              {formatCurrency(tx.amount)}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={getStatusBadgeClass(tx.status)}>
+                              {getStatusText(tx.status)}
+                            </span>
+                          </td>
+                          <td>
                             <div>
-                              <div style={{ fontWeight: '600', color: '#1f2937' }}>
-                                {tx.user_id?.username || tx.user_id?.email || 'N/A'}
+                              <div style={{ fontWeight: '500', color: '#1f2937' }}>
+                                {dateTime.date}
                               </div>
                               <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                ID: {tx.user_id?._id?.slice(-8) || 'N/A'}
+                                {dateTime.time}
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={getTypeBadgeClass(tx.transaction_type)}>
-                            {getTypeText(tx.transaction_type)}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`transaction-amount ${tx.amount > 0 ? 'positive' : 'negative'}`}>
-                            {formatCurrency(tx.amount)}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={getStatusBadgeClass(tx.status)}>
-                            {getStatusText(tx.status)}
-                          </span>
-                        </td>
-                        <td>
-                          <div>
-                            <div style={{ fontWeight: '500', color: '#1f2937' }}>
-                              {new Date(tx.createdAt || tx.transaction_date).toLocaleDateString('vi-VN')}
+                          </td>
+                          <td>
+                            <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {tx.description || 'Không có mô tả'}
                             </div>
-                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                              {new Date(tx.createdAt || tx.transaction_date).toLocaleTimeString('vi-VN')}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <button 
+                                className="pm-btn pm-btn-danger" 
+                                disabled={tx.status === 'completed' || actionLoading} 
+                                onClick={() => setDeleteId(tx._id)}
+                                style={{ fontSize: '12px', padding: '6px 12px' }}
+                                title={tx.status === 'completed' ? 'Không thể xóa giao dịch đã hoàn thành' : 'Xóa giao dịch'}
+                              >
+                                <i className="fas fa-trash"></i>
+                              </button>
+                              <button 
+                                className="pm-btn pm-btn-edit" 
+                                disabled={actionLoading} 
+                                onClick={() => openEdit(tx)}
+                                style={{ fontSize: '12px', padding: '6px 12px' }}
+                                title="Chỉnh sửa giao dịch"
+                              >
+                                <i className="fas fa-edit"></i>
+                              </button>
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '8px' }}>
-                            <button 
-                              className="pm-btn pm-btn-danger" 
-                              disabled={tx.status === 'completed' || actionLoading} 
-                              onClick={() => setDeleteId(tx._id)}
-                              style={{ fontSize: '12px', padding: '6px 12px' }}
-                              title={tx.status === 'completed' ? 'Không thể xóa giao dịch đã hoàn thành' : 'Xóa giao dịch'}
-                            >
-                              <i className="fas fa-trash"></i>
-                            </button>
-                            <button 
-                              className="pm-btn pm-btn-edit" 
-                              disabled={actionLoading} 
-                              onClick={() => openEdit(tx)}
-                              style={{ fontSize: '12px', padding: '6px 12px' }}
-                              title="Chỉnh sửa giao dịch"
-                            >
-                              <i className="fas fa-edit"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -511,6 +703,9 @@ const AdminTransactionManagement = () => {
               </div>
               <div className="pm-modal-body">
                 <p>Bạn có chắc chắn muốn xóa giao dịch này không? Hành động này không thể hoàn tác.</p>
+                <p style={{ fontSize: '14px', color: '#6b7280', marginTop: '8px' }}>
+                  <strong>Lưu ý:</strong> Chỉ có thể xóa giao dịch có trạng thái "Đang chờ" hoặc "Thất bại".
+                </p>
               </div>
               <div className="pm-modal-footer">
                 <button 
@@ -549,7 +744,7 @@ const AdminTransactionManagement = () => {
                   <label>ID Giao dịch:</label>
                   <input 
                     className="pm-form-input" 
-                    value={editTx.vnp_txn_ref || editTx._id} 
+                    value={editTx.vnp_txn_ref || editTx._id || 'N/A'} 
                     disabled 
                     style={{ background: '#f3f4f6', color: '#6b7280' }}
                   />

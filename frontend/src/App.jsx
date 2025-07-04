@@ -154,6 +154,7 @@ const AppRoutes = () => (
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
     <Route path="/ContactUs" element={<ContactUs />} />
+    <Route path="/AboutUs" element={<AboutUs />} />
     <Route path="/Login" element={<PublicRoute><Login /></PublicRoute>} />
     <Route path="/SignUp" element={<PublicRoute><SignUp /></PublicRoute>} />
     <Route path="/SignUp2" element={<PublicRoute><SignUp2 /></PublicRoute>} />

@@ -178,8 +178,7 @@ router.put('/update-role', authMiddleware, async (req, res) => {
         // Update account type if provided
         if (account_type) {
             updateData.account_type = {
-                type: account_type.type || 'customer',
-                level: account_type.level || 'normal',
+                type: account_type.type || 1, // Default to 1 (customer)
                 activated_at: account_type.activated_at || new Date(),
                 expires_at: account_type.expires_at || null
             };
