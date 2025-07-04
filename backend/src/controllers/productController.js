@@ -35,13 +35,6 @@ const createProduct = async (req, res) => {
       product_quantity
     } = req.body;
 
-    // Kiểm tra user có phải là shop không
-    if (!req.user || req.user.role_id?.role_name !== 'shop') {
-      return res.status(403).json({
-        message: 'Chỉ có Shop mới có thể tạo sản phẩm'
-      });
-    }
-
     if (!product_name || !product_price || !product_category_id) {
       return res.status(400).json({
         message: 'Thiếu thông tin bắt buộc: tên sản phẩm, giá bán hoặc danh mục'
@@ -51,12 +44,12 @@ const createProduct = async (req, res) => {
     const product = new Product({
       product_name,
       product_price,
-      user_id: req.user._id, // Tự động lấy từ token
+      user_id: req.user._id, 
       product_description,
       product_imageurl: product_imageurl || '',
       product_category_id,
       product_quantity: product_quantity || 0,
-      product_status: 'available' // Sản phẩm hiện lên ngay, không cần duyệt
+      product_status: 'available' 
     });
 
     await product.save();
