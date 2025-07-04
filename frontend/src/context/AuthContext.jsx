@@ -288,6 +288,12 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
+  // Quyền theo account_type.type
+  const canUseAI = () => user?.account_type?.type >= 2;
+  const canPersonalizeReptile = () => user?.account_type?.type >= 2;
+  const canSellProduct = () => user?.account_type?.type >= 3;
+  const isBuyerOnly = () => user?.account_type?.type === 1;
+
   const value = {
     user,
     isAuthenticated,
@@ -305,6 +311,10 @@ export const AuthProvider = ({ children }) => {
     isPremium,
     checkAuthStatus,
     loginWithGoogle,
+    canUseAI,
+    canPersonalizeReptile,
+    canSellProduct,
+    isBuyerOnly,
   };
 
   debugLog('AuthProvider rendering with user:', user ? user.username : 'null');

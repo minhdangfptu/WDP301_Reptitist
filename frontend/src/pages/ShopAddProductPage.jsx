@@ -8,7 +8,7 @@ import Footer from '../components/Footer';
 import '../css/ProductForm.css';
 import { baseUrl } from '../config';
 
-const ShopProductForm = () => {
+const ShopAddProductPage = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const { productId } = useParams();
@@ -894,4 +894,4 @@ const ShopProductForm = () => {
   );
 };
 
-export default ShopProductForm;
+export default ShopAddProductPage;

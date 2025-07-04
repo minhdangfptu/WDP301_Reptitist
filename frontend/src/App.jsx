@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 // Pages
 import LandingPage from './pages/LandingPage';
 import ContactUs from './pages/ContactUs';
+import AboutUs from './pages/AboutUs';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 import SignUp2 from './pages/SignUp2';
@@ -37,7 +38,7 @@ import CreateLibraryTopic from './pages/LibraryTopicCreate';
 import UpdateLibraryTopic from './pages/LibraryTopicUpdate';
 import CreateCategory from './pages/CreateCategory';
 import UpdateCategory from './pages/UpdateCategory';
-import ProductForm from './pages/ShopProductForm';
+import ProductForm from './pages/ShopAddProductPage';
 import ShopProductManagement from './pages/ShopProductManagement';
 import LibraryManagement from './pages/LibraryManagement';
 import AdminShopManagement from './pages/AdminShopManagement';
@@ -45,20 +46,22 @@ import PaymentProcessing from './pages/PaymentProcessing';
 import ProductManagement from './pages/ProductManagement';
 import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
-import AddProduct from './pages/AddProduct';
+
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
 
 import CartPage from './pages/CartPage';
 import { ToastContainer } from 'react-toastify';
-import {CartProvider} from './context/CartContext';
+import { CartProvider } from './context/CartContext';
 
 import PolicyPage from './pages/PolicyPage';
 import EditYourPetPage from './pages/EditYourPetPage';
 import UserManual from './pages/UserManual';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
+import AdminTransactionManagement from './pages/AdminTransactionManagement';
+import AccessDenied from './components/AccessDenied';
+import ContactUsButton from './components/SupportButton';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -84,17 +87,17 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   const { user, loading, hasRole } = useAuth();
 
   if (loading) return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '18px'
-      }}>
-        Đang tải...
-        <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
-      </div>
-    );
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      fontSize: '18px'
+    }}>
+      Đang tải...
+      <img src="/loading.gif" alt="Loading" style={{ width: '50px', height: '50px' }} />
+    </div>
+  );
   if (!user) return <Navigate to="/Login" replace state={{ from: window.location.pathname }} />;
 
   if (requiredRole && !hasRole(requiredRole)) return <Navigate to="/" replace />;
@@ -110,10 +113,10 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         height: '100vh',
         fontSize: '18px'
       }}>
@@ -131,9 +134,18 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
   return children;
 };
 
+// AccountTypeRoute: Route guard follow account_type.type
+const AccountTypeRoute = ({ canAccess, redirectTo = "/PlanUpgrade", children }) => {
+  const { loading } = useAuth();
+  if (loading) return <LoadingSpinner />;
+  if (!canAccess()) return <AccessDenied />;
+  return children;
+};
 
 const AppRoutes = () => (
+  
   <Routes>
+    
     {/* Public */}
     <Route path="/library_categories/create/:topicId" element={<CreateCategory />} />
     <Route path="/library_categories/update/:id" element={<UpdateCategory />} />
@@ -141,10 +153,10 @@ const AppRoutes = () => (
     <Route path="/user-manual" element={<UserManual />} />
     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
     <Route path="/reset-password" element={<ResetPasswordPage />} />
-    
     <Route path="/" element={<LandingPage />} />
     <Route path="/LandingPage" element={<LandingPage />} />
     <Route path="/ContactUs" element={<ContactUs />} />
+    <Route path="/AboutUs" element={<AboutUs />} />
     <Route path="/Login" element={<PublicRoute><Login /></PublicRoute>} />
     <Route path="/SignUp" element={<PublicRoute><SignUp /></PublicRoute>} />
     <Route path="/SignUp2" element={<PublicRoute><SignUp2 /></PublicRoute>} />
@@ -166,23 +178,29 @@ const AppRoutes = () => (
     <Route path="/library_categories/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateCategory /></ProtectedRoute>} />
 
     {/* Product routes */}
-    
-    <Route path="/products/create" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+
+    <Route path="/products/create" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ProductForm/>
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
     <Route path="/ShopLandingPage" element={
-        <CartProvider>
-          <ShopLandingPage />
-        </CartProvider>
-        } />
+      <CartProvider>
+        <ShopLandingPage />
+      </CartProvider>
+    } />
     <Route path="/product-detail/:productId" element={
-        <CartProvider>
-          <ProductDetail />
-        </CartProvider>
-        } />
+      <CartProvider>
+        <ProductDetail />
+      </CartProvider>
+    } />
     <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
     <Route path="/payment-processing" element={<ProtectedRoute><PaymentProcessing /></ProtectedRoute>} />
     <Route path="/products/search/:productName" element={<CartProvider><ListProductPage /></CartProvider>} />
     <Route path="/products/category/:categoryId" element={<CartProvider><ListProductPage /></CartProvider>} />
-      
+
     {/* Protected routes - require login */}
     <Route path="/Profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/Security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
@@ -190,21 +208,54 @@ const AppRoutes = () => (
     <Route path="/LibraryCategory" element={<LibraryCategory />} />
     <Route path="/LibraryContent/:id" element={<LibraryContent />} />
     <Route path="/Settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-    <Route path="/YourPet" element={<ProtectedRoute><YourPet /></ProtectedRoute>} />
+    <Route path="/YourPet" element={<ProtectedRoute>
+      <AccountTypeRoute canAccess={useAuth().canPersonalizeReptile}>
+        <YourPet />
+      </AccountTypeRoute>
+    </ProtectedRoute>} />
     <Route path="/Transaction" element={<ProtectedRoute><Transaction /></ProtectedRoute>} />
-    <Route path="/your-pet/detail/:reptileId" element={<ProtectedRoute><YourPetDetail /></ProtectedRoute>} />
+    <Route path="/your-pet/detail/:reptileId" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canPersonalizeReptile}>
+          <YourPetDetail />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
     <Route path="/your-pet/create" element={<ProtectedRoute><CreateNewPet /></ProtectedRoute>} />
-    <Route path="/your-pet/ai/:reptileId" element={<ProtectedRoute><AIChatPage /></ProtectedRoute>} />
+    <Route path="/your-pet/ai/:reptileId" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canUseAI}>
+          <AIChatPage />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
     <Route path="/create-health-tracking/:reptileId" element={<ProtectedRoute><CreateTrackingHealthPage /></ProtectedRoute>} />
     <Route path="/create-treatment/:reptileId" element={<ProtectedRoute><CreateTreatmentPage /></ProtectedRoute>} />
-    <Route path="/ShopProductManagement" element={<ShopProductManagement />} />
-    <Route path="/shop/products/create" element={<ProductForm />} />
+    <Route path="/ShopProductManagement" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ShopProductManagement />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
+    <Route path="/shop/products/create" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ProductForm />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
 
-    <Route path="/my-cart" element={ <ProtectedRoute><CartProvider><CartPage /></CartProvider></ProtectedRoute>} />
+    <Route path="/my-cart" element={<ProtectedRoute><CartProvider><CartPage /></CartProvider></ProtectedRoute>} />
 
-    <Route path="/your-pet/edit/:reptileId" element={<ProtectedRoute><EditYourPetPage /></ProtectedRoute>} />
+    <Route path="/your-pet/edit/:reptileId" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canPersonalizeReptile}>
+          <EditYourPetPage /> 
+        </AccountTypeRoute>
+      </ProtectedRoute>} />
 
-      
+
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
     <Route path="/ProductManagement" element={<ProtectedRoute requiredRole="admin"><ProductManagement /></ProtectedRoute>} />
@@ -212,10 +263,11 @@ const AppRoutes = () => (
     <Route path="/LibraryManagement" element={<ProtectedRoute requiredRole="admin"><LibraryManagement /></ProtectedRoute>} />
     <Route path="/admin/products/create" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
+    <Route path="/AdminTransactionManagement" element={<ProtectedRoute requiredRole="admin"><AdminTransactionManagement /></ProtectedRoute>} />
       
     {/* Auth callback route */}
     <Route path="/auth/callback" element={<AuthCallback />} />
-      
+
     {/* Route catch-all cho các đường dẫn không tồn tại */}
     <Route path="*" element={<UnderDevPage />} />
   </Routes>
@@ -228,14 +280,15 @@ const App = () => (
         <Router>
           <div className="app">
             <AppRoutes />
-              <ToastContainer 
-                position="top-right" 
-                autoClose={3000} 
-                hideProgressBar={false} 
-                newestOnTop={false} 
-                closeOnClick 
-                pauseOnHover 
-              />
+            <ContactUsButton />
+            <ToastContainer
+              position="top-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              pauseOnHover
+            />
           </div>
         </Router>
       </AuthProvider>

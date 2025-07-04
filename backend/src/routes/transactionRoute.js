@@ -1,15 +1,46 @@
 const express = require('express');
-const { createTransaction, getTransactions } = require('../controllers/transactionController');
-const { authMiddleware } = require('../middleware/authMiddleware');
-
 const router = express.Router();
 
-console.log('Transaction route file loaded');
+const { createPaymentURL,
+    handlePaymentReturn,
+    getTransactionHistory,
+    refundTransaction,
+    filterTransactionHistory } = require('../controllers/transactionController');
 
-// Protected route for creating a transaction
-router.post('/', authMiddleware, (req, res, next) => { console.log('POST /transactions hit'); next(); }, createTransaction);
+const {
+    authMiddleware,
+    authUserIdOnly
+} = require('../middleware/authMiddleware');
+const validateObjectId = require('../middleware/validateObjectId');
+const { ensureOwnUserData } = require('../middleware/ensureOwner');
+router.get(
+    '/create',
+    authMiddleware,
+    createPaymentURL
+);
+router.get(
+    '/return',
+    handlePaymentReturn
+);
+router.get(
+    '/history/:userId',
+    authUserIdOnly,
+    validateObjectId,
+    ensureOwnUserData,
+    getTransactionHistory
+);
+router.get(
+    '/history/filter/:userId',
+    authUserIdOnly,
+    validateObjectId,
+    ensureOwnUserData,
+    filterTransactionHistory
+);
+router.post(
+    '/refund/:transaction_id',
+    authMiddleware,
+    validateObjectId,
+    refundTransaction
+);
 
-// Protected route for getting user transactions
-router.get('/', authMiddleware, (req, res, next) => { console.log('GET /transactions hit'); next(); }, getTransactions);
-
-module.exports = router; 
+module.exports = router;
