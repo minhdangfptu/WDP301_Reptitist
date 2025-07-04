@@ -38,6 +38,7 @@ const AdminTransactionManagement = () => {
       setTransactions(response.data.transactions || []);
       setError('');
     } catch (err) {
+      console.error('Error fetching transactions:', err);
       setError('Không thể tải dữ liệu giao dịch.');
       setTransactions([]);
     } finally {
@@ -49,7 +50,12 @@ const AdminTransactionManagement = () => {
   const filterTransactions = () => {
     let filtered = [...transactions];
     if (statusFilter !== 'all') filtered = filtered.filter(tx => tx.status === statusFilter);
-    if (userFilter.trim()) filtered = filtered.filter(tx => (tx.user?.username || tx.user_id)?.toLowerCase().includes(userFilter.trim().toLowerCase()));
+    if (userFilter.trim()) {
+      filtered = filtered.filter(tx => {
+        const username = tx.user_id?.username || tx.user_id?.email || 'N/A';
+        return username.toLowerCase().includes(userFilter.trim().toLowerCase());
+      });
+    }
     if (dateFilter !== 'all') {
       const now = new Date();
       let startDate;
@@ -69,7 +75,12 @@ const AdminTransactionManagement = () => {
         default:
           startDate = null;
       }
-      if (startDate) filtered = filtered.filter(tx => new Date(tx.transaction_date) >= startDate);
+      if (startDate) {
+        filtered = filtered.filter(tx => {
+          const txDate = new Date(tx.createdAt || tx.transaction_date);
+          return txDate >= startDate;
+        });
+      }
     }
     return filtered;
   };
@@ -80,17 +91,23 @@ const AdminTransactionManagement = () => {
     acc[tx.status] = (acc[tx.status] || 0) + 1;
     return acc;
   }, {});
-  const barChartData = Object.entries(statusCounts).map(([status, count]) => ({ name: status, value: count }));
+  const barChartData = Object.entries(statusCounts).map(([status, count]) => ({ 
+    name: getStatusText(status), 
+    value: count 
+  }));
   
   const typeCounts = filteredTransactions.reduce((acc, tx) => {
     acc[tx.transaction_type] = (acc[tx.transaction_type] || 0) + 1;
     return acc;
   }, {});
-  const pieChartData = Object.entries(typeCounts).map(([type, count]) => ({ name: type, value: count }));
+  const pieChartData = Object.entries(typeCounts).map(([type, count]) => ({ 
+    name: getTypeText(type), 
+    value: count 
+  }));
   
   const dateSums = {};
   filteredTransactions.forEach(tx => {
-    const date = new Date(tx.transaction_date).toLocaleDateString('vi-VN');
+    const date = new Date(tx.createdAt || tx.transaction_date).toLocaleDateString('vi-VN');
     dateSums[date] = (dateSums[date] || 0) + tx.amount;
   });
   const lineChartData = Object.entries(dateSums).map(([date, sum]) => ({ name: date, value: sum }));
@@ -106,7 +123,8 @@ const AdminTransactionManagement = () => {
       setDeleteId(null);
       fetchTransactions();
     } catch (err) {
-      alert(err?.response?.data?.message || 'Xóa thất bại');
+      console.error('Error deleting transaction:', err);
+      alert(err?.response?.data?.error || 'Xóa thất bại');
     } finally {
       setActionLoading(false);
     }
@@ -116,8 +134,6 @@ const AdminTransactionManagement = () => {
   const openEdit = (tx) => {
     setEditTx(tx);
     setEditForm({
-      amount: tx.amount,
-      transaction_type: tx.transaction_type,
       status: tx.status,
       description: tx.description || '',
     });
@@ -138,7 +154,8 @@ const AdminTransactionManagement = () => {
       setEditTx(null);
       fetchTransactions();
     } catch (err) {
-      alert(err?.response?.data?.message || 'Cập nhật thất bại');
+      console.error('Error updating transaction:', err);
+      alert(err?.response?.data?.error || 'Cập nhật thất bại');
     } finally {
       setActionLoading(false);
     }
@@ -157,16 +174,16 @@ const AdminTransactionManagement = () => {
       case 'completed': return 'status-completed';
       case 'pending': return 'status-pending';
       case 'failed': return 'status-failed';
+      case 'refunded': return 'status-refunded';
       default: return 'status-pending';
     }
   };
 
   const getTypeBadgeClass = (type) => {
     switch (type) {
-      case 'subscription': return 'type-subscription';
-      case 'topup': return 'type-topup';
+      case 'payment': return 'type-payment';
       case 'refund': return 'type-refund';
-      default: return 'type-subscription';
+      default: return 'type-payment';
     }
   };
 
@@ -175,14 +192,14 @@ const AdminTransactionManagement = () => {
       case 'completed': return 'Hoàn thành';
       case 'pending': return 'Đang chờ';
       case 'failed': return 'Thất bại';
+      case 'refunded': return 'Đã hoàn tiền';
       default: return status;
     }
   };
 
   const getTypeText = (type) => {
     switch (type) {
-      case 'subscription': return 'Đăng ký';
-      case 'topup': return 'Nạp tiền';
+      case 'payment': return 'Thanh toán';
       case 'refund': return 'Hoàn tiền';
       default: return type;
     }
@@ -218,7 +235,7 @@ const AdminTransactionManagement = () => {
             <div className="pm-page-header-text">
               <h1>
                 <i className="fas fa-chart-line"></i>
-                Quản lý giao dịch các gói dịch vụ
+                Quản lý giao dịch
               </h1>
               <p>Thống kê, chỉnh sửa, xóa và lọc các giao dịch của hệ thống</p>
             </div>
@@ -240,6 +257,7 @@ const AdminTransactionManagement = () => {
                   <option value="completed">Hoàn thành</option>
                   <option value="pending">Đang chờ</option>
                   <option value="failed">Thất bại</option>
+                  <option value="refunded">Đã hoàn tiền</option>
                 </select>
               </div>
               
@@ -397,7 +415,7 @@ const AdminTransactionManagement = () => {
                     {filteredTransactions.map(tx => (
                       <tr key={tx._id} className="pm-table-row">
                         <td>
-                          <span className="transaction-id">{tx._id}</span>
+                          <span className="transaction-id">{tx.vnp_txn_ref || tx._id.slice(-8)}</span>
                         </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -413,11 +431,11 @@ const AdminTransactionManagement = () => {
                               fontSize: '14px',
                               fontWeight: '600'
                             }}>
-                              {(tx.user_id?.username || 'U').charAt(0).toUpperCase()}
+                              {(tx.user_id?.username || tx.user_id?.email || 'U').charAt(0).toUpperCase()}
                             </div>
                             <div>
                               <div style={{ fontWeight: '600', color: '#1f2937' }}>
-                                {tx.user_id?.username || 'N/A'}
+                                {tx.user_id?.username || tx.user_id?.email || 'N/A'}
                               </div>
                               <div style={{ fontSize: '12px', color: '#6b7280' }}>
                                 ID: {tx.user_id?._id?.slice(-8) || 'N/A'}
@@ -443,10 +461,10 @@ const AdminTransactionManagement = () => {
                         <td>
                           <div>
                             <div style={{ fontWeight: '500', color: '#1f2937' }}>
-                              {new Date(tx.transaction_date).toLocaleDateString('vi-VN')}
+                              {new Date(tx.createdAt || tx.transaction_date).toLocaleDateString('vi-VN')}
                             </div>
                             <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                              {new Date(tx.transaction_date).toLocaleTimeString('vi-VN')}
+                              {new Date(tx.createdAt || tx.transaction_date).toLocaleTimeString('vi-VN')}
                             </div>
                           </div>
                         </td>
@@ -454,9 +472,10 @@ const AdminTransactionManagement = () => {
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button 
                               className="pm-btn pm-btn-danger" 
-                              disabled={tx.status !== 'pending' || actionLoading} 
+                              disabled={tx.status === 'completed' || actionLoading} 
                               onClick={() => setDeleteId(tx._id)}
                               style={{ fontSize: '12px', padding: '6px 12px' }}
+                              title={tx.status === 'completed' ? 'Không thể xóa giao dịch đã hoàn thành' : 'Xóa giao dịch'}
                             >
                               <i className="fas fa-trash"></i>
                             </button>
@@ -465,6 +484,7 @@ const AdminTransactionManagement = () => {
                               disabled={actionLoading} 
                               onClick={() => openEdit(tx)}
                               style={{ fontSize: '12px', padding: '6px 12px' }}
+                              title="Chỉnh sửa giao dịch"
                             >
                               <i className="fas fa-edit"></i>
                             </button>
@@ -526,12 +546,20 @@ const AdminTransactionManagement = () => {
               </div>
               <div className="pm-modal-body">
                 <div className="pm-form-group">
+                  <label>ID Giao dịch:</label>
+                  <input 
+                    className="pm-form-input" 
+                    value={editTx.vnp_txn_ref || editTx._id} 
+                    disabled 
+                    style={{ background: '#f3f4f6', color: '#6b7280' }}
+                  />
+                </div>
+                
+                <div className="pm-form-group">
                   <label>Số tiền:</label>
                   <input 
                     className="pm-form-input" 
-                    name="amount" 
-                    type="number" 
-                    value={editForm.amount} 
+                    value={formatCurrency(editTx.amount)} 
                     disabled 
                     style={{ background: '#f3f4f6', color: '#6b7280' }}
                   />
@@ -542,8 +570,7 @@ const AdminTransactionManagement = () => {
                   <label>Loại giao dịch:</label>
                   <input 
                     className="pm-form-input" 
-                    name="transaction_type" 
-                    value={getTypeText(editForm.transaction_type)} 
+                    value={getTypeText(editTx.transaction_type)} 
                     disabled 
                     style={{ background: '#f3f4f6', color: '#6b7280' }}
                   />
@@ -562,19 +589,20 @@ const AdminTransactionManagement = () => {
                     <option value="pending">Đang chờ</option>
                     <option value="completed">Hoàn thành</option>
                     <option value="failed">Thất bại</option>
+                    <option value="refunded">Đã hoàn tiền</option>
                   </select>
                 </div>
                 
                 <div className="pm-form-group">
                   <label>Mô tả:</label>
-                  <input 
+                  <textarea 
                     className="pm-form-input" 
                     name="description" 
                     value={editForm.description} 
-                    disabled 
-                    style={{ background: '#f3f4f6', color: '#6b7280' }}
+                    onChange={handleEditChange}
+                    rows="3"
+                    placeholder="Nhập mô tả giao dịch..."
                   />
-                  <small style={{ color: '#6b7280', fontSize: '12px' }}>Mô tả không thể thay đổi</small>
                 </div>
               </div>
               <div className="pm-modal-footer">
