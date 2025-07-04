@@ -97,21 +97,29 @@ const getAllUsers = async (req, res) => {
 const getAllShops = async (req, res) => {
     try {
         const { page = 1, limit = 10, status } = req.query;
-        const shopRole = await Role.findOne({ role_name: 'shop' });
-        const query = shopRole ? { role_id: shopRole._id } : { _id: null }; // Return empty if no shop role found
+        
+        // Tìm shop dựa trên account_type (3,4) thay vì role_id
+        const query = {
+            'account_type.type': { $in: [3, 4] } // Shop (3) và Shop Premium (4)
+        };
+        
         if (status && status !== 'all') {
             query.isActive = status === 'active';
         }
+        
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const shops = await User.find(query)
             .select('-password_hashed -refresh_tokens')
             .sort({ created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
+            
         if (!shops || shops.length === 0) {
             return res.status(404).json({ message: 'Không có shop nào' });
         }
+        
         const total = await User.countDocuments(query);
+        
         // Lấy thống kê sản phẩm cho mỗi shop
         const shopsWithStats = await Promise.all(shops.map(async (shop) => {
             const productCount = await Product.countDocuments({ user_id: shop._id });
@@ -125,6 +133,7 @@ const getAllShops = async (req, res) => {
                 reportedCount
             };
         }));
+        
         res.status(200).json({
             shops: shopsWithStats,
             pagination: {
@@ -149,9 +158,9 @@ const getShopProducts = async (req, res) => {
         const { shopId } = req.params;
         const { page = 1, limit = 10, status, category } = req.query;
 
-        // Kiểm tra shop có tồn tại không
-        const shop = await User.findById(shopId).populate('role_id');
-        if (!shop || shop.role_id?.role_name !== 'shop') {
+        // Kiểm tra shop có tồn tại và có account_type là shop (3,4) không
+        const shop = await User.findById(shopId);
+        if (!shop || ![3, 4].includes(shop.account_type?.type)) {
             return res.status(404).json({ message: 'Không tìm thấy shop' });
         }
 
@@ -181,7 +190,8 @@ const getShopProducts = async (req, res) => {
                 _id: shop._id,
                 username: shop.username,
                 email: shop.email,
-                isActive: shop.isActive
+                isActive: shop.isActive,
+                account_type: shop.account_type
             },
             products,
             pagination: {
@@ -346,14 +356,10 @@ const getAdminStats = async (req, res) => {
         const activeUsers = await User.countDocuments({ isActive: true });
         const inactiveUsers = await User.countDocuments({ isActive: false });
         
-        // Thống kê theo roles
-        const adminRole = await Role.findOne({ role_name: 'admin' });
-        const shopRole = await Role.findOne({ role_name: 'shop' });
-        const customerRole = await Role.findOne({ role_name: 'customer' });
-        
-        const adminCount = adminRole ? await User.countDocuments({ role_id: adminRole._id }) : 0;
-        const shopCount = shopRole ? await User.countDocuments({ role_id: shopRole._id }) : 0;
-        const customerCount = customerRole ? await User.countDocuments({ role_id: customerRole._id }) : 0;
+        // Thống kê theo account_type
+        const adminCount = await User.countDocuments({ 'account_type.type': 4 }); // Admin
+        const shopCount = await User.countDocuments({ 'account_type.type': { $in: [3, 4] } }); // Shop (3,4)
+        const customerCount = await User.countDocuments({ 'account_type.type': { $in: [1, 2] } }); // Customer (1,2)
         
         // Thống kê sản phẩm
         const totalProducts = await Product.countDocuments();
@@ -647,8 +653,8 @@ const toggleUserStatus = async (req, res) => {
             return res.status(400).json({ message: 'Không thể vô hiệu hóa tài khoản admin khác' });
         }
 
-        // If deactivating a shop, hide their products
-        if (user.role_id && user.role_id.role_name === 'shop' && !isActive) {
+        // If deactivating a shop (account_type 3,4), hide their products
+        if ((user.account_type?.type === 3 || user.account_type?.type === 4) && !isActive) {
             await Product.updateMany(
                 { user_id: userId },
                 { product_status: 'not_available' }

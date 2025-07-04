@@ -35,6 +35,20 @@ const createProduct = async (req, res) => {
       product_quantity
     } = req.body;
 
+    // Kiểm tra user có phải là shop không (dựa vào account_type)
+    if (!req.user || ![3, 4].includes(req.user.account_type?.type)) {
+      return res.status(403).json({
+        message: 'Chỉ có Shop mới có thể tạo sản phẩm'
+      });
+    }
+
+    // Kiểm tra shop có bị khóa không
+    if (req.user.isActive === false) {
+      return res.status(403).json({
+        message: 'Shop của bạn đã bị khóa, không thể đăng bán sản phẩm mới.'
+      });
+    }
+
     if (!product_name || !product_price || !product_category_id) {
       return res.status(400).json({
         message: 'Thiếu thông tin bắt buộc: tên sản phẩm, giá bán hoặc danh mục'
@@ -44,12 +58,12 @@ const createProduct = async (req, res) => {
     const product = new Product({
       product_name,
       product_price,
-      user_id: req.user._id, 
+      user_id: req.user._id, // Tự động lấy từ token
       product_description,
       product_imageurl: product_imageurl || '',
       product_category_id,
       product_quantity: product_quantity || 0,
-      product_status: 'available' 
+      product_status: 'available' // Sản phẩm hiện lên ngay, không cần duyệt
     });
 
     await product.save();
@@ -71,7 +85,7 @@ const createProduct = async (req, res) => {
 const getMyProducts = async (req, res) => {
   try {
     // Kiểm tra user có phải là shop không
-    if (!req.user || req.user.account_type?.type !== 'shop') {
+    if (!req.user || req.user.role_id?.role_name !== 'shop') {
       return res.status(403).json({
         message: 'Chỉ có Shop mới có thể xem sản phẩm của mình'
       });
@@ -256,7 +270,7 @@ const reportProduct = async (req, res) => {
 const getMyProductStats = async (req, res) => {
   try {
     // Kiểm tra user có phải là shop không
-    if (!req.user || req.user.account_type?.type !== 'shop') {
+    if (!req.user || req.user.role_id?.role_name !== 'shop') {
       return res.status(403).json({
         message: 'Chỉ có Shop mới có thể xem thống kê'
       });

@@ -17,6 +17,7 @@ const AdminTransactionManagement = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [userFilter, setUserFilter] = useState('');
+  const [userTypeFilter, setUserTypeFilter] = useState('all'); // 'all', 'customer', 'shop'
   
   // Modal states
   const [deleteId, setDeleteId] = useState(null);
@@ -77,6 +78,33 @@ const AdminTransactionManagement = () => {
     }
   };
 
+  // Helper function to determine user type based on account_type
+  const getUserType = (userData) => {
+    if (!userData || !userData.account_type) return 'unknown';
+    
+    const accountType = userData.account_type.type;
+    if (accountType === 1 || accountType === 2) {
+      return 'customer';
+    } else if (accountType === 3 || accountType === 4) {
+      return 'shop';
+    }
+    return 'unknown';
+  };
+
+  // Helper function to get user type display text
+  const getUserTypeDisplay = (userData) => {
+    if (!userData || !userData.account_type) return 'Unknown';
+    
+    const accountType = userData.account_type.type;
+    switch (accountType) {
+      case 1: return 'Customer';
+      case 2: return 'Customer Premium';
+      case 3: return 'Shop';
+      case 4: return 'Shop Premium';
+      default: return 'Unknown';
+    }
+  };
+
   // Filter transactions
   const filterTransactions = () => {
     let filtered = [...transactions];
@@ -84,6 +112,14 @@ const AdminTransactionManagement = () => {
     // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(tx => tx.status === statusFilter);
+    }
+    
+    // Filter by user type
+    if (userTypeFilter !== 'all') {
+      filtered = filtered.filter(tx => {
+        const userType = getUserType(tx.user_id);
+        return userType === userTypeFilter;
+      });
     }
     
     // Filter by user
@@ -198,81 +234,100 @@ const AdminTransactionManagement = () => {
     });
     
     const lineChartData = Object.entries(dailyData)
-      .map(([date, data]) => ({ 
-        name: date, 
+      .map(([date, data]) => ({
+        name: date,
         value: data.total,
         count: data.count
       }))
       .sort((a, b) => new Date(a.name.split('/').reverse().join('-')) - new Date(b.name.split('/').reverse().join('-')));
-
+    
     return { barChartData, pieChartData, lineChartData };
   };
 
   const { barChartData, pieChartData, lineChartData } = prepareChartData();
 
-  // Delete transaction
   const handleDelete = async (id) => {
-    if (!id) return;
-    
-    setActionLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.delete(`${baseUrl}/reptitist/transactions/${id}`, {
+      setActionLoading(true);
+      
+      let token = localStorage.getItem('access_token');
+      if (!token) {
+        token = localStorage.getItem('refresh_token');
+      }
+      
+      if (!token) {
+        setError('Không tìm thấy token xác thực');
+        return;
+      }
+
+      const response = await axios.delete(`${baseUrl}/reptitist/transactions/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
-      setDeleteId(null);
-      await fetchTransactions();
-      
+
+      if (response.status === 200) {
+        setTransactions(prev => prev.filter(tx => tx._id !== id));
+        setDeleteId(null);
+      }
     } catch (err) {
       console.error('Error deleting transaction:', err);
-      const errorMessage = err.response?.data?.error || 'Không thể xóa giao dịch';
-      alert(errorMessage);
+      setError(err.response?.data?.error || 'Không thể xóa giao dịch');
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Edit transaction functions
   const openEdit = (tx) => {
     setEditTx(tx);
     setEditForm({
       status: tx.status || 'pending',
-      description: tx.description || '',
+      description: tx.description || ''
     });
   };
-  
+
   const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditForm(prev => ({ ...prev, [name]: value }));
+    setEditForm(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
   };
-  
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!editTx) return;
-    
-    setActionLoading(true);
     try {
-      const token = localStorage.getItem('access_token');
-      await axios.put(`${baseUrl}/reptitist/transactions/${editTx._id}`, editForm, {
+      setActionLoading(true);
+      
+      let token = localStorage.getItem('access_token');
+      if (!token) {
+        token = localStorage.getItem('refresh_token');
+      }
+      
+      if (!token) {
+        setError('Không tìm thấy token xác thực');
+        return;
+      }
+
+      const response = await axios.put(`${baseUrl}/reptitist/transactions/${editTx._id}`, editForm, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
-      setEditTx(null);
-      await fetchTransactions();
-      
+
+      if (response.status === 200) {
+        setTransactions(prev => prev.map(tx => 
+          tx._id === editTx._id 
+            ? { ...tx, ...editForm }
+            : tx
+        ));
+        setEditTx(null);
+      }
     } catch (err) {
       console.error('Error updating transaction:', err);
-      const errorMessage = err.response?.data?.error || 'Không thể cập nhật giao dịch';
-      alert(errorMessage);
+      setError(err.response?.data?.error || 'Không thể cập nhật giao dịch');
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Helper functions
   const formatCurrency = (amount) => {
-    if (amount === null || amount === undefined) return 'N/A';
+    if (typeof amount !== 'number') return '0 VNĐ';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -281,22 +336,30 @@ const AdminTransactionManagement = () => {
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'completed': return 'status-completed';
-      case 'pending': return 'status-pending';
-      case 'failed': return 'status-failed';
-      case 'refunded': return 'status-refunded';
-      default: return 'status-pending';
+      case 'completed': return 'pm-badge pm-badge-success';
+      case 'pending': return 'pm-badge pm-badge-warning';
+      case 'failed': return 'pm-badge pm-badge-danger';
+      case 'refunded': return 'pm-badge pm-badge-info';
+      default: return 'pm-badge pm-badge-secondary';
     }
   };
 
   const getTypeBadgeClass = (type) => {
     switch (type) {
-      case 'payment': return 'type-payment';
-      case 'refund': return 'type-refund';
-      case 'premium_upgrade': return 'type-subscription';
-      case 'subscription': return 'type-subscription';
-      case 'topup': return 'type-topup';
-      default: return 'type-payment';
+      case 'payment': return 'pm-badge pm-badge-primary';
+      case 'refund': return 'pm-badge pm-badge-info';
+      case 'premium_upgrade': return 'pm-badge pm-badge-warning';
+      case 'subscription': return 'pm-badge pm-badge-success';
+      case 'topup': return 'pm-badge pm-badge-secondary';
+      default: return 'pm-badge pm-badge-secondary';
+    }
+  };
+
+  const getUserTypeBadgeClass = (userType) => {
+    switch (userType) {
+      case 'customer': return 'pm-badge pm-badge-primary';
+      case 'shop': return 'pm-badge pm-badge-success';
+      default: return 'pm-badge pm-badge-secondary';
     }
   };
 
@@ -415,6 +478,19 @@ const AdminTransactionManagement = () => {
                   <option value="pending">Đang chờ</option>
                   <option value="failed">Thất bại</option>
                   <option value="refunded">Đã hoàn tiền</option>
+                </select>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px' }}>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Loại người dùng:</label>
+                <select 
+                  className="pm-filter-select" 
+                  value={userTypeFilter} 
+                  onChange={e => setUserTypeFilter(e.target.value)}
+                >
+                  <option value="all">Tất cả người dùng</option>
+                  <option value="customer">Customer (1,2)</option>
+                  <option value="shop">Shop (3,4)</option>
                 </select>
               </div>
               
@@ -583,6 +659,7 @@ const AdminTransactionManagement = () => {
                     <tr>
                       <th>ID Giao dịch</th>
                       <th>User</th>
+                      <th>Loại User</th>
                       <th>Loại giao dịch</th>
                       <th>Số tiền</th>
                       <th>Trạng thái</th>
@@ -595,6 +672,8 @@ const AdminTransactionManagement = () => {
                     {filteredTransactions.map(tx => {
                       const dateTime = formatDateTime(tx.createdAt || tx.transaction_date);
                       const userDisplayName = getUserDisplayName(tx.user_id);
+                      const userType = getUserType(tx.user_id);
+                      const userTypeDisplay = getUserTypeDisplay(tx.user_id);
                       
                       return (
                         <tr key={tx._id} className="pm-table-row">
@@ -628,6 +707,11 @@ const AdminTransactionManagement = () => {
                                 </div>
                               </div>
                             </div>
+                          </td>
+                          <td>
+                            <span className={getUserTypeBadgeClass(userType)}>
+                              {userTypeDisplay}
+                            </span>
                           </td>
                           <td>
                             <span className={getTypeBadgeClass(tx.transaction_type)}>

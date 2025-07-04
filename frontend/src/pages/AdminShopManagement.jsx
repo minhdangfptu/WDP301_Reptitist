@@ -266,7 +266,15 @@ const AdminShopManagement = () => {
 
       if (response.status === 200) {
         toast.success(`${newStatus ? 'Kích hoạt' : 'Vô hiệu hóa'} shop thành công`);
-        await fetchShops();
+        setShops(prevShops => prevShops.map(shop =>
+          shop._id === shopData._id ? { ...shop, isActive: newStatus } : shop
+        ));
+        setFilteredShops(prevShops => prevShops.map(shop =>
+          shop._id === shopData._id ? { ...shop, isActive: newStatus } : shop
+        ));
+        if (selectedShop && selectedShop._id === shopData._id) {
+          setSelectedShop(prev => ({ ...prev, isActive: newStatus }));
+        }
         await fetchStats();
       }
     } catch (error) {
