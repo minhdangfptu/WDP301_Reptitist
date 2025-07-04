@@ -1,14 +1,13 @@
 const mongoose = require('mongoose');
 
 const transactionSchema = new mongoose.Schema({
-  
   amount: {
     type: Number,
     required: true
   },
   net_amount: {
-    type: Number,
-    required: true
+    type: Number
+    // Không required – sẽ tự động tính nếu chưa có
   },
   fee: {
     type: Number,
@@ -20,7 +19,7 @@ const transactionSchema = new mongoose.Schema({
   },
   transaction_type: {
     type: String,
-    required: true
+    required: true // e.g., 'payment', 'refund'
   },
   status: {
     type: String,
@@ -29,9 +28,10 @@ const transactionSchema = new mongoose.Schema({
   },
   description: {
     type: String
-  },  
+  },
   items: {
-    type: String
+    type: String,
+    default: ''
   },
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
@@ -50,10 +50,34 @@ const transactionSchema = new mongoose.Schema({
   transaction_date: {
     type: Date,
     default: Date.now
+  },
+
+  // --- VNPay specific fields ---
+  vnp_txn_ref: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  vnp_response_code: {
+    type: String
+  },
+  vnp_transaction_no: {
+    type: String
+  },
+  raw_response: {
+    type: mongoose.Schema.Types.Mixed
   }
 }, {
-  timestamps: true, 
+  timestamps: true,
   collection: 'transactions'
+});
+
+// --- Auto-calculate net_amount ---
+transactionSchema.pre('save', function (next) {
+  if (this.net_amount === undefined || this.net_amount === null) {
+    this.net_amount = this.amount - (this.fee || 0);
+  }
+  next();
 });
 
 module.exports = mongoose.model('Transaction', transactionSchema);
