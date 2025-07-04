@@ -793,6 +793,10 @@ const updateProductStatusByAdmin = async (req, res) => {
         if (!product) {
             return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         }
+        // Nếu chuyển sang available, xóa các báo cáo đã duyệt liên quan
+        if (product_status === 'available') {
+            await ProductReport.deleteMany({ product_id: productId, status: 'approved' });
+        }
         res.status(200).json({ message: 'Cập nhật trạng thái thành công', product });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi server', error: error.message });
