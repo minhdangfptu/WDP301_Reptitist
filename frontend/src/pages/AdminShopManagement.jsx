@@ -1161,7 +1161,7 @@ const AdminShopManagement = () => {
                             >
                               {product.product_status === 'not_available' ? (
                                 <>
-                                  <i className="fas fa-eye"></i> Bỏ ẩn
+                                  <i></i> Bỏ ẩn
                                 </>
                               ) : (
                                 <>
