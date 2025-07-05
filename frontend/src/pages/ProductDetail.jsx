@@ -368,8 +368,15 @@ const handleReportSubmit = async (reason, description) => {
   }
   try {
     console.log('Sending report payload:', { product_id: product._id, reason, description });
-    await reportProductService(product._id, reason, description);
-    toast.success("Báo cáo của bạn đã được gửi thành công. Cảm ơn bạn đã đóng góp!");
+    const response = await reportProductService(product._id, reason, description);
+    
+    // Kiểm tra message từ response
+    if (response.message === 'Bạn đã báo cáo sản phẩm này rồi.') {
+      toast.success('Bạn đã báo cáo sản phẩm này rồi');
+    } else {
+      toast.success("Báo cáo của bạn đã được gửi thành công. Cảm ơn bạn đã đóng góp!");
+    }
+    
     setIsReportModalOpen(false);
   } catch (error) {
     console.error("Failed to submit report:", error);

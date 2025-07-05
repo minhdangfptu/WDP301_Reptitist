@@ -1165,7 +1165,7 @@ const AdminShopManagement = () => {
                                 </>
                               ) : (
                                 <>
-                                  <i className="fas fa-eye-slash"></i> Ẩn
+                                  <i></i> Ẩn
                                 </>
                               )}
                             </button>

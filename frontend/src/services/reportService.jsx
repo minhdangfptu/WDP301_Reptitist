@@ -14,8 +14,6 @@ const reportProductService = async (productId, reason, description) => {
       throw new Error("Bạn cần đăng nhập để báo cáo");
     } else if (error.response?.status === 404) {
       throw new Error("Sản phẩm không tồn tại");
-    } else if (error.response?.status === 409) {
-      throw new Error("Bạn đã báo cáo sản phẩm này rồi");
     }
     throw new Error(message);
   }

@@ -28,7 +28,7 @@ const createProductReport = async (req, res) => {
     console.log('Checking existing report for:', { product_id, reporter_id });
     const existingReport = await ProductReport.findOne({ product_id, reporter_id });
     if (existingReport) {
-      return res.status(409).json({ message: 'Bạn đã báo cáo sản phẩm này rồi.' });
+      return res.status(200).json({ message: 'Bạn đã báo cáo sản phẩm này rồi.' });
     }
 
     const shop_id = product.user_id && mongoose.Types.ObjectId.isValid(product.user_id) 
