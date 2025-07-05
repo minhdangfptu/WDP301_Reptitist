@@ -507,16 +507,6 @@ const AdminShopManagement = () => {
               </div>
             </div>
 
-            <div className="um-stat-card um-stat-admin">
-              <div className="um-stat-icon">
-                <i className="fas fa-exclamation-triangle"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.products.reported}</span>
-                <span className="um-stat-label">Bị báo cáo</span>
-              </div>
-            </div>
-
             <div className="um-stat-card um-stat-inactive">
               <div className="um-stat-icon">
                 <i className="fas fa-flag"></i>
@@ -564,7 +554,7 @@ const AdminShopManagement = () => {
               }}
             >
               <i className="fas fa-flag"></i>
-              Báo cáo sản phẩm ({reports.filter(r => r.status === 'pending').length})
+              Báo cáo sản phẩm ({reports.length})
             </button>
           </div>
         </div>
@@ -1106,12 +1096,7 @@ const AdminShopManagement = () => {
                         <label>Tổng sản phẩm:</label>
                         <span>{selectedShop.productCount || 0}</span>
                       </div>
-                      <div className="um-detail-item">
-                        <label>Sản phẩm bị báo cáo:</label>
-                        <span className={selectedShop.reportedCount > 0 ? 'text-danger' : ''}>
-                          {selectedShop.reportedCount || 0}
-                        </span>
-                      </div>
+                      
                     </div>
                   </div>
 
@@ -1241,7 +1226,6 @@ const AdminShopManagement = () => {
                             <td>
                               <span className={`um-role-badge ${getStatusBadgeColor(product.product_status)}`}>
                                 {product.product_status === 'available' ? 'Đang bán' :
-                                 product.product_status === 'reported' ? 'Bị báo cáo' :
                                  product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
                               </span>
                             </td>
