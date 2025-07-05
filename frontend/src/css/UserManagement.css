@@ -715,6 +715,7 @@
 
 .um-btn-view {
   background: var(--um-primary-color);
+  margin-left: 20px;
 }
 
 .um-btn-view:hover {
