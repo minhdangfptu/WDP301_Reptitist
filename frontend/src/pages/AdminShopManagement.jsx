@@ -1278,11 +1278,11 @@ const AdminShopManagement = () => {
                             >
                               {product.product_status === 'not_available' ? (
                                 <>
-                                  <i className="fas fa-eye"></i> Bỏ ẩn
+                                  <i></i> Bỏ ẩn
                                 </>
                               ) : (
                                 <>
-                                  <i className="fas fa-eye-slash"></i> Ẩn
+                                  <i></i> Ẩn
                                 </>
                               )}
                             </button>
