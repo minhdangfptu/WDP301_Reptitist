@@ -255,11 +255,25 @@ const AdminShopManagement = () => {
 
       if (response.status === 200) {
         toast.success('Xóa sản phẩm thành công');
-        // Refresh shop products
+        
+        // Refresh tất cả dữ liệu liên quan
+        await Promise.all([
+          fetchHiddenProductsAndReports(),
+          fetchAllProducts(),
+          fetchStats()
+        ]);
+        
+        // Refresh shop products nếu đang xem shop detail
         if (selectedShop) {
           await fetchShopProducts(selectedShop._id);
         }
-        await fetchStats();
+        
+        // Cập nhật state ngay lập tức cho UI
+        if (activeTab === 'hiddenProducts') {
+          setHiddenProducts(prev => prev.filter(p => p._id !== productId));
+        } else if (activeTab === 'allProducts') {
+          setAllProducts(prev => prev.filter(p => p._id !== productId));
+        }
       }
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -500,8 +514,39 @@ const AdminShopManagement = () => {
         toast.success('Cập nhật trạng thái sản phẩm thành công!');
       }
       
-      fetchHiddenProductsAndReports(); // Refresh list
+      // Refresh tất cả dữ liệu liên quan
+      await Promise.all([
+        fetchHiddenProductsAndReports(),
+        fetchAllProducts(),
+        fetchStats()
+      ]);
+      
+      // Cập nhật state ngay lập tức cho UI
+      if (activeTab === 'hiddenProducts') {
+        // Cập nhật danh sách sản phẩm bị ẩn
+        setHiddenProducts(prev => {
+          if (newStatus === 'available') {
+            // Nếu bỏ ẩn, xóa khỏi danh sách ẩn
+            return prev.filter(p => p._id !== productId);
+          } else {
+            // Nếu ẩn, thêm vào danh sách ẩn
+            const product = allProducts.find(p => p._id === productId);
+            return product ? [...prev, product] : prev;
+          }
+        });
+      } else if (activeTab === 'allProducts') {
+        // Cập nhật danh sách tất cả sản phẩm
+        setAllProducts(prev => 
+          prev.map(p => 
+            p._id === productId 
+              ? { ...p, product_status: newStatus }
+              : p
+          )
+        );
+      }
+      
     } catch (error) {
+      console.error('Error toggling product status:', error);
       toast.error('Không thể cập nhật trạng thái sản phẩm');
     }
   };
