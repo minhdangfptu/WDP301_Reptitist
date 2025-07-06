@@ -3,6 +3,7 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
+const { sendProductReportNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -268,9 +269,34 @@ const handleProductReport = async (req, res) => {
                 resolved_by: req.user._id
             });
 
+            // Gửi email thông báo cho chủ shop
+            try {
+                if (report.shop_id && report.shop_id.email) {
+                    const emailResult = await sendProductReportNotification(
+                        report.shop_id.email,
+                        report.shop_id.username || 'Chủ shop',
+                        report.product_id.product_name,
+                        report.reason,
+                        adminNote
+                    );
+                    
+                    if (emailResult.success) {
+                        console.log('Email notification sent successfully to shop owner');
+                    } else {
+                        console.error('Failed to send email notification:', emailResult.error);
+                    }
+                } else {
+                    console.warn('Shop email not found for report:', reportId);
+                }
+            } catch (emailError) {
+                console.error('Error sending email notification:', emailError);
+                // Không throw error để không ảnh hưởng đến việc xử lý báo cáo
+            }
+
             res.status(200).json({
                 message: 'Đã chấp nhận báo cáo và ẩn sản phẩm',
-                action: 'approved'
+                action: 'approved',
+                emailSent: report.shop_id && report.shop_id.email ? true : false
             });
         } else if (action === 'reject') {
             // Từ chối báo cáo - khôi phục sản phẩm

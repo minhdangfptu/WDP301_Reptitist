@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import EmailNotificationInfo from '../components/EmailNotificationInfo';
 import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
@@ -266,7 +267,10 @@ const AdminShopManagement = () => {
       );
 
       if (response.status === 200) {
-        toast.success(`${action === 'approve' ? 'Chấp nhận' : 'Từ chối'} báo cáo thành công`);
+        const message = action === 'approve' 
+          ? `Chấp nhận báo cáo thành công${response.data.emailSent ? ' và đã gửi email thông báo' : ''}`
+          : 'Từ chối báo cáo thành công';
+        toast.success(message);
         await fetchReports();
         await fetchStats();
         setShowReportModal(false);
@@ -595,6 +599,9 @@ const AdminShopManagement = () => {
             </div>
           </div>
         </div>
+
+        {/* Email Notification Info */}
+        <EmailNotificationInfo />
 
         {/* Tab Navigation */}
         <div className="um-filters-section" style={{ marginBottom: '10px', paddingBottom: '10px' }}>
