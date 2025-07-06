@@ -71,6 +71,33 @@
   flex: 1;
 }
 
+.email-notification-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.email-notification-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.email-notification-section h4 {
+  margin: 0 0 12px 0;
+  color: #667eea;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-notification-section h4 i {
+  color: #667eea;
+  font-size: 16px;
+}
+
 /* Animation for expand/collapse */
 .email-notification-content {
   animation: slideDown 0.3s ease-out;

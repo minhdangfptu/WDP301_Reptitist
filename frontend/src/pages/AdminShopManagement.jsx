@@ -463,10 +463,22 @@ const AdminShopManagement = () => {
       const token = localStorage.getItem('refresh_token');
       if (!token) return;
       const newStatus = currentStatus === 'not_available' ? 'available' : 'not_available';
-      await axios.put(`${baseUrl}/reptitist/admin/products/${productId}/status`, { product_status: newStatus }, {
+      const response = await axios.put(`${baseUrl}/reptitist/admin/products/${productId}/status`, { product_status: newStatus }, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      toast.success('Cập nhật trạng thái sản phẩm thành công!');
+      
+      if (newStatus === 'available') {
+        // Khi gỡ bỏ ẩn sản phẩm
+        if (response.data.emailSent) {
+          toast.success('Cập nhật trạng thái sản phẩm thành công! Email thông báo đã được gửi đến shop owner.');
+        } else {
+          toast.success('Cập nhật trạng thái sản phẩm thành công!');
+        }
+      } else {
+        // Khi ẩn sản phẩm
+        toast.success('Cập nhật trạng thái sản phẩm thành công!');
+      }
+      
       fetchHiddenProductsAndReports(); // Refresh list
     } catch (error) {
       toast.error('Không thể cập nhật trạng thái sản phẩm');

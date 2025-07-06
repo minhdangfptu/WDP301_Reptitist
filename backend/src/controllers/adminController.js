@@ -3,7 +3,7 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
-const { sendProductReportNotification } = require('../config/email');
+const { sendProductReportNotification, sendProductUnhideNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -815,15 +815,47 @@ const updateProductStatusByAdmin = async (req, res) => {
         if (!product_status) {
             return res.status(400).json({ message: 'Thiếu trạng thái sản phẩm' });
         }
-        const product = await Product.findByIdAndUpdate(productId, { product_status }, { new: true });
+
+        // Lấy thông tin sản phẩm và shop trước khi cập nhật
+        const product = await Product.findById(productId).populate('user_id', 'username email');
         if (!product) {
             return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         }
+
+        // Cập nhật trạng thái sản phẩm
+        const updatedProduct = await Product.findByIdAndUpdate(productId, { product_status }, { new: true });
+
+        // Nếu chuyển sang available (gỡ bỏ ẩn), gửi email thông báo cho shop
+        if (product_status === 'available' && product.user_id && product.user_id.email) {
+            try {
+                const emailResult = await sendProductUnhideNotification(
+                    product.user_id.email,
+                    product.user_id.username || 'Chủ shop',
+                    product.product_name,
+                    req.user.username || 'Admin'
+                );
+                
+                if (emailResult.success) {
+                    console.log('Email notification sent successfully to shop owner for product unhide');
+                } else {
+                    console.error('Failed to send email notification for product unhide:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('Error sending email notification for product unhide:', emailError);
+                // Không throw error để không ảnh hưởng đến việc cập nhật trạng thái
+            }
+        }
+
         // Nếu chuyển sang available, xóa các báo cáo đã duyệt liên quan
         if (product_status === 'available') {
             await ProductReport.deleteMany({ product_id: productId, status: 'approved' });
         }
-        res.status(200).json({ message: 'Cập nhật trạng thái thành công', product });
+
+        res.status(200).json({ 
+            message: 'Cập nhật trạng thái thành công', 
+            product: updatedProduct,
+            emailSent: product_status === 'available' && product.user_id && product.user_id.email ? true : false
+        });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
