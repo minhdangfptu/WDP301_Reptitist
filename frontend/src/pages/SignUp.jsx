@@ -1,7 +1,13 @@
 import React from "react";
 import "../css/SignUp.css";
+import { useAuth } from "../context/AuthContext";
 
 const Signup = () => {
+  const {loginWithGoogle} = useAuth();
+  const handleGoogleLogin = (e) => {
+    e.preventDefault();
+    loginWithGoogle();
+  };
   return (
     <div className="signup-body">
       <div className="signup-container">
@@ -22,8 +28,8 @@ const Signup = () => {
           </p>
           <button
             className="social-login-btn"
-            disabled={true}
-            style={{ opacity: 0.6, cursor: "not-allowed" }}
+            disabled={false}
+            onClick={handleGoogleLogin}
           >
             <span className="google-icon">
               <img
@@ -46,19 +52,17 @@ const Signup = () => {
             </span>
             Đăng nhập sử dụng Facebook
           </button>
+          <div className="divider" style = {{paddingBottom: "10px"}}>HOẶC</div>
 
-          <div className="terms">
-            Bằng cách tiếp tục, bạn đồng ý với{" "}
-            <a href="#">Điều khoản sử dụng</a> và{" "}
-            <a href="#">Chính sách bảo mật</a>, bao gồm việc sử dụng{" "}
-            <a href="#">Cookies</a>.
-          </div>
-
-          <div className="divider">HOẶC</div>
-
-          <a href="/SignUp2" className="email-signup-btn">
+          <a  href="/SignUp2" className="email-signup-btn">
             Tiếp tục với Email
           </a>
+          <div className="terms">
+            Bằng cách tiếp tục, bạn đồng ý với{" "}
+            <a href="/policy-terms">Điều khoản sử dụng</a> và{" "}
+            <a href="/policy-terms">Chính sách bảo mật</a>, bao gồm việc sử dụng{" "}
+            <a href="/policy-terms">Cookies</a>.
+          </div>
         </div>
 
         {/* Hình ảnh bên phải */}

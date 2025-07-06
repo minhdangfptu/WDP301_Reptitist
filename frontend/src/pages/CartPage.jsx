@@ -237,26 +237,7 @@ const CartPage = () => {
 
   return (
     <>
-      {/* <CustomHeader pageTitle="Giỏ Hàng" pageIcon={ShoppingCart} /> */}
       <ShopHeader />
-      <nav className="main-nav">
-        <div className="container">
-          <ul className="nav-list">
-            <li className={location.pathname === "/" || location.pathname === "/cart" ? "active" : ""}>
-              <Link to="/my-cart">
-                <ShoppingCart size={16} />
-                Giỏ Hàng
-              </Link>
-            </li>
-            <li className={location.pathname === "/orders" ? "active" : ""}>
-              <Link to="/orders">
-                <Package size={16} />
-                Đơn Hàng
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </nav>
       <div className="cart-page">
         <div className="container">
           <div className={`cart-content ${cartItems.length === 0 ? 'empty' : ''}`}>

@@ -13,6 +13,7 @@ const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRouter'); 
 const reptileRoutes = require('./reptile');
 
+router.use('/user', userRoute);
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/pet', userReptileRoutes);

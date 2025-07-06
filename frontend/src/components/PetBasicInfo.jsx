@@ -219,7 +219,7 @@ const PetBasicInfo = ({ petInfo }) => {
                       </div>
                       <div className="mb-3 d-flex justify-content-between">
                         <span className="fw-medium">Cân nặng hiện tại</span>
-                        <span>{petInfo.current_weight} gam</span>
+                        <span>{petInfo.current_weight} kilogram</span>
                       </div>
                     </Col>
                     <div className="mb-3 d-flex justify-content-between">
@@ -248,7 +248,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <i className="bi bi-three-dots"></i>
                 </Button>
               </div>
-              <div className="text-center small fw-medium">Năm 2024</div>
+              <div className="text-center small fw-medium">Năm 2025</div>
             </Card.Header>
             <Card.Body>
               <div style={{ height: "13rem" }} className="mb-3">
@@ -374,7 +374,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Hành vi</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.behavior || "Đang tải..."}
+                  {recommendDetails.behavior || "Chưa có dữ liệu"}
                 </p>
               </div>
 
@@ -386,7 +386,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Môi trường sống</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.habitat || "Đang tải..."}
+                  {recommendDetails.habitat || "Chưa có dữ liệu"}
                 </p>
               </div>
 
@@ -398,7 +398,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Điều trị</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.treatment || "Đang tải..."}
+                  {recommendDetails.treatment || "Chưa có dữ liệu"}
                 </p>
               </div>
 
@@ -410,7 +410,7 @@ const PetBasicInfo = ({ petInfo }) => {
                   <span className="fw-medium">Dinh dưỡng</span>
                 </div>
                 <p className="text-secondary mb-2">
-                  {recommendDetails.nutrition || "Đang tải..."}
+                  {recommendDetails.nutrition || "Chưa có dữ liệu"}
                 </p>
               </div>
             </Card.Body>
