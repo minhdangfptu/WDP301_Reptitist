@@ -8,6 +8,8 @@ import { baseUrl } from '../config';
 
 const Library = () => {
   const [topics, setTopics] = useState([]);
+  const [filteredTopics, setFilteredTopics] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [openIndex, setOpenIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -20,6 +22,7 @@ const Library = () => {
       .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
         setTopics(response.data);
+        setFilteredTopics(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -27,6 +30,14 @@ const Library = () => {
         setLoading(false);
       });
   }, []);
+
+  // Filter topics based on search term
+  useEffect(() => {
+    const filtered = topics.filter((topic) =>
+      topic.topic_title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredTopics(filtered);
+  }, [searchTerm, topics]);
 
   const toggleTopic = (index) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -69,12 +80,29 @@ const Library = () => {
           <span>Thư viện kiến thức</span>
         </div>
 
-        <div className="d-flex justify-content-end mb-3">
-          {isAdmin && (
-            <Link to="/library_topics/create">
-              <button className="btn btn-success">+ Tạo chủ đề</button>
-            </Link>
-          )}
+        <div className="row mb-3">
+          <div className="col-md-3">
+            {/* Empty space for left alignment */}
+          </div>
+          <div className="col-md-6">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm kiếm theo tên chủ đề..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              
+            </div>
+          </div>
+          <div className="col-md-3 text-end">
+            {isAdmin && (
+              <Link to="/library_topics/create">
+                <button className="btn btn-success">+ Tạo chủ đề</button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 
@@ -85,7 +113,7 @@ const Library = () => {
             <div className="sidebar">
               <h2 className="sidebar-title">Chủ đề thư viện</h2>
               <ul className="sidebar-menu list-unstyled">
-                {topics.map((topic, idx) => (
+                {filteredTopics.map((topic, idx) => (
                   <li key={topic._id}>
                     <div
                       className="menu-item"
@@ -117,7 +145,7 @@ const Library = () => {
 
             {/* Content Grid */}
             <div className="content-grid">
-              {topics.map((topic) => (
+              {filteredTopics.map((topic) => (
                 <div className="category-card" key={topic._id}>
                   <Link to={`/libraryCategory/${topic._id}`}>
                     <div className="card-image" style={{ cursor: "pointer" }}>
@@ -170,9 +198,14 @@ const Library = () => {
                   </div>
                 </div>
               ))}
-              {topics.length === 0 && (
+              {filteredTopics.length === 0 && (
                 <div className="col-12 text-center mt-4">
-                  <p>Không có chủ đề nào để hiển thị.</p>
+                  <p>
+                    {searchTerm 
+                      ? `Không tìm thấy chủ đề nào với từ khóa "${searchTerm}"`
+                      : "Không có chủ đề nào để hiển thị."
+                    }
+                  </p>
                 </div>
               )}
             </div>
