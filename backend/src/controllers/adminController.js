@@ -2,6 +2,7 @@ const User = require('../models/users');
 const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
+const Transaction = require('../models/Transactions');
 const mongoose = require('mongoose');
 
 // Middleware kiểm tra quyền admin
@@ -751,6 +752,200 @@ const updateUserAccountType = async (req, res) => {
     }
 };
 
+// Thống kê doanh thu theo thời gian
+const getIncomeByTime = async (req, res) => {
+    try {
+        const { period = 'month', startDate, endDate } = req.query;
+        
+        // Validate period
+        const validPeriods = ['day', 'week', 'month', 'year'];
+        if (!validPeriods.includes(period)) {
+            return res.status(400).json({
+                message: 'Khoảng thời gian không hợp lệ. Các giá trị hợp lệ: day, week, month, year'
+            });
+        }
+
+        // Set date range
+        let start, end;
+        if (startDate && endDate) {
+            start = new Date(startDate);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // End of day
+        } else {
+            // Default to last 12 months if no date range provided
+            end = new Date();
+            start = new Date();
+            start.setFullYear(start.getFullYear() - 1);
+        }
+
+        // Build aggregation pipeline
+        const pipeline = [
+            {
+                $match: {
+                    transaction_date: { $gte: start, $lte: end },
+                    status: 'completed',
+                    transaction_type: 'payment'
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: '$amount' },
+                    totalTransactions: { $sum: 1 },
+                    averageTransaction: { $avg: '$amount' }
+                }
+            }
+        ];
+
+        // Add time-based grouping based on period
+        if (period === 'day') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' },
+                month: { $month: '$transaction_date' },
+                day: { $dayOfMonth: '$transaction_date' }
+            };
+        } else if (period === 'week') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' },
+                week: { $week: '$transaction_date' }
+            };
+        } else if (period === 'month') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' },
+                month: { $month: '$transaction_date' }
+            };
+        } else if (period === 'year') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' }
+            };
+        }
+
+        // Add sorting
+        pipeline.push({
+            $sort: { '_id': 1 }
+        });
+
+        // Execute aggregation
+        const incomeData = await Transaction.aggregate(pipeline);
+
+        // Format the data for response
+        const formattedData = incomeData.map(item => {
+            let periodLabel = '';
+            let date = '';
+
+            if (period === 'day') {
+                date = new Date(item._id.year, item._id.month - 1, item._id.day);
+                periodLabel = date.toLocaleDateString('vi-VN');
+            } else if (period === 'week') {
+                // Calculate start of week
+                const startOfYear = new Date(item._id.year, 0, 1);
+                const startOfWeek = new Date(startOfYear.getTime() + (item._id.week - 1) * 7 * 24 * 60 * 60 * 1000);
+                date = startOfWeek;
+                periodLabel = `Tuần ${item._id.week} (${startOfWeek.toLocaleDateString('vi-VN')})`;
+            } else if (period === 'month') {
+                date = new Date(item._id.year, item._id.month - 1, 1);
+                periodLabel = date.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long' });
+            } else if (period === 'year') {
+                date = new Date(item._id.year, 0, 1);
+                periodLabel = `Năm ${item._id.year}`;
+            }
+
+            return {
+                period: periodLabel,
+                date: date,
+                revenue: item.totalRevenue,
+                transactionCount: item.totalTransactions,
+                averageTransaction: Math.round(item.averageTransaction),
+                periodType: period
+            };
+        });
+
+        // Calculate summary statistics
+        const totalRevenue = formattedData.reduce((sum, item) => sum + item.revenue, 0);
+        const totalTransactions = formattedData.reduce((sum, item) => sum + item.transactionCount, 0);
+        const averageRevenue = totalTransactions > 0 ? Math.round(totalRevenue / totalTransactions) : 0;
+
+        // Get top performing periods
+        const topPeriods = [...formattedData]
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
+
+        const response = {
+            period: period,
+            dateRange: {
+                start: start,
+                end: end
+            },
+            summary: {
+                totalRevenue: totalRevenue,
+                totalTransactions: totalTransactions,
+                averageRevenue: averageRevenue,
+                periodCount: formattedData.length
+            },
+            data: formattedData,
+            topPeriods: topPeriods,
+            currency: 'VND'
+        };
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error('Get income by time error:', error);
+        res.status(500).json({
+            message: 'Không thể lấy thống kê doanh thu',
+            error: error.message
+        });
+    }
+};
+
+// Lấy báo cáo tài chính (danh sách giao dịch) với phân trang, lọc thời gian, loại giao dịch, status
+const getFinancialReports = async (req, res) => {
+    try {
+        let { page = 1, limit = 20, startDate, endDate, transaction_type, status } = req.query;
+        page = parseInt(page);
+        limit = parseInt(limit);
+        const query = { is_test: false };
+
+        // Lọc theo thời gian
+        if (startDate || endDate) {
+            query.transaction_date = {};
+            if (startDate) query.transaction_date.$gte = new Date(startDate);
+            if (endDate) query.transaction_date.$lte = new Date(endDate);
+        }
+        // Lọc theo loại giao dịch
+        if (transaction_type && transaction_type !== 'all') {
+            query.transaction_type = transaction_type;
+        }
+        // Lọc theo trạng thái
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        const skip = (page - 1) * limit;
+        const total = await Transaction.countDocuments(query);
+        const transactions = await Transaction.find(query)
+            .populate('user_id', 'username email')
+            .sort({ transaction_date: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            transactions,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Get financial reports error:', error);
+        res.status(500).json({
+            message: 'Không thể lấy báo cáo tài chính',
+            error: error.message
+        });
+    }
+};
+
 // Export controller functions
 module.exports = {
     checkAdminRole,
@@ -767,5 +962,7 @@ module.exports = {
     deleteUser,
     toggleUserStatus,
     createUser,
-    updateUserAccountType
+    updateUserAccountType,
+    getIncomeByTime,
+    getFinancialReports
 };

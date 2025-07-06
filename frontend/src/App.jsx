@@ -60,6 +60,7 @@ import UserManual from './pages/UserManual';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminTransactionManagement from './pages/AdminTransactionManagement';
+import AdminIncomeManagement from './pages/AdminIncomeManagement';
 import AccessDenied from './components/AccessDenied';
 import ContactUsButton from './components/SupportButton';
 
@@ -267,7 +268,8 @@ const AppRoutes = () => (
     <Route path="/admin/products/create" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/AdminTransactionManagement" element={<ProtectedRoute requiredRole="admin"><AdminTransactionManagement /></ProtectedRoute>} />
-      
+    <Route path="/AdminIncomeManagement" element={<ProtectedRoute requiredRole="admin"><AdminIncomeManagement /></ProtectedRoute>} />
+
     {/* Auth callback route */}
     <Route path="/auth/callback" element={<AuthCallback />} />
 

@@ -1,6 +1,7 @@
 const express= require('express');
 const router =express.Router();
 const authRoute=require('./authRoute.js')
+const userRoute=require('./userRoute.js')
 const shopRoute=require('./shopRoute.js')
 const userReptileRoutes = require('./userReptileRoute.js');
 const reptileInfoRoute = require('./reptileInfoRoute.js');
@@ -10,7 +11,7 @@ const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
-const adminRoute = require('./adminRouter'); 
+const adminRoute = require('./adminRoute'); 
 const reptileRoutes = require('./reptile');
 
 router.use('/user', userRoute);

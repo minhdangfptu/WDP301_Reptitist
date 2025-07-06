@@ -255,7 +255,7 @@ const Header = () => {
                             className="header__dropdown-item header__dropdown-item--admin"
                             onClick={() => setShowAccountMenu(false)}
                           >
-                            Quản lý cừa hàng
+                            Quản lý cửa hàng
                           </Link>
                           <Link
                             to="/AdminTransactionManagement"
@@ -270,6 +270,13 @@ const Header = () => {
                             onClick={() => setShowAccountMenu(false)}
                           >
                             Quản lý sản phẩm
+                          </Link>
+                          <Link
+                            to="/AdminIncomeManagement"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Thống kê doanh thu
                           </Link>
                         </div>
                       </>

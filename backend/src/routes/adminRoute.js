@@ -20,7 +20,9 @@ const {
     updateUser,
     deleteUser,
     toggleUserStatus,
-    updateUserAccountType
+    updateUserAccountType,
+    getIncomeByTime,
+    getFinancialReports
 } = require('../controllers/adminController');
 
 router.get(
@@ -56,5 +58,9 @@ router.post('/reports/:reportId/handle', handleProductReport); // POST /admin/re
 
 // Statistics
 router.get('/stats', getAdminStats);                  // GET /admin/stats
+router.get('/income', getIncomeByTime);               // GET /admin/income
+
+// Financial reports
+router.get('/financial-reports', getFinancialReports); // GET /admin/financial-reports
 
 module.exports = router;
