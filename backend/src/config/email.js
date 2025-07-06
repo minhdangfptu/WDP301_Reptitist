@@ -4,15 +4,14 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER || 'reptitist.service@gmail.com',
-    pass: process.env.EMAIL_PASSWORD || 'your-app-password' // Sử dụng App Password từ Google
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD
   },
   tls: {
     rejectUnauthorized: false
   }
 });
 
-// Hàm gửi email thông báo báo cáo sản phẩm
 const sendProductReportNotification = async (shopEmail, shopName, productName, reportReason, adminNote) => {
   try {
     const mailOptions = {
@@ -81,7 +80,6 @@ const sendProductReportNotification = async (shopEmail, shopName, productName, r
   }
 };
 
-// Hàm kiểm tra kết nối email
 const testEmailConnection = async () => {
   try {
     await transporter.verify();
