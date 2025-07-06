@@ -30,7 +30,7 @@ const sendProductReportNotification = async (shopEmail, shopName, productName, r
                 Xin chào <strong>${shopName}</strong>,
               </p>
               <p style="color: #333; font-size: 16px; line-height: 1.6;">
-                Chúng tôi xin thông báo rằng sản phẩm <strong>"${productName}"</strong> của bạn đã bị báo cáo và được admin chấp nhận.
+                Chúng tôi xin thông báo rằng sản phẩm <strong>"${productName}"</strong> của bạn đã bị báo cáo.
               </p>
             </div>
             
@@ -39,7 +39,7 @@ const sendProductReportNotification = async (shopEmail, shopName, productName, r
               <ul style="color: #856404; font-size: 14px; line-height: 1.6;">
                 <li><strong>Sản phẩm:</strong> ${productName}</li>
                 <li><strong>Lý do báo cáo:</strong> ${reportReason}</li>
-                <li><h2>Ghi chú của admin:</h2> ${adminNote || 'Không có ghi chú'}</li>
+                <li><h2>Ghi chú của admin:</h2><h2> ${adminNote || 'Không có ghi chú'}</h2></li>
                 <li><strong>Thời gian xử lý:</strong> ${new Date().toLocaleString('vi-VN')}</li>
               </ul>
             </div>
