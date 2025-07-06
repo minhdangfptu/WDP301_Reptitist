@@ -33,6 +33,7 @@ const AdminShopManagement = () => {
   const [searchHiddenProductName, setSearchHiddenProductName] = useState('');
   const [allProducts, setAllProducts] = useState([]);
   const [searchAllProductName, setSearchAllProductName] = useState('');
+  const [hideReason, setHideReason] = useState('');
 
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
@@ -506,54 +507,55 @@ const AdminShopManagement = () => {
     try {
       const token = localStorage.getItem('refresh_token');
       if (!token) return;
-      const newStatus = currentStatus === 'not_available' ? 'available' : 'not_available';
-      const response = await axios.put(`${baseUrl}/reptitist/admin/products/${productId}/status`, { product_status: newStatus }, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
+      let newStatus = currentStatus === 'not_available' ? 'available' : 'not_available';
+      let reason = undefined;
+      if (newStatus === 'not_available') {
+        reason = await promptHideReason();
+        if (reason === null) return; // Cancel
+      }
+      const response = await axios.put(
+        `${baseUrl}/reptitist/admin/products/${productId}/status`,
+        { product_status: newStatus, hideReason: reason },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
       if (newStatus === 'available') {
-        // Khi gỡ bỏ ẩn sản phẩm
         if (response.data.emailSent) {
           toast.success('Cập nhật trạng thái sản phẩm thành công! Email thông báo đã được gửi đến shop owner.');
         } else {
           toast.success('Cập nhật trạng thái sản phẩm thành công!');
         }
       } else {
-        // Khi ẩn sản phẩm
-        toast.success('Cập nhật trạng thái sản phẩm thành công!');
+        if (response.data.emailSent) {
+          toast.success('Cập nhật trạng thái sản phẩm thành công! Email thông báo đã được gửi đến shop owner.');
+        } else {
+          toast.success('Cập nhật trạng thái sản phẩm thành công!');
+        }
       }
-      
       // Refresh tất cả dữ liệu liên quan
       await Promise.all([
         fetchHiddenProductsAndReports(),
         fetchAllProducts(),
         fetchStats()
       ]);
-      
       // Cập nhật state ngay lập tức cho UI
       if (activeTab === 'hiddenProducts') {
-        // Cập nhật danh sách sản phẩm bị ẩn
         setHiddenProducts(prev => {
           if (newStatus === 'available') {
-            // Nếu bỏ ẩn, xóa khỏi danh sách ẩn
             return prev.filter(p => p._id !== productId);
           } else {
-            // Nếu ẩn, thêm vào danh sách ẩn
             const product = allProducts.find(p => p._id === productId);
             return product ? [...prev, product] : prev;
           }
         });
       } else if (activeTab === 'allProducts') {
-        // Cập nhật danh sách tất cả sản phẩm
-        setAllProducts(prev => 
-          prev.map(p => 
-            p._id === productId 
+        setAllProducts(prev =>
+          prev.map(p =>
+            p._id === productId
               ? { ...p, product_status: newStatus }
               : p
           )
         );
       }
-      
     } catch (error) {
       console.error('Error toggling product status:', error);
       toast.error('Không thể cập nhật trạng thái sản phẩm');
@@ -571,6 +573,17 @@ const AdminShopManagement = () => {
     if (!searchAllProductName) return true;
     return (product.product_name || '').toLowerCase().includes(searchAllProductName.toLowerCase());
   });
+
+  // Thêm hàm yêu cầu nhập lý do khi ẩn sản phẩm
+  const promptHideReason = async () => {
+    let reason = '';
+    while (!reason) {
+      reason = window.prompt('Nhập lý do ẩn sản phẩm (bắt buộc):');
+      if (reason === null) return null; // Bấm Cancel
+      if (!reason) toast.error('Vui lòng nhập lý do ẩn sản phẩm!');
+    }
+    return reason;
+  };
 
   // Check admin access
   if (!hasRole('admin')) {

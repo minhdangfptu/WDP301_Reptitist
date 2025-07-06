@@ -840,7 +840,7 @@ const getHiddenProducts = async (req, res) => {
 const updateProductStatusByAdmin = async (req, res) => {
     try {
         const { productId } = req.params;
-        const { product_status } = req.body;
+        const { product_status, hideReason } = req.body;
         if (!product_status) {
             return res.status(400).json({ message: 'Thiếu trạng thái sản phẩm' });
         }
@@ -849,6 +849,11 @@ const updateProductStatusByAdmin = async (req, res) => {
         const product = await Product.findById(productId).populate('user_id', 'username email');
         if (!product) {
             return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+        }
+
+        // Nếu chuyển sang not_available mà không có lý do thì báo lỗi
+        if (product_status === 'not_available' && (!hideReason || hideReason.trim() === '')) {
+            return res.status(400).json({ message: 'Vui lòng nhập lý do ẩn sản phẩm' });
         }
 
         // Cập nhật trạng thái sản phẩm
@@ -874,14 +879,15 @@ const updateProductStatusByAdmin = async (req, res) => {
                 console.error('Error sending email notification for product unhide:', emailError);
             }
         }
-        // Nếu chuyển sang not_available (ẩn), gửi email thông báo cho shop
+        // Nếu chuyển sang not_available (ẩn), gửi email thông báo cho shop, truyền lý do
         if (product_status === 'not_available' && product.user_id && product.user_id.email) {
             try {
                 const emailResult = await sendProductHideNotification(
                     product.user_id.email,
                     product.user_id.username || 'Chủ shop',
                     product.product_name,
-                    req.user.username || 'Admin'
+                    req.user.username || 'Admin',
+                    hideReason
                 );
                 if (emailResult.success) {
                     emailSent = true;

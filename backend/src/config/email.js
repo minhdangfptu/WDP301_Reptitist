@@ -215,7 +215,7 @@ const sendProductDeleteNotification = async (shopEmail, shopName, productName, a
 };
 
 // Hàm gửi email thông báo khi admin ẩn sản phẩm
-const sendProductHideNotification = async (shopEmail, shopName, productName, adminName) => {
+const sendProductHideNotification = async (shopEmail, shopName, productName, adminName, hideReason) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER || 'reptitist.service@gmail.com',
@@ -242,6 +242,7 @@ const sendProductHideNotification = async (shopEmail, shopName, productName, adm
                 <li><strong>Admin xử lý:</strong> ${adminName}</li>
                 <li><strong>Thời gian xử lý:</strong> ${new Date().toLocaleString('vi-VN')}</li>
                 <li><strong>Trạng thái mới:</strong> Đã bị ẩn</li>
+                <li><strong>Lý do ẩn:</strong> <span style="color: #d35400; font-weight: bold;">${hideReason || 'Không có ghi chú'}</span></li>
               </ul>
             </div>
             <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
