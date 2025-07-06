@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import EmailNotificationInfo from '../components/EmailNotificationInfo';
 import { useAuth } from '../context/AuthContext';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
@@ -694,8 +693,6 @@ const AdminShopManagement = () => {
           </div>
         </div>
 
-        {/* Email Notification Info */}
-        <EmailNotificationInfo />
 
         {/* Tab Navigation */}
         <div className="um-filters-section" style={{ marginBottom: '10px', paddingBottom: '10px' }}>
