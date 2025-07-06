@@ -3,7 +3,7 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
-const { sendProductReportNotification, sendProductUnhideNotification } = require('../config/email');
+const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -168,21 +168,50 @@ const getShopProducts = async (req, res) => {
 const deleteProductByAdmin = async (req, res) => {
     try {
         const { productId } = req.params;
+        const { deleteReason } = req.body; // Lý do xóa (tùy chọn)
 
         const product = await Product.findById(productId).populate('user_id', 'username email');
         if (!product) {
             return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         }
 
+        // Lưu thông tin sản phẩm trước khi xóa để gửi email
+        const productInfo = {
+            _id: product._id,
+            product_name: product.product_name,
+            shop: product.user_id
+        };
+
         await Product.findByIdAndDelete(productId);
+
+        // Gửi email thông báo cho chủ shop
+        try {
+            if (product.user_id && product.user_id.email) {
+                const emailResult = await sendProductDeleteNotification(
+                    product.user_id.email,
+                    product.user_id.username || 'Chủ shop',
+                    product.product_name,
+                    req.user.username || 'Admin',
+                    deleteReason
+                );
+                
+                if (emailResult.success) {
+                    console.log('Product delete email sent successfully to shop owner');
+                } else {
+                    console.error('Failed to send product delete email:', emailResult.error);
+                }
+            } else {
+                console.warn('Shop email not found for product:', productId);
+            }
+        } catch (emailError) {
+            console.error('Error sending product delete email:', emailError);
+            // Không throw error để không ảnh hưởng đến việc xóa sản phẩm
+        }
 
         res.status(200).json({
             message: 'Xóa sản phẩm thành công',
-            deletedProduct: {
-                _id: product._id,
-                product_name: product.product_name,
-                shop: product.user_id
-            }
+            deletedProduct: productInfo,
+            emailSent: product.user_id && product.user_id.email ? true : false
         });
     } catch (error) {
         console.error('Delete product error:', error);

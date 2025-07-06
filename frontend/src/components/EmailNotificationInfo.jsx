@@ -51,6 +51,22 @@ const EmailNotificationInfo = () => {
             </div>
           </div>
           
+          <div className="email-notification-section">
+            <h4><i className="fas fa-trash"></i> Khi xóa sản phẩm:</h4>
+            <div className="email-notification-item">
+              <i className="fas fa-check-circle"></i>
+              <span>Email sẽ được gửi tự động khi admin xóa sản phẩm</span>
+            </div>
+            <div className="email-notification-item">
+              <i className="fas fa-user"></i>
+              <span>Người nhận: Chủ shop có sản phẩm bị xóa</span>
+            </div>
+            <div className="email-notification-item">
+              <i className="fas fa-info-circle"></i>
+              <span>Nội dung: Thông báo sản phẩm đã bị xóa vĩnh viễn và hướng dẫn</span>
+            </div>
+          </div>
+          
           <div className="email-notification-item">
             <i className="fas fa-shield-alt"></i>
             <span>Bảo mật: Chỉ gửi khi admin thực hiện các hành động tương ứng</span>

@@ -236,6 +236,9 @@ const AdminShopManagement = () => {
 
   // Handle delete product by admin
   const handleDeleteProduct = async (productId) => {
+    // Hỏi lý do xóa (tùy chọn)
+    const deleteReason = window.prompt('Nhập lý do xóa sản phẩm (tùy chọn):');
+    
     if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       return;
     }
@@ -248,13 +251,20 @@ const AdminShopManagement = () => {
         `${baseUrl}/reptitist/admin/products/${productId}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          data: {
+            deleteReason: deleteReason || undefined
           }
         }
       );
 
       if (response.status === 200) {
-        toast.success('Xóa sản phẩm thành công');
+        const message = response.data.emailSent 
+          ? 'Xóa sản phẩm thành công! Email thông báo đã được gửi đến shop owner.'
+          : 'Xóa sản phẩm thành công!';
+        toast.success(message);
         
         // Refresh tất cả dữ liệu liên quan
         await Promise.all([
