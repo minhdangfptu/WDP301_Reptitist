@@ -3,7 +3,7 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
-const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification } = require('../config/email');
+const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification, sendProductHideNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -854,6 +854,7 @@ const updateProductStatusByAdmin = async (req, res) => {
         // Cập nhật trạng thái sản phẩm
         const updatedProduct = await Product.findByIdAndUpdate(productId, { product_status }, { new: true });
 
+        let emailSent = false;
         // Nếu chuyển sang available (gỡ bỏ ẩn), gửi email thông báo cho shop
         if (product_status === 'available' && product.user_id && product.user_id.email) {
             try {
@@ -863,15 +864,33 @@ const updateProductStatusByAdmin = async (req, res) => {
                     product.product_name,
                     req.user.username || 'Admin'
                 );
-                
                 if (emailResult.success) {
+                    emailSent = true;
                     console.log('Email notification sent successfully to shop owner for product unhide');
                 } else {
                     console.error('Failed to send email notification for product unhide:', emailResult.error);
                 }
             } catch (emailError) {
                 console.error('Error sending email notification for product unhide:', emailError);
-                // Không throw error để không ảnh hưởng đến việc cập nhật trạng thái
+            }
+        }
+        // Nếu chuyển sang not_available (ẩn), gửi email thông báo cho shop
+        if (product_status === 'not_available' && product.user_id && product.user_id.email) {
+            try {
+                const emailResult = await sendProductHideNotification(
+                    product.user_id.email,
+                    product.user_id.username || 'Chủ shop',
+                    product.product_name,
+                    req.user.username || 'Admin'
+                );
+                if (emailResult.success) {
+                    emailSent = true;
+                    console.log('Email notification sent successfully to shop owner for product hide');
+                } else {
+                    console.error('Failed to send email notification for product hide:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('Error sending email notification for product hide:', emailError);
             }
         }
 
@@ -883,7 +902,7 @@ const updateProductStatusByAdmin = async (req, res) => {
         res.status(200).json({ 
             message: 'Cập nhật trạng thái thành công', 
             product: updatedProduct,
-            emailSent: product_status === 'available' && product.user_id && product.user_id.email ? true : false
+            emailSent
         });
     } catch (error) {
         res.status(500).json({ message: 'Lỗi server', error: error.message });
