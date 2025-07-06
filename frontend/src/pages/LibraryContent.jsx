@@ -9,6 +9,8 @@ import { baseUrl } from '../config';
 const LibraryContent = () => {
   const { categoryId } = useParams();
   const [contents, setContents] = useState([]);
+  const [filteredContents, setFilteredContents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [category, setCategory] = useState(null);
   const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,6 +82,7 @@ const LibraryContent = () => {
         });
         console.log("Contents:", filtered);
         setContents(filtered);
+        setFilteredContents(filtered);
       } catch (err) {
         setError("Lỗi khi tải nội dung thư viện");
       }
@@ -100,6 +103,14 @@ const LibraryContent = () => {
       setLoading(false);
     });
   }, [categoryId]);
+
+  // Filter contents based on search term
+  useEffect(() => {
+    const filtered = contents.filter((item) =>
+      item.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredContents(filtered);
+  }, [searchTerm, contents]);
 
   // Cập nhật formData khi userId thay đổi
   useEffect(() => {
@@ -332,6 +343,54 @@ const LibraryContent = () => {
           <i className="fas fa-angle-right"></i>{" "}
           <span>{category?.category_content || "Danh mục không xác định"}</span>
         </div>
+
+        {/* Search Bar */}
+        <div className="row mb-3">
+          <div className="col-md-3">
+            {/* Empty space for left alignment */}
+          </div>
+          <div className="col-md-6">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm kiếm theo tên bài viết..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              
+            </div>
+          </div>
+          <div className="col-md-3 text-end">
+            {isAdmin && (
+              <button
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#28a745",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: "pointer"
+                }}
+                onClick={() => {
+                  setIsCreating(true);
+                  setIsEditing(false);
+                  setSelectedContentId(null);
+                  setFormData({
+                    title: "",
+                    content: "",
+                    image_urls: [],
+                    user_id: userId,
+                    topic_category_id: category?.topic_id || "",
+                    category_content_id: categoryId
+                  });
+                }}
+              >
+                Tạo mới nội dung
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <section className="library-section">
@@ -340,8 +399,8 @@ const LibraryContent = () => {
             <div className="sidebar">
               <h2 className="sidebar-title">Chuyên mục bài viết</h2>
               <ul className="sidebar-menu">
-                {contents.length > 0 ? (
-                  contents.map((item) => (
+                {filteredContents.length > 0 ? (
+                  filteredContents.map((item) => (
                     <li key={item._id}>
                       <div className="menu-item">
                         <a
@@ -361,7 +420,7 @@ const LibraryContent = () => {
                   <li>
                     <div className="menu-item">
                       <a href="#" className="menu-link">
-                        Chưa có bài viết
+                        {searchTerm ? "Không tìm thấy bài viết" : "Chưa có bài viết"}
                       </a>
                     </div>
                   </li>
@@ -373,35 +432,7 @@ const LibraryContent = () => {
               className="content-grid"
               style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}
             >
-              {isAdmin && (
-                <div style={{ width: "100%", marginBottom: "10px" }}>
-                  <button
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "5px",
-                      cursor: "pointer"
-                    }}
-                    onClick={() => {
-                      setIsCreating(true);
-                      setIsEditing(false);
-                      setSelectedContentId(null);
-                      setFormData({
-                        title: "",
-                        content: "",
-                        image_urls: [],
-                        user_id: userId,
-                        topic_category_id: category?.topic_id || "",
-                        category_content_id: categoryId
-                      });
-                    }}
-                  >
-                    Tạo mới nội dung
-                  </button>
-                </div>
-              )}
+              {/* Remove duplicate button since it's now in the search bar area */}
 
               {(isCreating || isEditing) && (
                 <div style={{ width: "100%", marginBottom: "20px" }}>
@@ -584,12 +615,17 @@ const LibraryContent = () => {
                   </div>
                 </div>
               ) : (
-                contents.length === 0 ? (
+                filteredContents.length === 0 ? (
                   <div className="text-center" style={{ width: "100%" }}>
-                    <p>Chưa có nội dung nào trong danh mục này.</p>
+                    <p>
+                      {searchTerm 
+                        ? `Không tìm thấy bài viết nào với từ khóa "${searchTerm}"`
+                        : "Chưa có nội dung nào trong danh mục này."
+                      }
+                    </p>
                   </div>
                 ) : (
-                  contents.map((item) => (
+                  filteredContents.map((item) => (
                     <div
                       className="category-card"
                       key={item._id}

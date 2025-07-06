@@ -7,6 +7,8 @@ import { useAuth } from "../context/AuthContext";
 import { baseUrl } from '../config';
 const LibraryCategory = () => {
   const [allCategories, setAllCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [topic, setTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,8 +24,10 @@ const LibraryCategory = () => {
         console.log(topicId, 'topicId');
         const response = await axios.get(`${baseUrl}/reptitist/library-categories/topic/${topicId}`);
         setAllCategories(response.data);
+        setFilteredCategories(response.data);
       } catch (err) {
         setAllCategories([]);
+        setFilteredCategories([]);
       }
     };
 
@@ -40,6 +44,14 @@ const LibraryCategory = () => {
       setLoading(false);
     });
   }, [topicId]);
+
+  // Filter categories based on search term
+  useEffect(() => {
+    const filtered = allCategories.filter((cat) =>
+      cat.category_content.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  }, [searchTerm, allCategories]);
 
   const handleDelete = async (categoryId) => {
     if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
@@ -76,12 +88,29 @@ const LibraryCategory = () => {
           <span>{topic?.topic_title || "Chủ đề không xác định"}</span>
         </div>
 
-        <div className="d-flex justify-content-end mb-3">
-          {isAdmin && (
-            <Link to={`/library_categories/create/${topicId}`}>
-              <button className="btn btn-success">+ Tạo danh mục</button>
-            </Link>
-          )}
+        <div className="row mb-3">
+          <div className="col-md-3">
+            {/* Empty space for left alignment */}
+          </div>
+          <div className="col-md-6">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm kiếm theo tên danh mục..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              
+            </div>
+          </div>
+          <div className="col-md-3 text-end">
+            {isAdmin && (
+              <Link to={`/library_categories/create/${topicId}`}>
+                <button className="btn btn-success">+ Tạo danh mục</button>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 
@@ -92,7 +121,7 @@ const LibraryCategory = () => {
             <div className="sidebar">
               <h2 className="sidebar-title">Thư viện kiến thức</h2>
               <ul className="sidebar-menu list-unstyled">
-                {allCategories.map((cat, idx) => (
+                {filteredCategories.map((cat, idx) => (
                   <li key={cat._id}>
                     <div
                       className="menu-item"
@@ -124,7 +153,7 @@ const LibraryCategory = () => {
 
             {/* Content Grid */}
             <div className="content-grid">
-              {allCategories.map((cat) => (
+              {filteredCategories.map((cat) => (
                 <div className="category-card" key={cat._id}>
                   <Link to={`/librarycontent/${cat._id}`}>
                     <div className="card-image" style={{ cursor: "pointer" }}>
@@ -174,9 +203,14 @@ const LibraryCategory = () => {
                   </div>
                 </div>
               ))}
-              {allCategories.length === 0 && (
+              {filteredCategories.length === 0 && (
                 <div className="col-12 text-center mt-4">
-                  <p>Không có danh mục nào để hiển thị.</p>
+                  <p>
+                    {searchTerm 
+                      ? `Không tìm thấy danh mục nào với từ khóa "${searchTerm}"`
+                      : "Không có danh mục nào để hiển thị."
+                    }
+                  </p>
                 </div>
               )}
             </div>
