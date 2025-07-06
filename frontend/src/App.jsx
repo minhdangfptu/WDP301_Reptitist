@@ -63,6 +63,7 @@ import AdminTransactionManagement from './pages/AdminTransactionManagement';
 import AdminIncomeManagement from './pages/AdminIncomeManagement';
 import AccessDenied from './components/AccessDenied';
 import ContactUsButton from './components/SupportButton';
+import CustomerOrderPage from './pages/CustomerOrderPage';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -259,6 +260,7 @@ const AppRoutes = () => (
         </AccountTypeRoute>
       </ProtectedRoute>} />
 
+    <Route path="/my-orders" element={<ProtectedRoute><CustomerOrderPage /></ProtectedRoute>} />
 
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
