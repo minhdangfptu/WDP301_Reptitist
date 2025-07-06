@@ -1171,7 +1171,11 @@ const AdminShopManagement = () => {
                           <td>{product.product_name}</td>
                           <td>{product.user_id?.username || 'N/A'}</td>
                           <td>{formatDate(product.createdAt)}</td>
-                          <td>{reason}</td>
+                          <td>
+                            <div className="um-reason-cell" title={reason}>
+                              {reason}
+                            </div>
+                          </td>
                           <td><span className="um-role-badge um-badge-default">{product.product_status === 'not_available' ? 'Đã bị ẩn' : 'Đang bán'}</span></td>
                           <td>
                             <button
