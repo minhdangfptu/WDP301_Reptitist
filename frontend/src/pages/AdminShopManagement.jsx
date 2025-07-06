@@ -32,6 +32,8 @@ const AdminShopManagement = () => {
   const [hiddenProducts, setHiddenProducts] = useState([]);
   const [approvedReports, setApprovedReports] = useState([]);
   const [searchHiddenProductName, setSearchHiddenProductName] = useState('');
+  const [allProducts, setAllProducts] = useState([]);
+  const [searchAllProductName, setSearchAllProductName] = useState('');
 
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
@@ -205,10 +207,29 @@ const AdminShopManagement = () => {
     }
   };
 
-  // Auto fetch hidden products when switching tab
+  // Fetch all products
+  const fetchAllProducts = async () => {
+    try {
+      const token = localStorage.getItem('refresh_token');
+      if (!token) return;
+      
+      const response = await axios.get(`${baseUrl}/reptitist/admin/products`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      setAllProducts(response.data?.products || []);
+    } catch (error) {
+      console.error('Error fetching all products:', error);
+      setAllProducts([]);
+    }
+  };
+
+  // Auto fetch data when switching tab
   useEffect(() => {
     if (activeTab === 'hiddenProducts') {
       fetchHiddenProductsAndReports();
+    } else if (activeTab === 'allProducts') {
+      fetchAllProducts();
     }
     // eslint-disable-next-line
   }, [activeTab]);
@@ -491,6 +512,12 @@ const AdminShopManagement = () => {
     return (product.product_name || '').toLowerCase().includes(searchHiddenProductName.toLowerCase());
   });
 
+  // Lọc tất cả sản phẩm theo tên
+  const filteredAllProducts = allProducts.filter(product => {
+    if (!searchAllProductName) return true;
+    return (product.product_name || '').toLowerCase().includes(searchAllProductName.toLowerCase());
+  });
+
   // Check admin access
   if (!hasRole('admin')) {
     return (
@@ -649,6 +676,14 @@ const AdminShopManagement = () => {
             >
               <i className="fas fa-eye-slash"></i>
               Sản phẩm đã bị ẩn ({hiddenProducts.length})
+            </button>
+            <button
+              className={`um-btn ${activeTab === 'allProducts' ? 'um-btn-primary' : 'um-btn-secondary'}`}
+              onClick={() => setActiveTab('allProducts')}
+              style={{ minWidth: '200px', borderRadius: '25px', fontWeight: '600' }}
+            >
+              <i className="fas fa-box"></i>
+              Tất cả sản phẩm ({allProducts.length})
             </button>
           </div>
         </div>
@@ -1100,6 +1135,116 @@ const AdminShopManagement = () => {
                           </td>
                         </tr>
                       ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'allProducts' ? (
+          // All Products Tab
+          <div className="um-table-section">
+            <div className="um-table-header">
+              <h3>
+                <i className="fas fa-box"></i>
+                Tất cả sản phẩm ({filteredAllProducts.length})
+              </h3>
+            </div>
+            {/* Search all products */}
+            <div className="um-filters-section" style={{ marginBottom: '10px' }}>
+              <div className="um-search-box">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
+                  value={searchAllProductName}
+                  onChange={e => setSearchAllProductName(e.target.value)}
+                  className="um-search-input"
+                />
+                <i className="fas fa-search um-search-icon"></i>
+              </div>
+            </div>
+            {filteredAllProducts.length === 0 ? (
+              <div className="um-empty-state">
+                <i className="fas fa-box-open um-empty-icon"></i>
+                <h3>Không có sản phẩm nào</h3>
+                <p>Chưa có sản phẩm nào trong hệ thống</p>
+              </div>
+            ) : (
+              <div className="um-table-container">
+                <table className="um-users-table">
+                  <thead>
+                    <tr>
+                      <th>Ảnh</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Shop</th>
+                      <th>Giá</th>
+                      <th>Số lượng</th>
+                      <th>Ngày tạo</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAllProducts.map(product => (
+                      <tr key={product._id} className="um-table-row">
+                        <td>
+                          <div className="um-user-avatar-container">
+                            <img
+                              src={product.product_imageurl?.[0] || '/images/default-product.png'}
+                              alt={product.product_name}
+                              className="um-user-avatar"
+                              onError={e => { e.target.src = '/images/default-product.png'; }}
+                            />
+                          </div>
+                        </td>
+                        <td>{product.product_name}</td>
+                        <td>{product.user_id?.username || 'N/A'}</td>
+                        <td>
+                          <span className="um-balance">
+                            {formatCurrency(product.product_price)}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={product.product_quantity === 0 ? 'text-danger' : ''}>
+                            {product.product_quantity}
+                            {product.product_quantity === 0 && ' (Hết hàng)'}
+                          </span>
+                        </td>
+                        <td>{formatDate(product.createdAt)}</td>
+                        <td>
+                          <span className={`um-role-badge ${getStatusBadgeColor(product.product_status)}`}>
+                            {product.product_status === 'available' ? 'Đang bán' :
+                              product.product_status === 'reported' ? 'Bị báo cáo' :
+                                product.product_status === 'not_available' ? 'Đã bị ẩn' : 'N/A'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="um-action-buttons">
+                            <button
+                              onClick={() => handleDeleteProduct(product._id)}
+                              className="um-btn-action um-btn-delete"
+                              title="Xóa sản phẩm"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                            <button
+                              className={`um-status-btn ${product.product_status === 'not_available' ? 'um-status-inactive' : 'um-status-active'}`}
+                              onClick={() => handleToggleProductStatus(product._id, product.product_status)}
+                              title={product.product_status === 'not_available' ? 'Bỏ ẩn sản phẩm' : 'Ẩn sản phẩm'}
+                            >
+                              {product.product_status === 'not_available' ? (
+                                <>
+                                  <i className="fas fa-eye"></i> Bỏ ẩn
+                                </>
+                              ) : (
+                                <>
+                                  <i className="fas fa-eye-slash"></i> Ẩn
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
