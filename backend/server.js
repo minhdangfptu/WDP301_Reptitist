@@ -3,7 +3,6 @@ dotenv.config();
 const express = require('express');
 const { connect } = require('mongoose');
 const router = require('./src/routes');
-const testEmailRoute = require('./src/routes/testEmailRoute');
 const morgan = require('morgan');
 var cors = require('cors');
 const bodyParser = require('body-parser');
@@ -53,7 +52,6 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/reptitist', router);
-app.use('/test-email', testEmailRoute);
 
 router.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
