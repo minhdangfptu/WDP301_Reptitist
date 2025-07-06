@@ -1504,7 +1504,9 @@ const AdminShopManagement = () => {
                     </div>
                     <div className="um-detail-item">
                       <label>Mô tả:</label>
-                      <span>{selectedReport.description || 'Không có'}</span>
+                      <div className="um-reason-cell">
+                        {selectedReport.description || 'Không có'}
+                      </div>
                     </div>
                     <div className="um-detail-item">
                       <label>Ngày báo cáo:</label>
