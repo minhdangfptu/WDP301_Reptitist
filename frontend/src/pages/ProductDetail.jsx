@@ -25,7 +25,8 @@ import "../css/editForm.css";
 import Footer from "../components/Footer";
 import { Navigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
 import {
   updateFeedbackAndRating,
@@ -366,21 +367,31 @@ const handleReportSubmit = async (reason, description) => {
     toast.error("Không tìm thấy thông tin sản phẩm.");
     return;
   }
+  
+  // Hiển thị thông báo đang gửi
+  const loadingToast = toast.loading("Đang gửi báo cáo...");
+  
   try {
     console.log('Sending report payload:', { product_id: product._id, reason, description });
     const response = await reportProductService(product._id, reason, description);
     
+    // Đóng toast loading
+    toast.dismiss(loadingToast);
+    
     // Kiểm tra message từ response
     if (response.message === 'Bạn đã báo cáo sản phẩm này rồi.') {
-      toast.success('Bạn đã báo cáo sản phẩm này rồi');
+      toast.info('Bạn đã báo cáo sản phẩm này rồi. Chúng tôi sẽ xem xét báo cáo của bạn.');
     } else {
-      toast.success("Báo cáo của bạn đã được gửi thành công. Cảm ơn bạn đã đóng góp!");
+      toast.success("Báo cáo của bạn đã được gửi thành công! Cảm ơn bạn đã đóng góp.");
     }
     
     setIsReportModalOpen(false);
   } catch (error) {
+    // Đóng toast loading
+    toast.dismiss(loadingToast);
+    
     console.error("Failed to submit report:", error);
-    toast.error(error.message || "Gửi báo cáo thất bại. Vui lòng thử lại.");
+    toast.error(error.message || "Gửi báo cáo thất bại. Vui lòng thử lại sau.");
   }
 };
 
@@ -840,6 +851,18 @@ const handleReportSubmit = async (reason, description) => {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         onSubmit={handleReportSubmit}
+        productName={product?.product_name}
+      />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
       />
     </div>
   );
