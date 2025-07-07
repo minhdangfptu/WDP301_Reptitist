@@ -2,6 +2,8 @@
 const mongoose = require('mongoose');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
+const User = require('../models/users');
+const Role = require('../models/Roles');
 
 const createProductReport = async (req, res) => {
   try {
@@ -35,6 +37,15 @@ const createProductReport = async (req, res) => {
       ? product.user_id 
       : null;
     console.log('Shop ID:', shop_id);
+
+    // Fetch the user with role info
+    const reporter = await User.findById(reporter_id).populate('role_id');
+    if (!reporter) {
+      return res.status(401).json({ message: 'Người dùng không tồn tại.' });
+    }
+    if (reporter.role_id && reporter.role_id.role_name === 'admin') {
+      return res.status(403).json({ message: 'Admin không thể báo cáo sản phẩm.' });
+    }
 
     const newReport = new ProductReport({
       product_id,

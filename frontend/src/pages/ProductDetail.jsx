@@ -448,13 +448,15 @@ const handleReportSubmit = async (reason, description) => {
               />
 
               <div className="product-detail-image-actions">
-                <button
-                  className="product-detail-action-btn"
-                  onClick={() => setIsReportModalOpen(true)}
-                  title="Báo cáo sản phẩm"
-                >
-                  🚩
-                </button>
+                {user && user.role !== 'admin' && (
+                  <button
+                    className="product-detail-action-btn"
+                    onClick={() => setIsReportModalOpen(true)}
+                    title="Báo cáo sản phẩm"
+                  >
+                    🚩
+                  </button>
+                )}
               </div>
             </div>
             <div className="product-detail-thumbnails">
