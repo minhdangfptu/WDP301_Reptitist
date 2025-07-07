@@ -46,7 +46,7 @@ const ReportProductModal = ({ isOpen, onClose, onSubmit, productName }) => {
           className="report-reason-textarea"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Mô tả chi tiết lý do báo cáo của bạn (tùy chọn)..."
+          placeholder="Mô tả chi tiết (tùy chọn)..."
           rows="5"
           maxLength={500}
         />
