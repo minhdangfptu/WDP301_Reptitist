@@ -5,7 +5,9 @@ const { createPaymentURL,
     handlePaymentReturn,
     getTransactionHistory,
     refundTransaction,
-    filterTransactionHistory } = require('../controllers/transactionController');
+    filterTransactionHistory,
+    getAllTransactions
+} = require('../controllers/transactionController');
 
 const {
     authMiddleware,
@@ -36,6 +38,7 @@ router.get(
     ensureOwnUserData,
     filterTransactionHistory
 );
+router.get('/all', getAllTransactions);
 router.post(
     '/refund/:transaction_id',
     authMiddleware,
