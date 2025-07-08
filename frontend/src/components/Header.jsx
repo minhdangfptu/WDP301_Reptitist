@@ -278,6 +278,13 @@ const Header = () => {
                           >
                             Thống kê doanh thu
                           </Link>
+                          <Link
+                            to="/admin/upgrade-plans"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý Upgrade Plan
+                          </Link>
                         </div>
                       </>
                     )}

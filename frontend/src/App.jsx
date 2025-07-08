@@ -64,6 +64,8 @@ import AdminIncomeManagement from './pages/AdminIncomeManagement';
 import AccessDenied from './components/AccessDenied';
 import ContactUsButton from './components/SupportButton';
 import CustomerOrderPage from './pages/CustomerOrderPage';
+import AdminUpgradePlanManagement from './pages/AdminUpgradePlanManagement';
+import Header from './components/Header';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -271,6 +273,7 @@ const AppRoutes = () => (
     <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/AdminTransactionManagement" element={<ProtectedRoute requiredRole="admin"><AdminTransactionManagement /></ProtectedRoute>} />
     <Route path="/AdminIncomeManagement" element={<ProtectedRoute requiredRole="admin"><AdminIncomeManagement /></ProtectedRoute>} />
+    <Route path="/admin/upgrade-plans" element={<ProtectedRoute requiredRole="admin"><><Header /><AdminUpgradePlanManagement /></></ProtectedRoute>} />
 
     {/* Auth callback route */}
     <Route path="/auth/callback" element={<AuthCallback />} />
