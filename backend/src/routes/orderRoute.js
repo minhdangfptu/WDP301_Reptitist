@@ -9,7 +9,6 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 router.post(
   '/create-order',
   authMiddleware1,
-  roleMiddleware('admin','customer'),         // Kiểm tra quyền admin
   orderController.createOrder // Hàm callback cho việc tạo reptile
 );
 
@@ -37,5 +36,6 @@ router.put('/mark-shipped-order',
     authMiddleware1, 
     orderController.markOrderAsShippedByShop);
 
+router.delete('/order/:id', authMiddleware1, orderController.softDeleteOrder);
 
 module.exports = router;

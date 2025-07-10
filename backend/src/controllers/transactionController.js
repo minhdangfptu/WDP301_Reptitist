@@ -176,10 +176,22 @@ const filterTransactionHistory = async (req, res) => {
     return res.status(500).json({ error: 'Lỗi server khi lọc lịch sử giao dịch' });
   }
 };
+
+// Lấy tất cả giao dịch cho admin
+const getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find().sort({ createdAt: -1 });
+    res.status(200).json(transactions);
+  } catch (error) {
+    res.status(500).json({ error: 'Không thể lấy danh sách giao dịch' });
+  }
+};
+
 module.exports = {
   createPaymentURL,
   handlePaymentReturn,
   getTransactionHistory,
   refundTransaction,
-  filterTransactionHistory
+  filterTransactionHistory,
+  getAllTransactions
 };

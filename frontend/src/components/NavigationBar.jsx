@@ -72,11 +72,32 @@ const NavigationBar = () => {
             </div>
             <span className="menu-text">Cài đặt</span>
           </div>
+          
 
+          {/* Admin Management - Admin/Shield Icon */}
           {hasRole && hasRole('admin') && (
-            <li>
-              <a href="/AdminTransactionManagement">Quản lý giao dịch</a>
-            </li>
+            <>
+              <div className={`menu-item ${activeItem === 'admin-transaction' ? 'active' : ''}`}
+                   onClick={() => handleMenuClick('admin-transaction', '/AdminTransactionManagement')}>
+                <div className="menu-icon-wrapper">
+                  <svg className="menu-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                  </svg>
+                </div>
+                <span className="menu-text">Quản lý giao dịch</span>
+              </div> 
+
+              <div className={`menu-item ${activeItem === 'admin-income' ? 'active' : ''}`}
+                   onClick={() => handleMenuClick('admin-income', '/AdminIncomeManagement')}>
+                <div className="menu-icon-wrapper">
+                  <svg className="menu-icon" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                  </svg>
+                </div>
+                <span className="menu-text">Thống kê doanh thu</span>
+              </div>
+            </>
           )}
         </nav>
       </div>

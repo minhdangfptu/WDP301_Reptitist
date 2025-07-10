@@ -53,7 +53,8 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/reptitist', router);
 
-router.get("/test", (req, res) => {
+// Test route should be inside the router or moved before mounting
+app.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
 });
 
