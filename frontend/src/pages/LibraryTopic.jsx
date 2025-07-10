@@ -154,6 +154,24 @@ const Library = () => {
                 </div>
               )}
               <h2 className="sidebar-title mt-4">Thư viện chuyên sâu</h2>
+              <Link to="/LibraryExpert">
+                <button
+                  style={{
+                    width: '100%',
+                    padding: '8px 16px',
+                    backgroundColor: '#06a13d',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '20px',
+                    fontWeight: 'bold',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                >
+                  Thư viện chuyên sâu
+                </button>
+              </Link>
             </div>
 
             {/* Content Grid for Topics and Reptiles */}

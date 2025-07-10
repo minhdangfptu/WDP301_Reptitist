@@ -19,16 +19,16 @@
 
 .admin-income-management {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #fff;
   padding-bottom: 2rem;
 }
 
 /* Page Header */
 .im-page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #06a13d;
+  color: #fff;
   padding: 2rem 0;
   margin-bottom: 2rem;
-  box-shadow: var(--im-shadow-lg);
 }
 
 .im-page-header-content {
@@ -60,6 +60,11 @@
   color: rgba(255, 255, 255, 0.9);
   font-size: 1.1rem;
   margin: 0;
+}
+
+.im-page-header-text h1,
+.im-page-header-text p {
+  color: #fff;
 }
 
 /* Filters Section */
@@ -582,4 +587,33 @@
   .im-chart-container {
     height: 300px;
   }
+} 
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.2);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 24px;
+  min-width: 340px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  max-width: 95vw;
+} 
+
+.im-summary-section,
+.im-filters-section,
+.im-table-section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
 } 
