@@ -717,7 +717,6 @@ const AdminShopManagement = () => {
                                 </div>
                                 <div className="um-user-details">
                                   <span className="um-username">{shop.username}</span>
-                                  <small className="um-user-id">ID: {shop._id.slice(-8)}</small>
                                   {shop.fullname && (
                                     <small className="um-fullname">{shop.fullname}</small>
                                   )}
@@ -1063,10 +1062,6 @@ const AdminShopManagement = () => {
                       Thông tin cơ bản
                     </h4>
                     <div className="um-detail-grid">
-                      <div className="um-detail-item">
-                        <label>ID Shop:</label>
-                        <span className="um-user-id-copy">{selectedShop._id}</span>
-                      </div>
                       <div className="um-detail-item">
                         <label>Tên đầy đủ:</label>
                         <span>{selectedShop.fullname || 'N/A'}</span>

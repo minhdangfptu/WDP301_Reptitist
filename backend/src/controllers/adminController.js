@@ -46,33 +46,20 @@ const getAllUsers = async (req, res) => {
 const getAllShops = async (req, res) => {
     try {
         const { page = 1, limit = 10, status } = req.query;
-        
-        const shopRole = await Role.findOne({ role_name: 'shop' });
-        if (!shopRole) {
-            return res.status(404).json({ message: 'Không tìm thấy role shop' });
-        }
-
-        const query = { role_id: shopRole._id };
-        
+        const query = { "account_type.type": "shop" };
         if (status && status !== 'all') {
             query.isActive = status === 'active';
         }
-
         const skip = (parseInt(page) - 1) * parseInt(limit);
-        
         const shops = await User.find(query)
-            .populate('role_id', 'role_name role_description')
             .select('-password_hashed -refresh_tokens')
             .sort({ created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
-
         if (!shops || shops.length === 0) {
             return res.status(404).json({ message: 'Không có shop nào' });
         }
-
         const total = await User.countDocuments(query);
-
         // Lấy thống kê sản phẩm cho mỗi shop
         const shopsWithStats = await Promise.all(shops.map(async (shop) => {
             const productCount = await Product.countDocuments({ user_id: shop._id });
@@ -80,14 +67,12 @@ const getAllShops = async (req, res) => {
                 user_id: shop._id, 
                 product_status: 'reported' 
             });
-            
             return {
                 ...shop.toObject(),
                 productCount,
                 reportedCount
             };
         }));
-
         res.status(200).json({
             shops: shopsWithStats,
             pagination: {
@@ -310,13 +295,9 @@ const getAdminStats = async (req, res) => {
         const inactiveUsers = await User.countDocuments({ isActive: false });
         
         // Thống kê theo roles
-        const adminRole = await Role.findOne({ role_name: 'admin' });
-        const shopRole = await Role.findOne({ role_name: 'shop' });
-        const customerRole = await Role.findOne({ role_name: 'customer' });
-        
-        const adminCount = adminRole ? await User.countDocuments({ role_id: adminRole._id }) : 0;
-        const shopCount = shopRole ? await User.countDocuments({ role_id: shopRole._id }) : 0;
-        const customerCount = customerRole ? await User.countDocuments({ role_id: customerRole._id }) : 0;
+        const adminCount = await User.countDocuments({ "account_type.type": "admin" });
+        const shopCount = await User.countDocuments({ "account_type.type": "shop" });
+        const customerCount = await User.countDocuments({ "account_type.type": "user" });
         
         // Thống kê sản phẩm
         const totalProducts = await Product.countDocuments();

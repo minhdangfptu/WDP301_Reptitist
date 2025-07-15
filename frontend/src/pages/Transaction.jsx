@@ -27,6 +27,7 @@ const Transaction = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('access_token');
+
       if (!token) {
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setLoading(false);
