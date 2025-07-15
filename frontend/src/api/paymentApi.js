@@ -11,9 +11,13 @@ const verifyVNPayTransaction = (queryString) => {
   // queryString: dạng 'vnp_Amount=...&vnp_TxnRef=...'
   return axiosClient.get(`transactions/vnpay/verify?${queryString}`);
 };
+const getTransactionHistory = (dayRange) => {  
+  return axiosClient.get(`transactions/history?dayRange=${dayRange}`);
+};
 
 const paymentApi = {
     createVNPayTransaction,
     verifyVNPayTransaction,
+    getTransactionHistory
 };
 export default paymentApi;
