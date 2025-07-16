@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../css/AdminIncomeManagement.css';
+import { baseUrl } from '../config';
 
-const API_URL = '/api/admin/upgrade-plans';
+// const API_URL = `${baseUrl}/reptitist/admin`;
 
 const AdminUpgradePlanManagement = () => {
   const [plans, setPlans] = useState([]);

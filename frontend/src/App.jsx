@@ -69,6 +69,7 @@ import Header from './components/Header';
 import LibraryExpert from './pages/LibraryExpert';
 import LibraryExpertDetail from './pages/LibraryExpertDetail';
 import LibraryExpertTopicCreate from './pages/LibraryExpertTopicCreate';
+import LibraryExpertUpdate from './pages/LibraryExpertUpdate';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -286,6 +287,7 @@ const AppRoutes = () => (
     <Route path="*" element={<UnderDevPage />} />
     <Route path="/libraryExpertDetail/:reptileId" element={<LibraryExpertDetail />} />
     <Route path="/library_expert_topics/create" element={<LibraryExpertTopicCreate />} />
+    <Route path="/libraryExpertDetail/update/:reptileId" element={<LibraryExpertUpdate />} />
   </Routes>
 );
 

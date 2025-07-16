@@ -169,7 +169,7 @@ const Library = () => {
                     transition: 'background-color 0.2s ease',
                   }}
                 >
-                  Thư viện chuyên sâu
+                Thư viện chuyên sâu
                 </button>
               </Link>
             </div>
@@ -220,27 +220,6 @@ const Library = () => {
                 ))}
               </div>
 
-              {/* Second row for reptiles */}
-              <div className="reptile-info">
-                <h3>Danh sách các loài bò sát</h3>
-                {reptiles.length === 0 ? (
-                  <p>Không có thông tin bò sát để hiển thị.</p>
-                ) : (
-                  <ul>
-                    {reptiles.map((reptile) => (
-                      <li key={reptile._id}>
-                        <h4>{reptile.common_name}</h4>
-                        <p><strong>Mô tả:</strong> {reptile.reptile_description}</p>
-                        <p><strong>Tuổi thọ:</strong> {reptile.lifespan_years} năm</p>
-                        <p><strong>Nhà ở tự nhiên:</strong> {reptile.natural_habitat}</p>
-                        <p><strong>Chế độ ăn:</strong> {reptile.diet}</p>
-                        <p><strong>Thức ăn được khuyến nghị:</strong> {reptile.recommended_foods.join(', ')}</p>
-                        <p><strong>Bệnh thường gặp:</strong> {reptile.disease.day}</p>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { baseUrl } from '../config';
 import Header from '../components/Header';
@@ -10,6 +10,7 @@ const LibraryExpertDetail = () => {
   const { reptileId } = useParams();
   const [reptile, setReptile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`${baseUrl}/reptitist/info/get-all-reptile`)
@@ -20,6 +21,18 @@ const LibraryExpertDetail = () => {
       })
       .catch(() => setLoading(false));
   }, [reptileId]);
+
+  const handleDelete = async () => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa chủ đề này?')) {
+      try {
+        await axios.delete(`${baseUrl}/reptitist/info/delete-reptile/${reptile._id}`);
+        alert('Đã xóa thành công!');
+        navigate('/LibraryExpert');
+      } catch (err) {
+        alert('Lỗi khi xóa!');
+      }
+    }
+  };
 
   if (loading) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -44,6 +57,24 @@ const LibraryExpertDetail = () => {
         <div className="library-content" style={{ gap: 40 }}>
           <div className="main-content" style={{ flex: 1 }}>
             <div className="category-card" style={{ padding: 32, textAlign: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 16 }}>
+                <button
+                  style={{
+                    background: '#dc3545', color: '#fff', border: 'none', borderRadius: 5, padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold'
+                  }}
+                  onClick={handleDelete}
+                >
+                  Delete
+                </button>
+                <button
+                  style={{
+                    background: '#ffc107', color: '#222', border: 'none', borderRadius: 5, padding: '8px 16px', cursor: 'pointer', fontWeight: 'bold'
+                  }}
+                  onClick={() => navigate(`/libraryExpertDetail/update/${reptile._id}`)}
+                >
+                  Update
+                </button>
+              </div>
               <div className="card-image" style={{ marginBottom: 24 }}>
                 <img
                   src={reptile.image_url || 'https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png'}
