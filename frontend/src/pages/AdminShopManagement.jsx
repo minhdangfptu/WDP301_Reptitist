@@ -669,16 +669,6 @@ const AdminShopManagement = () => {
               </div>
             </div>
 
-            <div className="um-stat-card um-stat-admin">
-              <div className="um-stat-icon">
-                <i className="fas fa-exclamation-triangle"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.products.reported}</span>
-                <span className="um-stat-label">Bị báo cáo</span>
-              </div>
-            </div>
-
             <div className="um-stat-card um-stat-inactive">
               <div className="um-stat-icon">
                 <i className="fas fa-flag"></i>
