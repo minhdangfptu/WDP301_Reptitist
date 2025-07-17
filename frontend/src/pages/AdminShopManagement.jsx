@@ -13,7 +13,7 @@ import { baseUrl } from '../config';
 const AdminShopManagement = () => {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
-  
+
   // State management
   const [shops, setShops] = useState([]);
   const [filteredShops, setFilteredShops] = useState([]);
@@ -27,7 +27,18 @@ const AdminShopManagement = () => {
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
   const [activeTab, setActiveTab] = useState('shops'); // 'shops' or 'reports'
-  
+  const [searchReportProductName, setSearchReportProductName] = useState('');
+  const [hiddenProducts, setHiddenProducts] = useState([]);
+  const [approvedReports, setApprovedReports] = useState([]);
+  const [searchHiddenProductName, setSearchHiddenProductName] = useState('');
+  const [allProducts, setAllProducts] = useState([]);
+  const [searchAllProductName, setSearchAllProductName] = useState('');
+  const [hideReason, setHideReason] = useState('');
+  // Thêm state cho modal xóa sản phẩm
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deletingProductId, setDeletingProductId] = useState(null);
+
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
@@ -36,7 +47,7 @@ const AdminShopManagement = () => {
   const [selectedReport, setSelectedReport] = useState(null);
   const [shopProducts, setShopProducts] = useState([]);
   const [adminNote, setAdminNote] = useState('');
-  
+
   // Statistics
   const [stats, setStats] = useState({
     users: {
@@ -179,32 +190,95 @@ const AdminShopManagement = () => {
     }
   };
 
-  // Handle delete product by admin
-  const handleDeleteProduct = async (productId) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      return;
-    }
-
+  // Fetch hidden products và approved reports
+  const fetchHiddenProductsAndReports = async () => {
     try {
       const token = localStorage.getItem('refresh_token');
       if (!token) return;
+      // Lấy sản phẩm bị ẩn
+      const productRes = await axios.get(`${baseUrl}/reptitist/admin/products?status=not_available`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      // Lấy báo cáo đã được duyệt
+      const reportRes = await axios.get(`${baseUrl}/reptitist/admin/reports?status=approved`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setHiddenProducts(productRes.data?.products || []);
+      setApprovedReports(reportRes.data?.reports || []);
+    } catch (error) {
+      setHiddenProducts([]);
+      setApprovedReports([]);
+    }
+  };
 
+  // Fetch all products
+  const fetchAllProducts = async () => {
+    try {
+      const token = localStorage.getItem('refresh_token');
+      if (!token) return;
+      
+      const response = await axios.get(`${baseUrl}/reptitist/admin/products`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      setAllProducts(response.data?.products || []);
+    } catch (error) {
+      console.error('Error fetching all products:', error);
+      setAllProducts([]);
+    }
+  };
+
+  // Auto fetch data when switching tab
+  useEffect(() => {
+    if (activeTab === 'hiddenProducts') {
+      fetchHiddenProductsAndReports();
+    } else if (activeTab === 'allProducts') {
+      fetchAllProducts();
+    }
+    // eslint-disable-next-line
+  }, [activeTab]);
+
+  // Handle delete product by admin
+  const handleDeleteProduct = async (productId, reason) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem('refresh_token');
+      if (!token) return;
       const response = await axios.delete(
         `${baseUrl}/reptitist/admin/products/${productId}`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          data: {
+            deleteReason: reason || undefined
           }
         }
       );
-
       if (response.status === 200) {
-        toast.success('Xóa sản phẩm thành công');
-        // Refresh shop products
+        const message = response.data.emailSent 
+          ? 'Xóa sản phẩm thành công! Email thông báo đã được gửi đến shop owner.'
+          : 'Xóa sản phẩm thành công!';
+        toast.success(message);
+        // Refresh tất cả dữ liệu liên quan
+        await Promise.all([
+          fetchHiddenProductsAndReports(),
+          fetchAllProducts(),
+          fetchStats()
+        ]);
+        // Refresh shop products nếu đang xem shop detail
         if (selectedShop) {
           await fetchShopProducts(selectedShop._id);
         }
-        await fetchStats();
+        // Cập nhật state ngay lập tức cho UI
+        if (activeTab === 'hiddenProducts') {
+          setHiddenProducts(prev => prev.filter(p => p._id !== productId));
+        } else if (activeTab === 'allProducts') {
+          setAllProducts(prev => prev.filter(p => p._id !== productId));
+        }
       }
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -233,7 +307,10 @@ const AdminShopManagement = () => {
       );
 
       if (response.status === 200) {
-        toast.success(`${action === 'approve' ? 'Chấp nhận' : 'Từ chối'} báo cáo thành công`);
+        const message = action === 'approve' 
+          ? `Chấp nhận báo cáo thành công${response.data.emailSent ? ' và đã gửi email thông báo' : ''}`
+          : 'Từ chối báo cáo thành công';
+        toast.success(message);
         await fetchReports();
         await fetchStats();
         setShowReportModal(false);
@@ -410,6 +487,99 @@ const AdminShopManagement = () => {
     }
   };
 
+  // Filtered reports by product name
+  const filteredReports = reports.filter(report => {
+    if (!searchReportProductName) return true;
+    const productName = report.product_id?.product_name || '';
+    return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
+  });
+
+  // Lọc báo cáo chờ xử lý
+  const pendingReports = reports.filter(report => report.status === 'pending');
+
+  // Thêm hàm chuyển trạng thái sản phẩm
+  const handleToggleProductStatus = async (productId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('refresh_token');
+      if (!token) return;
+      let newStatus = currentStatus === 'not_available' ? 'available' : 'not_available';
+      let reason = undefined;
+      if (newStatus === 'not_available') {
+        reason = await promptHideReason();
+        if (reason === null) return; // Cancel
+      }
+      const response = await axios.put(
+        `${baseUrl}/reptitist/admin/products/${productId}/status`,
+        { product_status: newStatus, hideReason: reason },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (newStatus === 'available') {
+        if (response.data.emailSent) {
+          toast.success('Cập nhật trạng thái sản phẩm thành công! Email thông báo đã được gửi đến shop owner.');
+        } else {
+          toast.success('Cập nhật trạng thái sản phẩm thành công!');
+        }
+      } else {
+        if (response.data.emailSent) {
+          toast.success('Cập nhật trạng thái sản phẩm thành công! Email thông báo đã được gửi đến shop owner.');
+        } else {
+          toast.success('Cập nhật trạng thái sản phẩm thành công!');
+        }
+      }
+      // Refresh tất cả dữ liệu liên quan
+      await Promise.all([
+        fetchHiddenProductsAndReports(),
+        fetchAllProducts(),
+        fetchStats()
+      ]);
+      // Cập nhật state ngay lập tức cho UI
+      if (activeTab === 'hiddenProducts') {
+        setHiddenProducts(prev => {
+          if (newStatus === 'available') {
+            return prev.filter(p => p._id !== productId);
+          } else {
+            const product = allProducts.find(p => p._id === productId);
+            return product ? [...prev, product] : prev;
+          }
+        });
+      } else if (activeTab === 'allProducts') {
+        setAllProducts(prev =>
+          prev.map(p =>
+            p._id === productId
+              ? { ...p, product_status: newStatus }
+              : p
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling product status:', error);
+      toast.error('Không thể cập nhật trạng thái sản phẩm');
+    }
+  };
+
+  // Lọc sản phẩm bị ẩn theo tên
+  const filteredHiddenProducts = hiddenProducts.filter(product => {
+    if (!searchHiddenProductName) return true;
+    return (product.product_name || '').toLowerCase().includes(searchHiddenProductName.toLowerCase());
+  });
+
+  // Lọc tất cả sản phẩm theo tên
+  const filteredAllProducts = allProducts.filter(product => {
+    if (!searchAllProductName) return true;
+    return (product.product_name || '').toLowerCase().includes(searchAllProductName.toLowerCase());
+  });
+
+  // Thêm hàm yêu cầu nhập lý do khi ẩn sản phẩm
+  const promptHideReason = async () => {
+    let reason = '';
+    while (!reason) {
+      reason = window.prompt('Nhập lý do ẩn sản phẩm (bắt buộc):');
+      if (reason === null) return null; // Bấm Cancel
+      if (!reason) toast.error('Vui lòng nhập lý do ẩn sản phẩm!');
+    }
+    return reason;
+  };
+
   // Check admin access
   if (!hasRole('admin')) {
     return (
@@ -446,7 +616,7 @@ const AdminShopManagement = () => {
         pauseOnHover
         theme="light"
       />
-      
+
       <div className="um-user-list-container">
         {/* Page Header */}
         <div className="um-page-header">
@@ -478,7 +648,7 @@ const AdminShopManagement = () => {
                 <span className="um-stat-label">Tổng Shop</span>
               </div>
             </div>
-            
+
             <div className="um-stat-card um-stat-total">
               <div className="um-stat-icon">
                 <i className="fas fa-box"></i>
@@ -496,16 +666,6 @@ const AdminShopManagement = () => {
               <div className="um-stat-content">
                 <span className="um-stat-number">{stats.products.available}</span>
                 <span className="um-stat-label">Đang bán</span>
-              </div>
-            </div>
-
-            <div className="um-stat-card um-stat-admin">
-              <div className="um-stat-icon">
-                <i className="fas fa-exclamation-triangle"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.products.reported}</span>
-                <span className="um-stat-label">Bị báo cáo</span>
               </div>
             </div>
 
@@ -531,13 +691,14 @@ const AdminShopManagement = () => {
           </div>
         </div>
 
+
         {/* Tab Navigation */}
         <div className="um-filters-section" style={{ marginBottom: '10px', paddingBottom: '10px' }}>
           <div className="um-filters-row" style={{ justifyContent: 'flex-start', gap: '20px' }}>
             <button
               className={`um-btn ${activeTab === 'shops' ? 'um-btn-primary' : 'um-btn-secondary'}`}
               onClick={() => setActiveTab('shops')}
-              style={{ 
+              style={{
                 minWidth: '200px',
                 borderRadius: '25px',
                 fontWeight: '600'
@@ -549,14 +710,30 @@ const AdminShopManagement = () => {
             <button
               className={`um-btn ${activeTab === 'reports' ? 'um-btn-primary' : 'um-btn-secondary'}`}
               onClick={() => setActiveTab('reports')}
-              style={{ 
+              style={{
                 minWidth: '200px',
                 borderRadius: '25px',
                 fontWeight: '600'
               }}
             >
               <i className="fas fa-flag"></i>
-              Báo cáo sản phẩm ({reports.filter(r => r.status === 'pending').length})
+              Báo cáo chờ xử lý ({pendingReports.length})
+            </button>
+            <button
+              className={`um-btn ${activeTab === 'hiddenProducts' ? 'um-btn-primary' : 'um-btn-secondary'}`}
+              onClick={() => setActiveTab('hiddenProducts')}
+              style={{ minWidth: '200px', borderRadius: '25px', fontWeight: '600' }}
+            >
+              <i className="fas fa-eye-slash"></i>
+              Sản phẩm đã bị ẩn ({hiddenProducts.length})
+            </button>
+            <button
+              className={`um-btn ${activeTab === 'allProducts' ? 'um-btn-primary' : 'um-btn-secondary'}`}
+              onClick={() => setActiveTab('allProducts')}
+              style={{ minWidth: '200px', borderRadius: '25px', fontWeight: '600' }}
+            >
+              <i className="fas fa-box"></i>
+              Tất cả sản phẩm ({allProducts.length})
             </button>
           </div>
         </div>
@@ -579,7 +756,7 @@ const AdminShopManagement = () => {
                   />
                   <i className="fas fa-search um-search-icon"></i>
                 </div>
-                
+
                 <div className="um-filter-group">
                   <label>Trạng thái:</label>
                   <select
@@ -723,7 +900,7 @@ const AdminShopManagement = () => {
                                 </div>
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-contact-info">
                                 <div className="um-email">
@@ -738,7 +915,7 @@ const AdminShopManagement = () => {
                                 )}
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-balance-info">
                                 <span className="um-balance">{shop.productCount || 0}</span>
@@ -748,7 +925,7 @@ const AdminShopManagement = () => {
                                 </small>
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-balance-info">
                                 <span className={`um-balance ${shop.reportedCount > 0 ? 'text-danger' : ''}`}>
@@ -760,7 +937,7 @@ const AdminShopManagement = () => {
                                 </small>
                               </div>
                             </td>
-                            
+
                             <td>
                               <div className="um-date-info">
                                 <span className="um-date">
@@ -768,7 +945,7 @@ const AdminShopManagement = () => {
                                 </span>
                               </div>
                             </td>
-                            
+
                             <td>
                               <button
                                 onClick={() => toggleShopStatus(shop)}
@@ -787,7 +964,7 @@ const AdminShopManagement = () => {
                                 )}
                               </button>
                             </td>
-                            
+
                             <td>
                               <div className="um-action-buttons">
                                 <button
@@ -800,7 +977,7 @@ const AdminShopManagement = () => {
                                 >
                                   <i className="fas fa-eye"></i>
                                 </button>
-                                
+
                                 <button
                                   onClick={() => {
                                     setSelectedShop(shop);
@@ -826,7 +1003,7 @@ const AdminShopManagement = () => {
                       <div className="um-pagination-info">
                         Hiển thị {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredShops.length)} của {filteredShops.length} shop
                       </div>
-                      
+
                       <div className="um-pagination-controls">
                         <button
                           onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -836,7 +1013,7 @@ const AdminShopManagement = () => {
                           <i className="fas fa-chevron-left"></i>
                           Trước
                         </button>
-                        
+
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                           <button
                             key={page}
@@ -846,7 +1023,7 @@ const AdminShopManagement = () => {
                             {page}
                           </button>
                         ))}
-                        
+
                         <button
                           onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                           disabled={currentPage === totalPages}
@@ -862,17 +1039,31 @@ const AdminShopManagement = () => {
               )}
             </div>
           </>
-        ) : (
+        ) : activeTab === 'reports' ? (
           // Reports Management Tab
           <div className="um-table-section">
             <div className="um-table-header">
               <h3>
                 <i className="fas fa-flag"></i>
-                Báo cáo sản phẩm ({reports.length})
+                Báo cáo sản phẩm ({pendingReports.length})
               </h3>
             </div>
 
-            {reports.length === 0 ? (
+            {/* Search by product name */}
+            <div className="um-filters-section" style={{ marginBottom: '10px' }}>
+              <div className="um-search-box">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
+                  value={searchReportProductName}
+                  onChange={e => setSearchReportProductName(e.target.value)}
+                  className="um-search-input"
+                />
+                <i className="fas fa-search um-search-icon"></i>
+              </div>
+            </div>
+
+            {pendingReports.length === 0 ? (
               <div className="um-empty-state">
                 <i className="fas fa-flag um-empty-icon"></i>
                 <h3>Không có báo cáo nào</h3>
@@ -893,124 +1084,317 @@ const AdminShopManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {reports.map(report => (
-                      <tr key={report._id} className="um-table-row">
-                        <td>
-                          <div className="um-user-info">
-                            <div className="um-user-avatar-container">
-                              <img
-                                src={report.product_id?.product_imageurl?.[0] || '/images/default-product.png'}
-                                alt={report.product_id?.product_name}
-                                className="um-user-avatar"
-                                onError={(e) => {
-                                  e.target.src = '/images/default-product.png';
-                                }}
-                              />
+                    {pendingReports
+                      .filter(report => {
+                        if (!searchReportProductName) return true;
+                        const productName = report.product_id?.product_name || '';
+                        return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
+                      })
+                      .map(report => (
+                        <tr key={report._id} className="um-table-row">
+                          <td>
+                            <div className="um-user-info">
+                              <div className="um-user-avatar-container">
+                                <img
+                                  src={report.product_id?.product_imageurl?.[0] || '/images/default-product.png'}
+                                  alt={report.product_id?.product_name}
+                                  className="um-user-avatar"
+                                  onError={(e) => {
+                                    e.target.src = '/images/default-product.png';
+                                  }}
+                                />
+                              </div>
+                              <div className="um-user-details">
+                                <span className="um-username">
+                                  {report.product_id?.product_name || 'Sản phẩm đã xóa'}
+                                </span>
+                                
+                              </div>
                             </div>
-                            <div className="um-user-details">
-                              <span className="um-username">
-                                {report.product_id?.product_name || 'Sản phẩm đã xóa'}
-                              </span>
-                              <small className="um-user-id">
-                                ID: {report.product_id?._id?.slice(-8) || 'N/A'}
-                              </small>
+                          </td>
+
+                          <td>
+                            <div className="um-contact-info">
+                              <div className="um-email">
+                                <i className="fas fa-user"></i>
+                                {report.reporter_id?.username || 'N/A'}
+                              </div>
+                              <div className="um-phone">
+                                <i className="fas fa-envelope"></i>
+                                {report.reporter_id?.email || 'N/A'}
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        
-                        <td>
-                          <div className="um-contact-info">
-                            <div className="um-email">
-                              <i className="fas fa-user"></i>
-                              {report.reporter_id?.username || 'N/A'}
+                          </td>
+
+                          <td>
+                            <div className="um-contact-info">
+                              <div className="um-email">
+                                <i className="fas fa-store"></i>
+                                {report.shop_id?.username || 'N/A'}
+                              </div>
+                              <div className="um-phone">
+                                <i className="fas fa-envelope"></i>
+                                {report.shop_id?.email || 'N/A'}
+                              </div>
                             </div>
-                            <div className="um-phone">
-                              <i className="fas fa-envelope"></i>
-                              {report.reporter_id?.email || 'N/A'}
-                            </div>
-                          </div>
-                        </td>
-                        
-                        <td>
-                          <div className="um-contact-info">
-                            <div className="um-email">
-                              <i className="fas fa-store"></i>
-                              {report.shop_id?.username || 'N/A'}
-                            </div>
-                            <div className="um-phone">
-                              <i className="fas fa-envelope"></i>
-                              {report.shop_id?.email || 'N/A'}
-                            </div>
-                          </div>
-                        </td>
-                        
-                        <td>
-                          <div className="um-balance-info">
-                            <span className="um-balance">{report.reason}</span>
-                            {report.description && (
-                              <small className="um-account-type">
-                                {report.description.length > 30 
-                                  ? `${report.description.substring(0, 30)}...` 
-                                  : report.description
+                          </td>
+
+                          <td>
+                            <div className="um-balance-info">
+                              <span className="um-balance">
+                                {report.reason.length > 50
+                                  ? `${report.reason.substring(0, 50)}...`
+                                  : report.reason
                                 }
-                              </small>
-                            )}
-                          </div>
-                        </td>
-                        
-                        <td>
-                          <div className="um-date-info">
-                            <span className="um-date">
-                              {formatDate(report.createdAt)}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>
+                            <div className="um-date-info">
+                              <span className="um-date">
+                                {formatDate(report.createdAt)}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>
+                            <span className={`um-role-badge ${getReportStatusBadgeColor(report.status)}`}>
+                              {report.status === 'pending' ? 'Chờ xử lý' :
+                                report.status === 'approved' ? 'Đã chấp nhận' :
+                                  report.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
                             </span>
+                          </td>
+
+                          <td>
+                            <div className="um-action-buttons">
+                              <button
+                                onClick={() => {
+                                  setSelectedReport(report);
+                                  setAdminNote('');
+                                  setShowReportModal(true);
+                                }}
+                                className="um-btn-action um-btn-view"
+                                title="Xem chi tiết"
+                              >
+                                <i className="fas fa-eye"></i>
+                              </button>
+
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : activeTab === 'allProducts' ? (
+          // All Products Tab
+          <div className="um-table-section">
+            <div className="um-table-header">
+              <h3>
+                <i className="fas fa-box"></i>
+                Tất cả sản phẩm ({filteredAllProducts.length})
+              </h3>
+            </div>
+            {/* Search all products */}
+            <div className="um-filters-section" style={{ marginBottom: '10px' }}>
+              <div className="um-search-box">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
+                  value={searchAllProductName}
+                  onChange={e => setSearchAllProductName(e.target.value)}
+                  className="um-search-input"
+                />
+                <i className="fas fa-search um-search-icon"></i>
+              </div>
+            </div>
+            {filteredAllProducts.length === 0 ? (
+              <div className="um-empty-state">
+                <i className="fas fa-box-open um-empty-icon"></i>
+                <h3>Không có sản phẩm nào</h3>
+                <p>Chưa có sản phẩm nào trong hệ thống</p>
+              </div>
+            ) : (
+              <div className="um-table-container">
+                <table className="um-users-table">
+                  <thead>
+                    <tr>
+                      <th>Ảnh</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Shop</th>
+                      <th>Giá</th>
+                      <th>Số lượng</th>
+                      <th>Ngày tạo</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAllProducts.map(product => (
+                      <tr key={product._id} className="um-table-row">
+                        <td>
+                          <div className="um-user-avatar-container">
+                            <img
+                              src={product.product_imageurl?.[0] || '/images/default-product.png'}
+                              alt={product.product_name}
+                              className="um-user-avatar"
+                              onError={e => { e.target.src = '/images/default-product.png'; }}
+                            />
                           </div>
                         </td>
-                        
+                        <td>{product.product_name}</td>
+                        <td>{product.user_id?.username || 'N/A'}</td>
                         <td>
-                          <span className={`um-role-badge ${getReportStatusBadgeColor(report.status)}`}>
-                            {report.status === 'pending' ? 'Chờ xử lý' :
-                             report.status === 'approved' ? 'Đã chấp nhận' :
-                             report.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
+                          <span className="um-balance">
+                            {formatCurrency(product.product_price)}
                           </span>
                         </td>
-                        
+                        <td>
+                          <span className={product.product_quantity === 0 ? 'text-danger' : ''}>
+                            {product.product_quantity}
+                            {product.product_quantity === 0 && ' (Hết hàng)'}
+                          </span>
+                        </td>
+                        <td>{formatDate(product.createdAt)}</td>
+                        <td>
+                          <span className={`um-role-badge ${getStatusBadgeColor(product.product_status)}`}>
+                            {product.product_status === 'available' ? 'Đang bán' :
+                              product.product_status === 'reported' ? 'Bị báo cáo' :
+                                product.product_status === 'not_available' ? 'Đã bị ẩn' : 'N/A'}
+                          </span>
+                        </td>
                         <td>
                           <div className="um-action-buttons">
                             <button
                               onClick={() => {
-                                setSelectedReport(report);
-                                setAdminNote('');
-                                setShowReportModal(true);
+                                setDeletingProductId(product._id);
+                                setDeleteReason('');
+                                setShowDeleteModal(true);
                               }}
-                              className="um-btn-action um-btn-view"
-                              title="Xem chi tiết"
+                              className="um-btn-action um-btn-delete"
+                              title="Xóa sản phẩm"
                             >
-                              <i className="fas fa-eye"></i>
+                              <i className="fas fa-trash"></i>
                             </button>
-                            
-                            {report.status === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => handleReportAction(report._id, 'approve', '')}
-                                  className="um-btn-action um-btn-edit"
-                                  title="Chấp nhận báo cáo"
-                                >
-                                  <i className="fas fa-check"></i>
-                                </button>
-                                
-                                <button
-                                  onClick={() => handleReportAction(report._id, 'reject', '')}
-                                  className="um-btn-action um-btn-delete"
-                                  title="Từ chối báo cáo"
-                                >
-                                  <i className="fas fa-times"></i>
-                                </button>
-                              </>
-                            )}
+                            <button
+                              className={`um-status-btn ${product.product_status === 'not_available' ? 'um-status-inactive' : 'um-status-active'}`}
+                              onClick={() => handleToggleProductStatus(product._id, product.product_status)}
+                              title={product.product_status === 'not_available' ? 'Bỏ ẩn sản phẩm' : 'Ẩn sản phẩm'}
+                            >
+                              {product.product_status === 'not_available' ? (
+                                <>
+                                  <i></i> Bỏ ẩn
+                                </>
+                              ) : (
+                                <>
+                                  <i></i> Ẩn
+                                </>
+                              )}
+                            </button>
                           </div>
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : (
+          // Hidden Products Tab
+          <div className="um-table-section">
+            <div className="um-table-header">
+              <h3>
+                <i className="fas fa-eye-slash"></i>
+                Sản phẩm đã bị ẩn ({filteredHiddenProducts.length})
+              </h3>
+            </div>
+            {/* Search hidden products */}
+            <div className="um-filters-section" style={{ marginBottom: '10px' }}>
+              <div className="um-search-box">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm theo tên sản phẩm..."
+                  value={searchHiddenProductName}
+                  onChange={e => setSearchHiddenProductName(e.target.value)}
+                  className="um-search-input"
+                />
+                <i className="fas fa-search um-search-icon"></i>
+              </div>
+            </div>
+            {filteredHiddenProducts.length === 0 ? (
+              <div className="um-empty-state">
+                <i className="fas fa-eye-slash um-empty-icon"></i>
+                <h3>Không có sản phẩm bị ẩn</h3>
+                <p>Chưa có sản phẩm nào bị ẩn khỏi hệ thống</p>
+              </div>
+            ) : (
+              <div className="um-table-container">
+                <table className="um-users-table">
+                  <thead>
+                    <tr>
+                      <th>Ảnh</th>
+                      <th>Tên sản phẩm</th>
+                      <th>Shop</th>
+                      <th>Ngày tạo</th>
+                      <th>Lý do ẩn</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredHiddenProducts.map(product => {
+                      // Tìm báo cáo được duyệt gần nhất cho sản phẩm này
+                      const relatedReports = approvedReports.filter(r => r.product_id?._id === product._id);
+                      let reason = 'Không có ghi chú';
+                      if (relatedReports.length > 0) {
+                        relatedReports.sort((a, b) => new Date(b.resolved_at || b.createdAt) - new Date(a.resolved_at || a.createdAt));
+                        reason = relatedReports[0].admin_note || 'Không có ghi chú';
+                      }
+                      return (
+                        <tr key={product._id} className="um-table-row">
+                          <td>
+                            <div className="um-user-avatar-container">
+                              <img
+                                src={product.product_imageurl?.[0] || '/images/default-product.png'}
+                                alt={product.product_name}
+                                className="um-user-avatar"
+                                onError={e => { e.target.src = '/images/default-product.png'; }}
+                              />
+                            </div>
+                          </td>
+                          <td>{product.product_name}</td>
+                          <td>{product.user_id?.username || 'N/A'}</td>
+                          <td>{formatDate(product.createdAt)}</td>
+                          <td>
+                            <div className="um-reason-cell" title={reason}>
+                              {reason}
+                            </div>
+                          </td>
+                          <td><span className="um-role-badge um-badge-default">{product.product_status === 'not_available' ? 'Đã bị ẩn' : 'Đang bán'}</span></td>
+                          <td>
+                            <button
+                              className={`um-status-btn ${product.product_status === 'not_available' ? 'um-status-inactive' : 'um-status-active'}`}
+                              onClick={() => handleToggleProductStatus(product._id, product.product_status)}
+                            >
+                              {product.product_status === 'not_available' ? (
+                                <>
+                                  <i></i> Bỏ ẩn
+                                </>
+                              ) : (
+                                <>
+                                  <i></i> Ẩn
+                                </>
+                              )}
+                            </button>
+                          </td>
+                          
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -1027,14 +1411,14 @@ const AdminShopManagement = () => {
                   <i className="fas fa-store"></i>
                   Chi tiết Shop
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowShopDetailModal(false)}
                   className="um-close-btn"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="um-modal-body">
                 <div className="um-user-detail-container">
                   <div className="um-detail-header">
@@ -1127,7 +1511,7 @@ const AdminShopManagement = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="um-modal-footer">
                 <div className="um-quick-actions">
                   <button
@@ -1170,14 +1554,14 @@ const AdminShopManagement = () => {
                   <i className="fas fa-box"></i>
                   Sản phẩm của {selectedShop.username}
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowProductsModal(false)}
                   className="um-close-btn"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="um-modal-body">
                 {shopProducts.length === 0 ? (
                   <div className="um-empty-state">
@@ -1233,8 +1617,8 @@ const AdminShopManagement = () => {
                             <td>
                               <span className={`um-role-badge ${getStatusBadgeColor(product.product_status)}`}>
                                 {product.product_status === 'available' ? 'Đang bán' :
-                                 product.product_status === 'reported' ? 'Bị báo cáo' :
-                                 product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
+                                  product.product_status === 'reported' ? 'Bị báo cáo' :
+                                    product.product_status === 'not_available' ? 'Ngừng bán' : 'N/A'}
                               </span>
                             </td>
                             <td>
@@ -1243,7 +1627,7 @@ const AdminShopManagement = () => {
                             <td>
                               <div className="um-action-buttons">
                                 <button
-                                  onClick={() => handleDeleteProduct(product._id)}
+                                  onClick={() => handleDeleteProduct(product._id, '')}
                                   className="um-btn-action um-btn-delete"
                                   title="Xóa sản phẩm"
                                 >
@@ -1258,7 +1642,7 @@ const AdminShopManagement = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="um-modal-footer">
                 <button
                   onClick={() => setShowProductsModal(false)}
@@ -1281,14 +1665,14 @@ const AdminShopManagement = () => {
                   <i className="fas fa-flag"></i>
                   Chi tiết báo cáo
                 </h3>
-                <button 
+                <button
                   onClick={() => setShowReportModal(false)}
                   className="um-close-btn"
                 >
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              
+
               <div className="um-modal-body">
                 <div className="um-detail-section">
                   <h4 className="um-section-title">
@@ -1314,7 +1698,9 @@ const AdminShopManagement = () => {
                     </div>
                     <div className="um-detail-item">
                       <label>Mô tả:</label>
-                      <span>{selectedReport.description || 'Không có'}</span>
+                      <div className="um-reason-cell">
+                        {selectedReport.description || 'Không có'}
+                      </div>
                     </div>
                     <div className="um-detail-item">
                       <label>Ngày báo cáo:</label>
@@ -1324,8 +1710,8 @@ const AdminShopManagement = () => {
                       <label>Trạng thái:</label>
                       <span className={`um-role-badge ${getReportStatusBadgeColor(selectedReport.status)}`}>
                         {selectedReport.status === 'pending' ? 'Chờ xử lý' :
-                         selectedReport.status === 'approved' ? 'Đã chấp nhận' :
-                         selectedReport.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
+                          selectedReport.status === 'approved' ? 'Đã chấp nhận' :
+                            selectedReport.status === 'rejected' ? 'Đã từ chối' : 'N/A'}
                       </span>
                     </div>
                   </div>
@@ -1358,7 +1744,7 @@ const AdminShopManagement = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="um-modal-footer">
                 {selectedReport.status === 'pending' ? (
                   <>
@@ -1395,7 +1781,64 @@ const AdminShopManagement = () => {
           </div>
         )}
       </div>
-      
+
+      {/* Modal nhập lý do xóa sản phẩm */}
+      {showDeleteModal && (
+        <div className="um-modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="um-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="um-modal-header">
+              <h3>
+                <i className="fas fa-trash"></i>
+                Xóa sản phẩm
+              </h3>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="um-close-btn"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="um-modal-body">
+              <p>Bạn có chắc chắn muốn xóa sản phẩm này không?</p>
+              <label>Lý do xóa (tùy chọn):</label>
+              <textarea
+                value={deleteReason}
+                onChange={e => setDeleteReason(e.target.value)}
+                placeholder="Nhập lý do xóa sản phẩm..."
+                className="um-form-input"
+                rows="3"
+                style={{ width: '100%', resize: 'vertical' }}
+              />
+            </div>
+            <div className="um-modal-footer">
+              <button
+                onClick={async () => {
+                  await handleDeleteProduct(deletingProductId, deleteReason);
+                  setShowDeleteModal(false);
+                  setDeleteReason('');
+                  setDeletingProductId(null);
+                }}
+                className="um-btn um-btn-danger"
+              >
+                <i className="fas fa-trash"></i>
+                Xóa
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteReason('');
+                  setDeletingProductId(null);
+                }}
+                className="um-btn um-btn-secondary"
+              >
+                <i className="fas fa-times"></i>
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

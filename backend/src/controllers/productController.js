@@ -631,4 +631,3 @@ module.exports = {
   checkProductAvailability,
   getTopRatedProducts
 };
-

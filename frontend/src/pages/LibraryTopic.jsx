@@ -6,9 +6,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { baseUrl } from '../config';
 
-
 const Library = () => {
   const [topics, setTopics] = useState([]);
+  const [filteredTopics, setFilteredTopics] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [openIndex, setOpenIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const Library = () => {
       .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
         setTopics(response.data);
+        setFilteredTopics(response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -29,6 +31,14 @@ const Library = () => {
       });
   }, []);
 
+  // Filter topics based on search term
+  useEffect(() => {
+    const filtered = topics.filter((topic) =>
+      topic.topic_title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredTopics(filtered);
+  }, [searchTerm, topics]);
+
   const toggleTopic = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
@@ -36,7 +46,7 @@ const Library = () => {
   const handleDelete = async (topicId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library_topics/${topicId}`);
+        await axios.delete(`${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`);
         setTopics(topics.filter((topic) => topic._id !== topicId));
         alert("Xóa chủ đề thành công!");
       } catch (error) {
@@ -48,8 +58,7 @@ const Library = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <img src="/loading.gif" alt="Loading" style={{ width: 50, height: 50, marginRight: 12 }} />
+      <div className="text-center my-5">
         Đang tải danh sách chủ đề...
       </div>
     );
@@ -70,177 +79,139 @@ const Library = () => {
           <Link to="/">Trang chủ</Link> <i className="fas fa-angle-right"></i>{" "}
           <span>Thư viện kiến thức</span>
         </div>
+
+        <div className="row mb-3">
+          <div className="col-md-3">
+            {/* Empty space for left alignment */}
+          </div>
+          <div className="col-md-6">
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm kiếm theo tên chủ đề..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              
+            </div>
+          </div>
+          <div className="col-md-3 text-end">
+            {isAdmin && (
+              <Link to="/library_topics/create">
+                <button className="btn btn-success">+ Tạo chủ đề</button>
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content d-flex">
+          <div className="library-content">
             {/* Sidebar */}
-            <div className="sidebar me-5" style={{ width: "250px" }}>
+            <div className="sidebar">
               <h2 className="sidebar-title">Chủ đề thư viện</h2>
               <ul className="sidebar-menu list-unstyled">
-                {topics.map((topic, idx) => (
-                  <li key={topic._id} style={{ marginBottom: "10px" }}>
+                {filteredTopics.map((topic, idx) => (
+                  <li key={topic._id}>
                     <div
+                      className="menu-item"
                       onClick={() => toggleTopic(idx)}
-                      style={{
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
+                      style={{ cursor: "pointer", userSelect: "none" }}
                     >
-                      <span>{topic.topic_title}</span>
+                      <Link to="#" className="menu-link">
+                        {topic.topic_title}
+                      </Link>
                       <span
-                        style={{
-                          transform: openIndex === idx ? "rotate(90deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s ease",
-                          display: "inline-block",
-                        }}
-                      >
-                        ▶
-                      </span>
+                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
+                        aria-hidden="true"
+                      ></span>
                     </div>
-
-                    {openIndex === idx && (
-                      <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
-                        <li>
-                          <Link to={`/libraryCategory/${topic._id}`}>
-                            {topic.topic_description || "Chưa có mô tả"}
-                          </Link>
-                        </li>
-                      </ul>
-                    )}
+                    <ul
+                      className="submenu"
+                      style={{ display: openIndex === idx ? "block" : "none" }}
+                    >
+                      <li>
+                        <Link to={`/libraryCategory/${topic._id}`}>
+                          {topic.topic_description || "Chưa có mô tả"}
+                        </Link>
+                      </li>
+                    </ul>
                   </li>
                 ))}
               </ul>
-              {isAdmin && (
-                <div style={{ marginTop: "20px" }}>
-                  <Link to="/library_topics/create">
-                    <button
-                      style={{
-                        width: "100%",
-                        padding: "8px 16px",
-                        backgroundColor: "#28a745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s ease",
-                        ":hover": {
-                          backgroundColor: "#218838"
-                        }
-                      }}
-                    >
-                      + Tạo chủ đề
-                    </button>
-                  </Link>
-                </div>
-              )}
             </div>
 
             {/* Content Grid */}
-            <div style={{ flex: 1 }}>
-              <div
-                className="content-grid"
-                style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "20px"
-                }}
-              >
-                {topics.map((topic) => (
+            <div className="content-grid">
+              {filteredTopics.map((topic) => (
+                <div className="category-card" key={topic._id}>
+                  <Link to={`/libraryCategory/${topic._id}`}>
+                    <div className="card-image" style={{ cursor: "pointer" }}>
+                      <img
+                        src={
+                          topic.topic_imageurl?.[0] ||
+                          "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
+                        }
+                        alt={topic.topic_title}
+                      />
+                    </div>
+                  </Link>
+
+                  <div className="card-title">{topic.topic_title}</div>
                   <div
-                    className="category-card"
-                    key={topic._id}
                     style={{
-                      width: "100%",
-                      height: "auto",
-                      border: "1px solid #ccc",
-                      borderRadius: "8px",
-                      padding: "15px",
-                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      transition: "transform 0.2s ease",
-                      ":hover": {
-                        transform: "translateY(-5px)"
-                      }
+                      marginTop: "10px",
+                      display: "flex",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <Link to={`/libraryCategory/${topic._id}`}>
-                      <div className="card-image" style={{ cursor: "pointer" }}>
-                        <img
-                          src={topic.topic_imageurl?.[0] || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
-                          alt={topic.topic_title}
-                          style={{
-                            width: "100%",
-                            height: "200px",
-                            objectFit: "cover",
-                            borderRadius: "4px",
-                          }}
-                        />
-                      </div>
-                    </Link>
-
-                    <div className="card-title" style={{ 
-                      marginTop: "15px", 
-                      fontWeight: "bold",
-                      fontSize: "1.1rem",
-                      color: "#333"
-                    }}>
-                      {topic.topic_title}
-                    </div>
-                    <div
-                      style={{
-                        marginTop: "15px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "10px"
-                      }}
-                    >
-                      {isAdmin && (
-                        <>
-                          <Link to={`/library_topics/update/${topic._id}`} style={{ flex: 1 }}>
-                            <button
-                              style={{
-                                width: "100%",
-                                backgroundColor: "#ffc107",
-                                border: "none",
-                                padding: "8px 12px",
-                                borderRadius: "4px",
-                                cursor: "pointer",
-                                transition: "background-color 0.2s ease"
-                              }}
-                            >
-                              Cập nhật
-                            </button>
-                          </Link>
+                    {isAdmin && (
+                      <>
+                        <Link to={`/library_topics/update/${topic._id}`}>
                           <button
                             style={{
-                              flex: 1,
-                              backgroundColor: "#dc3545",
-                              color: "#fff",
+                              backgroundColor: "#ffc107",
                               border: "none",
-                              padding: "8px 12px",
+                              padding: "4px 8px",
                               borderRadius: "4px",
-                              cursor: "pointer",
-                              transition: "background-color 0.2s ease"
                             }}
-                            onClick={() => handleDelete(topic._id)}
                           >
-                            Xoá
+                            Cập nhật
                           </button>
-                        </>
-                      )}
-                    </div>
+                        </Link>
+                        <button
+                          style={{
+                            backgroundColor: "#dc3545",
+                            color: "#fff",
+                            border: "none",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                          }}
+                          onClick={() => handleDelete(topic._id)}
+                        >
+                          Xoá
+                        </button>
+                      </>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
+              {filteredTopics.length === 0 && (
+                <div className="col-12 text-center mt-4">
+                  <p>
+                    {searchTerm 
+                      ? `Không tìm thấy chủ đề nào với từ khóa "${searchTerm}"`
+                      : "Không có chủ đề nào để hiển thị."
+                    }
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </section>
-
 
       <Footer />
     </>

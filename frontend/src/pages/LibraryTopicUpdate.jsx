@@ -73,14 +73,25 @@ const UpdateLibraryTopic = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: "16px" }}>
-            <label>Hình ảnh (URL)</label>
+            <label>Hình ảnh (chọn file)</label>
             <input
-              type="text"
-              value={imageurl}
-              onChange={(e) => setImageurl(e.target.value)}
+              type="file"
+              accept="image/*"
+              onChange={e => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setImageurl(reader.result); // base64 string
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
               className="form-control"
-              placeholder="Cập nhật đường dẫn hình ảnh..."
             />
+            {imageurl && (
+              <img src={imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
+            )}
           </div>
 
           <button type="submit" className="btn btn-warning">
