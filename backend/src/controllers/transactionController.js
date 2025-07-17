@@ -214,10 +214,86 @@ const filterTransactionHistory = async (req, res) => {
     return res.status(500).json({ error: 'Lỗi server khi lọc lịch sử giao dịch' });
   }
 };
+
+const getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transaction.find({}).sort({ createdAt: -1 }).populate('user_id');
+    res.status(200).json({ transactions });
+  } catch (error) {
+    res.status(500).json({ error: 'Không thể lấy danh sách giao dịch' });
+  }
+};
+
+// Thêm function để lấy transaction theo ID
+const getTransactionById = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id).populate('user_id');
+    if (!transaction) {
+      return res.status(404).json({ error: 'Không tìm thấy giao dịch' });
+    }
+    res.status(200).json(transaction);
+  } catch (error) {
+    res.status(500).json({ error: 'Không thể lấy thông tin giao dịch' });
+  }
+};
+
+// Thêm function để admin cập nhật transaction
+const updateTransaction = async (req, res) => {
+  try {
+    const { status, description } = req.body;
+    const transaction = await Transaction.findById(req.params.id);
+    
+    if (!transaction) {
+      return res.status(404).json({ error: 'Không tìm thấy giao dịch' });
+    }
+
+    // Chỉ cho phép cập nhật status và description
+    if (status) transaction.status = status;
+    if (description !== undefined) transaction.description = description;
+    
+    await transaction.save();
+    
+    res.status(200).json({ 
+      message: 'Cập nhật giao dịch thành công',
+      transaction 
+    });
+  } catch (error) {
+    console.error('Error updating transaction:', error);
+    res.status(500).json({ error: 'Không thể cập nhật giao dịch' });
+  }
+};
+
+// Thêm function để admin xóa transaction
+const deleteTransaction = async (req, res) => {
+  try {
+    const transaction = await Transaction.findById(req.params.id);
+    
+    if (!transaction) {
+      return res.status(404).json({ error: 'Không tìm thấy giao dịch' });
+    }
+
+    // Chỉ cho phép xóa transaction có status pending hoặc failed
+    if (transaction.status === 'completed') {
+      return res.status(400).json({ error: 'Không thể xóa giao dịch đã hoàn thành' });
+    }
+
+    await Transaction.findByIdAndDelete(req.params.id);
+    
+    res.status(200).json({ message: 'Xóa giao dịch thành công' });
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    res.status(500).json({ error: 'Không thể xóa giao dịch' });
+  }
+};
+
 module.exports = {
   createPaymentURL,
   handlePaymentReturn,
   getTransactionHistory,
   refundTransaction,
-  filterTransactionHistory
+  filterTransactionHistory,
+  getAllTransactions,
+  getTransactionById,
+  updateTransaction,
+  deleteTransaction,
 };

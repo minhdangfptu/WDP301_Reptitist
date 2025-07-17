@@ -343,7 +343,15 @@ const AdminShopManagement = () => {
 
       if (response.status === 200) {
         toast.success(`${newStatus ? 'Kích hoạt' : 'Vô hiệu hóa'} shop thành công`);
-        await fetchShops();
+        setShops(prevShops => prevShops.map(shop =>
+          shop._id === shopData._id ? { ...shop, isActive: newStatus } : shop
+        ));
+        setFilteredShops(prevShops => prevShops.map(shop =>
+          shop._id === shopData._id ? { ...shop, isActive: newStatus } : shop
+        ));
+        if (selectedShop && selectedShop._id === shopData._id) {
+          setSelectedShop(prev => ({ ...prev, isActive: newStatus }));
+        }
         await fetchStats();
       }
     } catch (error) {
@@ -1482,12 +1490,7 @@ const AdminShopManagement = () => {
                         <label>Tổng sản phẩm:</label>
                         <span>{selectedShop.productCount || 0}</span>
                       </div>
-                      <div className="um-detail-item">
-                        <label>Sản phẩm bị báo cáo:</label>
-                        <span className={selectedShop.reportedCount > 0 ? 'text-danger' : ''}>
-                          {selectedShop.reportedCount || 0}
-                        </span>
-                      </div>
+                      
                     </div>
                   </div>
 

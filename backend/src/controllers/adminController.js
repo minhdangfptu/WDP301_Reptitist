@@ -9,19 +9,70 @@ const { sendProductReportNotification, sendProductUnhideNotification, sendProduc
 const checkAdminRole = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user || !user.role_id) {
-            return res.status(403).json({ message: 'Không có quyền truy cập' });
+        
+        if (!user || !user._id) {
+            return res.status(403).json({ 
+                message: 'Không có quyền truy cập - User not found',
+                success: false 
+            });
         }
 
-        const role = await Role.findById(user.role_id);
-        if (!role || role.role_name !== 'admin') {
-            return res.status(403).json({ message: 'Chỉ admin mới có quyền truy cập' });
+        // Debug logging
+        console.log('Admin Role Check:', {
+            userId: user._id,
+            username: user.username,
+            role_id: user.role_id,
+            role_name: user.role_id?.role_name,
+            account_type: user.account_type
+        });
+
+        // Check if role_id exists and is populated
+        if (user.role_id && typeof user.role_id === 'object') {
+            // role_id is populated
+            if (user.role_id.role_name === 'admin') {
+                console.log('Admin access granted via populated role_id');
+                return next();
+            }
+        } else if (user.role_id && typeof user.role_id === 'string') {
+            // role_id is not populated, need to fetch role
+            const Role = require('../models/Roles');
+            const role = await Role.findById(user.role_id);
+            if (role && role.role_name === 'admin') {
+                console.log('Admin access granted via fetched role_id');
+                return next();
+            }
         }
 
-        next();
+        // Check account_type as fallback
+        if (user.account_type && user.account_type.type === 4) {
+            console.log('Admin access granted via account_type');
+            return next();
+        }
+
+        // Check if user has admin role through direct role property
+        if (user.role === 'admin') {
+            console.log('Admin access granted via direct role property');
+            return next();
+        }
+
+        console.log('Admin access denied:', {
+            role_id: user.role_id,
+            role_name: user.role_id?.role_name,
+            account_type: user.account_type,
+            role: user.role
+        });
+
+        return res.status(403).json({ 
+            message: 'Chỉ admin mới có quyền truy cập',
+            success: false 
+        });
+
     } catch (error) {
         console.error('Admin role check error:', error);
-        return res.status(500).json({ message: 'Lỗi kiểm tra quyền truy cập' });
+        return res.status(500).json({ 
+            message: 'Lỗi kiểm tra quyền truy cập',
+            success: false 
+        });
     }
 };
 
@@ -47,20 +98,29 @@ const getAllUsers = async (req, res) => {
 const getAllShops = async (req, res) => {
     try {
         const { page = 1, limit = 10, status } = req.query;
-        const query = { "account_type.type": "shop" };
+        
+        // Tìm shop dựa trên account_type (3,4) thay vì role_id
+        const query = {
+            'account_type.type': { $in: [3, 4] } // Shop (3) và Shop Premium (4)
+        };
+        
         if (status && status !== 'all') {
             query.isActive = status === 'active';
         }
+        
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const shops = await User.find(query)
             .select('-password_hashed -refresh_tokens')
             .sort({ created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
+            
         if (!shops || shops.length === 0) {
             return res.status(404).json({ message: 'Không có shop nào' });
         }
+        
         const total = await User.countDocuments(query);
+        
         // Lấy thống kê sản phẩm cho mỗi shop
         const shopsWithStats = await Promise.all(shops.map(async (shop) => {
             const productCount = await Product.countDocuments({ user_id: shop._id });
@@ -74,6 +134,7 @@ const getAllShops = async (req, res) => {
                 reportedCount
             };
         }));
+        
         res.status(200).json({
             shops: shopsWithStats,
             pagination: {
@@ -98,9 +159,9 @@ const getShopProducts = async (req, res) => {
         const { shopId } = req.params;
         const { page = 1, limit = 10, status, category } = req.query;
 
-        // Kiểm tra shop có tồn tại không
-        const shop = await User.findById(shopId).populate('role_id');
-        if (!shop || shop.role_id?.role_name !== 'shop') {
+        // Kiểm tra shop có tồn tại và có account_type là shop (3,4) không
+        const shop = await User.findById(shopId);
+        if (!shop || ![3, 4].includes(shop.account_type?.type)) {
             return res.status(404).json({ message: 'Không tìm thấy shop' });
         }
 
@@ -130,7 +191,8 @@ const getShopProducts = async (req, res) => {
                 _id: shop._id,
                 username: shop.username,
                 email: shop.email,
-                isActive: shop.isActive
+                isActive: shop.isActive,
+                account_type: shop.account_type
             },
             products,
             pagination: {
@@ -345,10 +407,10 @@ const getAdminStats = async (req, res) => {
         const activeUsers = await User.countDocuments({ isActive: true });
         const inactiveUsers = await User.countDocuments({ isActive: false });
         
-        // Thống kê theo roles
-        const adminCount = await User.countDocuments({ "account_type.type": "admin" });
-        const shopCount = await User.countDocuments({ "account_type.type": "shop" });
-        const customerCount = await User.countDocuments({ "account_type.type": "user" });
+        // Thống kê theo account_type
+        const adminCount = await User.countDocuments({ 'account_type.type': 4 }); // Admin
+        const shopCount = await User.countDocuments({ 'account_type.type': { $in: [3, 4] } }); // Shop (3,4)
+        const customerCount = await User.countDocuments({ 'account_type.type': { $in: [1, 2] } }); // Customer (1,2)
         
         // Thống kê sản phẩm
         const totalProducts = await Product.countDocuments();
@@ -548,8 +610,7 @@ const updateUser = async (req, res) => {
         // Handle account_type update if provided
         if (req.body.account_type) {
             updateData.account_type = {
-                type: req.body.account_type.type || 'customer',
-                level: req.body.account_type.level || 'normal',
+                type: req.body.account_type.type || 1, // Default to 1 (customer)
                 activated_at: req.body.account_type.activated_at || new Date(),
                 expires_at: req.body.account_type.expires_at || null
             };
@@ -643,8 +704,8 @@ const toggleUserStatus = async (req, res) => {
             return res.status(400).json({ message: 'Không thể vô hiệu hóa tài khoản admin khác' });
         }
 
-        // If deactivating a shop, hide their products
-        if (user.role_id && user.role_id.role_name === 'shop' && !isActive) {
+        // If deactivating a shop (account_type 3,4), hide their products
+        if ((user.account_type?.type === 3 || user.account_type?.type === 4) && !isActive) {
             await Product.updateMany(
                 { user_id: userId },
                 { product_status: 'not_available' }

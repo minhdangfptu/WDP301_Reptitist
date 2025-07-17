@@ -1,11 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const { createPaymentURL,
+const { 
+    createPaymentURL,
     handlePaymentReturn,
     getTransactionHistory,
     refundTransaction,
-    filterTransactionHistory } = require('../controllers/transactionController');
+    filterTransactionHistory,
+    getAllTransactions,
+    getTransactionById,
+    updateTransaction,
+    deleteTransaction 
+} = require('../controllers/transactionController');
 
 const {
     authMiddleware,
@@ -13,21 +19,28 @@ const {
 } = require('../middleware/authMiddleware');
 const validateObjectId = require('../middleware/validateObjectId');
 const { ensureOwnUserData } = require('../middleware/ensureOwner');
+const roleMiddleware = require('../middleware/roleMiddleware');
+
+// Payment routes
 router.get(
     '/create',
     authMiddleware,
     createPaymentURL
 );
+
 router.get(
     '/return',
     handlePaymentReturn
 );
+
+// User transaction routes
 router.get(
     '/history',
     authUserIdOnly,
     ensureOwnUserData,
     getTransactionHistory
 );
+
 router.get(
     '/history/filter/:userId',
     authUserIdOnly,
@@ -35,6 +48,40 @@ router.get(
     ensureOwnUserData,
     filterTransactionHistory
 );
+
+// Admin routes - FIXED
+router.get(
+    '/all',
+    authMiddleware,
+    roleMiddleware('admin'),
+    getAllTransactions
+);
+
+router.get(
+    '/:id',
+    authMiddleware,
+    roleMiddleware('admin'),
+    validateObjectId,
+    getTransactionById
+);
+
+router.put(
+    '/:id',
+    authMiddleware,
+    roleMiddleware('admin'),
+    validateObjectId,
+    updateTransaction
+);
+
+router.delete(
+    '/:id',
+    authMiddleware,
+    roleMiddleware('admin'),
+    validateObjectId,
+    deleteTransaction
+);
+
+// Refund route
 router.post(
     '/refund/:transaction_id',
     authMiddleware,

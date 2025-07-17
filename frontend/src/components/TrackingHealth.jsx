@@ -1,10 +1,7 @@
 import React from "react";
 import { Card, Row, Col, Table, Badge, Spinner, Button } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
-const chartWidth = 420;
-const chartHeight = 200;
-const paddingX = 50;
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 function formatDate(dateString) {
   const date = new Date(dateString);
@@ -23,51 +20,53 @@ export default function TrackingHealth({ petInfo }) {
     );
   }
 
-  // Chart data
-  const weightHistory = petInfo.weight_history || [];
-  const maxWeight = Math.max(...weightHistory.map(w => w.weight), petInfo.current_weight || 0, 300);
-  const minWeight = Math.min(...weightHistory.map(w => w.weight), 0);
-  const points = weightHistory.map((item, idx) => {
-    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
-    const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50);
-    return `${x},${y}`;
-  }).join(" ");
-  const circles = weightHistory.map((item, idx) => {
-    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
-    const y = chartHeight - 30 - ((item.weight - minWeight) / (maxWeight - minWeight || 1)) * (chartHeight - 50);
-    return (
-      <circle key={idx} cx={x} cy={y} r="4" fill="#006934" />
-    );
-  });
-  const xLabels = weightHistory.map((item, idx) => {
-    const x = paddingX + idx * ((chartWidth - 2 * paddingX) / (weightHistory.length - 1 || 1));
-    const date = new Date(item.date);
-    const label = `${date.getMonth() + 1}/${date.getFullYear()}`;
-    return (
-      <text
-        key={idx}
-        x={x}
-        y={chartHeight - 25}
-        fontSize="11"
-        fill="#9ca3af"
-        textAnchor="middle"
-      >
-        {label}
-      </text>
-    );
-  });
-  const xAxisLabel = (
-    <text
-      x={chartWidth / 2}
-      y={chartHeight - 5}
-      fontSize="13"
-      fill="#6b7280"
-      textAnchor="middle"
-      fontWeight="bold"
-    >
-      Tháng
-    </text>
-  );
+  // Prepare chart data for Recharts
+  const prepareWeightChartData = () => {
+    const weightHistory = petInfo.weight_history || [];
+    const weightData = weightHistory.map(item => ({
+      date: formatDate(item.date),
+      weight: item.weight,
+      fullDate: item.date
+    })).sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
+
+    // Add current weight as latest point if it exists and is different from the last history entry
+    if (petInfo.current_weight) {
+      const lastHistoryWeight = weightData.length > 0 ? weightData[weightData.length - 1].weight : null;
+      if (lastHistoryWeight !== petInfo.current_weight) {
+        weightData.push({
+          date: formatDate(new Date()),
+          weight: petInfo.current_weight,
+          fullDate: new Date()
+        });
+      }
+    }
+
+    return weightData;
+  };
+
+  // Get the latest weight from either history or current_weight
+  const getLatestWeight = () => {
+    const weightHistory = petInfo.weight_history || [];
+    if (weightHistory.length > 0) {
+      // Sort by date and get the latest
+      const sortedHistory = weightHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+      return sortedHistory[0].weight;
+    }
+    return petInfo.current_weight || null;
+  };
+
+  const prepareSleepChartData = () => {
+    const sleepHistory = petInfo.sleeping_history || [];
+    return sleepHistory.map(item => ({
+      date: formatDate(item.date),
+      hours: item.hours,
+      fullDate: item.date
+    })).sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
+  };
+
+  const weightChartData = prepareWeightChartData();
+  const sleepChartData = prepareSleepChartData();
+  const latestWeight = getLatestWeight();
 
   return (
     <div>
@@ -129,37 +128,72 @@ export default function TrackingHealth({ petInfo }) {
       </div>
       
       <Row className="g-4">
-        {/* Biểu đồ cân nặng */}
+        {/* Biểu đồ cân nặng - UPDATED WITH RECHARTS */}
         <Col xs={12} md={6} lg={5}>
           <Card className="h-100 border-0 shadow-sm mb-3">
             <Card.Header className="bg-white border-0 pb-0">
               <div className="d-flex justify-content-between align-items-center">
-                <span className="fw-semibold">Cân nặng hiện tại: <span className="text-success">{petInfo.current_weight}g</span></span>
+                <span className="fw-semibold">Cân nặng hiện tại: <span className="text-success">{latestWeight}g</span></span>
                 <Badge bg="success">Cân nặng</Badge>
               </div>
             </Card.Header>
             <Card.Body>
               <div style={{ height: "13rem" }} className="mb-3">
-                <svg className="w-100 h-100" viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-                  <defs>
-                    <pattern id="grid" width="25" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M 25 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="0.5" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-                  {[maxWeight, (maxWeight+minWeight)/2, minWeight].map((val, i) => (
-                    <text key={i} x="10" y={30 + i * ((chartHeight-50)/2)} fontSize="10" fill="#9ca3af">{Math.round(val)}g</text>
-                  ))}
-                  <polyline fill="none" stroke="#006934" strokeWidth="2" points={points} />
-                  {circles}
-                  {xLabels}
-                  {xAxisLabel}
-                </svg>
+                {weightChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={weightChartData}>
+                      <defs>
+                        <linearGradient id="weightGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#006934" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#006934" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 11, fill: '#9ca3af' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 10, fill: '#9ca3af' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                        label={{ value: 'g', angle: 0, position: 'outside' }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${value}g`, 'Cân nặng']}
+                        labelStyle={{ color: '#374151' }}
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="weight" 
+                        stroke="#006934" 
+                        fillOpacity={1} 
+                        fill="url(#weightGradient)"
+                        strokeWidth={2}
+                        dot={{ fill: '#006934', strokeWidth: 2, r: 3 }}
+                        activeDot={{ r: 5, fill: '#006934' }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+                    <i className="fas fa-weight fa-3x mb-3" style={{ opacity: 0.3 }}></i>
+                    <span>Chưa có dữ liệu cân nặng</span>
+                  </div>
+                )}
               </div>
             </Card.Body>
           </Card>
         </Col>
-        {/* Lịch sử ngủ */}
+        
+        {/* Lịch sử ngủ - UPDATED WITH RECHARTS */}
         <Col xs={12} md={6} lg={7}>
           <Card className="h-100 border-0 shadow-sm mb-3">
             <Card.Header className="bg-white border-0 pb-0 d-flex justify-content-between align-items-center">
@@ -167,6 +201,50 @@ export default function TrackingHealth({ petInfo }) {
               <Badge bg="info">Ngủ</Badge>
             </Card.Header>
             <Card.Body>
+              {sleepChartData.length > 0 ? (
+                <div style={{ height: "200px", marginBottom: "16px" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={sleepChartData}>
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 11, fill: '#9ca3af' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 10, fill: '#9ca3af' }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickLine={{ stroke: '#e5e7eb' }}
+                        label={{ value: 'Giờ', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip 
+                        formatter={(value) => [`${value}h`, 'Giờ ngủ']}
+                        labelStyle={{ color: '#374151' }}
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '8px',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                        }}
+                      />
+                      <Bar 
+                        dataKey="hours" 
+                        fill="#0ea5e9" 
+                        radius={[4, 4, 0, 0]}
+                        stroke="#0284c7"
+                        strokeWidth={1}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="d-flex flex-column align-items-center justify-content-center text-muted" style={{ height: "200px", marginBottom: "16px" }}>
+                  <i className="fas fa-moon fa-3x mb-3" style={{ opacity: 0.3 }}></i>
+                  <span>Chưa có dữ liệu giấc ngủ</span>
+                </div>
+              )}
+              
+              {/* Keep the table for detailed data */}
               <Table size="sm" responsive hover>
                 <thead>
                   <tr>
