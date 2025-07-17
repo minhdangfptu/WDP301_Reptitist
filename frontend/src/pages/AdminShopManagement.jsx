@@ -34,6 +34,10 @@ const AdminShopManagement = () => {
   const [allProducts, setAllProducts] = useState([]);
   const [searchAllProductName, setSearchAllProductName] = useState('');
   const [hideReason, setHideReason] = useState('');
+  // Thêm state cho modal xóa sản phẩm
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteReason, setDeleteReason] = useState('');
+  const [deletingProductId, setDeletingProductId] = useState(null);
 
   // Modal states
   const [showShopDetailModal, setShowShopDetailModal] = useState(false);
@@ -235,18 +239,13 @@ const AdminShopManagement = () => {
   }, [activeTab]);
 
   // Handle delete product by admin
-  const handleDeleteProduct = async (productId) => {
-    // Hỏi lý do xóa (tùy chọn)
-    const deleteReason = window.prompt('Nhập lý do xóa sản phẩm (tùy chọn):');
-    
+  const handleDeleteProduct = async (productId, reason) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       return;
     }
-
     try {
       const token = localStorage.getItem('refresh_token');
       if (!token) return;
-
       const response = await axios.delete(
         `${baseUrl}/reptitist/admin/products/${productId}`,
         {
@@ -255,29 +254,25 @@ const AdminShopManagement = () => {
             'Content-Type': 'application/json'
           },
           data: {
-            deleteReason: deleteReason || undefined
+            deleteReason: reason || undefined
           }
         }
       );
-
       if (response.status === 200) {
         const message = response.data.emailSent 
           ? 'Xóa sản phẩm thành công! Email thông báo đã được gửi đến shop owner.'
           : 'Xóa sản phẩm thành công!';
         toast.success(message);
-        
         // Refresh tất cả dữ liệu liên quan
         await Promise.all([
           fetchHiddenProductsAndReports(),
           fetchAllProducts(),
           fetchStats()
         ]);
-        
         // Refresh shop products nếu đang xem shop detail
         if (selectedShop) {
           await fetchShopProducts(selectedShop._id);
         }
-        
         // Cập nhật state ngay lập tức cho UI
         if (activeTab === 'hiddenProducts') {
           setHiddenProducts(prev => prev.filter(p => p._id !== productId));
@@ -1285,7 +1280,11 @@ const AdminShopManagement = () => {
                         <td>
                           <div className="um-action-buttons">
                             <button
-                              onClick={() => handleDeleteProduct(product._id)}
+                              onClick={() => {
+                                setDeletingProductId(product._id);
+                                setDeleteReason('');
+                                setShowDeleteModal(true);
+                              }}
                               className="um-btn-action um-btn-delete"
                               title="Xóa sản phẩm"
                             >
@@ -1643,7 +1642,7 @@ const AdminShopManagement = () => {
                             <td>
                               <div className="um-action-buttons">
                                 <button
-                                  onClick={() => handleDeleteProduct(product._id)}
+                                  onClick={() => handleDeleteProduct(product._id, '')}
                                   className="um-btn-action um-btn-delete"
                                   title="Xóa sản phẩm"
                                 >
@@ -1797,6 +1796,63 @@ const AdminShopManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Modal nhập lý do xóa sản phẩm */}
+      {showDeleteModal && (
+        <div className="um-modal-overlay" onClick={() => setShowDeleteModal(false)}>
+          <div className="um-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="um-modal-header">
+              <h3>
+                <i className="fas fa-trash"></i>
+                Xóa sản phẩm
+              </h3>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="um-close-btn"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="um-modal-body">
+              <p>Bạn có chắc chắn muốn xóa sản phẩm này không?</p>
+              <label>Lý do xóa (tùy chọn):</label>
+              <textarea
+                value={deleteReason}
+                onChange={e => setDeleteReason(e.target.value)}
+                placeholder="Nhập lý do xóa sản phẩm..."
+                className="um-form-input"
+                rows="3"
+                style={{ width: '100%', resize: 'vertical' }}
+              />
+            </div>
+            <div className="um-modal-footer">
+              <button
+                onClick={async () => {
+                  await handleDeleteProduct(deletingProductId, deleteReason);
+                  setShowDeleteModal(false);
+                  setDeleteReason('');
+                  setDeletingProductId(null);
+                }}
+                className="um-btn um-btn-danger"
+              >
+                <i className="fas fa-trash"></i>
+                Xóa
+              </button>
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeleteReason('');
+                  setDeletingProductId(null);
+                }}
+                className="um-btn um-btn-secondary"
+              >
+                <i className="fas fa-times"></i>
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </>
