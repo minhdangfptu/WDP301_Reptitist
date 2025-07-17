@@ -25,7 +25,7 @@ const LibraryExpertDetail = () => {
   const handleDelete = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa chủ đề này?')) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/info/delete-reptile/${reptile._id}`);
+        await axios.delete(`${baseUrl}/reptitist/info/delete-reptile?id=${reptile._id}`);
         alert('Đã xóa thành công!');
         navigate('/LibraryExpert');
       } catch (err) {

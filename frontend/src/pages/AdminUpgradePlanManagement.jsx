@@ -3,7 +3,7 @@ import axios from 'axios';
 import '../css/AdminIncomeManagement.css';
 import { baseUrl } from '../config';
 
-// const API_URL = `${baseUrl}/reptitist/admin`;
+const API_URL = `${baseUrl}/reptitist/admin`;
 
 const AdminUpgradePlanManagement = () => {
   const [plans, setPlans] = useState([]);
@@ -19,10 +19,16 @@ const AdminUpgradePlanManagement = () => {
     setLoading(true);
     setError('');
     try {
-      const params = {};
-      if (frequency) params.frequency = frequency;
-      if (sort) params.sort = sort;
-      const res = await axios.get(API_URL, { params });
+      const token = localStorage.getItem('refresh_token');
+      const axiosConfig = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {}
+      };
+      if (frequency) axiosConfig.params.frequency = frequency;
+      if (sort) axiosConfig.params.sort = sort;
+      const res = await axios.get(`${API_URL}/get-upgrade-plans`, axiosConfig);
       setPlans(res.data);
     } catch (err) {
       setError('Lỗi tải danh sách plan');
@@ -49,26 +55,41 @@ const AdminUpgradePlanManagement = () => {
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
-
+  const handleChangePrice = () => {
+    window.alert("alo");
+  };
+  
   const handleSubmit = async e => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('refresh_token');
+      const axiosConfig = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
       if (editPlan) {
-        await axios.put(`${API_URL}/${editPlan._id}`, form);
+        await axios.put(`${API_URL}/update-upgrade-plans/${editPlan._id}`, form, axiosConfig);
       } else {
-        await axios.post(API_URL, form);
+        await axios.post(`${API_URL}/create-upgrade-plans`, form, axiosConfig);
       }
       closeModal();
       fetchPlans();
     } catch {
-      setError('Lỗi lưu plan');
+      window.alert('Lỗi lưu plan');
     }
   };
 
   const handleDelete = async id => {
     if (!window.confirm('Xác nhận xóa plan này?')) return;
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      const token = localStorage.getItem('refresh_token');
+      const axiosConfig = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      await axios.delete(`${API_URL}/delete-upgrade-plans/${id}`, axiosConfig);
       fetchPlans();
     } catch {
       setError('Lỗi xóa plan');
@@ -153,7 +174,7 @@ const AdminUpgradePlanManagement = () => {
                 <input name="duration" type="number" min="1" value={form.duration} onChange={handleChange} required className="im-filter-input" />
               </div>
               <div style={{display: 'flex', gap: 12, marginTop: 20}}>
-                <button type="submit" className="im-filter-button"><i className="fas fa-save"></i> Lưu</button>
+                <button onClick={handleSubmit} className="im-filter-button"><i className="fas fa-save"></i> Lưu</button>
                 <button type="button" className="im-reset-button" onClick={closeModal}>Hủy</button>
               </div>
             </form>

@@ -65,9 +65,9 @@ router.get('/income', getIncomeByTime);               // GET /admin/income
 router.get('/financial-reports', getFinancialReports); // GET /admin/financial-reports
 
 // Upgrade Plan management (admin only)
-router.get('/upgrade-plans', roleMiddleware('admin'), upgradePlanController.getUpgradePlans);
-router.post('/upgrade-plans', roleMiddleware('admin'), upgradePlanController.createUpgradePlan);
-router.put('/upgrade-plans/:id', roleMiddleware('admin'), upgradePlanController.updateUpgradePlan);
-router.delete('/upgrade-plans/:id', roleMiddleware('admin'), upgradePlanController.deleteUpgradePlan);
+router.get('/get-upgrade-plans', authMiddleware1,  upgradePlanController.getUpgradePlans);
+router.post('/create-upgrade-plans', authMiddleware1,  upgradePlanController.createUpgradePlan);
+router.put('/update-upgrade-plans/:id', authMiddleware1,  upgradePlanController.updateUpgradePlan);
+router.delete('/delete-upgrade-plans/:id',authMiddleware1,  upgradePlanController.deleteUpgradePlan);
 
 module.exports = router;

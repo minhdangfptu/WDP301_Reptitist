@@ -64,8 +64,7 @@ exports.updateReptileById = async (req, res) => {
       return res.status(404).json({ message: 'Reptile not found' });
     }
 
-    // Kiểm tra quyền
-    if (req.user.role !== 'admin' && reptile.user_id.toString() !== req.user._id.toString()) {
+    if (reptile.user_id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'You do not have permission to update this reptile' });
     }
 

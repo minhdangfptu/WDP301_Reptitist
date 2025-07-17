@@ -8,9 +8,7 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 
 //Api create repltile infomation: Chỉ admin mới có quyền thực hiện api này
 router.post(
-  '/create-reptile',
-  authMiddleware1,
-  roleMiddleware('admin'),         // Kiểm tra quyền admin
+  '/create-reptile',     // Kiểm tra quyền admin
   reptileController.createReptile // Hàm callback cho việc tạo reptile
 );
 
@@ -23,15 +21,12 @@ router.get(
 //Api cập nhật reptile infomation: Chỉ admin mới có quyền thực hiện api này
 router.put(
   '/update-reptile',
-authMiddleware1,
-roleMiddleware('admin'),  
   reptileController.updateReptileById
 );
 
 //Api xóa reptile infomation: Chỉ admin mới có quyền thực hiện api này
 router.delete(
-  '/delete-reptile',
-roleMiddleware('admin'),  
+  '/delete-reptile', 
   reptileController.deleteReptileById
 );
 

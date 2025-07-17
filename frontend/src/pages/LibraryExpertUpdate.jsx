@@ -44,14 +44,29 @@ const LibraryExpertUpdate = () => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+  
     try {
-      await axios.put(`${baseUrl}/reptitist/info/update-reptile/${reptileId}`, form);
+      const token = localStorage.getItem('access_token');
+      console.log('Token in frontend:', token);
+
+      await axios.put(
+        `${baseUrl}/reptitist/info/update-reptile?id=${reptileId}`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
       alert('Cập nhật thành công!');
       navigate(`/libraryExpertDetail/${reptileId}`);
     } catch (err) {
+      console.error(err);
       alert('Lỗi khi cập nhật!');
     }
   };
+  
 
   if (loading) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
