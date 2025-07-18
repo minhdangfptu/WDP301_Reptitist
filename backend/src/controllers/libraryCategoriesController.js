@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const LibraryCategory = require('../models/Library_category'); // Đảm bảo đúng tên model
 const LibraryTopic = require('../models/Library_topics');
+const { LibraryExpertTopic } = require('../models/Library_topics');
 
 // Tạo danh mục mới
 exports.createCategory = async (req, res) => {
@@ -122,5 +123,28 @@ exports.getCategoriesByTopicId = async (req, res) => {
   } catch (error) {
     console.error('Lỗi khi lấy danh mục theo chủ đề:', error);
     res.status(500).json({ message: 'Lỗi khi lấy danh mục theo chủ đề', error: error.message });
+  }
+};
+
+
+// Tạo chủ đề chuyên sâu
+exports.createExpertTopic = async (req, res) => {
+  try {
+    const { topic_title, topic_description, topic_imageurl } = req.body;
+    const newTopic = new LibraryExpertTopic({ topic_title, topic_description, topic_imageurl });
+    await newTopic.save();
+    res.status(201).json(newTopic);
+  } catch (error) {
+    res.status(400).json({ message: 'Lỗi khi tạo chủ đề chuyên sâu', error: error.message });
+  }
+};
+
+// Lấy tất cả chủ đề chuyên sâu
+exports.getAllExpertTopics = async (req, res) => {
+  try {
+    const topics = await LibraryExpertTopic.find();
+    res.status(200).json(topics);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi khi lấy chủ đề chuyên sâu', error: error.message });
   }
 };

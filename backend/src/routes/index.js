@@ -1,6 +1,7 @@
 const express= require('express');
 const router =express.Router();
 const authRoute=require('./authRoute.js')
+const userRoute=require('./userRoute.js')
 const shopRoute=require('./shopRoute.js')
 const userReptileRoutes = require('./userReptileRoute.js');
 const reptileInfoRoute = require('./reptileInfoRoute.js');
@@ -10,9 +11,9 @@ const libraryContentRoute = require('./libraryContentRoute');
 const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
-const adminRoute = require('./adminRoute'); 
-const userRoute = require('./userRoute');
+const adminRoute = require('./adminRoute');
 const productReportRoute = require('./productReportRoute');
+const reptileRoutes = require('./reptile');
 
 router.use('/user', userRoute);
 router.use('/auth',authRoute);
@@ -27,5 +28,6 @@ router.use('/library-content', libraryContentRoute);
 router.use('/topic-categories', topicCategoryRoutes);
 router.use('/transactions', transactionRoute);
 router.use('/product-reports', productReportRoute);
+router.use('/info', reptileRoutes);
 
 module.exports= router;

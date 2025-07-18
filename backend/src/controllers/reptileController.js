@@ -64,8 +64,7 @@ exports.updateReptileById = async (req, res) => {
       return res.status(404).json({ message: 'Reptile not found' });
     }
 
-    // Kiểm tra quyền
-    if (req.user.role !== 'admin' && reptile.user_id.toString() !== req.user._id.toString()) {
+    if (reptile.user_id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'You do not have permission to update this reptile' });
     }
 
@@ -108,6 +107,18 @@ exports.deleteReptileById = async (req, res) => {
     res.json(successResponse({ deleted_id: id }));
   } catch (err) {
     console.error('Delete error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+exports.getReptilesByUser = async (req, res) => {
+  try {
+    const userId = req.user._id; 
+
+    const reptiles = await Reptile.find({ user_id: userId });
+
+    res.json(successResponse(reptiles));
+  } catch (err) {
+    console.error('Error fetching user reptiles:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

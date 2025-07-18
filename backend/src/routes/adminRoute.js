@@ -1,5 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const productController = require('../controllers/productController');
+const authMiddleware1 = require('../middleware/authMiddlewareModify')
+const roleMiddleware = require('../middleware/roleMiddleware');
+const upgradePlanController = require('../controllers/upgradePlanController');
+
+// Import các middleware từ adminRouter
 const { authMiddleware } = require('../middleware/authMiddleware');
 const {
     checkAdminRole,
@@ -17,7 +23,9 @@ const {
     toggleUserStatus,
     updateUserAccountType,
     getHiddenProducts,
-    updateProductStatusByAdmin
+    updateProductStatusByAdmin,
+    getIncomeByTime,
+    getFinancialReports
 } = require('../controllers/adminController');
 
 // Apply auth middleware to all admin routes
@@ -48,5 +56,16 @@ router.post('/reports/:reportId/handle', handleProductReport); // POST /admin/re
 
 // Statistics
 router.get('/stats', getAdminStats);                  // GET /admin/stats - Thống kê tổng quan
+router.get('/stats', getAdminStats);                  // GET /admin/stats
+router.get('/income', getIncomeByTime);               // GET /admin/income
+
+// Financial reports
+router.get('/financial-reports', getFinancialReports); // GET /admin/financial-reports
+
+// Upgrade Plan management (admin only)
+router.get('/get-upgrade-plans', authMiddleware1,  upgradePlanController.getUpgradePlans);
+router.post('/create-upgrade-plans', authMiddleware1,  upgradePlanController.createUpgradePlan);
+router.put('/update-upgrade-plans/:id', authMiddleware1,  upgradePlanController.updateUpgradePlan);
+router.delete('/delete-upgrade-plans/:id',authMiddleware1,  upgradePlanController.deleteUpgradePlan);
 
 module.exports = router;

@@ -1,3 +1,5 @@
+/* eslint-disable no-unreachable */
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -10,6 +12,7 @@ const Library = () => {
   const [topics, setTopics] = useState([]);
   const [filteredTopics, setFilteredTopics] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [reptiles, setReptiles] = useState([]);
   const [openIndex, setOpenIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -17,19 +20,38 @@ const Library = () => {
   const isAdmin = user && user.role === "admin";
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true); 
     axios
       .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
         setTopics(response.data);
+        getAllReptileInformation()
+          .then((reptilesData) => {
+            setReptiles(reptilesData);
+            setLoading(false); 
+          })
+          .catch((error) => {
+            window.alert('Lỗi khi tải dữ liệu về bò sát');
+            setLoading(false); 
+          });
         setFilteredTopics(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Lỗi khi lấy danh sách chủ đề:", error);
-        setLoading(false);
+        console.error('Lỗi khi lấy danh sách chủ đề:', error);
+        window.alert('Lỗi khi tải dữ liệu về chủ đề');
+        setLoading(false); 
       });
   }, []);
+ const getAllReptileInformation = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/reptitist/info/get-all-reptile`);
+      return response.data.data
+      console.log(response.data, 'reptile data');
+    } catch (err) {
+      throw new Error('Lỗi khi tải dữ liệu');
+    }
+  };
 
   // Filter topics based on search term
   useEffect(() => {
@@ -108,56 +130,126 @@ const Library = () => {
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content">
+           <div className="library-content d-flex">
             {/* Sidebar */}
-            <div className="sidebar">
+            <div className="sidebar me-5" style={{ width: "250px" }}>
               <h2 className="sidebar-title">Chủ đề thư viện</h2>
               <ul className="sidebar-menu list-unstyled">
                 {filteredTopics.map((topic, idx) => (
                   <li key={topic._id}>
                     <div
-                      className="menu-item"
-                      onClick={() => toggleTopic(idx)}
-                      style={{ cursor: "pointer", userSelect: "none" }}
+                      onClick={() => setOpenIndex(openIndex === idx ? null : idx)}
+                      style={{
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
                     >
-                      <Link to="#" className="menu-link">
-                        {topic.topic_title}
-                      </Link>
+                      <span>{topic.topic_title}</span>
                       <span
-                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
-                        aria-hidden="true"
-                      ></span>
+                        style={{
+                          transform: openIndex === idx ? 'rotate(90deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease',
+                          display: 'inline-block',
+                        }}
+                      >
+                        ▶
+                      </span>
                     </div>
-                    <ul
-                      className="submenu"
-                      style={{ display: openIndex === idx ? "block" : "none" }}
-                    >
-                      <li>
-                        <Link to={`/libraryCategory/${topic._id}`}>
-                          {topic.topic_description || "Chưa có mô tả"}
-                        </Link>
-                      </li>
-                    </ul>
+
+                    {openIndex === idx && (
+                      <ul style={{ paddingLeft: '15px', marginTop: '5px' }}>
+                        <li>
+                          <Link to={`/libraryCategory/${topic._id}`}>
+                            {topic.topic_description || 'Chưa có mô tả'}
+                          </Link>
+                        </li>
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
+              {isAdmin && (
+                <div style={{ marginTop: '20px' }}>
+                  <Link to="/library_topics/create">
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                    >
+                      + Tạo chủ đề
+                    </button>
+                  </Link>
+                </div>
+              )}
+              <h2 className="sidebar-title mt-4">Thư viện chuyên sâu</h2>
+              <Link to="/LibraryExpert">
+                <button
+                  style={{
+                    width: '100%',
+                    padding: '8px 16px',
+                    backgroundColor: '#06a13d',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '20px',
+                    fontWeight: 'bold',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                >
+                Thư viện chuyên sâu
+                </button>
+              </Link>
             </div>
 
-            {/* Content Grid */}
-            <div className="content-grid">
-              {filteredTopics.map((topic) => (
-                <div className="category-card" key={topic._id}>
-                  <Link to={`/libraryCategory/${topic._id}`}>
-                    <div className="card-image" style={{ cursor: "pointer" }}>
-                      <img
-                        src={
-                          topic.topic_imageurl?.[0] ||
-                          "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
-                        }
-                        alt={topic.topic_title}
-                      />
-                    </div>
-                  </Link>
+            {/* Content Grid for Topics and Reptiles */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              {/* First row for topics */}
+              <div
+                className="content-grid"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '20px',
+                }}
+              >
+                {topics.map((topic) => (
+                  <div
+                    className="category-card"
+                    key={topic._id}
+                    style={{
+                      width: '100%',
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      padding: '15px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.2s ease',
+                    }}
+                  >
+                    <Link to={`/libraryCategory/${topic._id}`}>
+                      <div className="card-image" style={{ cursor: 'pointer' }}>
+                        <img
+                          src={topic.topic_imageurl?.[0] || 'https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png'}
+                          alt={topic.topic_title}
+                          style={{
+                            width: '100%',
+                            height: '200px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                          }}
+                        />
+                      </div>
+                    </Link>
 
                   <div className="card-title">{topic.topic_title}</div>
                   <div
@@ -211,7 +303,9 @@ const Library = () => {
             </div>
           </div>
         </div>
+         </div>
       </section>
+     
 
       <Footer />
     </>

@@ -37,6 +37,60 @@
   opacity: 0.3;
 }
 
+/* Tab Navigation */
+.pm-tabs-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.pm-tabs {
+  display: flex;
+  background: white;
+  border-radius: 12px;
+  padding: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.pm-tab {
+  flex: 1;
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.pm-tab:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.pm-tab-active {
+  background: #3b82f6;
+  color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.pm-tab-active:hover {
+  background: #2563eb;
+  color: white;
+}
+
+.pm-tab i {
+  font-size: 16px;
+}
+
 /* Filters section đẹp hơn */
 .admin-transaction-management .pm-filters-section {
   margin: 24px auto;
@@ -203,9 +257,11 @@
   font-weight: 600;
   text-transform: uppercase;
   border: 1px solid #fbbf24;
+  border: 1px solid #fbbf24;
 }
 
 .status-failed {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
   color: #991b1b;
   padding: 6px 12px;
@@ -289,11 +345,16 @@
 
 /* Button improvements */
 .admin-transaction-management .pm-btn {
+  padding: 8px 16px;
+  border: none;
   border-radius: 8px;
   font-weight: 600;
-  transition: all 0.2s;
-  border: none;
   cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
 }
 
 .admin-transaction-management .pm-btn:hover {
@@ -301,19 +362,40 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.admin-transaction-management .pm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .admin-transaction-management .pm-btn-danger {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  background: #ef4444;
   color: white;
 }
 
 .admin-transaction-management .pm-btn-edit {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: #f59e0b;
   color: white;
 }
 
 .admin-transaction-management .pm-btn-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: #3b82f6;
   color: white;
+}
+
+.admin-transaction-management .pm-btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+/* Export buttons specific styling */
+.admin-transaction-management .pm-btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.admin-transaction-management .pm-btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
 }
 
 /* Modal improvements */
@@ -360,17 +442,47 @@
   }
   
   .chart-container {
-    height: 200px;
+    height: 250px;
   }
   
   .admin-transaction-management .pm-products-table th,
   .admin-transaction-management .pm-products-table td {
     padding: 12px 8px;
-    font-size: 14px;
+    font-size: 12px;
   }
   
   .chart-card {
     padding: 16px;
+  }
+
+  .pm-tabs {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pm-tab {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  /* Export buttons responsive */
+  .admin-transaction-management .pm-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-transaction-management .pm-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  /* Stack export buttons vertically on very small screens */
+  .admin-transaction-management .pm-btn-primary,
+  .admin-transaction-management .pm-btn-secondary {
+    flex: 1;
+    justify-content: center;
   }
 }
 
