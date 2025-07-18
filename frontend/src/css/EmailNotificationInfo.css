@@ -1,0 +1,134 @@
+.email-notification-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.email-notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.email-notification-header:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.email-notification-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.email-notification-title i {
+  font-size: 18px;
+  color: #ffd700;
+}
+
+.email-notification-header i:last-child {
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.email-notification-content {
+  background: white;
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.email-notification-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 8px 0;
+  color: #333;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.email-notification-item:last-child {
+  margin-bottom: 0;
+}
+
+.email-notification-item i {
+  width: 20px;
+  text-align: center;
+  color: #667eea;
+  font-size: 16px;
+}
+
+.email-notification-item span {
+  flex: 1;
+}
+
+.email-notification-section {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.email-notification-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.email-notification-section h4 {
+  margin: 0 0 12px 0;
+  color: #667eea;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.email-notification-section h4 i {
+  color: #667eea;
+  font-size: 16px;
+}
+
+/* Animation for expand/collapse */
+.email-notification-content {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .email-notification-header {
+    padding: 14px 16px;
+  }
+  
+  .email-notification-title {
+    font-size: 14px;
+  }
+  
+  .email-notification-content {
+    padding: 16px;
+  }
+  
+  .email-notification-item {
+    font-size: 13px;
+  }
+} 

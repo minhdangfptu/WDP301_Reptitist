@@ -1,531 +1,531 @@
 /* Responsive Design *//* PlanDetailModal.css - CSS riêng biệt với prefix plan-modal */
 
 .plan-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 20px;
-    backdrop-filter: blur(4px);
-    animation: plan-modal-fade-in 0.3s ease-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: plan-modal-fade-in 0.3s ease-out;
+}
+
+.plan-modal-container {
+  background: white;
+  border-radius: 20px;
+  max-width: 800px;
+  width: 100%;
+  max-height: 85vh;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  overflow: hidden;
+  display: flex;
+  animation: plan-modal-slide-up 0.3s ease-out;
+  position: relative;
+}
+
+.plan-modal-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('/BGLogin.jpg');
+  filter: brightness(0.85);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.plan-modal-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  background-color: white;
+  width: 100%;
+  height: 100%;
+}
+
+/* Left Section */
+.plan-modal-left-section {
+  flex: 1;
+  padding: 24px;
+  border-right: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 85vh;
+}
+
+.plan-modal-header {
+  margin-bottom: 20px;
+}
+
+.plan-modal-back-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #6c757d;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  padding: 8px 0;
+  transition: color 0.3s ease;
+}
+
+.plan-modal-back-button:hover {
+  color: #2c3e50;
+}
+
+.plan-modal-back-button::before {
+  content: '←';
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.plan-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 16px;
+}
+
+.plan-modal-tabs {
+  display: flex;
+  background: #f1f3f4;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.plan-modal-tab {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #6c757d;
+  position: relative;
+}
+
+.plan-modal-tab.active {
+  background: #48bb78;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.plan-modal-tab.active::before {
+  content: '';
+}
+
+.plan-modal-features {
+  margin-bottom: 20px;
+}
+
+.plan-modal-feature {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 6px 0;
+}
+
+.plan-modal-feature-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #48bb78;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.plan-modal-feature-icon::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.plan-modal-feature-text {
+  color: #495057;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.plan-modal-pricing-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.plan-modal-pricing-card {
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  background: white;
+  display: flex;
+  align-items: center;
+}
+
+.plan-modal-pricing-card:hover {
+  border-color: #48bb78;
+  box-shadow: 0 4px 15px rgba(72, 187, 120, 0.1);
+}
+
+.plan-modal-pricing-card.selected {
+  border-color: #48bb78;
+  background: #f0fdf4;
+}
+
+.plan-modal-radio-wrapper {
+  margin-right: 16px;
+}
+
+.plan-modal-radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #dee2e6;
+  border-radius: 50%;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.plan-modal-pricing-card.selected .plan-modal-radio {
+  border-color: #48bb78;
+  background: #48bb78;
+}
+
+.plan-modal-pricing-card.selected .plan-modal-radio::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.plan-modal-plan-info {
+  flex: 1;
+}
+
+.plan-modal-plan-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 2px;
+}
+
+.plan-modal-plan-price {
+  font-size: 18px;
+  font-weight: 700;
+  color: #48bb78;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.plan-modal-plan-duration {
+  font-size: 12px;
+  color: #6c757d;
+  display: inline-block;
+}
+
+.plan-modal-billing-info {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.plan-modal-billing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.plan-modal-billing-row:last-child {
+  margin-bottom: 0;
+  padding-top: 8px;
+  border-top: 1px solid #dee2e6;
+  font-weight: 600;
+}
+
+.plan-modal-billing-label {
+  color: #6c757d;
+}
+
+.plan-modal-billing-value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.plan-modal-free-trial {
+  color: #48bb78;
+  font-size: 12px;
+}
+
+.plan-modal-cta-button {
+  width: 100%;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.plan-modal-cta-button:hover {
+  background: #38a169;
+  transform: translateY(-1px);
+}
+
+/* Right Section */
+.plan-modal-right-section {
+  flex: 1;
+  padding: 24px;
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 85vh;
+}
+
+.plan-modal-timeline-header {
+  margin-bottom: 20px;
+}
+
+.plan-modal-timeline-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+
+.plan-modal-timeline-subtitle {
+  font-size: 13px;
+  color: #6c757d;
+}
+
+.plan-modal-timeline {
+  flex: 1;
+  position: relative;
+}
+
+.plan-modal-timeline::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e9ecef;
+}
+
+.plan-modal-timeline-item {
+  position: relative;
+  padding-left: 50px;
+  margin-bottom: 20px;
+}
+
+.plan-modal-timeline-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: white;
+  z-index: 2;
+}
+
+.plan-modal-timeline-item.active .plan-modal-timeline-icon {
+  background: #28a745;
+}
+
+.plan-modal-timeline-item.pending .plan-modal-timeline-icon {
+  background: #ffc107;
+}
+
+.plan-modal-timeline-item.future .plan-modal-timeline-icon {
+  background: #dc3545;
+}
+
+.plan-modal-timeline-content {
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.plan-modal-timeline-item.active .plan-modal-timeline-content {
+  border-left: 3px solid #28a745;
+}
+
+.plan-modal-timeline-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 3px;
+}
+
+.plan-modal-timeline-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 3px;
+}
+
+.plan-modal-timeline-description {
+  font-size: 12px;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+/* Animations */
+@keyframes plan-modal-fade-in {
+  from {
+    opacity: 0;
   }
-  
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes plan-modal-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Custom scrollbar for both sections */
+.plan-modal-left-section::-webkit-scrollbar,
+.plan-modal-right-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.plan-modal-left-section::-webkit-scrollbar-track,
+.plan-modal-right-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.plan-modal-left-section::-webkit-scrollbar-thumb,
+.plan-modal-right-section::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.plan-modal-left-section::-webkit-scrollbar-thumb:hover,
+.plan-modal-right-section::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+@media (max-width: 768px) {
   .plan-modal-container {
-    background: white;
-    border-radius: 20px;
-    max-width: 800px;
-    width: 100%;
-    max-height: 85vh;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    overflow: hidden;
-    display: flex;
-    animation: plan-modal-slide-up 0.3s ease-out;
-    position: relative;
+    flex-direction: column;
+    margin: 10px;
+    max-width: none;
+    max-height: 90vh;
   }
-  
-  .plan-modal-bg-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url('/BGLogin.jpg');
-    filter: brightness(0.85);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    z-index: 1;
+
+  .plan-modal-left-section, .plan-modal-right-section {
+    padding: 16px;
+    max-height: 45vh;
   }
-  
-  .plan-modal-content {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    background-color: white;
-    width: 100%;
-    height: 100%;
-  }
-  
-  /* Left Section */
+
   .plan-modal-left-section {
-    flex: 1;
-    padding: 24px;
-    border-right: 1px solid #eee;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    max-height: 85vh;
+    border-right: none;
+    border-bottom: 1px solid #e9ecef;
   }
-  
-  .plan-modal-header {
-    margin-bottom: 20px;
-  }
-  
-  .plan-modal-back-button {
-    display: flex;
-    align-items: center;
-    background: none;
-    border: none;
-    color: #6c757d;
-    font-size: 16px;
-    cursor: pointer;
-    margin-bottom: 16px;
-    padding: 8px 0;
-    transition: color 0.3s ease;
-  }
-  
-  .plan-modal-back-button:hover {
-    color: #2c3e50;
-  }
-  
-  .plan-modal-back-button::before {
-    content: '←';
-    margin-right: 8px;
-    font-size: 18px;
-  }
-  
-  .plan-modal-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 16px;
-  }
-  
-  .plan-modal-tabs {
-    display: flex;
-    background: #f1f3f4;
-    border-radius: 12px;
-    padding: 4px;
-    margin-bottom: 16px;
-    gap: 4px;
-  }
-  
-  .plan-modal-tab {
-    flex: 1;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: none;
-    background: transparent;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #6c757d;
-    position: relative;
-  }
-  
-  .plan-modal-tab.active {
-    background: #48bb78;
-    color: white;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  
-  .plan-modal-tab.active::before {
-    content: '';
-  }
-  
-  .plan-modal-features {
-    margin-bottom: 20px;
-  }
-  
-  .plan-modal-feature {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    padding: 6px 0;
-  }
-  
-  .plan-modal-feature-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #48bb78;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  
-  .plan-modal-feature-icon::after {
-    content: '✓';
-    color: white;
-    font-weight: bold;
-    font-size: 10px;
-  }
-  
-  .plan-modal-feature-text {
-    color: #495057;
-    font-size: 14px;
-    line-height: 1.4;
-  }
-  
-  .plan-modal-pricing-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .plan-modal-pricing-card {
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    background: white;
-    display: flex;
-    align-items: center;
-  }
-  
-  .plan-modal-pricing-card:hover {
-    border-color: #48bb78;
-    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.1);
-  }
-  
-  .plan-modal-pricing-card.selected {
-    border-color: #48bb78;
-    background: #f0fdf4;
-  }
-  
-  .plan-modal-radio-wrapper {
-    margin-right: 16px;
-  }
-  
-  .plan-modal-radio {
-    width: 20px;
-    height: 20px;
-    border: 2px solid #dee2e6;
-    border-radius: 50%;
-    position: relative;
-    transition: all 0.3s ease;
-  }
-  
-  .plan-modal-pricing-card.selected .plan-modal-radio {
-    border-color: #48bb78;
-    background: #48bb78;
-  }
-  
-  .plan-modal-pricing-card.selected .plan-modal-radio::after {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-  
-  .plan-modal-plan-info {
-    flex: 1;
-  }
-  
-  .plan-modal-plan-name {
-    font-weight: 600;
-    font-size: 16px;
-    color: #2c3e50;
-    margin-bottom: 2px;
-  }
-  
-  .plan-modal-plan-price {
-    font-size: 18px;
-    font-weight: 700;
-    color: #48bb78;
-    display: inline-block;
-    margin-right: 8px;
-  }
-  
-  .plan-modal-plan-duration {
-    font-size: 12px;
-    color: #6c757d;
-    display: inline-block;
-  }
-  
-  .plan-modal-billing-info {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 16px;
-    font-size: 13px;
-  }
-  
-  .plan-modal-billing-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .plan-modal-billing-row:last-child {
-    margin-bottom: 0;
-    padding-top: 8px;
-    border-top: 1px solid #dee2e6;
-    font-weight: 600;
-  }
-  
-  .plan-modal-billing-label {
-    color: #6c757d;
-  }
-  
-  .plan-modal-billing-value {
-    color: #2c3e50;
-    font-weight: 600;
-  }
-  
-  .plan-modal-free-trial {
-    color: #48bb78;
-    font-size: 12px;
-  }
-  
-  .plan-modal-cta-button {
-    width: 100%;
-    background: #48bb78;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 12px 20px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: auto;
-  }
-  
-  .plan-modal-cta-button:hover {
-    background: #38a169;
-    transform: translateY(-1px);
-  }
-  
-  /* Right Section */
+
   .plan-modal-right-section {
-    flex: 1;
-    padding: 24px;
-    background: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    max-height: 85vh;
+    background: white;
   }
-  
-  .plan-modal-timeline-header {
-    margin-bottom: 20px;
-  }
-  
-  .plan-modal-timeline-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 6px;
-  }
-  
-  .plan-modal-timeline-subtitle {
-    font-size: 13px;
-    color: #6c757d;
-  }
-  
-  .plan-modal-timeline {
-    flex: 1;
-    position: relative;
-  }
-  
+
   .plan-modal-timeline::before {
-    content: '';
-    position: absolute;
-    left: 16px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #e9ecef;
+    display: none;
   }
-  
+
   .plan-modal-timeline-item {
-    position: relative;
-    padding-left: 50px;
-    margin-bottom: 20px;
-  }
-  
-  .plan-modal-timeline-icon {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
+    padding-left: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: white;
-    z-index: 2;
+    gap: 12px;
+    margin-bottom: 12px;
   }
-  
-  .plan-modal-timeline-item.active .plan-modal-timeline-icon {
-    background: #28a745;
+
+  .plan-modal-timeline-icon {
+    position: static;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    flex-shrink: 0;
   }
-  
-  .plan-modal-timeline-item.pending .plan-modal-timeline-icon {
-    background: #ffc107;
-  }
-  
-  .plan-modal-timeline-item.future .plan-modal-timeline-icon {
-    background: #dc3545;
-  }
-  
+
   .plan-modal-timeline-content {
-    background: white;
-    border-radius: 8px;
-    padding: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    flex: 1;
   }
-  
-  .plan-modal-timeline-item.active .plan-modal-timeline-content {
-    border-left: 3px solid #28a745;
-  }
-  
-  .plan-modal-timeline-date {
-    font-size: 13px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 3px;
-  }
-  
-  .plan-modal-timeline-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 3px;
-  }
-  
-  .plan-modal-timeline-description {
-    font-size: 12px;
-    color: #6c757d;
-    line-height: 1.4;
-  }
-  
-  /* Animations */
-  @keyframes plan-modal-fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  
-  @keyframes plan-modal-slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(50px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-  
-  /* Custom scrollbar for both sections */
-  .plan-modal-left-section::-webkit-scrollbar,
-  .plan-modal-right-section::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  .plan-modal-left-section::-webkit-scrollbar-track,
-  .plan-modal-right-section::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-  
-  .plan-modal-left-section::-webkit-scrollbar-thumb,
-  .plan-modal-right-section::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-  }
-  
-  .plan-modal-left-section::-webkit-scrollbar-thumb:hover,
-  .plan-modal-right-section::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
-  @media (max-width: 768px) {
-    .plan-modal-container {
-      flex-direction: column;
-      margin: 10px;
-      max-width: none;
-      max-height: 90vh;
-    }
-  
-    .plan-modal-left-section, .plan-modal-right-section {
-      padding: 16px;
-      max-height: 45vh;
-    }
-  
-    .plan-modal-left-section {
-      border-right: none;
-      border-bottom: 1px solid #e9ecef;
-    }
-  
-    .plan-modal-right-section {
-      background: white;
-    }
-  
-    .plan-modal-timeline::before {
-      display: none;
-    }
-  
-    .plan-modal-timeline-item {
-      padding-left: 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-  
-    .plan-modal-timeline-icon {
-      position: static;
-      width: 28px;
-      height: 28px;
-      font-size: 12px;
-      flex-shrink: 0;
-    }
-  
-    .plan-modal-timeline-content {
-      flex: 1;
-    }
-  }
-  
-  /* Dark mode support (optional) */
-  .dark-mode .plan-modal-container {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .plan-modal-left-section {
-    background: var(--bg-secondary);
-    border-right-color: var(--border-color);
-  }
-  
-  .dark-mode .plan-modal-right-section {
-    background: var(--bg-primary);
-  }
-  
-  .dark-mode .plan-modal-title {
-    color: var(--text-primary);
-  }
-  
-  .dark-mode .plan-modal-pricing-card {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-  }
-  
-  .dark-mode .plan-modal-timeline-content {
-    background: var(--card-bg);
-  }
+}
+
+/* Dark mode support (optional) */
+.dark-mode .plan-modal-container {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-modal-left-section {
+  background: var(--bg-secondary);
+  border-right-color: var(--border-color);
+}
+
+.dark-mode .plan-modal-right-section {
+  background: var(--bg-primary);
+}
+
+.dark-mode .plan-modal-title {
+  color: var(--text-primary);
+}
+
+.dark-mode .plan-modal-pricing-card {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+}
+
+.dark-mode .plan-modal-timeline-content {
+  background: var(--card-bg);
+}

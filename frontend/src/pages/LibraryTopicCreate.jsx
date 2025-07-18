@@ -19,12 +19,21 @@ const CreateLibraryTopic = () => {
     };
     try {
       await axios.post(`${baseUrl}/reptitist/topic-categories/library_topics`, newTopic);
-      navigate("/Library");
+      navigate("/LibraryTopic");
     } catch (error) {
       console.error("Lỗi khi tạo chủ đề:", error);
     }
   };
-
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageurl(reader.result); // base64 string
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   return (
     <>
       <Header />
@@ -60,14 +69,16 @@ const CreateLibraryTopic = () => {
           </div>
 
           <div className="form-group" style={{ marginBottom: "16px" }}>
-            <label>Hình ảnh (URL)</label>
+            <label>Hình ảnh (chọn file)</label>
             <input
-              type="text"
-              value={imageurl}
-              onChange={(e) => setImageurl(e.target.value)}
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
               className="form-control"
-              placeholder="Nhập đường dẫn hình ảnh..."
             />
+            {imageurl && (
+              <img src={imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
+            )}
           </div>
 
           <button type="submit" className="btn btn-success">

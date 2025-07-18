@@ -22,4 +22,3 @@ const feedbackApi = {
     deleteFeedbackAndRatingApi
 };
 export default feedbackApi;
-

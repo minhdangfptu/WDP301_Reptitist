@@ -2,175 +2,175 @@
 
 /* Reset default styles */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Arial, sans-serif;
-  }
-  
-  .signup3-body {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-image: url('/BGLogin.jpg');
-    padding: 20px;
-  }
-  
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.signup3-body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('/BGLogin.jpg');
+  padding: 20px;
+}
+
+.signup3-container {
+  width: 900px;
+  min-height: 550px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  display: flex;
+  position: relative;
+  background-color: white;
+}
+
+.signup3-content {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  overflow-y: auto;
+}
+
+.signup3-logo {
+  margin-bottom: 20px;
+}
+
+.signup3-logo img {
+  height: 60px;
+}
+
+.signup3-headline {
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1.3;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.signup3-subheadline {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 30px;
+  max-width: 350px;
+}
+
+.signup3-form {
+  width: 100%;
+  max-width: 340px;
+  margin-bottom: 20px;
+}
+
+.signup3-input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.signup3-input-group label {
+  display: block;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.signup3-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 50px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+  outline: none;
+}
+
+.signup3-input:focus {
+  border-color: #0fa958;
+}
+
+.signup3-input.error {
+  border-color: #ff3b30;
+}
+
+.signup3-input.disabled {
+  background-color: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #ff3b30;
+  font-size: 12px;
+  margin-top: 5px;
+  padding-left: 15px;
+}
+
+.submit-error {
+  text-align: center;
+  margin-bottom: 15px;
+  background-color: rgba(255, 59, 48, 0.1);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.signup3-button {
+  background-color: #0fa958;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 25px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.signup3-button:hover {
+  background-color: #048632;
+}
+
+.signup3-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.signup3-terms {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+  max-width: 340px;
+  text-align: center;
+}
+
+.signup3-terms a {
+  color: #06a13d;
+  text-decoration: none;
+}
+
+.signup3-image {
+  flex: 1;
+  background-image: url('/Screenshot 2025-05-20 072126.png');
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: 768px) {
   .signup3-container {
-    width: 900px;
-    min-height: 550px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    display: flex;
-    position: relative;
-    background-color: white;
-  }
-  
-  .signup3-content {
-    flex: 1;
-    padding: 40px;
-    display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    overflow-y: auto;
-  }
-  
-  .signup3-logo {
-    margin-bottom: 20px;
-  }
-  
-  .signup3-logo img {
-    height: 60px;
-  }
-  
-  .signup3-headline {
-    font-size: 28px;
-    font-weight: bold;
-    line-height: 1.3;
-    margin-bottom: 15px;
-    color: #333;
-  }
-  
-  .signup3-subheadline {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.5;
-    margin-bottom: 30px;
-    max-width: 350px;
-  }
-  
-  .signup3-form {
     width: 100%;
-    max-width: 340px;
-    margin-bottom: 20px;
-  }
-  
-  .signup3-input-group {
-    margin-bottom: 20px;
-    text-align: left;
-  }
-  
-  .signup3-input-group label {
-    display: block;
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 5px;
-    font-weight: 500;
-  }
-  
-  .signup3-input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 50px;
-    font-size: 14px;
-    transition: border-color 0.3s;
-    outline: none;
-  }
-  
-  .signup3-input:focus {
-    border-color: #0fa958;
-  }
-  
-  .signup3-input.error {
-    border-color: #ff3b30;
-  }
-  
-  .signup3-input.disabled {
-    background-color: #f5f5f5;
-    color: #666;
-    cursor: not-allowed;
-  }
-  
-  .error-message {
-    color: #ff3b30;
-    font-size: 12px;
-    margin-top: 5px;
-    padding-left: 15px;
-  }
-  
-  .submit-error {
-    text-align: center;
-    margin-bottom: 15px;
-    background-color: rgba(255, 59, 48, 0.1);
-    padding: 10px;
-    border-radius: 5px;
-  }
-  
-  .signup3-button {
-    background-color: #0fa958;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 25px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: 100%;
-    margin-top: 10px;
-  }
-  
-  .signup3-button:hover {
-    background-color: #048632;
-  }
-  
-  .signup3-button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-  
-  .signup3-terms {
-    margin-top: 20px;
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-    max-width: 340px;
-    text-align: center;
-  }
-  
-  .signup3-terms a {
-    color: #06a13d;
-    text-decoration: none;
   }
   
   .signup3-image {
-    flex: 1;
-    background-image: url('/Screenshot 2025-05-20 072126.png');
-    background-size: cover;
-    background-position: center;
+    min-height: 250px;
   }
-  
-  @media (max-width: 768px) {
-    .signup3-container {
-      flex-direction: column;
-      width: 100%;
-    }
-    
-    .signup3-image {
-      min-height: 250px;
-    }
-  }
+}
