@@ -19,7 +19,7 @@ const LandingPage = () => {
   const [accessCount, setAccessCount] = useState(null);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showFirstLoginPopup, setShowFirstLoginPopup] = useState(false);
-  const [visitCount, setVisitCount] = useState(5000);
+  const [visitCount, setVisitCount] = useState(5243);
   
   useEffect(() => {
     const fetchLatestContent = async () => {
