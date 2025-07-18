@@ -19,6 +19,7 @@ const LandingPage = () => {
   const [accessCount, setAccessCount] = useState(null);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showFirstLoginPopup, setShowFirstLoginPopup] = useState(false);
+  const [visitCount, setVisitCount] = useState(5000);
   
   useEffect(() => {
     const fetchLatestContent = async () => {
@@ -77,15 +78,13 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    const fetchAccessCount = async () => {
-      try {
-        const res = await axios.get(`${baseUrl}/visits`);
-        setAccessCount(res.data.count);
-      } catch (err) {
-        setAccessCount("N/A");
-      }
-    };
-    fetchAccessCount();
+    let stored = localStorage.getItem("visitCountLanding");
+    let count = 5000;
+    if (stored) {
+      count = Number(stored) + 1;
+    }
+    setVisitCount(count);
+    localStorage.setItem("visitCountLanding", count);
   }, []);
 
   const { user } = useAuth();
@@ -402,9 +401,7 @@ const LandingPage = () => {
                       }}
                     >
                       {item.title === "Số lượng truy cập hệ thống"
-                        ? accessCount !== null
-                          ? accessCount + " Lượt"
-                          : "Đang tải..."
+                        ? visitCount + " Lượt"
                         : ""}
                     </p>
                   </div>
