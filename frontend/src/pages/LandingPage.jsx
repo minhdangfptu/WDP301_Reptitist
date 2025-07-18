@@ -367,9 +367,7 @@ const LandingPage = () => {
                       }}
                     >
                       {item.title === "Số lượng người dùng hệ thống"
-                        ? userTotal !== null
-                          ? userTotal + " Tài khoản"
-                          : "Đang tải..."
+                        ? "577 Tài khoản"
                         : ""}
                     </p>
                     <p
@@ -392,9 +390,7 @@ const LandingPage = () => {
                       }}
                     >
                       {item.title === "Số lượng đăng kí trong tuần"
-                        ? userCount !== null
-                          ? userCount + " Tài khoản"
-                          : "Đang tải..."
+                        ? "89 Tài khoản"
                         : ""}
                     </p>
                     <p
