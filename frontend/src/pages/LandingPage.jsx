@@ -19,7 +19,7 @@ const LandingPage = () => {
   const [accessCount, setAccessCount] = useState(null);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showFirstLoginPopup, setShowFirstLoginPopup] = useState(false);
-  const [visitCount, setVisitCount] = useState(5243);
+  const [visitCount, setVisitCount] = useState(5134);
   
   useEffect(() => {
     const fetchLatestContent = async () => {
@@ -79,7 +79,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     let stored = localStorage.getItem("visitCountLanding");
-    let count = 5000;
+    let count = 5134;
     if (stored) {
       count = Number(stored) + 1;
     }
