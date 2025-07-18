@@ -291,7 +291,8 @@ const handleProductReport = async (req, res) => {
                         report.shop_id.username || 'Chủ shop',
                         report.product_id.product_name,
                         report.reason,
-                        adminNote
+                        adminNote,
+                        report.product_id._id // truyền productId
                     );
                     
                     if (emailResult.success) {
@@ -868,7 +869,8 @@ const updateProductStatusByAdmin = async (req, res) => {
                     product.user_id.username || 'Chủ shop',
                     product.product_name,
                     req.user.username || 'Admin',
-                    hideReason
+                    hideReason,
+                    product._id // truyền productId
                 );
                 if (emailResult.success) {
                     emailSent = true;

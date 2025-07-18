@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const sendProductReportNotification = async (shopEmail, shopName, productName, reportReason, adminNote) => {
+const sendProductReportNotification = async (shopEmail, shopName, productName, reportReason, adminNote, productId) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER || 'reptitist.service@gmail.com',
@@ -59,7 +59,9 @@ const sendProductReportNotification = async (shopEmail, shopName, productName, r
                 <li>Để tránh vi phạm trong tương lai, vui lòng đọc kỹ <a href="#" style="color: #007bff;">Quy định cộng đồng</a></li>
               </ul>
             </div>
-            
+            <div style="text-align:center; margin: 30px 0;">
+              <a href="http://localhost:5173/shop/complain?productId=${productId}" style="display:inline-block; background:#e74c3c; color:#fff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">Khiếu nại</a>
+            </div>
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <p style="color: #666; font-size: 12px; margin: 0;">
                 Email này được gửi tự động từ hệ thống Reptitist.<br>
@@ -215,7 +217,7 @@ const sendProductDeleteNotification = async (shopEmail, shopName, productName, a
 };
 
 // Hàm gửi email thông báo khi admin ẩn sản phẩm
-const sendProductHideNotification = async (shopEmail, shopName, productName, adminName, hideReason) => {
+const sendProductHideNotification = async (shopEmail, shopName, productName, adminName, hideReason, productId) => {
   try {
     const mailOptions = {
       from: process.env.EMAIL_USER || 'reptitist.service@gmail.com',
@@ -252,6 +254,9 @@ const sendProductHideNotification = async (shopEmail, shopName, productName, adm
                 <li>Liên hệ admin nếu bạn cho rằng đây là nhầm lẫn</li>
                 <li>Đảm bảo tuân thủ quy định của Reptitist để tránh bị ẩn sản phẩm trong tương lai</li>
               </ul>
+            </div>
+            <div style="text-align:center; margin: 30px 0;">
+              <a href="http://localhost:5173/shop/complain?productId=${productId}" style="display:inline-block; background:#e74c3c; color:#fff; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">Khiếu nại</a>
             </div>
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <p style="color: #666; font-size: 12px; margin: 0;">

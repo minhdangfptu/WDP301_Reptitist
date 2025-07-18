@@ -76,7 +76,8 @@ router.put('/products/:productId/status', async (req, res) => {
           product.user_id.username || '',
           product.product_name,
           adminName || 'Admin',
-          hideReason || ''
+          hideReason || '',
+          product._id
         );
         emailSent = true;
       } catch (e) {}

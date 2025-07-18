@@ -1,0 +1,111 @@
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
+const ShopComplain = () => {
+  const query = useQuery();
+  const productId = query.get('productId') || '';
+  const { user } = useAuth();
+
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    reason: '',
+    description: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setForm((prev) => ({
+        ...prev,
+        name: user.fullname || user.username || '',
+        email: user.email || '',
+      }));
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email || !form.reason) {
+      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Gửi khiếu nại qua email (mailto) hoặc API
+      // Ở đây dùng mailto cho đơn giản
+      const subject = `[REPTITIST] Khiếu nại quyết định về sản phẩm #${productId}`;
+      const body = `
+Tên shop: ${form.name}
+Email: ${form.email}
+Mã sản phẩm: ${productId}
+Lý do khiếu nại: ${form.reason}
+Mô tả chi tiết: ${form.description}
+Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
+      `;
+      const mailto = `mailto:support@reptitist.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailto, '_blank');
+      toast.success('Đang mở email để gửi khiếu nại...');
+      setForm({ ...form, reason: '', description: '' });
+    } catch (err) {
+      toast.error('Có lỗi xảy ra khi gửi khiếu nại.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Header />
+      <div className="container" style={{ maxWidth: 600, margin: '40px auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #eee', padding: 32 }}>
+        <h2 style={{ textAlign: 'center', marginBottom: 24 }}>Khiếu nại quyết định về sản phẩm</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Mã sản phẩm</label>
+            <input type="text" className="form-control" value={productId} disabled readOnly />
+          </div>
+          <div className="form-group">
+            <label>Tên shop <span style={{ color: 'red' }}>*</span></label>
+            <input type="text" className="form-control" name="name" value={form.name} onChange={handleChange} required readOnly={!!user} />
+          </div>
+          <div className="form-group">
+            <label>Email <span style={{ color: 'red' }}>*</span></label>
+            <input type="email" className="form-control" name="email" value={form.email} onChange={handleChange} required readOnly={!!user} />
+          </div>
+          <div className="form-group">
+            <label>Lý do khiếu nại <span style={{ color: 'red' }}>*</span></label>
+            <select className="form-control" name="reason" value={form.reason} onChange={handleChange} required>
+              <option value="">-- Chọn lý do --</option>
+              <option value="sản phẩm bị ẩn không hợp lý">Sản phẩm bị ẩn không hợp lý</option>
+              <option value="báo cáo không chính xác">Báo cáo không chính xác</option>
+              <option value="tôi đã chỉnh sửa, xin xem xét lại">Tôi đã chỉnh sửa, xin xem xét lại</option>
+              <option value="khác">Khác</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Mô tả chi tiết</label>
+            <textarea className="form-control" name="description" value={form.description} onChange={handleChange} rows={5} placeholder="Mô tả chi tiết về khiếu nại (nếu có)..." />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} disabled={submitting}>
+            {submitting ? 'Đang gửi...' : 'Gửi khiếu nại'}
+          </button>
+        </form>
+      </div>
+      <Footer />
+    </>
+  );
+};
+
+export default ShopComplain; 
