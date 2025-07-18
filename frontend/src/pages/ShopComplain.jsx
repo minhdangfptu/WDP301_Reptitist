@@ -44,21 +44,24 @@ const ShopComplain = () => {
     }
     setSubmitting(true);
     try {
-      // Gửi khiếu nại qua email (mailto) hoặc API
-      // Ở đây dùng mailto cho đơn giản
-      const subject = `[REPTITIST] Khiếu nại quyết định về sản phẩm #${productId}`;
-      const body = `
-Tên shop: ${form.name}
-Email: ${form.email}
-Mã sản phẩm: ${productId}
-Lý do khiếu nại: ${form.reason}
-Mô tả chi tiết: ${form.description}
-Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
-      `;
-      const mailto = `mailto:support@reptitist.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.open(mailto, '_blank');
-      toast.success('Đang mở email để gửi khiếu nại...');
-      setForm({ ...form, reason: '', description: '' });
+      const res = await fetch('http://localhost:8080/reptitist/api/shop-complain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          productId,
+          reason: form.reason,
+          description: form.description
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Gửi khiếu nại thành công!');
+        setForm({ ...form, reason: '', description: '' });
+      } else {
+        toast.error('Gửi khiếu nại thất bại!');
+      }
     } catch (err) {
       toast.error('Có lỗi xảy ra khi gửi khiếu nại.');
     } finally {
@@ -70,7 +73,7 @@ Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
     <>
       <Header />
       <div className="container" style={{ maxWidth: 600, margin: '40px auto', background: '#fff', borderRadius: 8, boxShadow: '0 2px 8px #eee', padding: 32 }}>
-        <h2 style={{ textAlign: 'center', marginBottom: 24 }}>Khiếu nại quyết định về sản phẩm</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: 24 }}>Khiếu nại về sản phẩm</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Mã sản phẩm</label>
