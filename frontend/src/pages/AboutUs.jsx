@@ -288,17 +288,17 @@ const AboutUs = () => {
 
           <div className="about-hero-stats">
             <div className="about-hero-stat">
-              <span className="about-hero-stat-number">10K </span>
+              <span className="about-hero-stat-number">267 </span>
               <span className="about-hero-stat-label">
                 Lượt truy cập mỗi tuần
               </span>
             </div>
             <div className="about-hero-stat">
-              <span className="about-hero-stat-number">2k</span>
+              <span className="about-hero-stat-number">276</span>
               <span className="about-hero-stat-label">Bài viết chuyên sâu</span>
             </div>
             <div className="about-hero-stat">
-              <span className="about-hero-stat-number">1k</span>
+              <span className="about-hero-stat-number">764</span>
               <span className="about-hero-stat-label">Giống loài</span>
             </div>
           </div>
@@ -600,7 +600,7 @@ const AboutUs = () => {
                 data-target="100000"
                 data-key="members"
               >
-                {counters.members || 0}
+                577
               </span>
               <div className="about-stat-label">Thành Viên Cộng Đồng</div>
               <div className="about-stat-description">
@@ -613,7 +613,7 @@ const AboutUs = () => {
                 data-target="10000"
                 data-key="consults"
               >
-                {counters.consults || 0}
+                158
               </span>
               <div className="about-stat-label">Ca Tư Vấn Thành Công</div>
               <div className="about-stat-description">
@@ -626,7 +626,7 @@ const AboutUs = () => {
                 data-target="150"
                 data-key="species"
               >
-                {counters.species || 0}
+                764
               </span>
               <div className="about-stat-label">Loài Bò Sát Hỗ Trợ</div>
               <div className="about-stat-description">Từ gecko đến rùa cạn</div>
@@ -648,7 +648,7 @@ const AboutUs = () => {
                 data-target="5000"
                 data-key="items"
               >
-                {counters.items || 0}
+                33
               </span>
               <div className="about-stat-label">Sản Phẩm Trên Sàn TMĐT</div>
               <div className="about-stat-description">Phụ kiện & thức ăn</div>
