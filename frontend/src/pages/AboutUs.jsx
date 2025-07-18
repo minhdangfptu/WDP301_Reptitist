@@ -288,7 +288,7 @@ const AboutUs = () => {
 
           <div className="about-hero-stats">
             <div className="about-hero-stat">
-              <span className="about-hero-stat-number">267 </span>
+              <span className="about-hero-stat-number">894 </span>
               <span className="about-hero-stat-label">
                 Lượt truy cập mỗi tuần
               </span>
