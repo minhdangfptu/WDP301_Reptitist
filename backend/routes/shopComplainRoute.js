@@ -1,10 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
+const Product = require('../src/models/Products');
+const User = require('../src/models/users');
 
 router.post('/api/shop-complain', async (req, res) => {
   const { name, email, productId, reason, description } = req.body;
   try {
+    // Lấy email shop từ productId
+    let shopEmail = email;
+    let shopName = name;
+    if (productId) {
+      const product = await Product.findById(productId).populate('user_id', 'email username');
+      if (product && product.user_id && product.user_id.email) {
+        shopEmail = product.user_id.email;
+        shopName = product.user_id.username || name;
+      }
+    }
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -21,8 +33,8 @@ router.post('/api/shop-complain', async (req, res) => {
         <div style="background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #eee; padding: 24px;">
           <h2 style="color: #e67e22; text-align: center; margin-bottom: 24px;">📢 ĐƠN KHIẾU NẠI SẢN PHẨM</h2>
           <table style="width: 100%; font-size: 15px; margin-bottom: 20px;">
-            <tr><td style="font-weight:bold; width: 140px;">Tên shop:</td><td>${name}</td></tr>
-            <tr><td style="font-weight:bold;">Email:</td><td>${email}</td></tr>
+            <tr><td style="font-weight:bold; width: 140px;">Tên shop:</td><td>${shopName}</td></tr>
+            <tr><td style="font-weight:bold;">Email:</td><td>${shopEmail}</td></tr>
             <tr><td style="font-weight:bold;">Mã sản phẩm:</td><td>${productId}</td></tr>
             <tr><td style="font-weight:bold;">Lý do khiếu nại:</td><td>${reason}</td></tr>
           </table>
@@ -38,10 +50,10 @@ router.post('/api/shop-complain', async (req, res) => {
       </div>
     `;
     const info = await transporter.sendMail({
-      from: email,
+      from: shopEmail,
       to: process.env.EMAIL_USER,
       subject: `[REPTITIST] Khiếu nại quyết định về sản phẩm #${productId}`,
-      text: `Tên shop: ${name}\nEmail: ${email}\nMã sản phẩm: ${productId}\nLý do khiếu nại: ${reason}\nMô tả chi tiết: ${description}\nThời gian gửi: ${new Date().toLocaleString('vi-VN')}`,
+      text: `Tên shop: ${shopName}\nEmail: ${shopEmail}\nMã sản phẩm: ${productId}\nLý do khiếu nại: ${reason}\nMô tả chi tiết: ${description}\nThời gian gửi: ${new Date().toLocaleString('vi-VN')}`,
       html
     });
     console.log('Gửi mail thành công:', info.response);

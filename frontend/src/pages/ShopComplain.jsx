@@ -23,14 +23,38 @@ const ShopComplain = () => {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    // Nếu có productId, không set email từ user nữa
+    if (!productId && user) {
       setForm((prev) => ({
         ...prev,
         name: user.fullname || user.username || '',
         email: user.email || '',
       }));
     }
-  }, [user]);
+  }, [user, productId]);
+
+  // Nếu có productId, tự động lấy email và tên shop sở hữu sản phẩm
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (productId) {
+        try {
+          const res = await fetch(`http://localhost:8080/reptitist/shop/products/detail/${productId}`);
+          const data = await res.json();
+          if (data && data.user_id && data.user_id.email) {
+            setForm(prev => ({
+              ...prev,
+              email: data.user_id.email,
+              name: data.user_id.username || prev.name
+            }));
+          }
+        } catch (err) {
+          // fallback: giữ nguyên email cũ
+        }
+      }
+    };
+    fetchProduct();
+    // eslint-disable-next-line
+  }, [productId]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
