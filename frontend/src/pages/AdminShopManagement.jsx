@@ -48,6 +48,10 @@ const AdminShopManagement = () => {
   const [shopProducts, setShopProducts] = useState([]);
   const [adminNote, setAdminNote] = useState('');
 
+  // Thêm các state cho modal ẩn sản phẩm
+  const [showHideModal, setShowHideModal] = useState(false);
+  const [hidingProductId, setHidingProductId] = useState(null);
+
   // Statistics
   const [stats, setStats] = useState({
     users: {
@@ -237,6 +241,11 @@ const AdminShopManagement = () => {
     }
     // eslint-disable-next-line
   }, [activeTab]);
+
+  useEffect(() => {
+    fetchHiddenProductsAndReports();
+    fetchAllProducts();
+  }, []);
 
   // Handle delete product by admin
   const handleDeleteProduct = async (productId, reason) => {
@@ -498,19 +507,19 @@ const AdminShopManagement = () => {
   const pendingReports = reports.filter(report => report.status === 'pending');
 
   // Thêm hàm chuyển trạng thái sản phẩm
-  const handleToggleProductStatus = async (productId, currentStatus) => {
+  const handleToggleProductStatus = async (productId, currentStatus, reason) => {
     try {
       const token = localStorage.getItem('refresh_token');
       if (!token) return;
       let newStatus = currentStatus === 'not_available' ? 'available' : 'not_available';
-      let reason = undefined;
-      if (newStatus === 'not_available') {
-        reason = await promptHideReason();
-        if (reason === null) return; // Cancel
+      let hideReason = reason;
+      if (newStatus === 'not_available' && !hideReason) {
+        toast.error('Vui lòng nhập lý do ẩn sản phẩm!');
+        return;
       }
       const response = await axios.put(
         `${baseUrl}/reptitist/admin/products/${productId}/status`,
-        { product_status: newStatus, hideReason: reason },
+        { product_status: newStatus, hideReason },
         { headers: { 'Authorization': `Bearer ${token}` } }
       );
       if (newStatus === 'available') {
@@ -644,7 +653,7 @@ const AdminShopManagement = () => {
                 <i className="fas fa-store"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{stats.users.roles.shop}</span>
+                <span className="um-stat-number">{shops.length}</span>
                 <span className="um-stat-label">Tổng Shop</span>
               </div>
             </div>
@@ -654,7 +663,7 @@ const AdminShopManagement = () => {
                 <i className="fas fa-box"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{stats.products.total}</span>
+                <span className="um-stat-number">{allProducts.length}</span>
                 <span className="um-stat-label">Tổng sản phẩm</span>
               </div>
             </div>
@@ -664,7 +673,7 @@ const AdminShopManagement = () => {
                 <i className="fas fa-check-circle"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{stats.products.available}</span>
+                <span className="um-stat-number">{allProducts.filter(p => p.product_status === 'available').length}</span>
                 <span className="um-stat-label">Đang bán</span>
               </div>
             </div>
@@ -674,7 +683,7 @@ const AdminShopManagement = () => {
                 <i className="fas fa-flag"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{stats.reports.pending}</span>
+                <span className="um-stat-number">{pendingReports.length}</span>
                 <span className="um-stat-label">Báo cáo chờ xử lý</span>
               </div>
             </div>
@@ -684,7 +693,13 @@ const AdminShopManagement = () => {
                 <i className="fas fa-clock"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{stats.reports.recent}</span>
+                <span className="um-stat-number">{
+  reports.filter(r => {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return new Date(r.createdAt) >= sevenDaysAgo;
+  }).length
+}</span>
                 <span className="um-stat-label">Báo cáo tuần này</span>
               </div>
             </div>
@@ -1281,7 +1296,15 @@ const AdminShopManagement = () => {
                             </button>
                             <button
                               className={`um-status-btn ${product.product_status === 'not_available' ? 'um-status-inactive' : 'um-status-active'}`}
-                              onClick={() => handleToggleProductStatus(product._id, product.product_status)}
+                              onClick={() => {
+                                if (product.product_status !== 'not_available') {
+                                  setHidingProductId(product._id);
+                                  setHideReason('');
+                                  setShowHideModal(true);
+                                } else {
+                                  handleToggleProductStatus(product._id, product.product_status);
+                                }
+                              }}
                               title={product.product_status === 'not_available' ? 'Bỏ ẩn sản phẩm' : 'Ẩn sản phẩm'}
                             >
                               {product.product_status === 'not_available' ? (
@@ -1828,6 +1851,67 @@ const AdminShopManagement = () => {
                   setShowDeleteModal(false);
                   setDeleteReason('');
                   setDeletingProductId(null);
+                }}
+                className="um-btn um-btn-secondary"
+              >
+                <i className="fas fa-times"></i>
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal nhập lý do ẩn sản phẩm */}
+      {showHideModal && (
+        <div className="um-modal-overlay" onClick={() => setShowHideModal(false)}>
+          <div className="um-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="um-modal-header">
+              <h3>
+                <i className="fas fa-eye-slash"></i>
+                Ẩn sản phẩm
+              </h3>
+              <button
+                onClick={() => setShowHideModal(false)}
+                className="um-close-btn"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="um-modal-body">
+              <p>Bạn có chắc chắn muốn ẩn sản phẩm này không?</p>
+              <label>Lý do ẩn (bắt buộc):</label>
+              <textarea
+                value={hideReason}
+                onChange={e => setHideReason(e.target.value)}
+                placeholder="Nhập lý do ẩn sản phẩm..."
+                className="um-form-input"
+                rows="3"
+                style={{ width: '100%', resize: 'vertical' }}
+              />
+            </div>
+            <div className="um-modal-footer">
+              <button
+                onClick={async () => {
+                  if (!hideReason.trim()) {
+                    toast.error('Vui lòng nhập lý do ẩn sản phẩm!');
+                    return;
+                  }
+                  await handleToggleProductStatus(hidingProductId, 'available', hideReason);
+                  setShowHideModal(false);
+                  setHideReason('');
+                  setHidingProductId(null);
+                }}
+                className="um-btn um-btn-danger"
+              >
+                <i className="fas fa-eye-slash"></i>
+                Ẩn
+              </button>
+              <button
+                onClick={() => {
+                  setShowHideModal(false);
+                  setHideReason('');
+                  setHidingProductId(null);
                 }}
                 className="um-btn um-btn-secondary"
               >
