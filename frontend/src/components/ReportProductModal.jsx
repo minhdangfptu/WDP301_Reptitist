@@ -35,11 +35,11 @@ const ReportProductModal = ({ isOpen, onClose, onSubmit, productName }) => {
             className="report-reason-dropdown"
           >
             <option value="spam">Spam</option>
-            <option value="Nội dung không phù hợp">Nội dung không phù hợp</option>
-            <option value="Sản phẩm giả mạo">Sản phẩm giả mạo</option>
-            <option value="Bạo lực">Bạo lực</option>
-            <option value="Vi phạm bản quyền">Vi phạm bản quyền</option>
-            <option value="Khác">Khác</option>
+            <option value="inappropriate">Nội dung không phù hợp</option>
+            <option value="fake">Sản phẩm giả mạo</option>
+            <option value="violence">Bạo lực</option>
+            <option value="copyright">Vi phạm bản quyền</option>
+            <option value="other">Khác</option>
           </select>
         </div>
         <textarea
