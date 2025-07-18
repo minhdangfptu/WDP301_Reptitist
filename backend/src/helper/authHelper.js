@@ -18,7 +18,7 @@ const getUserInfoFromToken = async (req) => {
 
         return {
             user_id: user._id,
-            role_name: user.role_id?.role_name || 'unknown'
+            role_name: user.account_type?.type || 'unknown'
         };
     } catch (error) {
         throw new Error('Failed to extract user info: ' + error.message);

@@ -38,17 +38,32 @@ function ShopHeader() {
             >
               TRANG CHỦ
             </a>
-            <a href="#" className="shop-top-link">
-              Trở thành người bán trên Reptisist Shop
-            </a>
-            <a href="#" className="shop-top-link">
-              Kết nối với chúng tôi
-            </a>
-            <div className="shop-social-icons">
+            {user?.account_type?.type >= 3 ? (
+              <a
+                href="/ShopDashboard"
+                className="shop-top-link"
+                style={{ fontWeight: "bold"}}
+              >
+                QUẢN LÝ CỬA HÀNG CỦA BẠN
+              </a>
+            ) : (
+              <>
+              <a href="#" className="shop-top-link">
+                Trở thành người bán trên Reptisist Shop
+              </a>
+              <a href="#" className="shop-top-link">
+                Kết nối với chúng tôi
+              </a>
+              <div className="shop-social-icons">
               <a href="#" className="shop-social-icon">
                 <Facebook size={16} />
               </a>
             </div>
+              </>
+              
+            )}
+            
+           
           </div>
           <div className="shop-top-actions">
             <a href="#" className="shop-top-action">
@@ -60,7 +75,7 @@ function ShopHeader() {
                 style={{ fontWeight: "bold", color: "white" }}
               >
                 <User size={16} style={{ marginRight: 4 }} />
-                {user.fullname || user.username || user.email}
+                <a href="/Profile" >{user.fullname || user.username || user.email}</a>
               </span>
             ) : (
               <a href="/Login" className="shop-top-action">
@@ -97,11 +112,22 @@ function ShopHeader() {
             </button>
           </div>
 
-          <div className="shop-cart-container" style={{ display: "flex", alignItems: "center" }}>
+          <div
+            className="shop-cart-container"
+            style={{ display: "flex", alignItems: "center" }}
+          >
             <a
               href="/my-cart"
               className="shop-cart-icon"
-              style={{ position: "relative", display: "flex", alignItems: "center", color: "white", textDecoration: "none", fontWeight: 400, fontSize: 15 }}
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                color: "white",
+                textDecoration: "none",
+                fontWeight: 400,
+                fontSize: 15,
+              }}
             >
               <ShoppingCart size={22} />
               {user && cartCount > 0 && (

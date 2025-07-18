@@ -1,8 +1,8 @@
 const roleMiddleware = (...allowedRoles) => {
     return (req, res, next) => {
-        const roleName = req.user?.role_id?.role_name;
+        const accountType = req.user?.account_type?.type;
 
-        if (!roleName || !allowedRoles.includes(roleName)) {
+        if (!accountType || !allowedRoles.includes(accountType)) {
             return res.status(403).json({ message: 'Access denied: insufficient permissions' });
         }
 
