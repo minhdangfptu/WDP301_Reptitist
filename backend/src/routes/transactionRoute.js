@@ -35,9 +35,8 @@ router.get(
 
 // User transaction routes
 router.get(
-    '/history/:userId',
+    '/history',
     authUserIdOnly,
-    validateObjectId,
     ensureOwnUserData,
     getTransactionHistory
 );

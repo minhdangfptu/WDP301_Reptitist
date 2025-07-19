@@ -7,12 +7,15 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../css/Transaction.css';
 import { baseUrl } from '../config';
+import {getTransactionHistory} from '../services/paymentService';
 const Transaction = () => {
   const { user, hasRole } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [dateRange, setDateRange] = useState('30days');
+  const [dateRange, setDateRange] = useState('30');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 3;
 
   useEffect(() => {
     if (user) {
@@ -23,25 +26,18 @@ const Transaction = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('refresh_token');
-      console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",token);
+      const token = localStorage.getItem('access_token');
+
       if (!token) {
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setLoading(false);
         return;
       }
 
-      const response = await axios.get(
-        `${baseUrl}/reptitist/transactions?range=${dateRange}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (response.data && response.data.transactions) {
-        setTransactions(response.data.transactions);
+      const response = await getTransactionHistory(dateRange);
+      if (response) {
+        setTransactions(response);
+        console.log('Transactions fetched:', response);
         setError('');
       } else {
         setTransactions([]);
@@ -169,14 +165,21 @@ const Transaction = () => {
     }
   };
 
+  // Tính toán phân trang
+  const paginatedTransactions = transactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+
+  // Sửa groupTransactionsByDate để dùng paginatedTransactions thay vì transactions
   const groupTransactionsByDate = () => {
     const groups = {};
     const today = new Date();
     const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setDate(today.getDate() - 1);
 
-    transactions.forEach(transaction => {
-      const date = new Date(transaction.transaction_date);
+    if (!Array.isArray(paginatedTransactions)) return groups;
+
+    paginatedTransactions.forEach(transaction => {
+      const date = new Date(transaction.createdAt);
       const isSameDay = (date1, date2) => {
         return date1.getDate() === date2.getDate() &&
                date1.getMonth() === date2.getMonth() &&
@@ -402,10 +405,10 @@ const Transaction = () => {
                         cursor: 'pointer'
                       }}
                     >
-                      <option value="7days">7 ngày qua</option>
-                      <option value="30days">30 ngày qua</option>
-                      <option value="90days">3 tháng qua</option>
-                      <option value="1year">1 năm qua</option>
+                      <option value="7">7 ngày qua</option>
+                      <option value="30">30 ngày qua</option>
+                      <option value="90">3 tháng qua</option>
+                      <option value="365">1 năm qua</option>
                     </select>
                   </div>
                 </div>
@@ -466,7 +469,7 @@ const Transaction = () => {
                                 {transaction.description || 'Không có mô tả'}
                               </div>
                               <div className="transaction-date">
-                                {formatDate(transaction.transaction_date)}
+                                {formatDate(transaction.createdAt)}
                               </div>
                               <div className="transaction-status">
                                 Trạng thái: {getStatusDisplay(transaction.status)}
@@ -497,6 +500,28 @@ const Transaction = () => {
                     ))
                   )}
                 </div>
+                {/* Pagination controls */}
+                {totalPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24 }}>
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      style={{ marginRight: 8, padding: '6px 12px', borderRadius: 4, border: '1px solid #ccc', background: currentPage === 1 ? '#eee' : '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer' }}
+                    >
+                      Trang trước
+                    </button>
+                    <span style={{ lineHeight: '32px', margin: '0 12px' }}>
+                      Trang {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      style={{ marginLeft: 8, padding: '6px 12px', borderRadius: 4, border: '1px solid #ccc', background: currentPage === totalPages ? '#eee' : '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer' }}
+                    >
+                      Trang sau
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

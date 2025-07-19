@@ -105,9 +105,47 @@ const handlePaymentReturn = async (req, res) => {
 
 const getTransactionHistory = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ user_id: req.params.userId }).sort({ createdAt: -1 });
+    const  userId  = req.userId;
+    const { dayRange } = req.query;
+    
+    let dateFilter = {};
+    
+    // Xử lý dayRange để lọc theo khoảng thời gian
+    if (dayRange) {
+      const now = new Date();
+      let startDate;
+      
+      switch (dayRange) {
+        case '7':
+          startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000)); // 7 ngày qua
+          break;
+        case '30':
+          startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000)); // 30 ngày
+          break;
+        case '90':
+          startDate = new Date(now.getTime() - (90 * 24 * 60 * 60 * 1000)); // 3 tháng
+          break;
+        case '365':
+          startDate = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000)); // 1 năm
+          break;
+        default:
+          // Nếu không có dayRange hoặc giá trị không hợp lệ, lấy tất cả
+          break;
+      }
+      
+      if (startDate) {
+        dateFilter = { createdAt: { $gte: startDate } };
+      }
+    }
+    
+    const filter = { user_id: userId, ...dateFilter };
+    const transactions = await Transaction.find(filter)
+      .select('_id amount status description createdAt transaction_type')
+      .sort({ createdAt: -1 });
+    
     res.status(200).json(transactions);
   } catch (error) {
+    console.error('Error getting transaction history:', error);
     res.status(500).json({ error: 'Không thể lấy lịch sử giao dịch' });
   }
 };
