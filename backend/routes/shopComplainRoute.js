@@ -10,11 +10,17 @@ router.post('/api/shop-complain', async (req, res) => {
     // Lấy email shop từ productId
     let shopEmail = email;
     let shopName = name;
+    let productName = '';
+    let productImage = '';
     if (productId) {
       const product = await Product.findById(productId).populate('user_id', 'email username');
       if (product && product.user_id && product.user_id.email) {
         shopEmail = product.user_id.email;
         shopName = product.user_id.username || name;
+      }
+      if (product) {
+        productName = product.product_name || '';
+        productImage = (product.product_imageurl && product.product_imageurl.length > 0) ? product.product_imageurl[0] : '';
       }
     }
     const transporter = nodemailer.createTransport({
@@ -36,8 +42,10 @@ router.post('/api/shop-complain', async (req, res) => {
             <tr><td style="font-weight:bold; width: 140px;">Tên shop:</td><td>${shopName}</td></tr>
             <tr><td style="font-weight:bold;">Email:</td><td>${shopEmail}</td></tr>
             <tr><td style="font-weight:bold;">Mã sản phẩm:</td><td>${productId}</td></tr>
+            <tr><td style="font-weight:bold;">Tên sản phẩm:</td><td>${productName}</td></tr>
             <tr><td style="font-weight:bold;">Lý do khiếu nại:</td><td>${reason}</td></tr>
           </table>
+          ${productImage ? `<div style=\"text-align:center; margin-bottom:20px;\"><img src=\"${productImage}\" alt=\"Hình ảnh sản phẩm\" style=\"max-width:180px; border-radius:8px; border:1px solid #eee;\" /></div>` : ''}
           <div style="margin-bottom: 20px;">
             <div style="font-weight:bold; margin-bottom: 6px;">Mô tả chi tiết:</div>
             <div style="background: #f8f8f8; border-radius: 6px; padding: 12px; border: 1px solid #eee; color: #333;">${description || '<i>Không có</i>'}</div>
