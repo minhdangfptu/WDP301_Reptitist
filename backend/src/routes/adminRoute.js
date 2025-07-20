@@ -6,6 +6,7 @@ const roleMiddleware = require('../middleware/roleMiddleware');
 const Product = require('../models/Products');
 const { sendProductHideNotification, sendProductUnhideNotification } = require('../config/email');
 const User = require('../models/users');
+const ProductReport = require('../models/Product_reports'); // Thêm dòng này ở đầu file
 
 // Import các middleware từ adminRouter
 const { authMiddleware } = require('../middleware/authMiddleware');
@@ -92,6 +93,8 @@ router.put('/products/:productId/status', async (req, res) => {
         );
         emailSent = true;
       } catch (e) {}
+      // Xóa tất cả các báo cáo liên quan đến sản phẩm này khi bỏ ẩn
+      await ProductReport.deleteMany({ product_id: productId });
     }
 
     res.json({ product, emailSent });

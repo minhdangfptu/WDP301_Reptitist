@@ -319,8 +319,8 @@ const handleProductReport = async (req, res) => {
                 product_status: 'available'
             });
 
-            // Xóa báo cáo sau khi từ chối
-            await ProductReport.findByIdAndDelete(reportId);
+            // Xóa tất cả các báo cáo liên quan đến sản phẩm này
+            await ProductReport.deleteMany({ product_id: report.product_id._id });
 
             res.status(200).json({
                 message: 'Đã từ chối báo cáo và khôi phục sản phẩm',
@@ -883,9 +883,9 @@ const updateProductStatusByAdmin = async (req, res) => {
             }
         }
 
-        // Nếu chuyển sang available, xóa các báo cáo đã duyệt liên quan
+        // Nếu chuyển sang available, xóa tất cả các báo cáo liên quan
         if (product_status === 'available') {
-            await ProductReport.deleteMany({ product_id: productId, status: 'approved' });
+            await ProductReport.deleteMany({ product_id: productId });
         }
 
         res.status(200).json({ 
