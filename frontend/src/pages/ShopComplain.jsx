@@ -69,7 +69,7 @@ const ShopComplain = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.reason) {
+    if (!form.name || !form.email || !form.reason || !form.description) {
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
     }
@@ -143,8 +143,8 @@ const ShopComplain = () => {
             </select>
           </div>
           <div className="form-group">
-            <label>Mô tả chi tiết</label>
-            <textarea className="form-control" name="description" value={form.description} onChange={handleChange} rows={5} placeholder="Mô tả chi tiết về khiếu nại (nếu có)..." />
+            <label>Mô tả chi tiết <span style={{ color: 'red' }}>*</span></label>
+            <textarea className="form-control" name="description" value={form.description} onChange={handleChange} rows={5} placeholder="Mô tả chi tiết về khiếu nại (nếu có)..." required />
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} disabled={submitting}>
             {submitting ? 'Đang gửi...' : 'Gửi khiếu nại'}
