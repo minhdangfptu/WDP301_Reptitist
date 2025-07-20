@@ -27,4 +27,3 @@ export const deleteFeedbackAndRating = async (feedbackId) => {
     throw error;
   }
 }
-

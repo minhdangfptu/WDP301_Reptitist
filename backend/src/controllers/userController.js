@@ -375,4 +375,3 @@ module.exports = {
   getAllUsers,
   changeUserPasswordByEmail,
 }
-

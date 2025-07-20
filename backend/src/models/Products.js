@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
   product_imageurl: { type: [String], default: [] },
   product_category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory', required: true },
   product_quantity: { type: Number, default: 0 },
-  product_status: { type: String, enum: ['available', 'pending', 'not_available'], default: 'available' },
+  product_status: { type: String, enum: ['available', 'pending', 'not_available', 'banned', 'reported'], default: 'pending' },
   average_rating: { type: Number, min: 0, max: 5, default: 0 },
 }, {
   collection: 'products',

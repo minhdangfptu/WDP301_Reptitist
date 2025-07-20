@@ -23,4 +23,3 @@ const checkProductAvailabilityApi = (productId) => {
 }
 const cartApi = {addToCartApi, getCartApi, deleteProductFromCartApi, deleteAllProductFromCartApi,countCartItemsApi, checkProductAvailabilityApi};
 export default cartApi;
-

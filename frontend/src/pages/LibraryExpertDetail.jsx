@@ -24,15 +24,24 @@ const LibraryExpertDetail = () => {
 
   const handleDelete = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa chủ đề này?')) {
+      const token = localStorage.getItem('access_token'); // Lấy token từ localStorage
+  
       try {
-        await axios.delete(`${baseUrl}/reptitist/info/delete-reptile?id=${reptile._id}`);
+        await axios.delete(`${baseUrl}/reptitist/info/delete-reptile?id=${reptile._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Truyền token vào header
+          },
+        });
+  
         alert('Đã xóa thành công!');
         navigate('/LibraryExpert');
       } catch (err) {
-        alert('Lỗi khi xóa!');
+        console.error('Lỗi khi xóa:', err.response?.data || err.message);
+        alert('Bạn không có quyền xóa hoặc đã hết phiên đăng nhập!');
       }
     }
   };
+  
 
   if (loading) return (
     <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -25,9 +25,8 @@ router.get(
     handlePaymentReturn
 );
 router.get(
-    '/history/:userId',
+    '/history',
     authUserIdOnly,
-    validateObjectId,
     ensureOwnUserData,
     getTransactionHistory
 );

@@ -42,30 +42,7 @@ const LibraryExpertUpdate = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-  
-    try {
-      const token = localStorage.getItem('access_token');
-      console.log('Token in frontend:', token);
-
-      await axios.put(
-        `${baseUrl}/reptitist/info/update-reptile?id=${reptileId}`,
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-  
-      alert('Cập nhật thành công!');
-      navigate(`/libraryExpertDetail/${reptileId}`);
-    } catch (err) {
-      console.error(err);
-      alert('Lỗi khi cập nhật!');
-    }
-  };
+ n
   
 
   if (loading) return (

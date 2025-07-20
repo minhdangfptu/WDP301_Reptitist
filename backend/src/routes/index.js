@@ -13,6 +13,9 @@ const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRoute'); 
 const reptileRoutes = require('./reptile');
+//const userRoute = require('./userRoute');
+const productReportRoute = require('./productReportRoute');
+const shopComplainRoute = require('../../routes/shopComplainRoute');
 
 router.use('/user', userRoute);
 router.use('/auth',authRoute);
@@ -27,5 +30,7 @@ router.use('/library-content', libraryContentRoute);
 router.use('/topic-categories', topicCategoryRoutes);
 router.use('/transactions', transactionRoute);
 router.use('/info', reptileRoutes);
+router.use('/product-reports', productReportRoute);
+router.use(shopComplainRoute);
 
 module.exports= router;

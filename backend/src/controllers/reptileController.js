@@ -110,6 +110,7 @@ exports.deleteReptileById = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 exports.getReptilesByUser = async (req, res) => {
   try {
     const userId = req.user._id; 

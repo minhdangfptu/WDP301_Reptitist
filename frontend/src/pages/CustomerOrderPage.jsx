@@ -1,9 +1,9 @@
-"use client"
 
 import React, { useEffect, useState } from 'react';
 import { getMyOrders, getOrderDetail, updateOrderStatus, softDeleteOrder } from '../api/orderApi';
-import Header from '../components/Header';
+import ShopHeader from '../components/ShopHeader';
 import '../css/CustomerOrderPage.css';
+import { CartProvider } from '../context/CartContext';
 
 const statusMap = {
   ordered: { label: 'Đang xử lý', class: 'pending' },
@@ -91,7 +91,7 @@ const CustomerOrderPage = () => {
 
   return (
     <>
-      <Header />
+      <ShopHeader />
       <div className="order-page">
         <div className="container">
           <div className="order-content">
@@ -204,4 +204,10 @@ const CustomerOrderPage = () => {
   );
 };
 
-export default CustomerOrderPage;
+const CustomerOrderPageWithCart = () => (
+  <CartProvider>
+    <CustomerOrderPage />
+  </CartProvider>
+);
+
+export default CustomerOrderPageWithCart;

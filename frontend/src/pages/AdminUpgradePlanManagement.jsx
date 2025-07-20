@@ -61,6 +61,15 @@ const AdminUpgradePlanManagement = () => {
   
   const handleSubmit = async e => {
     e.preventDefault();
+    // Validate trùng code, duration, price
+    const isDuplicate = plans.some(plan =>
+      plan.code.trim().toLowerCase() === form.code.trim().toLowerCase() ||
+      (Number(plan.price) === Number(form.price) && Number(plan.duration) === Number(form.duration))
+    );
+    if (!editPlan && isDuplicate) {
+      window.alert('Gói đã tồn tại (trùng mã hoặc trùng giá + thời hạn)!');
+      return;
+    }
     try {
       const token = localStorage.getItem('refresh_token');
       const axiosConfig = {

@@ -1,39 +1,48 @@
-
 const express = require('express');
 const router = express.Router();
 
 const reptileController = require('../controllers/reptileController');
-const authMiddleware1 = require('../middleware/authMiddlewareModify')
+const authMiddleware1 = require('../middleware/authMiddlewareModify');
 const roleMiddleware = require('../middleware/roleMiddleware');
 
-//Api create repltile infomation: Chỉ admin mới có quyền thực hiện api này
+// Api create reptile: Chỉ admin mới có quyền
 router.post(
-  '/create-reptile',     // Kiểm tra quyền admin
-  reptileController.createReptile // Hàm callback cho việc tạo reptile
+  '/create-reptile',
+  authMiddleware1,
+  roleMiddleware('admin'),
+  reptileController.createReptile
 );
 
-//Api lấy ra tất cả reptile infomation: Tất cả mọi người đều có quyền thực hiện api này
+// Api lấy tất cả reptile: Ai cũng xem được
 router.get(
   '/get-all-reptile',
   reptileController.getAllReptiles
 );
 
-//Api cập nhật reptile infomation: Chỉ admin mới có quyền thực hiện api này
+// Api cập nhật reptile: Chỉ admin
 router.put(
   '/update-reptile',
+  authMiddleware1,
+  roleMiddleware('admin'),
   reptileController.updateReptileById
 );
 
-//Api xóa reptile infomation: Chỉ admin mới có quyền thực hiện api này
+// Api xoá reptile: Chỉ admin
 router.delete(
-  '/delete-reptile', 
+  '/delete-reptile',
+  authMiddleware1,
+ roleMiddleware('admin'),
   reptileController.deleteReptileById
 );
 
-//Api lấy ra reptile infomation theo user đang đăng nhập
-router.get('/my-reptiles', reptileController.getReptilesByUser);
+// Api lấy reptile theo user đang đăng nhập
+router.get(
+  '/my-reptiles',
+  authMiddleware1,
+  reptileController.getReptilesByUser
+);
 
-//Api lấy ra reptile infomation theo id: Tất cả mọi người đều có quyền thực hiện api này
+// Api lấy reptile theo ID
 router.get(
   '/get-reptile-by-id',
   reptileController.getReptileById

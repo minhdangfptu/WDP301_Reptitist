@@ -24,7 +24,7 @@ const CreateCategory = () => {
     e.preventDefault();
 
     try {
-      await axios.post(`${baseUrl}/reptitist/library_categories/topic/${topicId}`, formData);
+      await axios.post(`${baseUrl}/reptitist/library-categories/topic/${topicId}`, formData);
       navigate(`/libraryCategory/${topicId}`);
     } catch (err) {
       setError("Không thể tạo danh mục. Vui lòng thử lại.");
@@ -60,14 +60,25 @@ const CreateCategory = () => {
             />
           </div>
           <div className="form-group mb-3">
-            <label>URL hình ảnh</label>
+            <label>Hình ảnh (chọn file)</label>
             <input
-              type="text"
-              name="category_imageurl"
-              value={formData.category_imageurl}
-              onChange={handleChange}
+              type="file"
+              accept="image/*"
+              onChange={e => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setFormData(prev => ({ ...prev, category_imageurl: reader.result }));
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
               className="form-control"
             />
+            {formData.category_imageurl && (
+              <img src={formData.category_imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
+            )}
           </div>
           <button type="submit" className="btn btn-success">
             Tạo danh mục
