@@ -27,12 +27,12 @@ const AdminShopManagement = () => {
   const [sortField, setSortField] = useState('created_at');
   const [sortDirection, setSortDirection] = useState('desc');
   const [activeTab, setActiveTab] = useState('shops'); // 'shops' or 'reports'
-  const [searchReportProductName, setSearchReportProductName] = useState('');
+  const [searchReportProduct, setSearchReportProduct] = useState('');
   const [hiddenProducts, setHiddenProducts] = useState([]);
   const [approvedReports, setApprovedReports] = useState([]);
-  const [searchHiddenProductName, setSearchHiddenProductName] = useState('');
+  const [searchHiddenProduct, setSearchHiddenProduct] = useState('');
   const [allProducts, setAllProducts] = useState([]);
-  const [searchAllProductName, setSearchAllProductName] = useState('');
+  const [searchAllProduct, setSearchAllProduct] = useState('');
   const [hideReason, setHideReason] = useState('');
   // Thêm state cho modal xóa sản phẩm
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -498,9 +498,13 @@ const AdminShopManagement = () => {
 
   // Filtered reports by product name
   const filteredReports = reports.filter(report => {
-    if (!searchReportProductName) return true;
+    if (!searchReportProduct) return true;
     const productName = report.product_id?.product_name || '';
-    return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
+    const productId = report.product_id?._id || '';
+    return (
+      productName.toLowerCase().includes(searchReportProduct.toLowerCase()) ||
+      productId.toLowerCase().includes(searchReportProduct.toLowerCase())
+    );
   });
 
   // Lọc báo cáo chờ xử lý
@@ -568,14 +572,24 @@ const AdminShopManagement = () => {
 
   // Lọc sản phẩm bị ẩn theo tên
   const filteredHiddenProducts = hiddenProducts.filter(product => {
-    if (!searchHiddenProductName) return true;
-    return (product.product_name || '').toLowerCase().includes(searchHiddenProductName.toLowerCase());
+    if (!searchHiddenProduct) return true;
+    const name = (product.product_name || '').toLowerCase();
+    const id = (product._id || '').toLowerCase();
+    return (
+      name.includes(searchHiddenProduct.toLowerCase()) ||
+      id.includes(searchHiddenProduct.toLowerCase())
+    );
   });
 
   // Lọc tất cả sản phẩm theo tên
   const filteredAllProducts = allProducts.filter(product => {
-    if (!searchAllProductName) return true;
-    return (product.product_name || '').toLowerCase().includes(searchAllProductName.toLowerCase());
+    if (!searchAllProduct) return true;
+    const name = (product.product_name || '').toLowerCase();
+    const id = (product._id || '').toLowerCase();
+    return (
+      name.includes(searchAllProduct.toLowerCase()) ||
+      id.includes(searchAllProduct.toLowerCase())
+    );
   });
 
   // Thêm hàm yêu cầu nhập lý do khi ẩn sản phẩm
@@ -1069,9 +1083,9 @@ const AdminShopManagement = () => {
               <div className="um-search-box">
                 <input
                   type="text"
-                  placeholder="Tìm kiếm theo tên sản phẩm..."
-                  value={searchReportProductName}
-                  onChange={e => setSearchReportProductName(e.target.value)}
+                  placeholder="Tìm kiếm theo tên hoặc ID sản phẩm..."
+                  value={searchReportProduct}
+                  onChange={e => setSearchReportProduct(e.target.value)}
                   className="um-search-input"
                 />
                 <i className="fas fa-search um-search-icon"></i>
@@ -1101,9 +1115,13 @@ const AdminShopManagement = () => {
                   <tbody>
                     {pendingReports
                       .filter(report => {
-                        if (!searchReportProductName) return true;
+                        if (!searchReportProduct) return true;
                         const productName = report.product_id?.product_name || '';
-                        return productName.toLowerCase().includes(searchReportProductName.toLowerCase());
+                        const productId = report.product_id?._id || '';
+                        return (
+                          productName.toLowerCase().includes(searchReportProduct.toLowerCase()) ||
+                          productId.toLowerCase().includes(searchReportProduct.toLowerCase())
+                        );
                       })
                       .map(report => (
                         <tr key={report._id} className="um-table-row">
@@ -1218,9 +1236,9 @@ const AdminShopManagement = () => {
               <div className="um-search-box">
                 <input
                   type="text"
-                  placeholder="Tìm kiếm theo tên sản phẩm..."
-                  value={searchAllProductName}
-                  onChange={e => setSearchAllProductName(e.target.value)}
+                  placeholder="Tìm kiếm theo tên hoặc ID sản phẩm..."
+                  value={searchAllProduct}
+                  onChange={e => setSearchAllProduct(e.target.value)}
                   className="um-search-input"
                 />
                 <i className="fas fa-search um-search-icon"></i>
@@ -1340,9 +1358,9 @@ const AdminShopManagement = () => {
               <div className="um-search-box">
                 <input
                   type="text"
-                  placeholder="Tìm kiếm theo tên sản phẩm..."
-                  value={searchHiddenProductName}
-                  onChange={e => setSearchHiddenProductName(e.target.value)}
+                  placeholder="Tìm kiếm theo tên hoặc ID sản phẩm..."
+                  value={searchHiddenProduct}
+                  onChange={e => setSearchHiddenProduct(e.target.value)}
                   className="um-search-input"
                 />
                 <i className="fas fa-search um-search-icon"></i>
