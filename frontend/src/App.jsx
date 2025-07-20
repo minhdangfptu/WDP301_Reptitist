@@ -38,6 +38,7 @@ import CreateLibraryTopic from './pages/LibraryTopicCreate';
 import UpdateLibraryTopic from './pages/LibraryTopicUpdate';
 import CreateCategory from './pages/CreateCategory';
 import UpdateCategory from './pages/UpdateCategory';
+import AdminCategoryManagement from './pages/AdminCategoryManagement';
 import ProductForm from './pages/ShopAddProductPage';
 import ShopProductManagement from './pages/ShopProductManagement';
 import LibraryManagement from './pages/LibraryManagement';
@@ -46,6 +47,8 @@ import PaymentProcessing from './pages/PaymentProcessing';
 import ProductManagement from './pages/ProductManagement';
 import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
+import ShopDashboard from './pages/ShopDashboard';
+import OrderManagement from './pages/OrderManagement';
 
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
@@ -138,10 +141,10 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AccountTypeRoute = ({ canAccess, children }) => {
   const { loading, user } = useAuth();
   if (loading) return <LoadingSpinner />;
-  // Nếu không phải role 'user' thì cho truy cập bình thường
-  if (user?.role !== 'user') return children;
-  // Nếu là user thì kiểm tra quyền
+  
+  // Kiểm tra quyền truy cập cho tất cả các role
   if (!canAccess()) return <AccessDenied />;
+  
   return children;
 };
 
@@ -179,6 +182,9 @@ const AppRoutes = () => (
     <Route path="/library_topics/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateLibraryTopic /></ProtectedRoute>} />
     <Route path="/library_categories/create/:topicId" element={<ProtectedRoute requiredRole="admin"><CreateCategory /></ProtectedRoute>} />
     <Route path="/library_categories/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateCategory /></ProtectedRoute>} />
+    
+    {/* Admin Category Management */}
+    <Route path="/admin/categories" element={<ProtectedRoute requiredRole="admin"><AdminCategoryManagement /></ProtectedRoute>} />
 
     {/* Product routes */}
 
@@ -234,6 +240,20 @@ const AppRoutes = () => (
     } />
     <Route path="/create-health-tracking/:reptileId" element={<ProtectedRoute><CreateTrackingHealthPage /></ProtectedRoute>} />
     <Route path="/create-treatment/:reptileId" element={<ProtectedRoute><CreateTreatmentPage /></ProtectedRoute>} />
+    <Route path="/ShopDashboard" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ShopDashboard />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
+    <Route path="/OrderManagement" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <OrderManagement />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
     <Route path="/ShopProductManagement" element={
       <ProtectedRoute>
         <AccountTypeRoute canAccess={useAuth().canSellProduct}>
@@ -242,6 +262,13 @@ const AppRoutes = () => (
       </ProtectedRoute>
     } />
     <Route path="/shop/products/create" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ProductForm />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
+    <Route path="/shop/products/edit/:productId" element={
       <ProtectedRoute>
         <AccountTypeRoute canAccess={useAuth().canSellProduct}>
           <ProductForm />
@@ -261,10 +288,10 @@ const AppRoutes = () => (
 
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
-    <Route path="/ProductManagement" element={<ProtectedRoute requiredRole="admin"><ProductManagement /></ProtectedRoute>} />
+    <Route path="/ProductManagement" element={<ProtectedRoute><ProductManagement /></ProtectedRoute>} />
     <Route path="/AdminShopManagement" element={<ProtectedRoute requiredRole="admin"><AdminShopManagement /></ProtectedRoute>} />
     <Route path="/LibraryManagement" element={<ProtectedRoute requiredRole="admin"><LibraryManagement /></ProtectedRoute>} />
-    <Route path="/admin/products/create" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
+    <Route path="/admin/products/create" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
     <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/AdminTransactionManagement" element={<ProtectedRoute requiredRole="admin"><AdminTransactionManagement /></ProtectedRoute>} />
       

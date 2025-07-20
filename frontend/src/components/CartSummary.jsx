@@ -1,12 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import "../css/CartSummary.css"
 
 // Cập nhật CartSummary để hiển thị thông tin về sản phẩm được chọn
 const CartSummary = ({ totalAmount, totalItems, unavailableItems = [], selectedItems = [] }) => {
   const [promoCode, setPromoCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const navigate = useNavigate()
 
   const shippingFee = totalAmount > 500000 ? 0 : 30000 // Free shipping over 500k VND
   const tax = totalAmount * 0.1 // 10% tax
@@ -111,7 +113,7 @@ const CartSummary = ({ totalAmount, totalItems, unavailableItems = [], selectedI
         Tạo đơn hàng
       </button>
 
-      <button className="continue-shopping-btn-secondary">Tiếp tục mua sắm</button>
+      <button className="continue-shopping-btn-secondary" onClick={() => navigate('/ShopLandingPage')}>Tiếp tục mua sắm</button>
     </div>
   )
 }

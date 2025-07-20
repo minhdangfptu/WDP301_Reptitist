@@ -1017,6 +1017,105 @@
     color: var(--pm-text-primary);
   }
   
+  /* Edit Form in Modal */
+  .pm-edit-form {
+    width: 100%;
+  }
+
+  .pm-edit-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .pm-edit-image {
+    text-align: center;
+  }
+
+  .pm-edit-main-image {
+    width: 100%;
+    max-width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--pm-radius);
+    border: 2px solid var(--pm-border);
+  }
+
+  .pm-edit-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .pm-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .pm-edit-label {
+    font-weight: 600;
+    color: var(--pm-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .pm-edit-label i {
+    color: var(--pm-primary-color);
+    width: 16px;
+  }
+
+  .pm-edit-input,
+  .pm-edit-textarea,
+  .pm-edit-select {
+    padding: 0.75rem;
+    border: 2px solid var(--pm-border);
+    border-radius: var(--pm-radius);
+    font-size: 1rem;
+    transition: var(--pm-transition);
+    background: white;
+  }
+
+  .pm-edit-input:focus,
+  .pm-edit-textarea:focus,
+  .pm-edit-select:focus {
+    outline: none;
+    border-color: var(--pm-primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .pm-edit-input.pm-error,
+  .pm-edit-textarea.pm-error,
+  .pm-edit-select.pm-error {
+    border-color: var(--pm-danger-color);
+  }
+
+  .pm-edit-textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .pm-edit-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .pm-error-message {
+    color: var(--pm-danger-color);
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-top: 0.25rem;
+  }
+
+  .pm-error-message i {
+    font-size: 0.75rem;
+  }
+  
   /* Category Modal */
   .pm-category-modal {
     max-width: 800px;
@@ -1214,6 +1313,15 @@
     .pm-detail-field {
       grid-template-columns: 1fr;
       gap: 0.5rem;
+    }
+
+    .pm-edit-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .pm-edit-row {
+      grid-template-columns: 1fr;
     }
   
     .pm-modal {

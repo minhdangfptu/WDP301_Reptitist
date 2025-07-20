@@ -4,12 +4,14 @@ import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { baseUrl } from '../config';
+import { useAuth } from '../context/AuthContext';
 
 const ProductCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -36,7 +38,18 @@ const ProductCategories = () => {
     <>
       <Header />
       <div className="container my-5">
-        <h2 className="text-center mb-4">🛍️ Danh mục sản phẩm</h2>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2 className="mb-0">🛍️ Danh mục sản phẩm</h2>
+          {hasRole('admin') && (
+            <button 
+              className="btn btn-primary"
+              onClick={() => navigate('/admin/categories')}
+            >
+              <i className="fas fa-cog"></i>
+              Quản lý danh mục
+            </button>
+          )}
+        </div>
         <div className="row row-cols-1 row-cols-md-3 g-4">
           {categories.map((category) => (
             <div className="col" key={category._id}>

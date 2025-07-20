@@ -84,8 +84,8 @@ const createProduct = async (req, res) => {
 // Lấy tất cả sản phẩm của Shop hiện tại
 const getMyProducts = async (req, res) => {
   try {
-    // Kiểm tra user có phải là shop không
-    if (!req.user || req.user.role_id?.role_name !== 'shop') {
+    // Cho phép cả role_name 'shop' hoặc account_type.type 3, 4
+    if (!req.user || (req.user.role_id?.role_name !== 'shop' && ![3, 4].includes(req.user.account_type?.type))) {
       return res.status(403).json({
         message: 'Chỉ có Shop mới có thể xem sản phẩm của mình'
       });

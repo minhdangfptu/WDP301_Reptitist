@@ -216,20 +216,19 @@ const ShopAddProductPage = () => {
   // Validate entire form
   const validateForm = () => {
     const newErrors = {};
-    
     Object.keys(validationRules).forEach(field => {
       const error = validateField(field, formData[field]);
       if (error) {
         newErrors[field] = error;
       }
     });
-
-    // Check if category exists
     if (formData.product_category_id && !categories.find(cat => cat._id === formData.product_category_id)) {
       newErrors.product_category_id = 'Danh mục không tồn tại';
     }
-
-    console.log('Validation Errors:', newErrors);
+    if (!formData.product_imageurl || (formData.product_imageurl === '' && !imageFile)) {
+      newErrors.product_imageurl = 'Vui lòng nhập URL hợp lệ (ví dụ: https://example.com/image.jpg) hoặc tải lên một ảnh sản phẩm.';
+    }
+    console.log('Validation Errors:', JSON.stringify(newErrors, null, 2));
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -525,13 +524,13 @@ const ShopAddProductPage = () => {
               <div className="pf-header-breadcrumb">
                 <Link to="/">Trang chủ</Link>
                 <i className="fas fa-chevron-right"></i>
-                <Link to="/shop/products">Quản lý sản phẩm</Link>
+                <Link to="/ProductManagement">Quản lý sản phẩm</Link>
                 <i className="fas fa-chevron-right"></i>
                 <span>{isEdit ? 'Chỉnh sửa' : 'Thêm mới'}</span>
               </div>
             </div>
             <div className="pf-header-actions">
-              <Link to="/shop/products" className="pf-btn pf-btn-secondary">
+              <Link to="/ProductManagement" className="pf-btn pf-btn-secondary">
                 <i className="fas fa-arrow-left"></i>
                 Quay lại
               </Link>
@@ -565,7 +564,7 @@ const ShopAddProductPage = () => {
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
                       className={`pf-input ${getFieldErrorClass('product_name')}`}
-                      placeholder="Nhập tên sản phẩm (2-50 ký tự)"
+                      placeholder="Ví dụ: Hộp ấp trứng bò sát"
                       required
                     />
                     <div className="pf-input-info">
@@ -593,7 +592,7 @@ const ShopAddProductPage = () => {
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
                       className={`pf-textarea ${getFieldErrorClass('product_description')}`}
-                      placeholder="Nhập mô tả sản phẩm (tối đa 150 ký tự)"
+                      placeholder="Ví dụ: Hộp ấp trứng cho bò sát dung tích 2L, giữ nhiệt tốt, phù hợp cho trứng rắn, thằn lằn..."
                       rows="4"
                     />
                     <div className="pf-input-info">
@@ -622,7 +621,7 @@ const ShopAddProductPage = () => {
                         value={formData.product_price ? formatNumber(formData.product_price) : ''}
                         onChange={handleInputChange}
                         onBlur={handleFieldBlur}
-                        placeholder="0"
+                        placeholder="Ví dụ: 150000"
                         className={`pf-input pf-input-price ${getFieldErrorClass('product_price')}`}
                         required
                       />
@@ -652,7 +651,7 @@ const ShopAddProductPage = () => {
                       value={formData.product_quantity}
                       onChange={handleInputChange}
                       onBlur={handleFieldBlur}
-                      placeholder="0"
+                      placeholder="Ví dụ: 10"
                       className={`pf-input ${getFieldErrorClass('product_quantity')}`}
                       min="0"
                       max="999999"
@@ -745,7 +744,7 @@ const ShopAddProductPage = () => {
                           value={formData.product_imageurl.startsWith('data:') ? '' : formData.product_imageurl}
                           onChange={handleImageUrlChange}
                           onBlur={handleFieldBlur}
-                          placeholder="https://example.com/image.jpg"
+                          placeholder="Ví dụ: https://example.com/image.jpg"
                           className={`pf-input ${getFieldErrorClass('product_imageurl')}`}
                           disabled={imageFile !== null}
                         />
@@ -774,7 +773,7 @@ const ShopAddProductPage = () => {
                             accept="image/*"
                             onChange={handleFileUpload}
                             className="pf-file-input"
-                            disabled={imageUploading}
+                            disabled={imageUploading || (formData.product_imageurl && !formData.product_imageurl.startsWith('data:'))}
                           />
                           <button
                             type="button"
@@ -811,6 +810,7 @@ const ShopAddProductPage = () => {
                             src={previewImage}
                             alt="Preview"
                             className="pf-preview-image"
+                            style={{width: '100px', height: '100px', objectFit: 'contain'}}
                             onError={(e) => {
                               e.target.src = '/default-product.png';
                               toast.error('Không thể tải hình ảnh. Vui lòng kiểm tra URL.');
@@ -888,6 +888,17 @@ const ShopAddProductPage = () => {
           </form>
         </div>
       </div>
+
+      {Object.keys(errors).length > 0 && (
+        <div className="pf-form-global-errors">
+          <h4 style={{color: 'red', marginTop: 16}}>Vui lòng kiểm tra các lỗi sau:</h4>
+          <ul style={{color: 'red'}}>
+            {Object.entries(errors).map(([field, msg]) => (
+              <li key={field}><b>{field}:</b> {msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <Footer />
     </>

@@ -7,10 +7,11 @@ const {
     getTransactionHistory,
     refundTransaction,
     filterTransactionHistory,
+    // Admin functions
     getAllTransactions,
-    getTransactionById,
     updateTransaction,
-    deleteTransaction 
+    deleteTransaction,
+    getTransactionStats
 } = require('../controllers/transactionController');
 
 const {
@@ -21,7 +22,7 @@ const validateObjectId = require('../middleware/validateObjectId');
 const { ensureOwnUserData } = require('../middleware/ensureOwner');
 const roleMiddleware = require('../middleware/roleMiddleware');
 
-// Payment routes
+// ===== USER ROUTES =====
 router.get(
     '/create',
     authMiddleware,
@@ -29,11 +30,15 @@ router.get(
 );
 
 router.get(
+    '/vnpay_return',
+    handlePaymentReturn
+);
+
+router.get(
     '/return',
     handlePaymentReturn
 );
 
-// User transaction routes
 router.get(
     '/history',
     authUserIdOnly,
@@ -49,7 +54,16 @@ router.get(
     filterTransactionHistory
 );
 
-// Admin routes - FIXED
+router.post(
+    '/refund/:transaction_id',
+    authMiddleware,
+    validateObjectId,
+    refundTransaction
+);
+
+// ===== ADMIN ROUTES =====
+
+// Lấy tất cả giao dịch (admin only)
 router.get(
     '/all',
     authMiddleware,
@@ -57,36 +71,30 @@ router.get(
     getAllTransactions
 );
 
+// Thống kê giao dịch (admin only)
 router.get(
-    '/:id',
+    '/stats',
     authMiddleware,
     roleMiddleware('admin'),
-    validateObjectId,
-    getTransactionById
+    getTransactionStats
 );
 
+// Cập nhật giao dịch (admin only)
 router.put(
-    '/:id',
+    '/admin/:id',
     authMiddleware,
     roleMiddleware('admin'),
     validateObjectId,
     updateTransaction
 );
 
+// Xóa giao dịch (admin only)
 router.delete(
-    '/:id',
+    '/admin/:id',
     authMiddleware,
     roleMiddleware('admin'),
     validateObjectId,
     deleteTransaction
-);
-
-// Refund route
-router.post(
-    '/refund/:transaction_id',
-    authMiddleware,
-    validateObjectId,
-    refundTransaction
 );
 
 module.exports = router;

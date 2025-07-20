@@ -264,13 +264,15 @@ const Header = () => {
                           >
                             Quản lý giao dịch
                           </Link>
+
                           <Link
-                            to="/ProductManagement"
+                            to="/admin/categories"
                             className="header__dropdown-item header__dropdown-item--admin"
                             onClick={() => setShowAccountMenu(false)}
                           >
-                            Quản lý sản phẩm
+                            Quản lý danh mục 
                           </Link>
+
                         </div>
                       </>
                     )}

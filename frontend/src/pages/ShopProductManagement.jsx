@@ -30,6 +30,12 @@ const ShopProductManagement = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showProductDetailModal, setShowProductDetailModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
+  const [editErrors, setEditErrors] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
+
+
 
   // Statistics
   const [stats, setStats] = useState({
@@ -243,6 +249,137 @@ const ShopProductManagement = () => {
   const handleViewProductDetails = (product) => {
     setSelectedProduct(product);
     setShowProductDetailModal(true);
+    setIsEditMode(false);
+  };
+
+  // Handle edit product
+  const handleEditProduct = (product) => {
+    console.log('handleEditProduct called with product:', product._id);
+    setSelectedProduct(product);
+    setEditFormData({
+      product_name: product.product_name || '',
+      product_description: product.product_description || '',
+      product_price: product.product_price ? product.product_price.toString() : '',
+      product_quantity: product.product_quantity ? product.product_quantity.toString() : '',
+      product_category_id: product.product_category_id?._id || product.product_category_id || '',
+      product_imageurl: Array.isArray(product.product_imageurl) 
+        ? product.product_imageurl[0] || '' 
+        : product.product_imageurl || '',
+      product_status: product.product_status || 'available'
+    });
+    setEditErrors({});
+    setIsEditMode(true);
+    setShowProductDetailModal(true);
+    console.log('Modal states set - should open now');
+  };
+
+  // Handle edit form change
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Special handling for numeric fields
+    if (name === 'product_price' || name === 'product_quantity') {
+      const numericValue = value.replace(/\D/g, '');
+      setEditFormData(prev => ({
+        ...prev,
+        [name]: numericValue
+      }));
+    } else {
+      setEditFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Clear error when user starts typing
+    if (editErrors[name]) {
+      setEditErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  // Validate edit form
+  const validateEditForm = () => {
+    const errors = {};
+    
+    if (!editFormData.product_name?.trim()) {
+      errors.product_name = 'Vui lòng nhập tên sản phẩm';
+    }
+    
+    if (!editFormData.product_price) {
+      errors.product_price = 'Vui lòng nhập giá sản phẩm';
+    } else if (parseInt(editFormData.product_price) < 1000) {
+      errors.product_price = 'Giá tối thiểu là 1,000 VNĐ';
+    }
+    
+    if (!editFormData.product_quantity) {
+      errors.product_quantity = 'Vui lòng nhập số lượng';
+    } else if (parseInt(editFormData.product_quantity) < 0) {
+      errors.product_quantity = 'Số lượng không được âm';
+    }
+    
+    if (!editFormData.product_category_id) {
+      errors.product_category_id = 'Vui lòng chọn danh mục';
+    }
+    
+    setEditErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle edit form submit
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateEditForm()) {
+      toast.error('Vui lòng kiểm tra lại thông tin đã nhập');
+      return;
+    }
+
+    try {
+      setEditLoading(true);
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        toast.error('Phiên đăng nhập đã hết hạn');
+        navigate('/login');
+        return;
+      }
+      
+      const submitData = {
+        ...editFormData,
+        product_price: parseInt(editFormData.product_price),
+        product_quantity: parseInt(editFormData.product_quantity)
+      };
+
+      console.log('Submitting edit data:', submitData);
+
+      const response = await axios.put(
+        `${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`,
+        submitData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      console.log('Edit response:', response);
+
+      if (response.status === 200) {
+        toast.success('Cập nhật sản phẩm thành công!');
+        await fetchProducts(); // Refresh products
+        setIsEditMode(false);
+        setShowProductDetailModal(false);
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật sản phẩm');
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   // Handle delete product
@@ -324,6 +461,12 @@ const ShopProductManagement = () => {
     } catch (error) {
       return "N/A";
     }
+  };
+
+  // Format number for display
+  const formatNumber = (num) => {
+    if (!num) return '';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   // Format currency
@@ -941,13 +1084,21 @@ const ShopProductManagement = () => {
                               <i className="fas fa-eye"></i>
                             </button>
 
-                            <Link
-                              to={`/shop/products/edit/${product._id}`}
+                            <div
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('Edit button clicked for product:', product._id);
+                                handleEditProduct(product);
+                              }}
                               className="pm-btn pm-btn-icon pm-btn-edit"
                               title="Chỉnh sửa"
+                              style={{ cursor: 'pointer', userSelect: 'none' }}
+                              role="button"
+                              tabIndex={0}
                             >
                               <i className="fas fa-edit"></i>
-                            </Link>
+                            </div>
 
                             <button
                               onClick={() => handleDeleteProduct(product)}
@@ -1081,7 +1232,10 @@ const ShopProductManagement = () => {
         {showProductDetailModal && selectedProduct && (
           <div
             className="pm-modal-overlay"
-            onClick={() => setShowProductDetailModal(false)}
+            onClick={() => {
+              setShowProductDetailModal(false);
+              setIsEditMode(false);
+            }}
           >
             <div
               className="pm-modal pm-detail-modal"
@@ -1089,11 +1243,14 @@ const ShopProductManagement = () => {
             >
               <div className="pm-modal-header">
                 <h3>
-                  <i className="fas fa-info-circle"></i>
-                  Chi tiết sản phẩm
+                  <i className={`fas ${isEditMode ? 'fa-edit' : 'fa-info-circle'}`}></i>
+                  {isEditMode ? 'Chỉnh sửa sản phẩm' : 'Chi tiết sản phẩm'}
                 </h3>
                 <button
-                  onClick={() => setShowProductDetailModal(false)}
+                  onClick={() => {
+                    setShowProductDetailModal(false);
+                    setIsEditMode(false);
+                  }}
                   className="pm-modal-close"
                 >
                   <i className="fas fa-times"></i>
@@ -1101,115 +1258,291 @@ const ShopProductManagement = () => {
               </div>
 
               <div className="pm-modal-body pm-detail-body">
-                <div className="pm-detail-grid">
-                  <div className="pm-detail-image">
-                    <img
-                      src={
-                        selectedProduct.product_imageurl ||
-                        "/default-product.png"
-                      }
-                      alt={selectedProduct.product_name}
-                      className="pm-detail-main-image"
-                    />
-                  </div>
-
-                  <div className="pm-detail-info">
-                    <h4 className="pm-detail-title">
-                      {selectedProduct.product_name}
-                    </h4>
-
-                    <div className="pm-detail-fields">
-                      <div className="pm-detail-field">
-                        <label>Mã sản phẩm:</label>
-                        <span>{selectedProduct._id}</span>
-                      </div>
-
-                      <div className="pm-detail-field">
-                        <label>Danh mục:</label>
-                        <span className="pm-category-badge">
-                          {getCategoryName(selectedProduct.product_category_id)}
-                        </span>
-                      </div>
-
-                      <div className="pm-detail-field">
-                        <label>Giá bán:</label>
-                        <span className="pm-price-value">
-                          {formatCurrency(selectedProduct.product_price)}
-                        </span>
-                      </div>
-
-                      <div className="pm-detail-field">
-                        <label>Số lượng:</label>
-                        <span
-                          className={
-                            selectedProduct.product_quantity === 0
-                              ? "pm-out-of-stock"
-                              : ""
+                {isEditMode ? (
+                  // Edit Form
+                  <form onSubmit={handleEditSubmit} className="pm-edit-form">
+                    <div className="pm-edit-grid">
+                      <div className="pm-edit-image">
+                        <img
+                          src={
+                            editFormData.product_imageurl ||
+                            selectedProduct.product_imageurl ||
+                            "/default-product.png"
                           }
-                        >
-                          {selectedProduct.product_quantity || 0}
-                          {selectedProduct.product_quantity === 0 &&
-                            " (Hết hàng)"}
-                        </span>
+                          alt={editFormData.product_name}
+                          className="pm-edit-main-image"
+                        />
                       </div>
 
-                      <div className="pm-detail-field">
-                        <label>Trạng thái:</label>
-                        <span
-                          className={`pm-status-badge ${getStatusBadgeColor(
-                            selectedProduct.product_status
-                          )}`}
-                        >
-                          {selectedProduct.product_status === "available"
-                            ? "Đang bán"
-                            : selectedProduct.product_status === "reported"
-                            ? "Bị báo cáo"
-                            : selectedProduct.product_status === "not_available"
-                            ? "Ngừng bán"
-                            : "N/A"}
-                        </span>
-                      </div>
+                      <div className="pm-edit-fields">
+                        <div className="pm-edit-field">
+                          <label className="pm-edit-label">
+                            <i className="fas fa-tag"></i>
+                            Tên sản phẩm *
+                          </label>
+                          <input
+                            type="text"
+                            name="product_name"
+                            value={editFormData.product_name}
+                            onChange={handleEditFormChange}
+                            className={`pm-edit-input ${editErrors.product_name ? 'pm-error' : ''}`}
+                            placeholder="Nhập tên sản phẩm"
+                          />
+                          {editErrors.product_name && (
+                            <div className="pm-error-message">
+                              <i className="fas fa-exclamation-circle"></i>
+                              {editErrors.product_name}
+                            </div>
+                          )}
+                        </div>
 
-                      <div className="pm-detail-field">
-                        <label>Ngày tạo:</label>
-                        <span>{formatDate(selectedProduct.createdAt)}</span>
-                      </div>
+                        <div className="pm-edit-field">
+                          <label className="pm-edit-label">
+                            <i className="fas fa-align-left"></i>
+                            Mô tả
+                          </label>
+                          <textarea
+                            name="product_description"
+                            value={editFormData.product_description}
+                            onChange={handleEditFormChange}
+                            className="pm-edit-textarea"
+                            placeholder="Nhập mô tả sản phẩm"
+                            rows="3"
+                          />
+                        </div>
 
-                      {selectedProduct.updatedAt &&
-                        selectedProduct.updatedAt !==
-                          selectedProduct.createdAt && (
-                          <div className="pm-detail-field">
-                            <label>Cập nhật cuối:</label>
-                            <span>{formatDate(selectedProduct.updatedAt)}</span>
+                        <div className="pm-edit-row">
+                          <div className="pm-edit-field">
+                            <label className="pm-edit-label">
+                              <i className="fas fa-dollar-sign"></i>
+                              Giá bán (VNĐ) *
+                            </label>
+                            <input
+                              type="text"
+                              name="product_price"
+                              value={editFormData.product_price ? formatNumber(editFormData.product_price) : ''}
+                              onChange={handleEditFormChange}
+                              className={`pm-edit-input ${editErrors.product_price ? 'pm-error' : ''}`}
+                              placeholder="150000"
+                            />
+                            {editErrors.product_price && (
+                              <div className="pm-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                {editErrors.product_price}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="pm-edit-field">
+                            <label className="pm-edit-label">
+                              <i className="fas fa-boxes"></i>
+                              Số lượng *
+                            </label>
+                            <input
+                              type="number"
+                              name="product_quantity"
+                              value={editFormData.product_quantity}
+                              onChange={handleEditFormChange}
+                              className={`pm-edit-input ${editErrors.product_quantity ? 'pm-error' : ''}`}
+                              placeholder="10"
+                              min="0"
+                            />
+                            {editErrors.product_quantity && (
+                              <div className="pm-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                {editErrors.product_quantity}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="pm-edit-field">
+                          <label className="pm-edit-label">
+                            <i className="fas fa-tags"></i>
+                            Danh mục *
+                          </label>
+                          <select
+                            name="product_category_id"
+                            value={editFormData.product_category_id}
+                            onChange={handleEditFormChange}
+                            className={`pm-edit-select ${editErrors.product_category_id ? 'pm-error' : ''}`}
+                          >
+                            <option value="">Chọn danh mục</option>
+                            {categories.map(category => (
+                              <option key={category._id} value={category._id}>
+                                {category.product_category_name}
+                              </option>
+                            ))}
+                          </select>
+                          {editErrors.product_category_id && (
+                            <div className="pm-error-message">
+                              <i className="fas fa-exclamation-circle"></i>
+                              {editErrors.product_category_id}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="pm-edit-field">
+                          <label className="pm-edit-label">
+                            <i className="fas fa-image"></i>
+                            URL hình ảnh
+                          </label>
+                          <input
+                            type="url"
+                            name="product_imageurl"
+                            value={editFormData.product_imageurl}
+                            onChange={handleEditFormChange}
+                            className="pm-edit-input"
+                            placeholder="https://example.com/image.jpg"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                ) : (
+                  // View Mode
+                  <div className="pm-detail-grid">
+                    <div className="pm-detail-image">
+                      <img
+                        src={
+                          selectedProduct.product_imageurl ||
+                          "/default-product.png"
+                        }
+                        alt={selectedProduct.product_name}
+                        className="pm-detail-main-image"
+                      />
+                    </div>
+
+                    <div className="pm-detail-info">
+                      <h4 className="pm-detail-title">
+                        {selectedProduct.product_name}
+                      </h4>
+
+                      <div className="pm-detail-fields">
+                        <div className="pm-detail-field">
+                          <label>Mã sản phẩm:</label>
+                          <span>{selectedProduct._id}</span>
+                        </div>
+
+                        <div className="pm-detail-field">
+                          <label>Danh mục:</label>
+                          <span className="pm-category-badge">
+                            {getCategoryName(selectedProduct.product_category_id)}
+                          </span>
+                        </div>
+
+                        <div className="pm-detail-field">
+                          <label>Giá bán:</label>
+                          <span className="pm-price-value">
+                            {formatCurrency(selectedProduct.product_price)}
+                          </span>
+                        </div>
+
+                        <div className="pm-detail-field">
+                          <label>Số lượng:</label>
+                          <span
+                            className={
+                              selectedProduct.product_quantity === 0
+                                ? "pm-out-of-stock"
+                                : ""
+                            }
+                          >
+                            {selectedProduct.product_quantity || 0}
+                            {selectedProduct.product_quantity === 0 &&
+                              " (Hết hàng)"}
+                          </span>
+                        </div>
+
+                        <div className="pm-detail-field">
+                          <label>Trạng thái:</label>
+                          <span
+                            className={`pm-status-badge ${getStatusBadgeColor(
+                              selectedProduct.product_status
+                            )}`}
+                          >
+                            {selectedProduct.product_status === "available"
+                              ? "Đang bán"
+                              : selectedProduct.product_status === "reported"
+                              ? "Bị báo cáo"
+                              : selectedProduct.product_status === "not_available"
+                              ? "Ngừng bán"
+                              : "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="pm-detail-field">
+                          <label>Ngày tạo:</label>
+                          <span>{formatDate(selectedProduct.createdAt)}</span>
+                        </div>
+
+                        {selectedProduct.updatedAt &&
+                          selectedProduct.updatedAt !==
+                            selectedProduct.createdAt && (
+                            <div className="pm-detail-field">
+                              <label>Cập nhật cuối:</label>
+                              <span>{formatDate(selectedProduct.updatedAt)}</span>
+                            </div>
+                          )}
+
+                        {selectedProduct.product_description && (
+                          <div className="pm-detail-field pm-detail-description">
+                            <label>Mô tả:</label>
+                            <p>{selectedProduct.product_description}</p>
                           </div>
                         )}
-
-                      {selectedProduct.product_description && (
-                        <div className="pm-detail-field pm-detail-description">
-                          <label>Mô tả:</label>
-                          <p>{selectedProduct.product_description}</p>
-                        </div>
-                      )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <div className="pm-modal-footer">
-                <Link
-                  to={`/shop/products/edit/${selectedProduct._id}`}
-                  className="pm-btn pm-btn-primary"
-                >
-                  <i className="fas fa-edit"></i>
-                  Chỉnh sửa
-                </Link>
-                <button
-                  onClick={() => setShowProductDetailModal(false)}
-                  className="pm-btn pm-btn-secondary"
-                >
-                  <i className="fas fa-times"></i>
-                  Đóng
-                </button>
+                {isEditMode ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditMode(false)}
+                      className="pm-btn pm-btn-secondary"
+                      disabled={editLoading}
+                    >
+                      <i className="fas fa-times"></i>
+                      Hủy
+                    </button>
+                    <button
+                      onClick={handleEditSubmit}
+                      className="pm-btn pm-btn-primary"
+                      disabled={editLoading}
+                    >
+                      {editLoading ? (
+                        <>
+                          <i className="fas fa-spinner fa-spin"></i>
+                          Đang lưu...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fas fa-save"></i>
+                          Lưu thay đổi
+                        </>
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => handleEditProduct(selectedProduct)}
+                      className="pm-btn pm-btn-primary"
+                    >
+                      <i className="fas fa-edit"></i>
+                      Chỉnh sửa
+                    </button>
+                    <button
+                      onClick={() => setShowProductDetailModal(false)}
+                      className="pm-btn pm-btn-secondary"
+                    >
+                      <i className="fas fa-times"></i>
+                      Đóng
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>

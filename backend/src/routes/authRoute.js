@@ -41,7 +41,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
             account_type: user.account_type,
             user_imageurl: user.user_imageurl,
             isActive: user.isActive,
-            role: user.role_id ? user.role_id.role_name : 'user',
+            role: user.role_id ? user.role_id.role_name : 'user', // Đảm bảo luôn có trường role
             created_at: user.created_at,
             updated_at: user.updated_at
         };
