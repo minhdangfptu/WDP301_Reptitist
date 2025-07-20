@@ -16,6 +16,7 @@ import {
   User,
   HelpCircle,
   Facebook,
+  Flag,
 } from "lucide-react";
 import { FiEdit } from "react-icons/fi";
 import { RiDeleteBinLine } from "react-icons/ri";
@@ -24,7 +25,8 @@ import "../css/editForm.css";
 import Footer from "../components/Footer";
 import { Navigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../context/AuthContext";
 import {
   updateFeedbackAndRating,
@@ -36,6 +38,8 @@ import AddToCartModal from "../components/AddToCartModal"
 import BuyNowModal from "../components/BuyNowModal"
 import { addToCartService } from "../services/cartService"
 import { useCart } from "../context/CartContext"
+import ReportProductModal from "../components/ReportProductModal";
+import { reportProductService } from "../services/reportService";
 
 const ProductDetail = () => {
   const { productId } = useParams()
@@ -63,6 +67,7 @@ const ProductDetail = () => {
   const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false)
   const [isBuyNowModalOpen, setIsBuyNowModalOpen] = useState(false)
   const { cartCount } = useCart()
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -367,6 +372,43 @@ const ProductDetail = () => {
     return stars;
   };
 
+const handleReportSubmit = async (reason, description) => {
+  if (!user) {
+    toast.error("Vui lòng đăng nhập để báo cáo sản phẩm.");
+    return;
+  }
+  if (!product || !product._id) {
+    toast.error("Không tìm thấy thông tin sản phẩm.");
+    return;
+  }
+  
+  // Hiển thị thông báo đang gửi
+  const loadingToast = toast.loading("Đang gửi báo cáo...");
+  
+  try {
+    console.log('Sending report payload:', { product_id: product._id, reason, description });
+    const response = await reportProductService(product._id, reason, description);
+    
+    // Đóng toast loading
+    toast.dismiss(loadingToast);
+    
+    // Kiểm tra message từ response
+    if (response.message === 'Bạn đã báo cáo sản phẩm này rồi.') {
+      toast.info('Bạn đã báo cáo sản phẩm này rồi. Chúng tôi sẽ xem xét báo cáo của bạn.');
+    } else {
+      toast.success("Báo cáo của bạn đã được gửi thành công! Cảm ơn bạn đã đóng góp.");
+    }
+    
+    setIsReportModalOpen(false);
+  } catch (error) {
+    // Đóng toast loading
+    toast.dismiss(loadingToast);
+    
+    console.error("Failed to submit report:", error);
+    toast.error(error.message || "Gửi báo cáo thất bại. Vui lòng thử lại sau.");
+  }
+};
+
   if (loading) {
     return (
       <div
@@ -420,13 +462,15 @@ const ProductDetail = () => {
               />
 
               <div className="product-detail-image-actions">
-                <button
-                  className="product-detail-action-btn"
-                  onClick={() => setShowReportModal(true)}
-                  title="Báo cáo sản phẩm"
-                >
-                  🚩
-                </button>
+                {user && user.role !== 'admin' && (
+                  <button
+                    className="product-detail-action-btn"
+                    onClick={() => setIsReportModalOpen(true)}
+                    title="Báo cáo sản phẩm"
+                  >
+                    🚩
+                  </button>
+                )}
               </div>
             </div>
             <div className="product-detail-thumbnails">
@@ -826,6 +870,23 @@ const ProductDetail = () => {
         onClose={() => setIsBuyNowModalOpen(false)}
         product={product}
         onBuyNow={handleBuyNowSubmit}
+        />
+      <ReportProductModal
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        onSubmit={handleReportSubmit}
+        productName={product?.product_name}
+      />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
       />
     </div>
   );

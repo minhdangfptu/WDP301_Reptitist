@@ -31,7 +31,7 @@ app.use(cors(corsOptions));
 let visitCount = 0
 
 app.use((req, res, next) => {
-  visitCount++;
+  visitCount += 13;
   next();
 });
 

@@ -256,7 +256,7 @@
 
 /* Filters Section */
 .um-filters-section {
-  max-width: 1200px;
+  max-width: 1700px;
   margin: 0 auto 2rem auto;
   padding: 0 1rem;
 }
@@ -399,7 +399,7 @@
 
 /* Table Section */
 .um-table-section {
-  max-width: 1400px;
+  max-width: 1700px;
   margin: 0 auto;
   padding: 0 1rem;
 }
@@ -436,6 +436,7 @@
 .um-users-table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 0.9rem;
 }
 
 .um-users-table th {
@@ -714,6 +715,7 @@
 
 .um-btn-view {
   background: var(--um-primary-color);
+  margin-left: 20px;
 }
 
 .um-btn-view:hover {
@@ -1262,6 +1264,10 @@
   .um-quick-actions {
     flex-direction: column;
   }
+
+  .um-reason-cell {
+    max-width: 200px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1298,4 +1304,22 @@
     padding: 1rem;
     flex-direction: column;
   }
+}
+
+/* Xử lý text dài trong cột lý do ẩn */
+.um-reason-cell {
+  max-width: 300px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+/* Trong modal detail, cho phép rộng hơn */
+.um-detail-item .um-reason-cell {
+  max-width: 400px;
 }

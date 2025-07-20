@@ -3,6 +3,7 @@ const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const mongoose = require('mongoose');
+const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification, sendProductHideNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
@@ -214,21 +215,50 @@ const getShopProducts = async (req, res) => {
 const deleteProductByAdmin = async (req, res) => {
     try {
         const { productId } = req.params;
+        const { deleteReason } = req.body; // Lý do xóa (tùy chọn)
 
         const product = await Product.findById(productId).populate('user_id', 'username email');
         if (!product) {
             return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
         }
 
+        // Lưu thông tin sản phẩm trước khi xóa để gửi email
+        const productInfo = {
+            _id: product._id,
+            product_name: product.product_name,
+            shop: product.user_id
+        };
+
         await Product.findByIdAndDelete(productId);
+
+        // Gửi email thông báo cho chủ shop
+        try {
+            if (product.user_id && product.user_id.email) {
+                const emailResult = await sendProductDeleteNotification(
+                    product.user_id.email,
+                    product.user_id.username || 'Chủ shop',
+                    product.product_name,
+                    req.user.username || 'Admin',
+                    deleteReason
+                );
+                
+                if (emailResult.success) {
+                    console.log('Product delete email sent successfully to shop owner');
+                } else {
+                    console.error('Failed to send product delete email:', emailResult.error);
+                }
+            } else {
+                console.warn('Shop email not found for product:', productId);
+            }
+        } catch (emailError) {
+            console.error('Error sending product delete email:', emailError);
+            // Không throw error để không ảnh hưởng đến việc xóa sản phẩm
+        }
 
         res.status(200).json({
             message: 'Xóa sản phẩm thành công',
-            deletedProduct: {
-                _id: product._id,
-                product_name: product.product_name,
-                shop: product.user_id
-            }
+            deletedProduct: productInfo,
+            emailSent: product.user_id && product.user_id.email ? true : false
         });
     } catch (error) {
         console.error('Delete product error:', error);
@@ -315,9 +345,35 @@ const handleProductReport = async (req, res) => {
                 resolved_by: req.user._id
             });
 
+            // Gửi email thông báo cho chủ shop
+            try {
+                if (report.shop_id && report.shop_id.email) {
+                    const emailResult = await sendProductReportNotification(
+                        report.shop_id.email,
+                        report.shop_id.username || 'Chủ shop',
+                        report.product_id.product_name,
+                        report.reason,
+                        adminNote,
+                        report.product_id._id // truyền productId
+                    );
+                    
+                    if (emailResult.success) {
+                        console.log('Email notification sent successfully to shop owner');
+                    } else {
+                        console.error('Failed to send email notification:', emailResult.error);
+                    }
+                } else {
+                    console.warn('Shop email not found for report:', reportId);
+                }
+            } catch (emailError) {
+                console.error('Error sending email notification:', emailError);
+                // Không throw error để không ảnh hưởng đến việc xử lý báo cáo
+            }
+
             res.status(200).json({
                 message: 'Đã chấp nhận báo cáo và ẩn sản phẩm',
-                action: 'approved'
+                action: 'approved',
+                emailSent: report.shop_id && report.shop_id.email ? true : false
             });
         } else if (action === 'reject') {
             // Từ chối báo cáo - khôi phục sản phẩm
@@ -325,12 +381,8 @@ const handleProductReport = async (req, res) => {
                 product_status: 'available'
             });
 
-            await ProductReport.findByIdAndUpdate(reportId, {
-                status: 'rejected',
-                admin_note: adminNote,
-                resolved_at: new Date(),
-                resolved_by: req.user._id
-            });
+            // Xóa tất cả các báo cáo liên quan đến sản phẩm này
+            await ProductReport.deleteMany({ product_id: report.product_id._id });
 
             res.status(200).json({
                 message: 'Đã từ chối báo cáo và khôi phục sản phẩm',
@@ -812,6 +864,101 @@ const updateUserAccountType = async (req, res) => {
     }
 };
 
+// Lấy sản phẩm bị ẩn (not_available)
+const getHiddenProducts = async (req, res) => {
+    try {
+        const { status } = req.query;
+        let filter = {};
+        if (status) {
+            filter.product_status = status;
+        }
+        const products = await Product.find(filter).populate('user_id', 'username');
+        res.json({ products });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
+// Admin cập nhật trạng thái sản phẩm
+const updateProductStatusByAdmin = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const { product_status, hideReason } = req.body;
+        if (!product_status) {
+            return res.status(400).json({ message: 'Thiếu trạng thái sản phẩm' });
+        }
+
+        // Lấy thông tin sản phẩm và shop trước khi cập nhật
+        const product = await Product.findById(productId).populate('user_id', 'username email');
+        if (!product) {
+            return res.status(404).json({ message: 'Không tìm thấy sản phẩm' });
+        }
+
+        // Nếu chuyển sang not_available mà không có lý do thì báo lỗi
+        if (product_status === 'not_available' && (!hideReason || hideReason.trim() === '')) {
+            return res.status(400).json({ message: 'Vui lòng nhập lý do ẩn sản phẩm' });
+        }
+
+        // Cập nhật trạng thái sản phẩm
+        const updatedProduct = await Product.findByIdAndUpdate(productId, { product_status }, { new: true });
+
+        let emailSent = false;
+        // Nếu chuyển sang available (gỡ bỏ ẩn), gửi email thông báo cho shop
+        if (product_status === 'available' && product.user_id && product.user_id.email) {
+            try {
+                const emailResult = await sendProductUnhideNotification(
+                    product.user_id.email,
+                    product.user_id.username || 'Chủ shop',
+                    product.product_name,
+                    req.user.username || 'Admin'
+                );
+                if (emailResult.success) {
+                    emailSent = true;
+                    console.log('Email notification sent successfully to shop owner for product unhide');
+                } else {
+                    console.error('Failed to send email notification for product unhide:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('Error sending email notification for product unhide:', emailError);
+            }
+        }
+        // Nếu chuyển sang not_available (ẩn), gửi email thông báo cho shop, truyền lý do
+        if (product_status === 'not_available' && product.user_id && product.user_id.email) {
+            try {
+                const emailResult = await sendProductHideNotification(
+                    product.user_id.email,
+                    product.user_id.username || 'Chủ shop',
+                    product.product_name,
+                    req.user.username || 'Admin',
+                    hideReason,
+                    product._id // truyền productId
+                );
+                if (emailResult.success) {
+                    emailSent = true;
+                    console.log('Email notification sent successfully to shop owner for product hide');
+                } else {
+                    console.error('Failed to send email notification for product hide:', emailResult.error);
+                }
+            } catch (emailError) {
+                console.error('Error sending email notification for product hide:', emailError);
+            }
+        }
+
+        // Nếu chuyển sang available, xóa tất cả các báo cáo liên quan
+        if (product_status === 'available') {
+            await ProductReport.deleteMany({ product_id: productId });
+        }
+
+        res.status(200).json({ 
+            message: 'Cập nhật trạng thái thành công', 
+            product: updatedProduct,
+            emailSent
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Lỗi server', error: error.message });
+    }
+};
+
 // Export controller functions
 module.exports = {
     checkAdminRole,
@@ -828,5 +975,7 @@ module.exports = {
     deleteUser,
     toggleUserStatus,
     createUser,
-    updateUserAccountType
+    updateUserAccountType,
+    getHiddenProducts,
+    updateProductStatusByAdmin
 };

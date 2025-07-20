@@ -3,6 +3,10 @@ const router = express.Router();
 const productController = require('../controllers/productController');
 const authMiddleware1 = require('../middleware/authMiddlewareModify')
 const roleMiddleware = require('../middleware/roleMiddleware');
+const Product = require('../models/Products');
+const { sendProductHideNotification, sendProductUnhideNotification } = require('../config/email');
+const User = require('../models/users');
+const ProductReport = require('../models/Product_reports'); // Thêm dòng này ở đầu file
 
 // Import các middleware từ adminRouter
 const { authMiddleware } = require('../middleware/authMiddleware');
@@ -49,6 +53,70 @@ router.get('/shops/:shopId/products', getShopProducts); // GET /admin/shops/:sho
 
 // Product management routes (admin can only delete)
 router.delete('/products/:productId', deleteProductByAdmin); // DELETE /admin/products/:id
+
+// Cập nhật trạng thái sản phẩm (ẩn/bỏ ẩn)
+router.put('/products/:productId/status', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const { product_status, hideReason, adminName } = req.body;
+    const update = { product_status };
+    if (product_status === 'not_available' && hideReason) {
+      update.hideReason = hideReason;
+    }
+    const product = await Product.findByIdAndUpdate(productId, update, { new: true }).populate('user_id', 'email username');
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Gửi email khi ẩn hoặc bỏ ẩn sản phẩm
+    let emailSent = false;
+    if (product_status === 'not_available' && product.user_id && product.user_id.email) {
+      try {
+        await sendProductHideNotification(
+          product.user_id.email,
+          product.user_id.username || '',
+          product.product_name,
+          adminName || 'Admin',
+          hideReason || '',
+          product._id
+        );
+        emailSent = true;
+      } catch (e) {}
+    }
+    if (product_status === 'available' && product.user_id && product.user_id.email) {
+      try {
+        await sendProductUnhideNotification(
+          product.user_id.email,
+          product.user_id.username || '',
+          product.product_name,
+          adminName || 'Admin'
+        );
+        emailSent = true;
+      } catch (e) {}
+      // Xóa tất cả các báo cáo liên quan đến sản phẩm này khi bỏ ẩn
+      await ProductReport.deleteMany({ product_id: productId });
+    }
+
+    res.json({ product, emailSent });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Thêm route lấy tất cả sản phẩm hoặc lọc theo trạng thái
+router.get('/products', async (req, res) => {
+  try {
+    const { status } = req.query;
+    let query = {};
+    if (status) {
+      query.product_status = status;
+    }
+    const products = await Product.find(query).populate('user_id', 'username email');
+    res.json({ products });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Report management routes
 router.get('/reports', getAllProductReports);         // GET /admin/reports

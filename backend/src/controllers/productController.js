@@ -397,7 +397,7 @@ const getProductDetails = async (req, res) => {
   try {
     const productId = req.params.productId;
     const product = await Product.findById(productId)
-      .populate('user_id', 'username')
+      .populate('user_id', 'username email') // sửa: thêm email
       .populate('product_category_id', 'product_category_name');
     
     if (!product) {
@@ -645,4 +645,3 @@ module.exports = {
   checkProductAvailability,
   getTopRatedProducts
 };
-

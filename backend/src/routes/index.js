@@ -12,8 +12,8 @@ const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRoute'); 
 const userRoute = require('./userRoute');
-// const productReportRoute = require('./productReportRoute'); // Dòng này gây lỗi vì không tồn tại file
-// const shopComplainRoute = require('../../routes/shopComplainRoute'); // Dòng này gây lỗi vì không tồn tại file
+const productReportRoute = require('./productReportRoute');
+const shopComplainRoute = require('../../routes/shopComplainRoute');
 
 // ===== USER ROUTES =====
 router.use('/user', userRoute);
@@ -31,6 +31,8 @@ router.use('/topic-categories', topicCategoryRoutes);
 
 // ===== TRANSACTION ROUTES (includes admin endpoints) =====
 router.use('/transactions', transactionRoute);
+router.use('/product-reports', productReportRoute);
+router.use(shopComplainRoute);
 
 // ===== ADMIN ROUTES =====
 router.use('/admin', adminRoute);
