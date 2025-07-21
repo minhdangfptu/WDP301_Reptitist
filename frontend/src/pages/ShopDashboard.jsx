@@ -19,8 +19,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  AreaChart,
-  Area,
   ComposedChart
 } from 'recharts';
 import '../css/ShopDashboard.css';
@@ -39,18 +37,15 @@ const ShopDashboard = () => {
   });
 
   const [chartData, setChartData] = useState({
-    bestSellingProducts: [],
-    categoryDistribution: [],
-    monthlyRevenue: [],
-    orderStatusStats: [],
-    recentOrders: [],
-    bestSellingProductsByTime: [],
-    shopRevenueByTime: [],
-    cumulativeRevenue: []
+    bestSellingProductsByTime: [], // Biểu đồ cột: Sản phẩm bán chạy theo thời gian
+    productRevenueShare: [], // Biểu đồ bánh: % doanh số từ từng sản phẩm
+    dailyRevenue: [], // Biểu đồ đường: Doanh số theo ngày
+    cumulativeRevenue: [] // Biểu đồ đường/cột: Doanh số tích lũy
   });
 
   const [loading, setLoading] = useState(true);
   const [chartsLoading, setChartsLoading] = useState(true);
+  const [timeFilter, setTimeFilter] = useState('day'); // day, month, year
 
   // Permission check
   useEffect(() => {
@@ -60,7 +55,7 @@ const ShopDashboard = () => {
       return;
     }
     fetchShopData();
-  }, [canSellProduct, navigate]);
+  }, [canSellProduct, navigate, timeFilter]);
 
   // Colors for charts
   const CHART_COLORS = [
@@ -81,58 +76,155 @@ const ShopDashboard = () => {
         return;
       }
 
-      // Gọi API dashboard-stats để lấy tất cả dữ liệu
-      const response = await axios.get(`http://localhost:5000/reptitist/shop/dashboard-stats`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      // Fetch basic stats
+      const statsResponse = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/products/shop/dashboard-stats`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { timeFilter }
+        }
+      );
 
-      const dashboardData = response.data.data;
-      console.log('Dashboard data:', dashboardData);
+      const data = statsResponse.data.data;
 
-      // Set basic stats
-      setStats(dashboardData.basicStats);
+      // Guard: If data or data.basicStats is missing, set default and return
+      if (!data || !data.basicStats) {
+        setStats({
+          totalProducts: 0,
+          activeProducts: 0,
+          totalOrders: 0,
+          pendingOrders: 0,
+          totalRevenue: 0
+        });
+        setChartData({
+          bestSellingProductsByTime: [],
+          productRevenueShare: [],
+          dailyRevenue: [],
+          cumulativeRevenue: []
+        });
+        setChartsLoading(false);
+        setLoading(false);
+        return;
+      }
 
-      // Set chart data
-      setChartData({
-        bestSellingProducts: dashboardData.bestSellingProducts || [],
-        categoryDistribution: dashboardData.categoryDistribution || [],
-        monthlyRevenue: dashboardData.shopRevenueByTime || [],
-        orderStatusStats: dashboardData.orderStatusStats || [],
-        recentOrders: dashboardData.recentOrders || [],
-        bestSellingProductsByTime: dashboardData.bestSellingProductsByTime || [],
-        shopRevenueByTime: dashboardData.shopRevenueByTime || [],
-        cumulativeRevenue: dashboardData.cumulativeRevenue || []
-      });
+      // Update stats
+      setStats(data.basicStats);
 
-      setLoading(false);
+      // Process chart data
+      const processedChartData = {
+        // 1. Biểu đồ cột: Top sản phẩm bán chạy theo thời gian
+        bestSellingProductsByTime: data.bestSellingProductsByTime?.slice(-15) || [],
+        
+        // 2. Biểu đồ bánh: % doanh số từ từng sản phẩm
+        productRevenueShare: processProductRevenueShare(data.productRevenueStats || []),
+        
+        // 3. Biểu đồ đường: Doanh số theo thời gian
+        dailyRevenue: data.shopRevenueByTime?.slice(-30) || [],
+        
+        // 4. Biểu đồ tích lũy: Doanh số tổng tăng dần
+        cumulativeRevenue: data.cumulativeRevenue?.slice(-30) || []
+      };
+
+      setChartData(processedChartData);
       setChartsLoading(false);
 
     } catch (error) {
-      console.error('Error fetching shop data:', error);
-      toast.error('Không thể tải thông tin cửa hàng');
-      setLoading(false);
+      console.error('Fetch shop data error:', error);
+      toast.error('Lỗi khi tải dữ liệu dashboard');
       setChartsLoading(false);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Custom tooltip for currency formatting
-  const formatCurrency = (value) => {
+  // Process product revenue share for pie chart
+  const processProductRevenueShare = (productStats) => {
+    if (!productStats || productStats.length === 0) return [];
+    
+    // Sort by revenue descending
+    const sortedProducts = [...productStats].sort((a, b) => b.revenue - a.revenue);
+    
+    // Take top 8 products, group rest as "Khác"
+    const topProducts = sortedProducts.slice(0, 8);
+    const otherProducts = sortedProducts.slice(8);
+    
+    const result = topProducts.map(product => ({
+      name: product.productName || 'Không xác định',
+      value: product.revenue || 0,
+      percentage: product.percentage || 0
+    }));
+    
+    // Add "Others" if there are more products
+    if (otherProducts.length > 0) {
+      const othersRevenue = otherProducts.reduce((sum, p) => sum + (p.revenue || 0), 0);
+      const othersPercentage = otherProducts.reduce((sum, p) => sum + (p.percentage || 0), 0);
+      
+      result.push({
+        name: `Khác (${otherProducts.length} sản phẩm)`,
+        value: othersRevenue,
+        percentage: othersPercentage
+      });
+    }
+    
+    return result;
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
-    }).format(value);
+    }).format(amount);
   };
 
-  // Loading state
+  // Format number
+  const formatNumber = (num) => {
+    return new Intl.NumberFormat('vi-VN').format(num);
+  };
+
+  // Custom tooltip for revenue charts
+  const RevenueTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="custom-tooltip">
+          <p className="tooltip-label">{`${label}`}</p>
+          {payload.map((entry, index) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.dataKey === 'revenue' || entry.dataKey === 'cumulativeRevenue' || entry.dataKey === 'dailyRevenue' 
+                ? formatCurrency(entry.value) 
+                : formatNumber(entry.value)}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Custom tooltip for pie chart
+  const PieTooltip = ({ active, payload }) => {
+    if (active && payload && payload[0]) {
+      const data = payload[0].payload;
+      return (
+        <div className="custom-tooltip">
+          <p className="tooltip-label">{data.name}</p>
+          <p style={{ color: payload[0].color }}>
+            {formatCurrency(data.value)} ({data.percentage}%)
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading) {
     return (
       <>
         <Header />
         <div className="um-user-list-container">
-          <div className="um-loading-state">
+          <div className="um-loading-container">
             <div className="um-spinner"></div>
-            <h3>Đang tải thông tin cửa hàng...</h3>
-            <p>Vui lòng chờ trong giây lát</p>
+            <p>Đang tải dashboard...</p>
           </div>
         </div>
         <Footer />
@@ -146,241 +238,221 @@ const ShopDashboard = () => {
       <div className="um-user-list-container">
         {/* Page Header */}
         <div className="um-page-header">
-          <div className="um-page-header-content">
-            <div className="um-page-header-text">
+          <div className="um-header-content">
+            <div className="um-header-text">
               <h1>
                 <i className="fas fa-store"></i>
-                Tổng quan cửa hàng
+                Dashboard Cửa hàng
               </h1>
-              <p>Chào mừng bạn trở lại, {user?.fullname || user?.username}!</p>
-              <div className="um-header-breadcrumb">
-                <Link to="/">Trang chủ</Link>
-                <i className="fas fa-chevron-right"></i>
-                <span>Dashboard Shop</span>
-              </div>
+              <p>Quản lý và theo dõi hiệu suất kinh doanh của bạn</p>
             </div>
             <div className="um-header-actions">
-              <Link to="/shop/products/create" className="um-btn um-btn-primary">
-                <i className="fas fa-plus"></i>
-                Thêm sản phẩm
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Statistics Dashboard */}
-        <div className="um-stats-dashboard">
-          <div className="um-stats-grid">
-            <div className="um-stat-card um-stat-total">
-              <div className="um-stat-icon">
-                <i className="fas fa-box"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.totalProducts}</span>
-                <span className="um-stat-label">Tổng sản phẩm</span>
-              </div>
-            </div>
-
-            <div className="um-stat-card um-stat-active">
-              <div className="um-stat-icon">
-                <i className="fas fa-check-circle"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.activeProducts}</span>
-                <span className="um-stat-label">Đang bán</span>
-              </div>
-            </div>
-
-            <div className="um-stat-card um-stat-shop">
-              <div className="um-stat-icon">
-                <i className="fas fa-shopping-cart"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.totalOrders}</span>
-                <span className="um-stat-label">Tổng đơn hàng</span>
-              </div>
-            </div>
-
-            <div className="um-stat-card um-stat-customer">
-              <div className="um-stat-icon">
-                <i className="fas fa-clock"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.pendingOrders}</span>
-                <span className="um-stat-label">Chờ xử lý</span>
-              </div>
-            </div>
-
-            <div className="um-stat-card um-stat-admin">
-              <div className="um-stat-icon">
-                <i className="fas fa-money-bill-wave"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{formatCurrency(stats.totalRevenue)}</span>
-                <span className="um-stat-label">Doanh thu</span>
+              <div className="time-filter-buttons">
+                <button 
+                  className={`filter-btn ${timeFilter === 'day' ? 'active' : ''}`}
+                  onClick={() => setTimeFilter('day')}
+                >
+                  Theo ngày
+                </button>
+                <button 
+                  className={`filter-btn ${timeFilter === 'month' ? 'active' : ''}`}
+                  onClick={() => setTimeFilter('month')}
+                >
+                  Theo tháng
+                </button>
+                <button 
+                  className={`filter-btn ${timeFilter === 'year' ? 'active' : ''}`}
+                  onClick={() => setTimeFilter('year')}
+                >
+                  Theo năm
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Charts Section */}
-        <div className="transaction-charts-grid">
-          {/* Biểu đồ cột: Sản phẩm bán chạy nhất theo từng thời gian */}
-          <div className="chart-card">
-            <h3>
-              <i className="fas fa-chart-bar"></i>
-              Sản phẩm bán chạy nhất theo thời gian
-            </h3>
-            {chartsLoading ? (
-              <div className="chart-loading">
-                <div className="um-spinner"></div>
-                <p>Đang tải biểu đồ...</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData.bestSellingProductsByTime}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="time"
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                    fontSize={12}
-                  />
-                  <YAxis />
-                  <Tooltip formatter={(value, name) => [
-                    name === 'quantity' ? value : formatCurrency(value), 
-                    name === 'quantity' ? 'Số lượng' : 'Doanh thu'
-                  ]} />
-                  <Legend />
-                  <Bar dataKey="quantity" fill="#2563eb" name="Số lượng" />
-                  <Bar dataKey="revenue" fill="#059669" name="Doanh thu" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+        {/* Stats Cards */}
+        <div className="um-stats-grid">
+          <div className="um-stat-card um-stat-total">
+            <div className="um-stat-icon">
+              <i className="fas fa-cube"></i>
+            </div>
+            <div className="um-stat-content">
+              <div className="um-stat-value">{formatNumber(stats.totalProducts)}</div>
+              <div className="um-stat-label">Tổng sản phẩm</div>
+            </div>
           </div>
 
-          {/* Biểu đồ bánh: Doanh số từ từng sản phẩm */}
-          <div className="chart-card">
-            <h3>
-              <i className="fas fa-chart-pie"></i>
-              Doanh số từ từng sản phẩm (%)
-            </h3>
-            {chartsLoading ? (
-              <div className="chart-loading">
-                <div className="um-spinner"></div>
-                <p>Đang tải biểu đồ...</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={chartData.categoryDistribution}
-                    dataKey="revenue"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label={({ name, percentage }) => `${name} ${percentage.toFixed(1)}%`}
-                  >
-                    {chartData.categoryDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => [formatCurrency(value), 'Doanh thu']} />
-                </PieChart>
-              </ResponsiveContainer>
-            )}
+          <div className="um-stat-card um-stat-active">
+            <div className="um-stat-icon">
+              <i className="fas fa-check-circle"></i>
+            </div>
+            <div className="um-stat-content">
+              <div className="um-stat-value">{formatNumber(stats.activeProducts)}</div>
+              <div className="um-stat-label">Sản phẩm đang bán</div>
+            </div>
           </div>
 
-          {/* Biểu đồ đường: Doanh số theo từng ngày */}
-          <div className="chart-card chart-card-wide">
-            <h3>
-              <i className="fas fa-chart-line"></i>
-              Doanh số theo từng ngày
-            </h3>
-            {chartsLoading ? (
-              <div className="chart-loading">
-                <div className="um-spinner"></div>
-                <p>Đang tải biểu đồ...</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={chartData.shopRevenueByTime}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [formatCurrency(value), 'Doanh thu']} />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="#2563eb"
-                    strokeWidth={3}
-                    dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            )}
+          <div className="um-stat-card um-stat-shop">
+            <div className="um-stat-icon">
+              <i className="fas fa-shopping-cart"></i>
+            </div>
+            <div className="um-stat-content">
+              <div className="um-stat-value">{formatNumber(stats.totalOrders)}</div>
+              <div className="um-stat-label">Tổng đơn hàng</div>
+            </div>
           </div>
 
-          {/* Biểu đồ đường/cột: Doanh số tổng tăng dần */}
-          <div className="chart-card chart-card-wide">
-            <h3>
-              <i className="fas fa-chart-area"></i>
-              Doanh số tổng tăng dần theo thời gian
-            </h3>
-            {chartsLoading ? (
-              <div className="chart-loading">
-                <div className="um-spinner"></div>
-                <p>Đang tải biểu đồ...</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={chartData.cumulativeRevenue}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip formatter={(value, name) => [
-                    formatCurrency(value), 
-                    name === 'cumulativeRevenue' ? 'Tổng doanh thu' : 'Doanh thu ngày'
-                  ]} />
-                  <Legend />
-                  <Bar dataKey="dailyRevenue" fill="#059669" name="Doanh thu ngày" />
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeRevenue"
-                    stroke="#dc2626"
-                    strokeWidth={3}
-                    dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
-                    name="Tổng doanh thu"
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            )}
+          <div className="um-stat-card um-stat-customer">
+            <div className="um-stat-icon">
+              <i className="fas fa-clock"></i>
+            </div>
+            <div className="um-stat-content">
+              <div className="um-stat-value">{formatNumber(stats.pendingOrders)}</div>
+              <div className="um-stat-label">Đơn chờ xử lý</div>
+            </div>
           </div>
 
-          {/* Trạng thái đơn hàng */}
-          <div className="chart-card">
-            <h3>
-              <i className="fas fa-tasks"></i>
-              Trạng thái đơn hàng
-            </h3>
-            {chartsLoading ? (
-              <div className="chart-loading">
-                <div className="um-spinner"></div>
-                <p>Đang tải biểu đồ...</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData.orderStatusStats} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="status" type="category" width={80} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#d97706" />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
+          <div className="um-stat-card um-stat-admin">
+            <div className="um-stat-icon">
+              <i className="fas fa-money-bill-wave"></i>
+            </div>
+            <div className="um-stat-content">
+              <div className="um-stat-value">{formatCurrency(stats.totalRevenue)}</div>
+              <div className="um-stat-label">Tổng doanh thu</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Section - 2 rows, 2 charts each */}
+        <div className="charts-section">
+          {/* First Row */}
+          <div className="charts-row">
+            {/* Chart 1: Biểu đồ cột - Sản phẩm bán chạy theo thời gian */}
+            <div className="chart-card">
+              <h3>
+                <i className="fas fa-chart-bar"></i>
+                Sản phẩm bán chạy nhất theo {timeFilter === 'day' ? 'ngày' : timeFilter === 'month' ? 'tháng' : 'năm'}
+              </h3>
+              {chartsLoading ? (
+                <div className="chart-loading">
+                  <div className="um-spinner"></div>
+                  <p>Đang tải biểu đồ...</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData.bestSellingProductsByTime}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip content={<RevenueTooltip />} />
+                    <Legend />
+                    <Bar dataKey="quantity" fill="#2563eb" name="Số lượng bán" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Chart 2: Biểu đồ bánh - Doanh số từ từng sản phẩm */}
+            <div className="chart-card">
+              <h3>
+                <i className="fas fa-chart-pie"></i>
+                Phân bổ doanh số theo sản phẩm
+              </h3>
+              {chartsLoading ? (
+                <div className="chart-loading">
+                  <div className="um-spinner"></div>
+                  <p>Đang tải biểu đồ...</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={chartData.productRevenueShare}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name} (${percentage}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {chartData.productRevenueShare.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<PieTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          {/* Second Row */}
+          <div className="charts-row">
+            {/* Chart 3: Biểu đồ đường - Doanh số theo thời gian */}
+            <div className="chart-card">
+              <h3>
+                <i className="fas fa-chart-line"></i>
+                Doanh số theo {timeFilter === 'day' ? 'ngày' : timeFilter === 'month' ? 'tháng' : 'năm'}
+              </h3>
+              {chartsLoading ? (
+                <div className="chart-loading">
+                  <div className="um-spinner"></div>
+                  <p>Đang tải biểu đồ...</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={chartData.dailyRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip content={<RevenueTooltip />} />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="revenue" 
+                      stroke="#059669" 
+                      strokeWidth={3}
+                      name="Doanh số"
+                      dot={{ fill: '#059669', strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            {/* Chart 4: Biểu đồ kết hợp - Doanh số tích lũy */}
+            <div className="chart-card">
+              <h3>
+                <i className="fas fa-chart-area"></i>
+                Doanh số tích lũy theo {timeFilter === 'day' ? 'ngày' : timeFilter === 'month' ? 'tháng' : 'năm'}
+              </h3>
+              {chartsLoading ? (
+                <div className="chart-loading">
+                  <div className="um-spinner"></div>
+                  <p>Đang tải biểu đồ...</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={chartData.cumulativeRevenue}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip content={<RevenueTooltip />} />
+                    <Legend />
+                    <Bar dataKey="dailyRevenue" fill="#d97706" name="Doanh số ngày" />
+                    <Line 
+                      type="monotone" 
+                      dataKey="cumulativeRevenue" 
+                      stroke="#7c3aed" 
+                      strokeWidth={3}
+                      name="Doanh số tích lũy"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </div>
 
@@ -422,17 +494,6 @@ const ShopDashboard = () => {
               </div>
               <h4>Quản lý đơn hàng</h4>
               <p>Xem và xử lý đơn hàng từ khách hàng</p>
-              <span className="action-arrow">
-                <i className="fas fa-arrow-right"></i>
-              </span>
-            </div>
-
-            <div className="action-card" onClick={() => navigate('/shop/analytics')}>
-              <div className="action-icon">
-                <i className="fas fa-chart-line"></i>
-              </div>
-              <h4>Báo cáo chi tiết</h4>
-              <p>Xem thống kê và phân tích chi tiết</p>
               <span className="action-arrow">
                 <i className="fas fa-arrow-right"></i>
               </span>

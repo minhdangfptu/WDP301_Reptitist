@@ -20,7 +20,8 @@ const {
   deleteFeedbackAndRating, 
   editFeedbackAndRating, getTopRatedProducts,
   checkProductAvailability,
-  getShopDashboardStats
+  getShopDashboardStats,
+  getShopAnalytics
 } = require('../controllers/productController');
 
 
@@ -48,6 +49,9 @@ router.put('/my-products/:productId', authMiddleware, updateMyProduct);
 router.delete('/my-products/:productId', authMiddleware, deleteMyProduct);
 router.get('/my-stats', authMiddleware, getMyProductStats);
 router.get('/dashboard-stats', authMiddleware, getShopDashboardStats);
+
+// Shop dashboard stats (external endpoint)
+router.get('/shop/dashboard-stats', authMiddleware, getShopDashboardStats);
 
 // Product Report (for customers)
 router.post('/products/:productId/report', authMiddleware, reportProduct);

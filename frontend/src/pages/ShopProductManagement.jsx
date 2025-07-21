@@ -326,33 +326,23 @@ const ShopProductManagement = () => {
     return Object.keys(errors).length === 0;
   };
 
-  // Handle edit form submit
+  // Edit product (PUT)
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateEditForm()) {
-      toast.error('Vui lòng kiểm tra lại thông tin đã nhập');
-      return;
-    }
-
+    setEditLoading(true);
     try {
-      setEditLoading(true);
-      const token = localStorage.getItem('token');
-      
+      const token = localStorage.getItem('access_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn');
-        navigate('/login');
+        navigate('/Login');
         return;
       }
-      
       const submitData = {
-        ...editFormData,
+        product_name: editFormData.product_name,
+        product_description: editFormData.product_description,
         product_price: parseInt(editFormData.product_price),
         product_quantity: parseInt(editFormData.product_quantity)
       };
-
-      console.log('Submitting edit data:', submitData);
-
       const response = await axios.put(
         `${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`,
         submitData,
@@ -363,12 +353,10 @@ const ShopProductManagement = () => {
           }
         }
       );
-
-      console.log('Edit response:', response);
-
       if (response.status === 200) {
         toast.success('Cập nhật sản phẩm thành công!');
-        await fetchProducts(); // Refresh products
+        await fetchMyProducts(); // Refresh products
+        await fetchMyStats();
         setIsEditMode(false);
         setShowProductDetailModal(false);
       }
@@ -389,14 +377,13 @@ const ShopProductManagement = () => {
   // Confirm delete
   const confirmDelete = async () => {
     if (!selectedProduct) return;
-
     try {
-      const token = localStorage.getItem("refresh_token'");
+      const token = localStorage.getItem('access_token');
       if (!token) {
-        console.error("No token found");
+        toast.error('Phiên đăng nhập đã hết hạn');
+        navigate('/Login');
         return;
       }
-
       const response = await axios.delete(
         `${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`,
         {
@@ -405,27 +392,28 @@ const ShopProductManagement = () => {
           },
         }
       );
-
       if (response.status === 200) {
+        toast.success('Xóa sản phẩm thành công!');
         await fetchMyProducts();
         await fetchMyStats();
         setShowDeleteModal(false);
         setSelectedProduct(null);
       }
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error('Error deleting product:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa sản phẩm');
     }
   };
 
-  // Handle update product status
+  // Update product status
   const updateProductStatus = async (productId, newStatus) => {
     try {
-      const token = localStorage.getItem("refresh_token'");
+      const token = localStorage.getItem('access_token');
       if (!token) {
-        console.error("No token found");
+        toast.error('Phiên đăng nhập đã hết hạn');
+        navigate('/Login');
         return;
       }
-
       const response = await axios.put(
         `${baseUrl}/reptitist/shop/my-products/${productId}`,
         { product_status: newStatus },
@@ -435,13 +423,14 @@ const ShopProductManagement = () => {
           },
         }
       );
-
       if (response.status === 200) {
+        toast.success('Cập nhật trạng thái thành công!');
         await fetchMyProducts();
         await fetchMyStats();
       }
     } catch (error) {
-      console.error("Error updating product status:", error);
+      console.error('Error updating product status:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái sản phẩm');
     }
   };
 
