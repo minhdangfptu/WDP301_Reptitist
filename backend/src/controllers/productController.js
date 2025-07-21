@@ -274,7 +274,7 @@ const getShopDashboardStats = async (req, res) => {
 
     const Order = require('../models/Orders');
 
-    // Get products
+    // Get products - same as getMyProductStats
     const products = await Product.find({ user_id: userId })
       .populate('product_category_id', 'product_category_name');
 
@@ -282,6 +282,26 @@ const getShopDashboardStats = async (req, res) => {
     const orders = await Order.find({ shop_id: userId })
       .populate('order_items.product_id', 'product_name product_price')
       .populate('customer_id', 'username email');
+
+    // Calculate basic stats - EXACTLY same as getMyProductStats
+    const [totalProducts, activeProducts, draftProducts] = await Promise.all([
+      Product.countDocuments({ user_id: userId }),
+      Product.countDocuments({ user_id: userId, product_status: 'available' }),
+      Product.countDocuments({ user_id: userId, product_status: 'not_available' })
+    ]);
+
+    // Calculate total value - EXACTLY same as getMyProductStats
+    const productsForValue = await Product.find({ user_id: userId, product_status: 'available' });
+    const totalValue = productsForValue.reduce((sum, product) => {
+      return sum + (product.product_price * product.product_quantity);
+    }, 0);
+
+    // Calculate order stats
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.order_status === 'ordered').length;
+    const totalRevenue = orders
+      .filter(o => o.order_status === 'delivered')
+      .reduce((sum, o) => sum + (o.order_price || 0), 0);
 
     // 1. Sản phẩm bán chạy nhất theo thời gian (Biểu đồ cột)
     const productSalesByTime = {};
@@ -330,7 +350,7 @@ const getShopDashboardStats = async (req, res) => {
 
     // 2. Doanh số từ từng sản phẩm % (Biểu đồ bánh)
     const productRevenueStats = {};
-    let totalRevenue = 0;
+    let totalRevenueForShare = 0;
 
     orders.forEach(order => {
       if (order.order_status === 'delivered' && order.order_items) {
@@ -342,7 +362,7 @@ const getShopDashboardStats = async (req, res) => {
             productRevenueStats[productName] = 0;
           }
           productRevenueStats[productName] += revenue;
-          totalRevenue += revenue;
+          totalRevenueForShare += revenue;
         });
       }
     });
@@ -351,7 +371,7 @@ const getShopDashboardStats = async (req, res) => {
       .map(([productName, revenue]) => ({
         productName,
         revenue,
-        percentage: totalRevenue > 0 ? ((revenue / totalRevenue) * 100).toFixed(1) : 0
+        percentage: totalRevenueForShare > 0 ? ((revenue / totalRevenueForShare) * 100).toFixed(1) : 0
       }))
       .sort((a, b) => b.revenue - a.revenue);
 
@@ -396,30 +416,20 @@ const getShopDashboardStats = async (req, res) => {
       });
     });
 
-    // Get product statistics (đồng bộ với getMyProductStats)
-    const [totalProducts, activeProducts, draftProducts] = await Promise.all([
-      Product.countDocuments({ user_id: userId }),
-      Product.countDocuments({ user_id: userId, product_status: 'available' }),
-      Product.countDocuments({ user_id: userId, product_status: 'not_available' })
-    ]);
-    const productsForValue = await Product.find({ user_id: userId, product_status: 'available' });
-    const totalValue = productsForValue.reduce((sum, product) => sum + (product.product_price * product.product_quantity), 0);
-
+    // Prepare response with EXACT same basicStats structure as getMyProductStats
     const dashboardStats = {
       bestSellingProductsByTime,
       productRevenueStats: productRevenueShare,
       shopRevenueByTime,
       cumulativeRevenue,
       basicStats: {
-        totalProducts,
-        activeProducts,
-        draftProducts,
-        totalValue,
-        totalOrders: orders.length,
-        pendingOrders: orders.filter(o => o.order_status === 'ordered').length,
-        totalRevenue: orders
-          .filter(o => o.order_status === 'delivered')
-          .reduce((sum, o) => sum + (o.order_price || 0), 0)
+        totalProducts,        // Same field name as getMyProductStats
+        activeProducts,       // Same field name as getMyProductStats  
+        draftProducts,        // Same field name as getMyProductStats
+        totalValue,           // Same field name as getMyProductStats
+        totalOrders,          // Additional field for dashboard
+        pendingOrders,        // Additional field for dashboard
+        totalRevenue          // Additional field for dashboard
       }
     };
 

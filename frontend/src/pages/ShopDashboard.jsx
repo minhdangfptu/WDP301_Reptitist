@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { useNavigate, Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import {
   BarChart,
@@ -22,30 +22,33 @@ import {
   ComposedChart
 } from 'recharts';
 import '../css/ShopDashboard.css';
+import { baseUrl } from '../config';
 
 const ShopDashboard = () => {
   const { user, canSellProduct } = useAuth();
   const navigate = useNavigate();
 
-  // State management
+  // State management - Updated to match ShopProductManagement exactly
   const [stats, setStats] = useState({
-    totalProducts: 0,
-    activeProducts: 0,
-    totalOrders: 0,
-    pendingOrders: 0,
-    totalRevenue: 0
+    total: 0,           // Same field name as ShopProductManagement
+    available: 0,       // Same field name as ShopProductManagement  
+    draft: 0,           // Same field name as ShopProductManagement
+    inventoryValue: 0,  // Same field name as ShopProductManagement
+    totalOrders: 0,     // Additional dashboard field
+    pendingOrders: 0,   // Additional dashboard field
+    totalRevenue: 0     // Additional dashboard field
   });
 
   const [chartData, setChartData] = useState({
-    bestSellingProductsByTime: [], // Biểu đồ cột: Sản phẩm bán chạy theo thời gian
-    productRevenueShare: [], // Biểu đồ bánh: % doanh số từ từng sản phẩm
-    dailyRevenue: [], // Biểu đồ đường: Doanh số theo ngày
-    cumulativeRevenue: [] // Biểu đồ đường/cột: Doanh số tích lũy
+    bestSellingProductsByTime: [],
+    productRevenueShare: [],
+    dailyRevenue: [],
+    cumulativeRevenue: []
   });
 
   const [loading, setLoading] = useState(true);
   const [chartsLoading, setChartsLoading] = useState(true);
-  const [timeFilter, setTimeFilter] = useState('day'); // day, month, year
+  const [timeFilter, setTimeFilter] = useState('day');
 
   // Permission check
   useEffect(() => {
@@ -63,7 +66,7 @@ const ShopDashboard = () => {
     '#0891b2', '#be185d', '#059669', '#ea580c', '#4338ca'
   ];
 
-  // Fetch all shop data
+  // Fetch shop data - Enhanced with detailed debugging
   const fetchShopData = async () => {
     try {
       setLoading(true);
@@ -76,61 +79,167 @@ const ShopDashboard = () => {
         return;
       }
 
-      // Fetch basic stats
-      const statsResponse = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/products/shop/dashboard-stats`,
+      console.log('🔥 ShopDashboard: Fetching data using SAME API as ShopProductManagement...');
+
+      // ===== STEP 1: Enhanced API call with detailed logging =====
+      const response = await axios.get(
+        `${baseUrl}/reptitist/shop/my-stats`,
         {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { timeFilter }
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
 
-      const data = statsResponse.data.data;
+      // ===== DETAILED LOGGING =====
+      console.log('✅ Raw API Response:', response);
+      console.log('📊 Response Status:', response.status);
+      console.log('📊 Response Data (full):', response.data);
+      console.log('📊 Response Data Type:', typeof response.data);
+      console.log('📊 Response Data Keys:', Object.keys(response.data || {}));
 
-      // Guard: If data or data.basicStats is missing, set default and return
-      if (!data || !data.basicStats) {
+      // Try different data extraction paths
+      const dataOption1 = response.data;
+      const dataOption2 = response.data.data;
+      const dataOption3 = response.data.result;
+
+      console.log('🎯 Data Option 1 (response.data):', dataOption1);
+      console.log('🎯 Data Option 2 (response.data.data):', dataOption2);
+      console.log('🎯 Data Option 3 (response.data.result):', dataOption3);
+
+      // Try to extract stats from different possible structures
+      let extractedStats = null;
+
+      if (dataOption2 && typeof dataOption2 === 'object') {
+        extractedStats = dataOption2;
+        console.log('📈 Using dataOption2 (response.data.data)');
+      } else if (dataOption1 && typeof dataOption1 === 'object') {
+        extractedStats = dataOption1;
+        console.log('📈 Using dataOption1 (response.data)');
+      } else if (dataOption3 && typeof dataOption3 === 'object') {
+        extractedStats = dataOption3;
+        console.log('📈 Using dataOption3 (response.data.result)');
+      }
+
+      if (extractedStats) {
+        console.log('🎯 Extracted Stats Object:', extractedStats);
+        console.log('🎯 Stats Keys:', Object.keys(extractedStats));
+        console.log('🎯 Individual Fields:', {
+          total: extractedStats.total,
+          available: extractedStats.available,
+          draft: extractedStats.draft,
+          inventoryValue: extractedStats.inventoryValue,
+          // Also check alternative field names
+          totalProducts: extractedStats.totalProducts,
+          activeProducts: extractedStats.activeProducts,
+          draftProducts: extractedStats.draftProducts,
+          totalValue: extractedStats.totalValue
+        });
+
+        // Set stats with fallback field names
+        const finalStats = {
+          // Try primary field names first, then fallbacks
+          total: extractedStats.total || extractedStats.totalProducts || 0,
+          available: extractedStats.available || extractedStats.activeProducts || 0,
+          draft: extractedStats.draft || extractedStats.draftProducts || 0,
+          inventoryValue: extractedStats.inventoryValue || extractedStats.totalValue || 0,
+          
+          // Additional dashboard fields
+          totalOrders: extractedStats.totalOrders || 0,
+          pendingOrders: extractedStats.pendingOrders || 0,
+          totalRevenue: extractedStats.totalRevenue || 0
+        };
+
+        setStats(finalStats);
+
+        console.log('✅ Stats successfully set with values:', finalStats);
+
+      } else {
+        console.error('❌ Could not extract stats from response!');
+        console.error('❌ Response structure:', response.data);
+        
+        // Set defaults
         setStats({
-          totalProducts: 0,
-          activeProducts: 0,
+          total: 0,
+          available: 0,
+          draft: 0,
+          inventoryValue: 0,
           totalOrders: 0,
           pendingOrders: 0,
           totalRevenue: 0
         });
+      }
+
+      // ===== STEP 2: Try dashboard chart data (optional) =====
+      try {
+        console.log('📈 Fetching additional dashboard chart data...');
+        const dashboardResponse = await axios.get(
+          `${baseUrl}/reptitist/products/shop/dashboard-stats`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { timeFilter }
+          }
+        );
+
+        const dashboardData = dashboardResponse.data.data;
+        console.log('✅ Dashboard chart data received:', dashboardData);
+
+        if (dashboardData) {
+          // Update additional stats if available from dashboard API
+          if (dashboardData.basicStats) {
+            setStats(prevStats => ({
+              ...prevStats,
+              totalOrders: dashboardData.basicStats.totalOrders || prevStats.totalOrders,
+              pendingOrders: dashboardData.basicStats.pendingOrders || prevStats.pendingOrders,
+              totalRevenue: dashboardData.basicStats.totalRevenue || prevStats.totalRevenue
+            }));
+          }
+
+          // Process chart data
+          const processedChartData = {
+            bestSellingProductsByTime: dashboardData.bestSellingProductsByTime?.slice(-15) || [],
+            productRevenueShare: processProductRevenueShare(dashboardData.productRevenueStats || []),
+            dailyRevenue: dashboardData.shopRevenueByTime?.slice(-30) || [],
+            cumulativeRevenue: dashboardData.cumulativeRevenue?.slice(-30) || []
+          };
+          setChartData(processedChartData);
+        }
+      } catch (dashboardError) {
+        console.warn('⚠️ Could not fetch dashboard chart data:', dashboardError.message);
+        // Chart data is optional, main stats already loaded
         setChartData({
           bestSellingProductsByTime: [],
           productRevenueShare: [],
           dailyRevenue: [],
           cumulativeRevenue: []
         });
-        setChartsLoading(false);
-        setLoading(false);
-        return;
       }
 
-      // Update stats
-      setStats(data.basicStats);
-
-      // Process chart data
-      const processedChartData = {
-        // 1. Biểu đồ cột: Top sản phẩm bán chạy theo thời gian
-        bestSellingProductsByTime: data.bestSellingProductsByTime?.slice(-15) || [],
-        
-        // 2. Biểu đồ bánh: % doanh số từ từng sản phẩm
-        productRevenueShare: processProductRevenueShare(data.productRevenueStats || []),
-        
-        // 3. Biểu đồ đường: Doanh số theo thời gian
-        dailyRevenue: data.shopRevenueByTime?.slice(-30) || [],
-        
-        // 4. Biểu đồ tích lũy: Doanh số tổng tăng dần
-        cumulativeRevenue: data.cumulativeRevenue?.slice(-30) || []
-      };
-
-      setChartData(processedChartData);
       setChartsLoading(false);
+      console.log('✅ ShopDashboard data loading completed');
 
     } catch (error) {
-      console.error('Fetch shop data error:', error);
-      toast.error('Lỗi khi tải dữ liệu dashboard');
+      console.error('❌ Fetch shop data error:', error);
+      console.error('❌ Error response:', error.response?.data);
+      console.error('❌ Error status:', error.response?.status);
+      
+      // Set defaults on error
+      setStats({
+        total: 0,
+        available: 0,
+        draft: 0,
+        inventoryValue: 0,
+        totalOrders: 0,
+        pendingOrders: 0,
+        totalRevenue: 0
+      });
+
+      setChartData({
+        bestSellingProductsByTime: [],
+        productRevenueShare: [],
+        dailyRevenue: [],
+        cumulativeRevenue: []
+      });
+
+      toast.error('Lỗi khi tải dữ liệu dashboard: ' + (error.response?.data?.message || error.message));
       setChartsLoading(false);
     } finally {
       setLoading(false);
@@ -141,10 +250,7 @@ const ShopDashboard = () => {
   const processProductRevenueShare = (productStats) => {
     if (!productStats || productStats.length === 0) return [];
     
-    // Sort by revenue descending
     const sortedProducts = [...productStats].sort((a, b) => b.revenue - a.revenue);
-    
-    // Take top 8 products, group rest as "Khác"
     const topProducts = sortedProducts.slice(0, 8);
     const otherProducts = sortedProducts.slice(8);
     
@@ -154,7 +260,6 @@ const ShopDashboard = () => {
       percentage: product.percentage || 0
     }));
     
-    // Add "Others" if there are more products
     if (otherProducts.length > 0) {
       const othersRevenue = otherProducts.reduce((sum, p) => sum + (p.revenue || 0), 0);
       const othersPercentage = otherProducts.reduce((sum, p) => sum + (p.percentage || 0), 0);
@@ -180,6 +285,27 @@ const ShopDashboard = () => {
   // Format number
   const formatNumber = (num) => {
     return new Intl.NumberFormat('vi-VN').format(num);
+  };
+
+  // Format inventory value with M, B, T
+  const formatInventoryValue = (amount) => {
+    if (amount == null || isNaN(amount)) return '0₫';
+    const abs = Math.abs(amount);
+    let value = amount;
+    let suffix = '';
+    if (abs >= 1e12) {
+      value = amount / 1e12;
+      suffix = 'T'; // Nghìn tỉ
+    } else if (abs >= 1e9) {
+      value = amount / 1e9;
+      suffix = 'B'; // Tỉ
+    } else if (abs >= 1e6) {
+      value = amount / 1e6;
+      suffix = 'M'; // Triệu
+    }
+    // Lấy 1-2 chữ số thập phân nếu cần
+    const formatted = value % 1 === 0 ? value.toFixed(0) : value.toFixed(2).replace(/\.0+$/, '');
+    return `${formatted}${suffix}₫`;
   };
 
   // Custom tooltip for revenue charts
@@ -222,9 +348,10 @@ const ShopDashboard = () => {
       <>
         <Header />
         <div className="um-user-list-container">
-          <div className="um-loading-container">
+          <div className="um-loading-state">
             <div className="um-spinner"></div>
-            <p>Đang tải dashboard...</p>
+            <h3>Đang tải dashboard...</h3>
+            <p>Vui lòng đợi trong giây lát</p>
           </div>
         </div>
         <Footer />
@@ -235,16 +362,34 @@ const ShopDashboard = () => {
   return (
     <>
       <Header />
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
       <div className="um-user-list-container">
         {/* Page Header */}
         <div className="um-page-header">
-          <div className="um-header-content">
-            <div className="um-header-text">
+          <div className="um-page-header-content">
+            <div className="um-page-header-text">
               <h1>
-                <i className="fas fa-store"></i>
+                <i className="fas fa-tachometer-alt"></i>
                 Dashboard Cửa hàng
               </h1>
               <p>Quản lý và theo dõi hiệu suất kinh doanh của bạn</p>
+              <div className="um-header-breadcrumb">
+                <Link to="/">Trang chủ</Link>
+                <i className="fas fa-chevron-right"></i>
+                <span>Dashboard</span>
+              </div>
             </div>
             <div className="um-header-actions">
               <div className="time-filter-buttons">
@@ -271,60 +416,78 @@ const ShopDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="um-stats-grid">
-          <div className="um-stat-card um-stat-total">
-            <div className="um-stat-icon">
-              <i className="fas fa-cube"></i>
+        {/* Stats Dashboard - Updated to use SAME field names as ShopProductManagement */}
+        <div className="um-stats-dashboard">
+          <div className="um-stats-grid">
+            <div className="um-stat-card um-stat-total">
+              <div className="um-stat-icon">
+                <i className="fas fa-cube"></i>
+              </div>
+              <div className="um-stat-content">
+                <span className="um-stat-number">{formatNumber(stats.total)}</span>
+                <span className="um-stat-label">Tổng sản phẩm</span>
+                <span className="um-stat-percentage">Tất cả sản phẩm</span>
+              </div>
             </div>
-            <div className="um-stat-content">
-              <div className="um-stat-value">{formatNumber(stats.totalProducts)}</div>
-              <div className="um-stat-label">Tổng sản phẩm</div>
-            </div>
-          </div>
 
-          <div className="um-stat-card um-stat-active">
-            <div className="um-stat-icon">
-              <i className="fas fa-check-circle"></i>
+            <div className="um-stat-card um-stat-active">
+              <div className="um-stat-icon">
+                <i className="fas fa-check-circle"></i>
+              </div>
+              <div className="um-stat-content">
+                <span className="um-stat-number">{formatNumber(stats.available)}</span>
+                <span className="um-stat-label">Đang bán</span>
+                <span className="um-stat-percentage">Sản phẩm hoạt động</span>
+              </div>
             </div>
-            <div className="um-stat-content">
-              <div className="um-stat-value">{formatNumber(stats.activeProducts)}</div>
-              <div className="um-stat-label">Sản phẩm đang bán</div>
-            </div>
-          </div>
 
-          <div className="um-stat-card um-stat-shop">
-            <div className="um-stat-icon">
-              <i className="fas fa-shopping-cart"></i>
+            <div className="um-stat-card um-stat-shop">
+              <div className="um-stat-icon">
+                <i className="fas fa-pause-circle"></i>
+              </div>
+              <div className="um-stat-content">
+                <span className="um-stat-number">{formatNumber(stats.draft)}</span>
+                <span className="um-stat-label">Ngừng bán</span>
+                <span className="um-stat-percentage">Sản phẩm tạm dừng</span>
+              </div>
             </div>
-            <div className="um-stat-content">
-              <div className="um-stat-value">{formatNumber(stats.totalOrders)}</div>
-              <div className="um-stat-label">Tổng đơn hàng</div>
-            </div>
-          </div>
 
-          <div className="um-stat-card um-stat-customer">
-            <div className="um-stat-icon">
-              <i className="fas fa-clock"></i>
+            <div className="um-stat-card um-stat-customer">
+              <div className="um-stat-icon">
+                <i className="fas fa-money-bill-wave"></i>
+              </div>
+              <div className="um-stat-content">
+                <span className="um-stat-number">{formatInventoryValue(stats.inventoryValue)}</span>
+                <span className="um-stat-label">Giá trị kho</span>
+                <span className="um-stat-percentage">Tổng giá trị hàng tồn</span>
+              </div>
             </div>
-            <div className="um-stat-content">
-              <div className="um-stat-value">{formatNumber(stats.pendingOrders)}</div>
-              <div className="um-stat-label">Đơn chờ xử lý</div>
-            </div>
-          </div>
 
-          <div className="um-stat-card um-stat-admin">
-            <div className="um-stat-icon">
-              <i className="fas fa-money-bill-wave"></i>
+            <div className="um-stat-card um-stat-admin">
+              <div className="um-stat-icon">
+                <i className="fas fa-shopping-cart"></i>
+              </div>
+              <div className="um-stat-content">
+                <span className="um-stat-number">{formatNumber(stats.totalOrders)}</span>
+                <span className="um-stat-label">Đơn hàng</span>
+                <span className="um-stat-percentage">Tổng đơn đã nhận</span>
+              </div>
             </div>
-            <div className="um-stat-content">
-              <div className="um-stat-value">{formatCurrency(stats.totalRevenue)}</div>
-              <div className="um-stat-label">Tổng doanh thu</div>
+
+            <div className="um-stat-card um-stat-inactive">
+              <div className="um-stat-icon">
+                <i className="fas fa-chart-line"></i>
+              </div>
+              <div className="um-stat-content">
+                <span className="um-stat-number">{formatCurrency(stats.totalRevenue)}</span>
+                <span className="um-stat-label">Doanh thu</span>
+                <span className="um-stat-percentage">Tổng doanh thu</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Charts Section - 2 rows, 2 charts each */}
+        {/* Charts Section */}
         <div className="charts-section">
           {/* First Row */}
           <div className="charts-row">
@@ -465,38 +628,40 @@ const ShopDashboard = () => {
             </h3>
           </div>
 
-          <div className="quick-actions-grid">
-            <div className="action-card" onClick={() => navigate('/ShopProductManagement')}>
-              <div className="action-icon">
-                <i className="fas fa-edit"></i>
+          <div className="um-table-container">
+            <div className="quick-actions-grid">
+              <div className="action-card" onClick={() => navigate('/ShopProductManagement')}>
+                <div className="action-icon">
+                  <i className="fas fa-edit"></i>
+                </div>
+                <h4>Quản lý sản phẩm</h4>
+                <p>Thêm, chỉnh sửa hoặc xóa sản phẩm của bạn</p>
+                <span className="action-arrow">
+                  <i className="fas fa-arrow-right"></i>
+                </span>
               </div>
-              <h4>Quản lý sản phẩm</h4>
-              <p>Thêm, chỉnh sửa hoặc xóa sản phẩm của bạn</p>
-              <span className="action-arrow">
-                <i className="fas fa-arrow-right"></i>
-              </span>
-            </div>
 
-            <div className="action-card" onClick={() => navigate('/shop/products/create')}>
-              <div className="action-icon">
-                <i className="fas fa-plus-circle"></i>
+              <div className="action-card" onClick={() => navigate('/shop/products/create')}>
+                <div className="action-icon">
+                  <i className="fas fa-plus-circle"></i>
+                </div>
+                <h4>Thêm sản phẩm mới</h4>
+                <p>Tạo sản phẩm mới để bán trong cửa hàng</p>
+                <span className="action-arrow">
+                  <i className="fas fa-arrow-right"></i>
+                </span>
               </div>
-              <h4>Thêm sản phẩm mới</h4>
-              <p>Tạo sản phẩm mới để bán trong cửa hàng</p>
-              <span className="action-arrow">
-                <i className="fas fa-arrow-right"></i>
-              </span>
-            </div>
 
-            <div className="action-card" onClick={() => navigate('/OrderManagement')}>
-              <div className="action-icon">
-                <i className="fas fa-clipboard-list"></i>
+              <div className="action-card" onClick={() => navigate('/OrderManagement')}>
+                <div className="action-icon">
+                  <i className="fas fa-clipboard-list"></i>
+                </div>
+                <h4>Quản lý đơn hàng</h4>
+                <p>Xem và xử lý đơn hàng từ khách hàng</p>
+                <span className="action-arrow">
+                  <i className="fas fa-arrow-right"></i>
+                </span>
               </div>
-              <h4>Quản lý đơn hàng</h4>
-              <p>Xem và xử lý đơn hàng từ khách hàng</p>
-              <span className="action-arrow">
-                <i className="fas fa-arrow-right"></i>
-              </span>
             </div>
           </div>
         </div>

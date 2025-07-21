@@ -341,7 +341,8 @@ const ShopProductManagement = () => {
         product_name: editFormData.product_name,
         product_description: editFormData.product_description,
         product_price: parseInt(editFormData.product_price),
-        product_quantity: parseInt(editFormData.product_quantity)
+        product_quantity: parseInt(editFormData.product_quantity),
+        product_status: editFormData.product_status
       };
       const response = await axios.put(
         `${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`,
@@ -1024,26 +1025,7 @@ const ShopProductManagement = () => {
                                 ? "Ngừng bán"
                                 : "N/A"}
                             </span>
-                            {product.product_status !== "reported" && (
-                              <div className="pm-status-actions">
-                                <select
-                                  value={product.product_status}
-                                  onChange={(e) =>
-                                    updateProductStatus(
-                                      product._id,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="pm-status-select"
-                                  title="Thay đổi trạng thái"
-                                >
-                                  <option value="available">Đang bán</option>
-                                  <option value="not_available">
-                                    Ngừng bán
-                                  </option>
-                                </select>
-                              </div>
-                            )}
+                            {/* Đã xóa dropdown thay đổi trạng thái khỏi bảng */}
                           </div>
                         </td>
 
@@ -1382,6 +1364,27 @@ const ShopProductManagement = () => {
                             className="pm-edit-input"
                             placeholder="https://example.com/image.jpg"
                           />
+                        </div>
+                        <div className="pm-edit-field">
+                          <label className="pm-edit-label">
+                            <i className="fas fa-toggle-on"></i>
+                            Trạng thái sản phẩm
+                          </label>
+                          <select
+                            name="product_status"
+                            value={editFormData.product_status}
+                            onChange={handleEditFormChange}
+                            className={`pm-edit-select ${editErrors.product_status ? 'pm-error' : ''}`}
+                          >
+                            <option value="available">Đang bán</option>
+                            <option value="not_available">Ngừng bán</option>
+                          </select>
+                          {editErrors.product_status && (
+                            <div className="pm-error-message">
+                              <i className="fas fa-exclamation-circle"></i>
+                              {editErrors.product_status}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
