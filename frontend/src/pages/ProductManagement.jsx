@@ -28,16 +28,8 @@ const ProductManagement = () => {
   
   // Modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showProductDetailModal, setShowProductDetailModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  
-  // Category form
-  const [categoryForm, setCategoryForm] = useState({
-    product_category_name: '',
-    product_category_imageurl: ''
-  });
-  const [categoryLoading, setCategoryLoading] = useState(false);
   
   // Statistics
   const [stats, setStats] = useState({
@@ -51,15 +43,15 @@ const ProductManagement = () => {
 
   const searchInputRef = useRef(null);
 
-  // Check admin permission
+  // Check permission - allow both admin and shop users
   useEffect(() => {
-    if (!hasRole('admin')) {
+    if (!hasRole('admin') && !user?.account_type?.type >= 3) {
       toast.error('Bạn không có quyền truy cập trang này');
       navigate('/');
       return;
     }
     initializeData();
-  }, [hasRole, navigate]);
+  }, [hasRole, user, navigate]);
 
   // Initialize all data
   const initializeData = async () => {
@@ -80,25 +72,32 @@ const ProductManagement = () => {
   // Fetch products from API
   const fetchProducts = useCallback(async () => {
     try {
-      // First get all categories
-      const categoriesResponse = await axios.get(`${baseUrl}/reptitist/shop/category`);
-      const allCategories = categoriesResponse.data || [];
+      let allProducts = [];
       
-      // Then fetch products from each category
-      const allProducts = [];
-      
-      for (const category of allCategories) {
-        try {
-          const productsResponse = await axios.get(
-            `${baseUrl}/reptitist/shop/products/category/${category._id}`
-          );
-          if (productsResponse.data && Array.isArray(productsResponse.data)) {
-            allProducts.push(...productsResponse.data);
+      if (hasRole('admin')) {
+        // Admin can see all products
+        const categoriesResponse = await axios.get(`${baseUrl}/reptitist/shop/category`);
+        const allCategories = categoriesResponse.data || [];
+        
+        for (const category of allCategories) {
+          try {
+            const productsResponse = await axios.get(
+              `${baseUrl}/reptitist/shop/products/category/${category._id}`
+            );
+            if (productsResponse.data && Array.isArray(productsResponse.data)) {
+              allProducts.push(...productsResponse.data);
+            }
+          } catch (error) {
+            console.log(`No products found for category ${category.product_category_name}`);
           }
-        } catch (error) {
-          // Skip if no products in category
-          console.log(`No products found for category ${category.product_category_name}`);
         }
+      } else {
+        // Shop users can only see their own products
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get(`${baseUrl}/reptitist/shop/my-products`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        allProducts = response.data.products || [];
       }
 
       // Remove duplicates based on _id
@@ -110,6 +109,8 @@ const ProductManagement = () => {
       setFilteredProducts(uniqueProducts);
       
       // Calculate stats
+      const categoriesResponse = await axios.get(`${baseUrl}/reptitist/shop/category`);
+      const allCategories = categoriesResponse.data || [];
       calculateStats(uniqueProducts, allCategories);
       
     } catch (error) {
@@ -118,7 +119,7 @@ const ProductManagement = () => {
       setProducts([]);
       setFilteredProducts([]);
     }
-  }, []);
+  }, [hasRole]);
 
   // Fetch categories
   const fetchCategories = useCallback(async () => {
@@ -268,7 +269,7 @@ const ProductManagement = () => {
 
     try {
       const response = await axios.delete(
-        `${baseUrl}/reptitist/shop/products/${selectedProduct._id}`
+        `${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`
       );
 
       if (response.status === 200) {
@@ -287,7 +288,7 @@ const ProductManagement = () => {
   const updateProductStatus = async (productId, newStatus) => {
     try {
       const response = await axios.put(
-        `${baseUrl}/reptitist/shop/product-status/${productId}`,
+        `${baseUrl}/reptitist/shop/my-products/${productId}`,
         { product_status: newStatus },
         {
           headers: {
@@ -306,61 +307,7 @@ const ProductManagement = () => {
     }
   };
 
-  // Handle create category
-  const handleCreateCategory = async () => {
-    if (!categoryForm.product_category_name.trim()) {
-      toast.error('Vui lòng nhập tên danh mục');
-      return;
-    }
 
-    try {
-      setCategoryLoading(true);
-      const response = await axios.post(
-        `${baseUrl}/reptitist/shop/create-category`,
-        categoryForm,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.status === 201) {
-        toast.success('Tạo danh mục thành công');
-        await fetchCategories(); // Refresh categories
-        setCategoryForm({
-          product_category_name: '',
-          product_category_imageurl: ''
-        });
-      }
-    } catch (error) {
-      console.error('Error creating category:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi tạo danh mục');
-    } finally {
-      setCategoryLoading(false);
-    }
-  };
-
-  // Handle delete category
-  const handleDeleteCategory = async (categoryId) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
-      return;
-    }
-
-    try {
-      const response = await axios.delete(
-        `${baseUrl}/reptitist/shop/category/${categoryId}`
-      );
-
-      if (response.status === 200) {
-        toast.success('Xóa danh mục thành công');
-        await fetchCategories(); // Refresh categories
-      }
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi xóa danh mục');
-    }
-  };
 
   // Format date
   const formatDate = (dateString) => {
@@ -479,8 +426,8 @@ const ProductManagement = () => {
     return pages;
   };
 
-  // Check admin access
-  if (!hasRole('admin')) {
+  // Check access - allow both admin and shop users
+  if (!hasRole('admin') && !user?.account_type?.type >= 3) {
     return (
       <>
         <Header />
@@ -488,7 +435,7 @@ const ProductManagement = () => {
           <div className="pm-no-access">
             <i className="fas fa-exclamation-triangle pm-warning-icon"></i>
             <h2>Không có quyền truy cập</h2>
-            <p>Bạn không có quyền xem trang này. Chỉ có Admin mới có thể truy cập.</p>
+            <p>Bạn không có quyền xem trang này. Chỉ có Admin và Shop mới có thể truy cập.</p>
             <Link to="/" className="pm-btn pm-btn-primary">
               <i className="fas fa-home"></i>
               Về trang chủ
@@ -537,13 +484,6 @@ const ProductManagement = () => {
                 <i className="fas fa-plus"></i>
                 Thêm sản phẩm
               </Link>
-              <button 
-                onClick={() => setShowCategoryModal(true)}
-                className="pm-btn pm-btn-secondary"
-              >
-                <i className="fas fa-tags"></i>
-                Quản lý danh mục
-              </button>
             </div>
           </div>
         </div>
@@ -584,16 +524,6 @@ const ProductManagement = () => {
                 <span className="pm-stat-percentage">
                   {stats.total ? Math.round((stats.pending / stats.total) * 100) : 0}%
                 </span>
-              </div>
-            </div>
-
-            <div className="pm-stat-card pm-stat-categories">
-              <div className="pm-stat-icon">
-                <i className="fas fa-tags"></i>
-              </div>
-              <div className="pm-stat-content">
-                <span className="pm-stat-number">{stats.categories}</span>
-                <span className="pm-stat-label">Danh mục</span>
               </div>
             </div>
 
@@ -1148,142 +1078,7 @@ const ProductManagement = () => {
           </div>
         )}
 
-        {/* Category Management Modal */}
-        {showCategoryModal && (
-          <div className="pm-modal-overlay" onClick={() => setShowCategoryModal(false)}>
-            <div className="pm-modal pm-category-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="pm-modal-header">
-                <h3>
-                  <i className="fas fa-tags"></i>
-                  Quản lý danh mục
-                </h3>
-                <button 
-                  onClick={() => setShowCategoryModal(false)}
-                  className="pm-modal-close"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-              
-              <div className="pm-modal-body">
-                {/* Create Category Form */}
-                <div className="pm-category-form">
-                  <h4>Thêm danh mục mới</h4>
-                  <div className="pm-form-group">
-                    <label>Tên danh mục:</label>
-                    <input
-                      type="text"
-                      value={categoryForm.product_category_name}
-                      onChange={(e) => setCategoryForm({
-                        ...categoryForm,
-                        product_category_name: e.target.value
-                      })}
-                      placeholder="Nhập tên danh mục..."
-                      className="pm-form-input"
-                    />
-                  </div>
-                  
-                  <div className="pm-form-group">
-                    <label>URL hình ảnh:</label>
-                    <input
-                      type="url"
-                      value={categoryForm.product_category_imageurl}
-                      onChange={(e) => setCategoryForm({
-                        ...categoryForm,
-                        product_category_imageurl: e.target.value
-                      })}
-                      placeholder="https://example.com/image.jpg"
-                      className="pm-form-input"
-                    />
-                  </div>
-                  
-                  <button
-                    onClick={handleCreateCategory}
-                    disabled={categoryLoading || !categoryForm.product_category_name.trim()}
-                    className="pm-btn pm-btn-primary"
-                  >
-                    {categoryLoading ? (
-                      <>
-                        <i className="fas fa-spinner fa-spin"></i>
-                        Đang tạo...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fas fa-plus"></i>
-                        Thêm danh mục
-                      </>
-                    )}
-                  </button>
-                </div>
 
-                {/* Categories List */}
-                <div className="pm-categories-list">
-                  <h4>Danh sách danh mục ({categories.length})</h4>
-                  {categories.length === 0 ? (
-                    <div className="pm-empty-categories">
-                      <i className="fas fa-tags"></i>
-                      <p>Chưa có danh mục nào</p>
-                    </div>
-                  ) : (
-                    <div className="pm-categories-grid">
-                      {categories.map(category => {
-                        const productCount = products.filter(p => p.product_category_id === category._id).length;
-                        
-                        return (
-                          <div key={category._id} className="pm-category-card">
-                            <div className="pm-category-image">
-                              <img
-                                src={category.product_category_imageurl || '/default-category.png'}
-                                alt={category.product_category_name}
-                                onError={(e) => {
-                                  e.target.src = '/default-category.png';
-                                }}
-                              />
-                            </div>
-                            
-                            <div className="pm-category-info">
-                              <h5>{category.product_category_name}</h5>
-                              <p>{productCount} sản phẩm</p>
-                              <small>ID: {category._id}</small>
-                            </div>
-                            
-                            <div className="pm-category-actions">
-                              <button
-                                onClick={() => handleDeleteCategory(category._id)}
-                                className="pm-btn pm-btn-icon pm-btn-delete"
-                                title="Xóa danh mục"
-                                disabled={productCount > 0}
-                              >
-                                <i className="fas fa-trash"></i>
-                              </button>
-                            </div>
-                            
-                            {productCount > 0 && (
-                              <div className="pm-category-warning">
-                                <i className="fas fa-info-circle"></i>
-                                Không thể xóa do còn {productCount} sản phẩm
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="pm-modal-footer">
-                <button 
-                  onClick={() => setShowCategoryModal(false)}
-                  className="pm-btn pm-btn-secondary"
-                >
-                  <i className="fas fa-times"></i>
-                  Đóng
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
       
       <Footer />

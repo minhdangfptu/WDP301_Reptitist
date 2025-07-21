@@ -15,19 +15,30 @@ const userRoute = require('./userRoute');
 const productReportRoute = require('./productReportRoute');
 const shopComplainRoute = require('./shopComplainRoute');
 
+// ===== USER ROUTES =====
 router.use('/user', userRoute);
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/pet', userReptileRoutes);
 router.use('/reptile-info', reptileInfoRoute);
 router.use('/order', orderRoute);
-router.use('/admin', adminRoute);
+
+// ===== AI & LIBRARY ROUTES =====
 router.use('/ai', aiRoute);
 router.use('/library-categories', libraryCategoriesRoute);
 router.use('/library-content', libraryContentRoute);
 router.use('/topic-categories', topicCategoryRoutes);
+
+// ===== TRANSACTION ROUTES (includes admin endpoints) =====
 router.use('/transactions', transactionRoute);
 router.use('/product-reports', productReportRoute);
 router.use(shopComplainRoute);
+
+// ===== ADMIN ROUTES =====
+router.use('/admin', adminRoute);
+
+// ===== REPORT & COMPLAIN ROUTES =====
+// router.use('/product-reports', productReportRoute); // Dòng này gây lỗi vì không tồn tại file
+// router.use(shopComplainRoute); // Dòng này gây lỗi vì không tồn tại file
 
 module.exports= router;

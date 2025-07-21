@@ -35,6 +35,7 @@ import {
 import ShopHeader from "../components/ShopHeader";
 import { baseUrl } from '../config';
 import AddToCartModal from "../components/AddToCartModal"
+import BuyNowModal from "../components/BuyNowModal"
 import { addToCartService } from "../services/cartService"
 import { useCart } from "../context/CartContext"
 import ReportProductModal from "../components/ReportProductModal";
@@ -64,6 +65,7 @@ const ProductDetail = () => {
   const [editRating, setEditRating] = useState(0)
   const [editComment, setEditComment] = useState("")
   const [isAddToCartModalOpen, setIsAddToCartModalOpen] = useState(false)
+  const [isBuyNowModalOpen, setIsBuyNowModalOpen] = useState(false)
   const { cartCount } = useCart()
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   useEffect(() => {
@@ -140,11 +142,23 @@ const ProductDetail = () => {
   }
 
   const handleBuyNow = () => {
-    console.log("Buy now:", {
-      product: product.id,
-      quantity,
-      variant: selectedVariant,
-    });
+    setIsBuyNowModalOpen(true);
+  };
+
+  const handleBuyNowSubmit = async (productId, quantity) => {
+    try {
+      await addToCartService(productId, quantity)
+      toast.success("Đã thêm vào giỏ hàng và chuyển đến trang thanh toán!")
+    } catch (error) {
+      if (error.response?.status === 400) {
+        toast.error("Vui lòng điền đầy đủ thông tin sản phẩm")
+      } else if (error.response?.status === 500) {
+        toast.error("Đã có lỗi xảy ra, vui lòng thử lại sau")
+      } else if (error.response?.status === 401) {
+        toast.error("Bạn cần đăng nhập để mua sản phẩm")
+      }
+    }
+    setIsBuyNowModalOpen(false)
   };
 
   const handleImageUpload = (event) => {
@@ -849,6 +863,14 @@ const handleReportSubmit = async (reason, description) => {
         product={product}
         onAddToCart={handleAddToCart}
       />
+      
+      {/* Buy Now Modal */}
+      <BuyNowModal
+        isOpen={isBuyNowModalOpen}
+        onClose={() => setIsBuyNowModalOpen(false)}
+        product={product}
+        onBuyNow={handleBuyNowSubmit}
+        />
       <ReportProductModal
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}

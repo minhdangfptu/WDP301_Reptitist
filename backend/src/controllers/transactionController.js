@@ -15,7 +15,6 @@ function sortObject(obj) {
 
 // Lấy return URL động (ngrok hoặc production)
 
-
 const createPaymentURL = async (req, res) => {
   try {
     const { amount, user_id, items, description } = req.query;
@@ -189,6 +188,7 @@ const refundTransaction = async (req, res) => {
     res.status(500).json({ error: 'Lỗi hoàn tiền' });
   }
 };
+
 const filterTransactionHistory = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -215,74 +215,184 @@ const filterTransactionHistory = async (req, res) => {
   }
 };
 
+// ===== ADMIN FUNCTIONS =====
+
+// Lấy tất cả giao dịch (chỉ admin)
 const getAllTransactions = async (req, res) => {
   try {
-    const transactions = await Transaction.find({}).sort({ createdAt: -1 }).populate('user_id');
-    res.status(200).json({ transactions });
+    console.log('Getting all transactions for admin...');
+    console.log('User role:', req.user?.role_id?.role_name || req.user?.account_type?.type);
+    
+    const transactions = await Transaction.find({})
+      .populate('user_id', 'username email fullname')
+      .sort({ transaction_date: -1 });
+    
+    console.log(`Found ${transactions.length} transactions`);
+    
+    res.status(200).json({
+      success: true,
+      transactions,
+      count: transactions.length
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Không thể lấy danh sách giao dịch' });
+    console.error('Error getting all transactions:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Không thể lấy danh sách giao dịch',
+      details: error.message
+    });
   }
 };
 
-// Thêm function để lấy transaction theo ID
-const getTransactionById = async (req, res) => {
-  try {
-    const transaction = await Transaction.findById(req.params.id).populate('user_id');
-    if (!transaction) {
-      return res.status(404).json({ error: 'Không tìm thấy giao dịch' });
-    }
-    res.status(200).json(transaction);
-  } catch (error) {
-    res.status(500).json({ error: 'Không thể lấy thông tin giao dịch' });
-  }
-};
-
-// Thêm function để admin cập nhật transaction
+// Cập nhật giao dịch (chỉ admin)
 const updateTransaction = async (req, res) => {
   try {
-    const { status, description } = req.body;
-    const transaction = await Transaction.findById(req.params.id);
-    
+    const { id } = req.params;
+    const updateData = req.body;
+
+    console.log('Updating transaction:', id, updateData);
+
+    const transaction = await Transaction.findByIdAndUpdate(
+      id, 
+      updateData, 
+      { new: true, runValidators: true }
+    ).populate('user_id', 'username email fullname');
+
     if (!transaction) {
-      return res.status(404).json({ error: 'Không tìm thấy giao dịch' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Không tìm thấy giao dịch' 
+      });
     }
 
-    // Chỉ cho phép cập nhật status và description
-    if (status) transaction.status = status;
-    if (description !== undefined) transaction.description = description;
-    
-    await transaction.save();
-    
-    res.status(200).json({ 
-      message: 'Cập nhật giao dịch thành công',
-      transaction 
+    console.log('Transaction updated successfully:', transaction._id);
+
+    res.status(200).json({
+      success: true,
+      transaction,
+      message: 'Cập nhật giao dịch thành công'
     });
   } catch (error) {
     console.error('Error updating transaction:', error);
-    res.status(500).json({ error: 'Không thể cập nhật giao dịch' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Không thể cập nhật giao dịch',
+      details: error.message
+    });
   }
 };
 
-// Thêm function để admin xóa transaction
+// Xóa giao dịch (chỉ admin)
 const deleteTransaction = async (req, res) => {
   try {
-    const transaction = await Transaction.findById(req.params.id);
-    
+    const { id } = req.params;
+
+    console.log('Deleting transaction:', id);
+
+    const transaction = await Transaction.findById(id);
     if (!transaction) {
-      return res.status(404).json({ error: 'Không tìm thấy giao dịch' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Không tìm thấy giao dịch' 
+      });
     }
 
-    // Chỉ cho phép xóa transaction có status pending hoặc failed
-    if (transaction.status === 'completed') {
-      return res.status(400).json({ error: 'Không thể xóa giao dịch đã hoàn thành' });
+    // Chỉ cho phép xóa giao dịch pending
+    if (transaction.status !== 'pending') {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Chỉ có thể xóa giao dịch đang chờ xử lý' 
+      });
     }
 
-    await Transaction.findByIdAndDelete(req.params.id);
-    
-    res.status(200).json({ message: 'Xóa giao dịch thành công' });
+    await Transaction.findByIdAndDelete(id);
+
+    console.log('Transaction deleted successfully:', id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Xóa giao dịch thành công'
+    });
   } catch (error) {
     console.error('Error deleting transaction:', error);
-    res.status(500).json({ error: 'Không thể xóa giao dịch' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Không thể xóa giao dịch',
+      details: error.message
+    });
+  }
+};
+
+// Thống kê giao dịch (chỉ admin)
+const getTransactionStats = async (req, res) => {
+  try {
+    const { dateFilter } = req.query;
+    
+    let dateQuery = {};
+    if (dateFilter && dateFilter !== 'all') {
+      const now = new Date();
+      let startDate;
+      
+      switch (dateFilter) {
+        case 'today':
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          break;
+        case 'week':
+          startDate = new Date(now.setDate(now.getDate() - 7));
+          break;
+        case 'month':
+          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          break;
+        case 'year':
+          startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+          break;
+      }
+      
+      if (startDate) {
+        dateQuery.transaction_date = { $gte: startDate };
+      }
+    }
+
+    // Thống kê theo trạng thái
+    const statusStats = await Transaction.aggregate([
+      { $match: dateQuery },
+      { $group: { _id: '$status', count: { $sum: 1 }, total: { $sum: '$amount' } } }
+    ]);
+
+    // Thống kê theo loại giao dịch
+    const typeStats = await Transaction.aggregate([
+      { $match: dateQuery },
+      { $group: { _id: '$transaction_type', count: { $sum: 1 }, total: { $sum: '$amount' } } }
+    ]);
+
+    // Thống kê theo ngày
+    const dailyStats = await Transaction.aggregate([
+      { $match: dateQuery },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$transaction_date' } },
+          count: { $sum: 1 },
+          total: { $sum: '$amount' }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      stats: {
+        statusStats,
+        typeStats,
+        dailyStats
+      }
+    });
+  } catch (error) {
+    console.error('Error getting transaction stats:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Không thể lấy thống kê giao dịch',
+      details: error.message
+    });
   }
 };
 
@@ -292,8 +402,9 @@ module.exports = {
   getTransactionHistory,
   refundTransaction,
   filterTransactionHistory,
+  // Admin functions
   getAllTransactions,
-  getTransactionById,
   updateTransaction,
   deleteTransaction,
+  getTransactionStats
 };

@@ -222,7 +222,7 @@ const PaymentProcessing = () => {
   const handleVNPayPayment = async () => {
     setIsProcessing(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
   
       const paymentParams = {
         amount: price,
