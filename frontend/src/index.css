@@ -275,9 +275,9 @@ nav {
 
 .about-image {
   flex: 1;
-  /* border-radius: var(--border-radius); */
   overflow: hidden;
   position: relative;
+  height: 360px;
 }
 .about-title1 {
   font-size: 2rem;

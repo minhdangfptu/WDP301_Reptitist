@@ -19,7 +19,7 @@ const LandingPage = () => {
   const [accessCount, setAccessCount] = useState(null);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showFirstLoginPopup, setShowFirstLoginPopup] = useState(false);
-  
+
   useEffect(() => {
     const fetchLatestContent = async () => {
       try {
@@ -197,15 +197,27 @@ const LandingPage = () => {
               </p>
             </div>
             <div className="about-image">
-              {/* <img src="BGLandingPage.png" alt="Bò sát tại Reptiest" /> */}
               <ReactPlayer
-                playing={true}
-                muted={true}
-                url="https://www.youtube.com/watch?v=KYPKoT8C5TA"
-                controls
+                src="https://www.youtube.com/watch?v=KYPKoT8C5TA"
+                playing={true} // Đặt false để video không tự động phát
+                controls={true} // Hiển thị các nút điều khiển
                 width="100%"
+                autoplay={true}
+                loop={true}
+                muted={true} // Tắt âm thanh
+                height="100%"
+                config={{
+                  youtube: {
+                    playerVars: {
+                      modestbranding: 1, // Loại bỏ logo YouTube
+                      rel: 0, // Không hiển thị video liên quan sau khi phát
+                    },
+                  },
+                }}
+                onError={(e) => {
+                  console.error("Error loading video:", e);
+                }}
               />
-              {/* <div className="play-button"></div> */}
             </div>
           </div>
         </div>
@@ -361,7 +373,6 @@ const LandingPage = () => {
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
@@ -375,18 +386,17 @@ const LandingPage = () => {
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
                     >
-                      {item.title === "Số lượng thông tin kiến thức" ? "1.000 + bài":""
-                       }
+                      {item.title === "Số lượng thông tin kiến thức"
+                        ? "1.000 + bài"
+                        : ""}
                     </p>
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
@@ -400,7 +410,6 @@ const LandingPage = () => {
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
@@ -421,12 +430,14 @@ const LandingPage = () => {
 
       <Footer />
 
-
       {showFirstLoginPopup && (
         <div className="first-login-popup-overlay">
           <div className="first-login-popup">
             <h2>Đăng nhập lần đầu tiên?</h2>
-            <p>Chào mừng bạn đến với Reptitist! Bạn có muốn xem hướng dẫn sử dụng?</p>
+            <p>
+              Chào mừng bạn đến với Reptitist! Bạn có muốn xem hướng dẫn sử
+              dụng?
+            </p>
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
               <button
                 className="help-dialog-btn main"
