@@ -140,8 +140,9 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="discount-badge">
-            <span className="amount">100%</span>
-            <span>FREE</span>
+            <span>🤖</span>
+            <span className="amount" style={{ fontSize: "1.5rem" }}>ReptiAI</span>
+            <span style={{ fontSize: "1rem" }}>Try Now!</span>
           </div>
         </div>
       </section>
