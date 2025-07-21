@@ -62,7 +62,7 @@ function UserManual() {
                 <div className="user-manual-video-placeholder" style={{width: "100%", height: "100%"}}>
                   
                   <ReactPlayer
-                    src="https://youtu.be/sHLGtyzCP9c"
+                    url="https://youtu.be/sHLGtyzCP9c"
                     autoplay={true}
                     
                     loop={true}

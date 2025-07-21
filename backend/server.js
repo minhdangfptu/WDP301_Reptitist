@@ -30,12 +30,6 @@ app.use(cors(corsOptions));
 
 let visitCount = 0
 
-app.use((req, res, next) => {
-  visitCount += 13;
-  next();
-});
-
-
 // Handle preflight requests
 app.options('*', cors(corsOptions));
 
@@ -56,8 +50,14 @@ app.use('/reptitist', router);
 router.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
 });
-
+app.use((req, res, next) => {
+  console.log(`Request received: ${req.method} ${req.url}`);
+  next();
+});
 app.get('/visits', (req, res) => {
+  if (req.method === 'GET') { 
+    visitCount += 1;  
+  }
   res.json({ count: visitCount });
 });
 

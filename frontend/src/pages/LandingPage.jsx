@@ -20,7 +20,7 @@ const LandingPage = () => {
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showFirstLoginPopup, setShowFirstLoginPopup] = useState(false);
   const [visitCount, setVisitCount] = useState(null);
-  
+
   useEffect(() => {
     const fetchLatestContent = async () => {
       try {
@@ -76,15 +76,16 @@ const LandingPage = () => {
     };
     fetchUserCount();
   }, []);
-
   useEffect(() => {
-    let stored = localStorage.getItem("visitCountLanding");
-    let count = 5134;
-    if (stored) {
-      count = Number(stored) + 1;
-    }
-    setVisitCount(count);
-    localStorage.setItem("visitCountLanding", count);
+    const fetchUserVisitCount = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/visits`);
+        setVisitCount(res.data.count);
+      } catch (err) {
+        setVisitCount("N/A");
+      }
+    };
+    fetchUserVisitCount();
   }, []);
 
   const { user } = useAuth();
@@ -197,11 +198,11 @@ const LandingPage = () => {
             </div>
             <div className="about-image">
               <ReactPlayer
-                src="https://www.youtube.com/watch?v=KYPKoT8C5TA"
+                url="https://www.youtube.com/watch?v=KYPKoT8C5TA"
                 playing={true} // Đặt false để video không tự động phát
-                controls={true} // Hiển thị các nút điều khiển
+                controls={false} // Hiển thị các nút điều khiển
                 width="100%"
-                autoplay={true}
+                autoPlay={true}
                 loop={true}
                 muted={true} // Tắt âm thanh
                 height="100%"
@@ -377,7 +378,7 @@ const LandingPage = () => {
                       }}
                     >
                       {item.title === "Số lượng người dùng hệ thống"
-                        ? "577 Tài khoản"
+                        ? userTotal + " Người"
                         : ""}
                     </p>
                     <p
@@ -399,7 +400,7 @@ const LandingPage = () => {
                       }}
                     >
                       {item.title === "Số lượng đăng kí trong tuần"
-                        ? "89 Tài khoản"
+                        ? userCount + " Tài khoản"
                         : ""}
                     </p>
                     <p
