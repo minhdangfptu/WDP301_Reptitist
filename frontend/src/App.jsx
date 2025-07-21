@@ -62,6 +62,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminTransactionManagement from './pages/AdminTransactionManagement';
 import AccessDenied from './components/AccessDenied';
 import ContactUsButton from './components/SupportButton';
+import ShopComplain from './pages/ShopComplain';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -258,6 +259,7 @@ const AppRoutes = () => (
         </AccountTypeRoute>
       </ProtectedRoute>} />
 
+    <Route path="/shop/complain" element={<ShopComplain />} />
 
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
