@@ -13,7 +13,7 @@ const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRoute'); 
 const userRoute = require('./userRoute');
 const productReportRoute = require('./productReportRoute');
-const shopComplainRoute = require('../../routes/shopComplainRoute');
+const shopComplainRoute = require('./shopComplainRoute');
 
 router.use('/user', userRoute);
 router.use('/auth',authRoute);
