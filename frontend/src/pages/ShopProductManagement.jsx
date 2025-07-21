@@ -70,12 +70,11 @@ const ShopProductManagement = () => {
   // Fetch my products from API
   const fetchMyProducts = useCallback(async () => {
     try {
-      const token = localStorage.getItem("refresh_token'");
+      const token = localStorage.getItem('access_token');
       if (!token) {
-        console.error("No token found");
+        console.error('No token found');
         return;
       }
-
       const response = await axios.get(
         `${baseUrl}/reptitist/shop/my-products`,
         {
@@ -84,13 +83,12 @@ const ShopProductManagement = () => {
           },
         }
       );
-
-      if (response.data?.products) {
-        setProducts(response.data.products);
-        setFilteredProducts(response.data.products);
-      }
+      // Tự động nhận cả hai kiểu trả về
+      const data = Array.isArray(response.data) ? response.data : response.data.products || [];
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error('Error fetching products:', error);
       setProducts([]);
       setFilteredProducts([]);
     }
@@ -110,20 +108,20 @@ const ShopProductManagement = () => {
   // Fetch my statistics
   const fetchMyStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem("refresh_token'");
+      const token = localStorage.getItem('access_token');
       if (!token) return;
-
       const response = await axios.get(`${baseUrl}/reptitist/shop/my-stats`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (response.data) {
-        setStats(response.data);
+      // Nếu response trả về object có key data thì lấy response.data.data, nếu không thì lấy response.data
+      const statsData = response.data?.data || response.data;
+      if (statsData) {
+        setStats(statsData);
       }
     } catch (error) {
-      console.error("Error fetching stats:", error);
+      console.error('Error fetching stats:', error);
     }
   }, []);
 

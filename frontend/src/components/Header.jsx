@@ -218,7 +218,7 @@ const Header = () => {
                             Tổng quan thông tin cửa hàng
                           </Link>
                           <Link
-                            to="/ProductManagement"
+                            to="/ShopProductManagement"
                             className="header__dropdown-item header__dropdown-item--shop"
                             onClick={() => setShowAccountMenu(false)}
                           >
