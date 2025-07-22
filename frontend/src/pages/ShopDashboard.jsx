@@ -28,15 +28,15 @@ const ShopDashboard = () => {
   const { user, canSellProduct } = useAuth();
   const navigate = useNavigate();
 
-  // State management
+  // State management - Updated to match ShopProductManagement exactly
   const [stats, setStats] = useState({
-    totalProducts: 0,
-    activeProducts: 0,
-    draftProducts: 0,
-    totalValue: 0,
-    totalOrders: 0,
-    pendingOrders: 0,
-    totalRevenue: 0
+    total: 0,           // Same field name as ShopProductManagement
+    available: 0,       // Same field name as ShopProductManagement  
+    draft: 0,           // Same field name as ShopProductManagement
+    inventoryValue: 0,  // Same field name as ShopProductManagement
+    totalOrders: 0,     // Additional dashboard field
+    pendingOrders: 0,   // Additional dashboard field
+    totalRevenue: 0     // Additional dashboard field
   });
 
   const [chartData, setChartData] = useState({
@@ -81,7 +81,7 @@ const ShopDashboard = () => {
 
       console.log('🔥 ShopDashboard: Fetching dashboard data with order stats...');
 
-      // ✅ GỌI ĐÚNG API dashboard-stats
+      // Lấy dữ liệu từ dashboard-stats
       const response = await axios.get(
         `${baseUrl}/reptitist/shop/dashboard-stats`,
         {
@@ -112,11 +112,12 @@ const ShopDashboard = () => {
         
         console.log('📈 Basic Stats:', basicStats);
         
+        // Map về field name giống ShopProductManagement
         setStats({
-          totalProducts: basicStats.totalProducts || 0,
-          activeProducts: basicStats.activeProducts || 0,
-          draftProducts: basicStats.draftProducts || 0,
-          totalValue: basicStats.totalValue || 0,
+          total: basicStats.total || basicStats.totalProducts || 0,
+          available: basicStats.available || basicStats.activeProducts || 0,
+          draft: basicStats.draft || basicStats.draftProducts || 0,
+          inventoryValue: basicStats.inventoryValue || basicStats.totalValue || 0,
           totalOrders: basicStats.totalOrders || 0,
           pendingOrders: basicStats.pendingOrders || 0,
           totalRevenue: basicStats.totalRevenue || 0
@@ -149,13 +150,13 @@ const ShopDashboard = () => {
         const fallbackData = fallbackResponse.data?.data || fallbackResponse.data;
         
         setStats({
-          totalProducts: fallbackData.totalProducts || fallbackData.total || 0,
-          activeProducts: fallbackData.activeProducts || fallbackData.available || 0,
-          draftProducts: fallbackData.draftProducts || fallbackData.draft || 0,
-          totalValue: fallbackData.totalValue || fallbackData.inventoryValue || 0,
-          totalOrders: 0, // my-stats không có order data
-          pendingOrders: 0, // my-stats không có order data
-          totalRevenue: 0 // my-stats không có order data
+          total: 0,
+          available: 0,
+          draft: 0,
+          inventoryValue: 0,
+          totalOrders: 0,
+          pendingOrders: 0,
+          totalRevenue: 0
         });
 
         // Empty chart data for fallback
@@ -176,10 +177,10 @@ const ShopDashboard = () => {
       
       // Set defaults on error
       setStats({
-        totalProducts: 0,
-        activeProducts: 0,
-        draftProducts: 0,
-        totalValue: 0,
+        total: 0,
+        available: 0,
+        draft: 0,
+        inventoryValue: 0,
         totalOrders: 0,
         pendingOrders: 0,
         totalRevenue: 0
@@ -409,7 +410,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-cube"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatNumber(stats.totalProducts)}</span>
+                <span className="um-stat-number">{formatNumber(stats.total)}</span>
                 <span className="um-stat-label">Tổng sản phẩm</span>
                 <span className="um-stat-percentage">Tất cả sản phẩm</span>
               </div>
@@ -420,7 +421,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-check-circle"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatNumber(stats.activeProducts)}</span>
+                <span className="um-stat-number">{formatNumber(stats.available)}</span>
                 <span className="um-stat-label">Đang bán</span>
                 <span className="um-stat-percentage">Sản phẩm hoạt động</span>
               </div>
@@ -431,7 +432,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-pause-circle"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatNumber(stats.draftProducts)}</span>
+                <span className="um-stat-number">{formatNumber(stats.draft)}</span>
                 <span className="um-stat-label">Ngừng bán</span>
                 <span className="um-stat-percentage">Sản phẩm tạm dừng</span>
               </div>
@@ -442,7 +443,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-money-bill-wave"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatInventoryValue(stats.totalValue)}</span>
+                <span className="um-stat-number">{formatInventoryValue(stats.inventoryValue)}</span>
                 <span className="um-stat-label">Giá trị kho</span>
                 <span className="um-stat-percentage">Tổng giá trị hàng tồn</span>
               </div>
@@ -664,17 +665,6 @@ const ShopDashboard = () => {
                 </div>
                 <h4>Quản lý đơn hàng</h4>
                 <p>Xem và xử lý đơn hàng từ khách hàng ({stats.pendingOrders} đơn chờ xử lý)</p>
-                <span className="action-arrow">
-                  <i className="fas fa-arrow-right"></i>
-                </span>
-              </div>
-
-              <div className="action-card" onClick={() => navigate('/ShopAnalytics')}>
-                <div className="action-icon">
-                  <i className="fas fa-chart-bar"></i>
-                </div>
-                <h4>Phân tích chi tiết</h4>
-                <p>Xem báo cáo và phân tích kinh doanh chi tiết</p>
                 <span className="action-arrow">
                   <i className="fas fa-arrow-right"></i>
                 </span>
