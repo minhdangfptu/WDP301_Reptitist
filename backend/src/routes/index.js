@@ -1,6 +1,7 @@
 const express= require('express');
 const router =express.Router();
 const authRoute=require('./authRoute.js')
+const userRoute=require('./userRoute.js')
 const shopRoute=require('./shopRoute.js')
 const userReptileRoutes = require('./userReptileRoute.js');
 const reptileInfoRoute = require('./reptileInfoRoute.js');
@@ -11,7 +12,8 @@ const topicCategoryRoutes = require('./topicCategoryRoutes');
 const transactionRoute = require('./transactionRoute.js');
 const orderRoute = require('./orderRoute');
 const adminRoute = require('./adminRoute'); 
-const userRoute = require('./userRoute');
+const reptileRoutes = require('./reptile');
+//const userRoute = require('./userRoute');
 const productReportRoute = require('./productReportRoute');
 const shopComplainRoute = require('./shopComplainRoute');
 
@@ -31,6 +33,7 @@ router.use('/topic-categories', topicCategoryRoutes);
 
 // ===== TRANSACTION ROUTES (includes admin endpoints) =====
 router.use('/transactions', transactionRoute);
+router.use('/info', reptileRoutes);
 router.use('/product-reports', productReportRoute);
 router.use(shopComplainRoute);
 

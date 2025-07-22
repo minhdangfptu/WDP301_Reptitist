@@ -59,7 +59,7 @@ exports.getAllOrderByUser = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const orders = await Order.find({ customer_id: userId })
+    const orders = await Order.find({ customer_id: userId, is_deleted: false })
       .populate('order_items.product_id', 'product_name product_price')
       .populate('shop_id', 'username email')  
       .sort({ createdAt: -1 });
@@ -139,7 +139,7 @@ exports.getAllOrdersByShop = async (req, res) => {
   try {
     const shopId = req.user._id;
 
-    const orders = await Order.find({ shop_id: shopId })
+    const orders = await Order.find({ shop_id: shopId, is_deleted: false })
       .populate('order_items.product_id', 'product_name product_price')
       .populate('customer_id', 'username email') // lấy thông tin người mua
       .sort({ createdAt: -1 });
@@ -194,6 +194,27 @@ exports.markOrderAsShippedByShop = async (req, res) => {
     }));
   } catch (err) {
     console.error('Ship Order Error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// XÓA MỀM ĐƠN HÀNG (user chỉ xóa đơn của mình, trạng thái đã hủy hoặc đã giao)
+exports.softDeleteOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+    if (!id) return res.status(400).json({ message: 'Missing order id' });
+    const order = await Order.findOne({ _id: id, customer_id: userId });
+    if (!order) return res.status(404).json({ message: 'Order not found or not your order' });
+    if (order.is_deleted) return res.status(400).json({ message: 'Order already deleted' });
+    if (!["cancelled", "delivered"].includes(order.order_status)) {
+      return res.status(400).json({ message: 'Chỉ được xóa đơn đã hủy hoặc đã giao' });
+    }
+    order.is_deleted = true;
+    await order.save();
+    res.status(200).json(successResponse({ message: 'Đã xóa đơn hàng (mềm)', order }));
+  } catch (err) {
+    console.error('Soft delete order error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

@@ -5,33 +5,70 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { baseUrl } from '../config';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import paymentApi from '../api/paymentApi';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
+import { saveAs } from 'file-saver';
 import '../css/AdminTransactionManagement.css';
+
+const TRANSACTION_TYPES = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'payment', label: 'Thanh toán' },
+  { value: 'refund', label: 'Hoàn tiền' },
+  { value: 'subscription', label: 'Đăng ký' },
+  { value: 'topup', label: 'Nạp tiền' },
+];
+const STATUS_TYPES = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'pending', label: 'Đang chờ' },
+  { value: 'completed', label: 'Hoàn thành' },
+  { value: 'failed', label: 'Thất bại' },
+  { value: 'refunded', label: 'Đã hoàn tiền' },
+];
 
 const AdminTransactionManagement = () => {
   const { user, hasRole } = useAuth();
+  const [activeTab, setActiveTab] = useState('management'); // 'management' or 'reports'
+  
+  // Management tab states
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
   // Filter states
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('all');
   const [userFilter, setUserFilter] = useState('');
-  
-  // Action states
+  // Xóa/sửa
   const [deleteId, setDeleteId] = useState(null);
   const [editTx, setEditTx] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Reports tab states
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [transactionType, setTransactionType] = useState('all');
+  const [status, setStatus] = useState('all');
 
   useEffect(() => {
     console.log('User changed:', user);
     console.log('Has admin role:', hasRole('admin'));
     
     if (user && hasRole('admin')) {
-      fetchTransactions();
+      if (activeTab === 'management') {
+        fetchTransactions();
+      } else {
+        fetchReports();
+      }
     }
-  }, [user, hasRole]);
+  }, [user]);
 
   const fetchTransactions = async () => {
     try {
@@ -87,6 +124,44 @@ const AdminTransactionManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchReports = async () => {
+    try {
+      setReportsLoading(true);
+      setReportsError('');
+      const data = await paymentApi.getAdminFinancialReports({
+        page,
+        limit,
+        startDate,
+        endDate,
+        transaction_type: transactionType,
+        status,
+      });
+      setReports(data.transactions || []);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotal(data.pagination?.total || 0);
+    } catch (err) {
+      setReportsError('Không thể tải báo cáo tài chính: ' + (err.response?.data?.message || err.message));
+      setReports([]);
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setPage(1);
+    fetchReports();
+  };
+
+  const handleResetFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setTransactionType('all');
+    setStatus('all');
+    setPage(1);
+    setTimeout(() => fetchReports(), 100);
   };
 
   // Filter transactions
@@ -269,6 +344,11 @@ const AdminTransactionManagement = () => {
     }).format(amount);
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('vi-VN');
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'completed': return 'status-completed';
@@ -289,19 +369,7 @@ const AdminTransactionManagement = () => {
     }
   };
 
-  const formatDate = (dateString) => {
-    try {
-      const date = new Date(dateString);
-      return {
-        date: date.toLocaleDateString('vi-VN'),
-        time: date.toLocaleTimeString('vi-VN')
-      };
-    } catch (error) {
-      return { date: 'N/A', time: 'N/A' };
-    }
-  };
 
-  // Access control check
   if (!user || !hasRole('admin')) {
     return (
       <>
@@ -332,7 +400,7 @@ const AdminTransactionManagement = () => {
             <div className="pm-page-header-text">
               <h1>
                 <i className="fas fa-chart-line"></i>
-                Quản lý giao dịch hệ thống
+                Quản lý giao dịch các gói dịch vụ
               </h1>
               <p>Thống kê, chỉnh sửa và quản lý các giao dịch của người dùng</p>
               {user && (
@@ -359,7 +427,6 @@ const AdminTransactionManagement = () => {
                   <option value="completed">Hoàn thành</option>
                   <option value="pending">Đang chờ</option>
                   <option value="failed">Thất bại</option>
-                  <option value="refunded">Đã hoàn tiền</option>
                 </select>
               </div>
               
@@ -372,63 +439,42 @@ const AdminTransactionManagement = () => {
                 >
                   <option value="all">Tất cả thời gian</option>
                   <option value="today">Hôm nay</option>
-                  <option value="week">7 ngày qua</option>
-                  <option value="month">30 ngày qua</option>
-                  <option value="year">1 năm qua</option>
+                  <option value="week">Tuần này</option>
+                  <option value="month">Tháng này</option>
+                  <option value="year">Năm nay</option>
                 </select>
               </div>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '200px', flex: 1 }}>
-                <label style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Tìm kiếm người dùng:</label>
+                <label style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Tìm kiếm:</label>
                 <input 
                   className="pm-search-input" 
                   type="text" 
-                  placeholder="Tìm theo tên, email..." 
+                  placeholder="Tìm theo tên user..." 
                   value={userFilter} 
                   onChange={e => setUserFilter(e.target.value)}
                 />
               </div>
-              
-              <button 
-                className="pm-btn pm-btn-primary" 
-                onClick={fetchTransactions}
-                disabled={loading}
-              >
-                <i className="fas fa-sync-alt"></i>
-                {loading ? 'Đang tải...' : 'Làm mới'}
-              </button>
             </div>
           </div>
         </div>
 
-        {/* Summary Cards */}
+        {/* Charts section */}
         <div className="transaction-charts-grid">
           <div className="chart-card">
             <h3>
               <i className="fas fa-chart-bar"></i>
-              Thống kê trạng thái
+              Trạng thái giao dịch
             </h3>
             <div className="chart-container">
               {barChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={barChartData}>
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 12 }}
-                      interval={0}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
+                    <XAxis dataKey="name" />
+                    <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar 
-                      dataKey="value" 
-                      fill="#3b82f6" 
-                      radius={[4, 4, 0, 0]}
-                      name="Số lượng giao dịch"
-                    />
+                    <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -447,30 +493,13 @@ const AdminTransactionManagement = () => {
             </h3>
             <div className="chart-container">
               {lineChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={lineChartData}>
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 12 }}
-                      interval={0}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip 
-                      formatter={(value) => [formatCurrency(value), 'Tổng tiền']}
-                      labelStyle={{ color: '#374151' }}
-                    />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => formatCurrency(value)} />
                     <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#10b981" 
-                      strokeWidth={3} 
-                      dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                      name="Tổng tiền"
-                    />
+                    <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={3} dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }} />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
@@ -485,11 +514,11 @@ const AdminTransactionManagement = () => {
           <div className="chart-card">
             <h3>
               <i className="fas fa-chart-pie"></i>
-              Phân loại giao dịch
+              Loại giao dịch
             </h3>
             <div className="chart-container">
               {pieChartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie 
                       data={pieChartData} 
@@ -498,8 +527,7 @@ const AdminTransactionManagement = () => {
                       cx="50%" 
                       cy="50%" 
                       outerRadius={80} 
-                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      labelLine={false}
+                      label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {pieChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"][index % 5]} />
@@ -522,64 +550,21 @@ const AdminTransactionManagement = () => {
         {/* Transaction table */}
         <div className="pm-table-section">
           <div>
-            <h2>
-              Danh sách giao dịch 
-              <span style={{ color: '#6b7280', fontWeight: 'normal', fontSize: '18px' }}>
-                ({filteredTransactions.length} / {transactions.length})
-              </span>
-            </h2>
-            
+            <h2>Danh sách giao dịch ({filteredTransactions.length})</h2>
             {loading ? (
               <div className="pm-loading-state">
                 <div className="loading-spinner"></div>
-                <p>Đang tải dữ liệu giao dịch...</p>
+                <p>Đang tải dữ liệu...</p>
               </div>
             ) : error ? (
-              <div style={{ 
-                color: '#ef4444', 
-                textAlign: 'center', 
-                padding: '40px',
-                background: '#fef2f2',
-                borderRadius: '12px',
-                border: '1px solid #fecaca'
-              }}>
+              <div style={{ color: '#ef4444', textAlign: 'center', padding: '40px' }}>
                 <i className="fas fa-exclamation-circle" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
-                <p style={{ fontSize: '16px', marginBottom: '16px' }}>{error}</p>
-                <button 
-                  className="pm-btn pm-btn-primary" 
-                  onClick={fetchTransactions}
-                  style={{ marginTop: '16px' }}
-                >
-                  <i className="fas fa-redo"></i>
-                  Thử lại
-                </button>
+                <p>{error}</p>
               </div>
             ) : filteredTransactions.length === 0 ? (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '60px', 
-                color: '#6b7280',
-                background: '#f9fafb',
-                borderRadius: '12px',
-                border: '1px solid #e5e7eb'
-              }}>
-                <i className="fas fa-inbox" style={{ fontSize: '64px', marginBottom: '20px', color: '#d1d5db' }}></i>
-                <h3 style={{ marginBottom: '8px', color: '#374151' }}>Không có giao dịch</h3>
-                <p>Không tìm thấy giao dịch nào với bộ lọc hiện tại</p>
-                {(statusFilter !== 'all' || dateFilter !== 'all' || userFilter.trim()) && (
-                  <button 
-                    className="pm-btn pm-btn-secondary" 
-                    onClick={() => {
-                      setStatusFilter('all');
-                      setDateFilter('all');
-                      setUserFilter('');
-                    }}
-                    style={{ marginTop: '16px' }}
-                  >
-                    <i className="fas fa-times"></i>
-                    Xóa bộ lọc
-                  </button>
-                )}
+              <div style={{ textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+                <i className="fas fa-inbox" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
+                <p>Không có giao dịch nào</p>
               </div>
             ) : (
               <div style={{ overflowX: 'auto' }}>
@@ -587,117 +572,93 @@ const AdminTransactionManagement = () => {
                   <thead>
                     <tr>
                       <th>ID Giao dịch</th>
-                      <th>Người dùng</th>
-                      <th>Loại</th>
+                      <th>User</th>
+                      <th>Loại giao dịch</th>
                       <th>Số tiền</th>
                       <th>Trạng thái</th>
-                      <th>Ngày tạo</th>
-                      <th>Mô tả</th>
-                      <th>Thao tác</th>
+                      <th>Ngày giao dịch</th>
+                      <th>Hành động</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredTransactions.map(tx => {
-                      const dateTime = formatDate(tx.transaction_date || tx.createdAt);
-                      return (
-                        <tr key={tx._id} className="pm-table-row">
-                          <td>
-                            <span className="transaction-id" title={tx._id}>
-                              {tx._id.slice(-8)}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <div style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '50%',
-                                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                fontSize: '14px',
-                                fontWeight: '600'
-                              }}>
-                                {(tx.user_id?.username || tx.user_id?.email || 'U').charAt(0).toUpperCase()}
-                              </div>
-                              <div>
-                                <div style={{ fontWeight: '600', color: '#1f2937' }}>
-                                  {tx.user_id?.username || tx.user_id?.email || 'N/A'}
-                                </div>
-                                {tx.user_id?.fullname && (
-                                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                    {tx.user_id.fullname}
-                                  </div>
-                                )}
-                                <div style={{ fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace' }}>
-                                  {tx.user_id?._id?.slice(-8) || 'N/A'}
-                                </div>
-                              </div>
+                    {filteredTransactions.map(tx => (
+                      <tr key={tx._id} className="pm-table-row">
+                        <td>
+                          <span className="transaction-id">{tx._id}</span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: '32px',
+                              height: '32px',
+                              borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: 'white',
+                              fontSize: '14px',
+                              fontWeight: '600'
+                            }}>
+                              {(tx.user_id?.username || 'U').charAt(0).toUpperCase()}
                             </div>
-                          </td>
-                          <td>
-                            <span className={getTypeBadgeClass(tx.transaction_type)}>
-                              {getTypeText(tx.transaction_type)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={`transaction-amount ${tx.amount >= 0 ? 'positive' : 'negative'}`}>
-                              {formatCurrency(tx.amount)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className={getStatusBadgeClass(tx.status)}>
-                              {getStatusText(tx.status)}
-                            </span>
-                          </td>
-                          <td>
                             <div>
-                              <div style={{ fontWeight: '500', color: '#1f2937', fontSize: '14px' }}>
-                                {dateTime.date}
+                              <div style={{ fontWeight: '600', color: '#1f2937' }}>
+                                {tx.user_id?.username || 'N/A'}
                               </div>
                               <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                                {dateTime.time}
+                                ID: {tx.user_id?._id?.slice(-8) || 'N/A'}
                               </div>
                             </div>
-                          </td>
-                          <td>
-                            <div style={{ 
-                              maxWidth: '200px', 
-                              overflow: 'hidden', 
-                              textOverflow: 'ellipsis',
-                              fontSize: '14px',
-                              color: '#6b7280'
-                            }} title={tx.description}>
-                              {tx.description || 'Không có mô tả'}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={getTypeBadgeClass(tx.transaction_type)}>
+                            {getTypeText(tx.transaction_type)}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`transaction-amount ${tx.amount > 0 ? 'positive' : 'negative'}`}>
+                            {formatCurrency(tx.amount)}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={getStatusBadgeClass(tx.status)}>
+                            {getStatusText(tx.status)}
+                          </span>
+                        </td>
+                        <td>
+                          <div>
+                            <div style={{ fontWeight: '500', color: '#1f2937' }}>
+                              {new Date(tx.transaction_date).toLocaleDateString('vi-VN')}
                             </div>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                              <button 
-                                className="pm-btn pm-btn-edit" 
-                                disabled={actionLoading} 
-                                onClick={() => openEdit(tx)}
-                                style={{ fontSize: '12px', padding: '6px 10px' }}
-                                title="Chỉnh sửa giao dịch"
-                              >
-                                <i className="fas fa-edit"></i>
-                              </button>
-                              <button 
-                                className="pm-btn pm-btn-danger" 
-                                disabled={tx.status !== 'pending' || actionLoading} 
-                                onClick={() => setDeleteId(tx._id)}
-                                style={{ fontSize: '12px', padding: '6px 10px' }}
-                                title={tx.status !== 'pending' ? 'Chỉ có thể xóa giao dịch đang chờ' : 'Xóa giao dịch'}
-                              >
-                                <i className="fas fa-trash"></i>
-                              </button>
+                            <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                              {new Date(tx.transaction_date).toLocaleTimeString('vi-VN')}
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                              className="pm-btn pm-btn-danger" 
+                              disabled={tx.status !== 'pending' || actionLoading} 
+                              onClick={() => setDeleteId(tx._id)}
+                              style={{ fontSize: '12px', padding: '6px 12px' }}
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                            <button 
+                              className="pm-btn pm-btn-edit" 
+                              disabled={actionLoading} 
+                              onClick={() => openEdit(tx)}
+                              style={{ fontSize: '12px', padding: '6px 12px' }}
+                            >
+                              <i className="fas fa-edit"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

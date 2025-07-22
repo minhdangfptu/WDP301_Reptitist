@@ -64,6 +64,7 @@ router.get(
 );
 
 // Refund Route
+router.get('/all', getAllTransactions);
 router.post(
     '/refund/:transaction_id',
     authMiddleware,

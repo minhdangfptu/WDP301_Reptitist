@@ -255,7 +255,7 @@ const Header = () => {
                             className="header__dropdown-item header__dropdown-item--admin"
                             onClick={() => setShowAccountMenu(false)}
                           >
-                            Quản lý cừa hàng
+                            Quản lý cửa hàng
                           </Link>
                           <Link
                             to="/AdminTransactionManagement"
@@ -272,7 +272,20 @@ const Header = () => {
                           >
                             Quản lý danh mục 
                           </Link>
-
+                          <Link
+                            to="/AdminIncomeManagement"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Thống kê doanh thu
+                          </Link>
+                          <Link
+                            to="/admin/upgrade-plans"
+                            className="header__dropdown-item header__dropdown-item--admin"
+                            onClick={() => setShowAccountMenu(false)}
+                          >
+                            Quản lý Upgrade Plan
+                          </Link>
                         </div>
                       </>
                     )}

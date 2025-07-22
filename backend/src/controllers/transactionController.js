@@ -26,7 +26,7 @@ const createPayOSPayment = async (req, res) => {
 
     // Tạo unique order code
     const orderCode = parseInt(moment().format('YYMMDDHHmmss'));
-    
+
     // Parse items
     let itemsList = [];
     try {
@@ -66,7 +66,7 @@ const createPayOSPayment = async (req, res) => {
 
     // Tạo payment link
     const paymentLinkRes = await payOS.createPaymentLink(paymentData);
-    
+
     console.log('✅ PayOS Payment Link:', paymentLinkRes.checkoutUrl);
 
     // Lưu transaction vào database
@@ -108,23 +108,23 @@ const createPayOSPayment = async (req, res) => {
 const checkPayOSPaymentStatus = async (req, res) => {
   try {
     const { orderCode } = req.params;
-    
+
     console.log('🔍 Checking PayOS status for:', orderCode);
 
     // Gọi PayOS API để lấy thông tin
     const paymentInfo = await payOS.getPaymentLinkInformation(parseInt(orderCode));
-    
+
     console.log('📋 PayOS Status:', paymentInfo.status);
-    
+
     // Tìm transaction trong database
-    const transaction = await Transaction.findOne({ 
-      payos_order_code: parseInt(orderCode) 
+    const transaction = await Transaction.findOne({
+      payos_order_code: parseInt(orderCode)
     });
-    
+
     if (!transaction) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Không tìm thấy giao dịch' 
+        error: 'Không tìm thấy giao dịch'
       });
     }
 
@@ -176,7 +176,7 @@ const checkPayOSPaymentStatus = async (req, res) => {
             let itemsObj = {};
             try {
               itemsObj = typeof transaction.items === 'string' ? JSON.parse(transaction.items) : transaction.items;
-            } catch (e) {}
+            } catch (e) { }
             if (itemsObj && typeof itemsObj === 'object') {
               if (itemsObj.plan_name) planName = itemsObj.plan_name;
               if (itemsObj.period) period = itemsObj.period;
@@ -227,13 +227,13 @@ const checkPayOSPaymentStatus = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Check Status Error:', error);
-    
+
     // Fallback: trả về thông tin từ database
     try {
-      const transaction = await Transaction.findOne({ 
-        payos_order_code: parseInt(req.params.orderCode) 
+      const transaction = await Transaction.findOne({
+        payos_order_code: parseInt(req.params.orderCode)
       });
-      
+
       if (transaction) {
         return res.json({
           success: true,
@@ -250,10 +250,10 @@ const checkPayOSPaymentStatus = async (req, res) => {
     } catch (dbError) {
       console.error('Database fallback error:', dbError);
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       success: false,
-      error: 'Không thể kiểm tra trạng thái thanh toán' 
+      error: 'Không thể kiểm tra trạng thái thanh toán'
     });
   }
 };
@@ -262,24 +262,24 @@ const checkPayOSPaymentStatus = async (req, res) => {
 const cancelPayOSPayment = async (req, res) => {
   try {
     const { orderCode } = req.params;
-    
+
     console.log('🚫 Canceling payment:', orderCode);
-    
+
     // Gọi PayOS API để hủy
     const cancelResult = await payOS.cancelPaymentLink(parseInt(orderCode));
-    
+
     // Cập nhật database
-    const transaction = await Transaction.findOne({ 
-      payos_order_code: parseInt(orderCode) 
+    const transaction = await Transaction.findOne({
+      payos_order_code: parseInt(orderCode)
     });
-    
+
     if (transaction && transaction.status === 'pending') {
       transaction.status = 'cancelled';
       transaction.payos_response_code = 'CANCELLED';
       transaction.payos_response_desc = 'Hủy bởi người dùng';
       transaction.raw_response = cancelResult;
       await transaction.save();
-      
+
       console.log('✅ Transaction cancelled:', transaction._id);
     }
 
@@ -291,9 +291,9 @@ const cancelPayOSPayment = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Cancel Payment Error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Không thể hủy thanh toán' 
+      error: 'Không thể hủy thanh toán'
     });
   }
 };
@@ -303,13 +303,13 @@ const getTransactionHistory = async (req, res) => {
   try {
     const userId = req.userId;
     const { dayRange } = req.query;
-    
+
     let dateFilter = {};
-    
+
     if (dayRange) {
       const now = new Date();
       let startDate;
-      
+
       switch (dayRange) {
         case '7':
           startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
@@ -326,17 +326,17 @@ const getTransactionHistory = async (req, res) => {
         default:
           break;
       }
-      
+
       if (startDate) {
         dateFilter = { createdAt: { $gte: startDate } };
       }
     }
-    
+
     const filter = { user_id: userId, ...dateFilter };
     const transactions = await Transaction.find(filter)
       .select('_id amount status description createdAt transaction_type payos_order_code')
       .sort({ createdAt: -1 });
-    
+
     res.status(200).json(transactions);
   } catch (error) {
     console.error('Error getting transaction history:', error);
@@ -351,8 +351,8 @@ const refundTransaction = async (req, res) => {
     const original = await Transaction.findById(transaction_id);
 
     if (!original || original.status !== 'completed') {
-      return res.status(400).json({ 
-        error: 'Giao dịch không hợp lệ để hoàn tiền.' 
+      return res.status(400).json({
+        error: 'Giao dịch không hợp lệ để hoàn tiền.'
       });
     }
 
@@ -382,12 +382,12 @@ const refundTransaction = async (req, res) => {
       refund_transaction: refund,
       original_transaction: original
     });
-    
+
   } catch (error) {
     console.error('Refund error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Lỗi khi hoàn tiền' 
+      error: 'Lỗi khi hoàn tiền'
     });
   }
 };
@@ -421,12 +421,12 @@ const filterTransactionHistory = async (req, res) => {
       count: transactions.length,
       transactions
     });
-    
+
   } catch (error) {
     console.error('Filter transaction error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Lỗi khi lọc lịch sử giao dịch' 
+      error: 'Lỗi khi lọc lịch sử giao dịch'
     });
   }
 };
@@ -438,13 +438,13 @@ const getAllTransactions = async (req, res) => {
   try {
     console.log('Getting all transactions for admin...');
     console.log('User role:', req.user?.role_id?.role_name || req.user?.account_type?.type);
-    
+
     const transactions = await Transaction.find({})
       .populate('user_id', 'username email fullname')
       .sort({ transaction_date: -1 });
-    
+
     console.log(`Found ${transactions.length} transactions`);
-    
+
     res.status(200).json({
       success: true,
       transactions,
@@ -452,7 +452,7 @@ const getAllTransactions = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting all transactions:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Không thể lấy danh sách giao dịch',
       details: error.message
@@ -469,15 +469,15 @@ const updateTransaction = async (req, res) => {
     console.log('Updating transaction:', id, updateData);
 
     const transaction = await Transaction.findByIdAndUpdate(
-      id, 
-      updateData, 
+      id,
+      updateData,
       { new: true, runValidators: true }
     ).populate('user_id', 'username email fullname');
 
     if (!transaction) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Không tìm thấy giao dịch' 
+        error: 'Không tìm thấy giao dịch'
       });
     }
 
@@ -490,7 +490,7 @@ const updateTransaction = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating transaction:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Không thể cập nhật giao dịch',
       details: error.message
@@ -507,17 +507,17 @@ const deleteTransaction = async (req, res) => {
 
     const transaction = await Transaction.findById(id);
     if (!transaction) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Không tìm thấy giao dịch' 
+        error: 'Không tìm thấy giao dịch'
       });
     }
 
     // Chỉ cho phép xóa giao dịch pending
     if (transaction.status !== 'pending') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        error: 'Chỉ có thể xóa giao dịch đang chờ xử lý' 
+        error: 'Chỉ có thể xóa giao dịch đang chờ xử lý'
       });
     }
 
@@ -531,7 +531,7 @@ const deleteTransaction = async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting transaction:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Không thể xóa giao dịch',
       details: error.message
@@ -543,12 +543,12 @@ const deleteTransaction = async (req, res) => {
 const getTransactionStats = async (req, res) => {
   try {
     const { dateFilter } = req.query;
-    
+
     let dateQuery = {};
     if (dateFilter && dateFilter !== 'all') {
       const now = new Date();
       let startDate;
-      
+
       switch (dateFilter) {
         case 'today':
           startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -563,7 +563,7 @@ const getTransactionStats = async (req, res) => {
           startDate = new Date(now.setFullYear(now.getFullYear() - 1));
           break;
       }
-      
+
       if (startDate) {
         dateQuery.transaction_date = { $gte: startDate };
       }
@@ -604,7 +604,7 @@ const getTransactionStats = async (req, res) => {
     });
   } catch (error) {
     console.error('Error getting transaction stats:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Không thể lấy thống kê giao dịch',
       details: error.message
