@@ -255,14 +255,14 @@ const getMyProductStats = async (req, res) => {
   }
 };
 
-// Thống kê chi tiết cho dashboard shop
+// Replace old getShopDashboardStats with improved version
 const getShopDashboardStats = async (req, res) => {
   try {
     console.log('Get Shop Dashboard Stats Request:', {
-      user: req.user ? { id: req.user._id } : null
+      user: req.user ? { id: req.user._id } : null,
+      timeFilter: req.query.timeFilter
     });
 
-    // Kiểm tra user authentication
     if (!req.user) {
       return res.status(401).json({
         message: 'Bạn cần đăng nhập để thực hiện thao tác này'
@@ -270,11 +270,11 @@ const getShopDashboardStats = async (req, res) => {
     }
 
     const userId = req.user._id;
+    const timeFilter = req.query.timeFilter || 'day';
 
-    // Import Order model
     const Order = require('../models/Orders');
 
-    // Get products
+    // Get products - same as getMyProductStats
     const products = await Product.find({ user_id: userId })
       .populate('product_category_id', 'product_category_name');
 
@@ -283,21 +283,44 @@ const getShopDashboardStats = async (req, res) => {
       .populate('order_items.product_id', 'product_name product_price')
       .populate('customer_id', 'username email');
 
-    // 1. Sản phẩm bán chạy nhất theo thời gian
+    // Calculate basic stats - EXACTLY same as getMyProductStats
+    const [totalProducts, activeProducts, draftProducts] = await Promise.all([
+      Product.countDocuments({ user_id: userId }),
+      Product.countDocuments({ user_id: userId, product_status: 'available' }),
+      Product.countDocuments({ user_id: userId, product_status: 'not_available' })
+    ]);
+
+    // Calculate total value - EXACTLY same as getMyProductStats
+    const productsForValue = await Product.find({ user_id: userId, product_status: 'available' });
+    const totalValue = productsForValue.reduce((sum, product) => {
+      return sum + (product.product_price * product.product_quantity);
+    }, 0);
+
+    // Calculate order stats
+    const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.order_status === 'ordered').length;
+    const totalRevenue = orders
+      .filter(o => o.order_status === 'delivered')
+      .reduce((sum, o) => sum + (o.order_price || 0), 0);
+
+    // 1. Sản phẩm bán chạy nhất theo thời gian (Biểu đồ cột)
     const productSalesByTime = {};
     orders.forEach(order => {
       if (order.order_items && Array.isArray(order.order_items)) {
         const orderDate = new Date(order.createdAt);
-        const timeKey = orderDate.toLocaleDateString('vi-VN', { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric' 
-        });
+        let timeKey;
+        
+        if (timeFilter === 'day') {
+          timeKey = orderDate.toLocaleDateString('vi-VN');
+        } else if (timeFilter === 'month') {
+          timeKey = orderDate.toLocaleDateString('vi-VN', { year: 'numeric', month: 'short' });
+        } else {
+          timeKey = orderDate.getFullYear().toString();
+        }
         
         order.order_items.forEach(item => {
           const productName = item.product_id?.product_name || 'Sản phẩm không xác định';
           const quantity = item.quantity || 0;
-          const revenue = (item.product_id?.product_price || 0) * quantity;
           
           if (!productSalesByTime[timeKey]) {
             productSalesByTime[timeKey] = {};
@@ -306,7 +329,7 @@ const getShopDashboardStats = async (req, res) => {
             productSalesByTime[timeKey][productName] = { quantity: 0, revenue: 0 };
           }
           productSalesByTime[timeKey][productName].quantity += quantity;
-          productSalesByTime[timeKey][productName].revenue += revenue;
+          productSalesByTime[timeKey][productName].revenue += (item.product_id?.product_price || 0) * quantity;
         });
       }
     });
@@ -323,64 +346,64 @@ const getShopDashboardStats = async (req, res) => {
         };
       })
       .sort((a, b) => new Date(a.time) - new Date(b.time))
-      .slice(-10);
+      .slice(-15);
 
-    // 2. Doanh số từ từng sản phẩm (%)
-    const productRevenue = {};
+    // 2. Doanh số từ từng sản phẩm % (Biểu đồ bánh)
+    const productRevenueStats = {};
+    let totalRevenueForShare = 0;
+
     orders.forEach(order => {
-      if (order.order_items && Array.isArray(order.order_items)) {
+      if (order.order_status === 'delivered' && order.order_items) {
         order.order_items.forEach(item => {
-          const productName = item.product_id?.product_name || 'Sản phẩm không xác định';
+          const productName = item.product_id?.product_name || 'Không xác định';
           const revenue = (item.product_id?.product_price || 0) * (item.quantity || 0);
-          productRevenue[productName] = (productRevenue[productName] || 0) + revenue;
+          
+          if (!productRevenueStats[productName]) {
+            productRevenueStats[productName] = 0;
+          }
+          productRevenueStats[productName] += revenue;
+          totalRevenueForShare += revenue;
         });
       }
     });
 
-    const totalRevenue = Object.values(productRevenue).reduce((sum, revenue) => sum + revenue, 0);
-    const productRevenuePercentage = Object.entries(productRevenue)
-      .map(([name, revenue]) => ({
-        name,
+    const productRevenueShare = Object.entries(productRevenueStats)
+      .map(([productName, revenue]) => ({
+        productName,
         revenue,
-        percentage: totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0
+        percentage: totalRevenueForShare > 0 ? ((revenue / totalRevenueForShare) * 100).toFixed(1) : 0
       }))
       .sort((a, b) => b.revenue - a.revenue);
 
-    // Gộp các sản phẩm có doanh số thấp thành "Những cái còn lại"
-    const topProducts = productRevenuePercentage.slice(0, 5);
-    const otherProducts = productRevenuePercentage.slice(5);
-    const otherRevenue = otherProducts.reduce((sum, product) => sum + product.revenue, 0);
-    const otherPercentage = otherProducts.reduce((sum, product) => sum + product.percentage, 0);
-
-    const categoryDistribution = [
-      ...topProducts,
-      ...(otherRevenue > 0 ? [{
-        name: 'Những cái còn lại',
-        revenue: otherRevenue,
-        percentage: otherPercentage
-      }] : [])
-    ];
-
-    // 3. Doanh số theo từng ngày
-    const dailyRevenue = {};
+    // 3. Doanh số shop theo thời gian (Biểu đồ đường)
+    const revenueByTime = {};
+    
     orders.forEach(order => {
       if (order.order_status === 'delivered') {
         const orderDate = new Date(order.createdAt);
-        const dateKey = orderDate.toLocaleDateString('vi-VN', { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric' 
-        });
-        dailyRevenue[dateKey] = (dailyRevenue[dateKey] || 0) + (order.order_price || 0);
+        let dateKey;
+        
+        if (timeFilter === 'day') {
+          dateKey = orderDate.toLocaleDateString('vi-VN');
+        } else if (timeFilter === 'month') {
+          dateKey = orderDate.toLocaleDateString('vi-VN', { year: 'numeric', month: 'short' });
+        } else {
+          dateKey = orderDate.getFullYear().toString();
+        }
+        
+        if (!revenueByTime[dateKey]) {
+          revenueByTime[dateKey] = 0;
+        }
+        revenueByTime[dateKey] += order.order_price || 0;
       }
     });
 
-    const shopRevenueByTime = Object.entries(dailyRevenue)
+    const shopRevenueByTime = Object.entries(revenueByTime)
       .map(([date, revenue]) => ({ date, revenue }))
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(-30);
 
-    // 4. Doanh số tổng tăng dần
+    // 4. Doanh số tổng tăng dần (Biểu đồ kết hợp)
     const cumulativeRevenue = [];
     let runningTotal = 0;
     
@@ -393,42 +416,20 @@ const getShopDashboardStats = async (req, res) => {
       });
     });
 
-    // 5. Thống kê trạng thái đơn hàng
-    const statusCount = {};
-    orders.forEach(order => {
-      const status = order.order_status || 'unknown';
-      statusCount[status] = (statusCount[status] || 0) + 1;
-    });
-
-    const statusLabels = {
-      'ordered': 'Chờ xử lý',
-      'confirmed': 'Đã xác nhận',
-      'shipping': 'Đang giao',
-      'delivered': 'Đã giao',
-      'cancelled': 'Đã hủy'
-    };
-
-    const orderStatusStats = Object.entries(statusCount)
-      .map(([status, count]) => ({
-        status: statusLabels[status] || status,
-        count,
-        percentage: ((count / orders.length) * 100).toFixed(1)
-      }));
-
+    // Prepare response with EXACT same basicStats structure as getMyProductStats
     const dashboardStats = {
       bestSellingProductsByTime,
-      categoryDistribution,
+      productRevenueStats: productRevenueShare,
       shopRevenueByTime,
       cumulativeRevenue,
-      orderStatusStats,
       basicStats: {
-        totalProducts: products.length,
-        activeProducts: products.filter(p => p.product_status === 'available').length,
-        totalOrders: orders.length,
-        pendingOrders: orders.filter(o => o.order_status === 'ordered').length,
-        totalRevenue: orders
-          .filter(o => o.order_status === 'delivered')
-          .reduce((sum, o) => sum + (o.order_price || 0), 0)
+        totalProducts,        // Same field name as getMyProductStats
+        activeProducts,       // Same field name as getMyProductStats  
+        draftProducts,        // Same field name as getMyProductStats
+        totalValue,           // Same field name as getMyProductStats
+        totalOrders,          // Additional field for dashboard
+        pendingOrders,        // Additional field for dashboard
+        totalRevenue          // Additional field for dashboard
       }
     };
 
@@ -440,6 +441,198 @@ const getShopDashboardStats = async (req, res) => {
     console.error('Get Shop Dashboard Stats Error:', error);
     res.status(500).json({
       message: 'Lỗi khi lấy thống kê dashboard!',
+      error: error.message
+    });
+  }
+};
+
+// API mới cho trang Analytics chi tiết
+const getShopAnalytics = async (req, res) => {
+  try {
+    console.log('Get Shop Analytics Request:', {
+      user: req.user ? { id: req.user._id } : null,
+      dateRange: req.query.dateRange,
+      metric: req.query.metric
+    });
+
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'Bạn cần đăng nhập để thực hiện thao tác này'
+      });
+    }
+
+    const userId = req.user._id;
+    const dateRange = parseInt(req.query.dateRange) || 30;
+    const metric = req.query.metric || 'revenue';
+
+    const Order = require('../models/Orders');
+
+    // Tính ngày bắt đầu
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - dateRange);
+
+    // Get products
+    const products = await Product.find({ user_id: userId })
+      .populate('product_category_id', 'product_category_name');
+
+    // Get orders trong khoảng thời gian
+    const orders = await Order.find({ 
+      shop_id: userId,
+      createdAt: { $gte: startDate }
+    })
+      .populate('order_items.product_id', 'product_name product_price')
+      .populate('customer_id', 'username email');
+
+    // 1. Top selling products
+    const productSales = {};
+    orders.forEach(order => {
+      if (order.order_items) {
+        order.order_items.forEach(item => {
+          const productId = item.product_id?._id?.toString();
+          const productName = item.product_id?.product_name || 'Không xác định';
+          const price = item.product_id?.product_price || 0;
+          const quantity = item.quantity || 0;
+          
+          if (!productSales[productId]) {
+            productSales[productId] = {
+              productName,
+              totalSold: 0,
+              revenue: 0,
+              price,
+              lastSoldDate: order.createdAt
+            };
+          }
+          
+          productSales[productId].totalSold += quantity;
+          productSales[productId].revenue += price * quantity;
+          if (order.createdAt > productSales[productId].lastSoldDate) {
+            productSales[productId].lastSoldDate = order.createdAt;
+          }
+        });
+      }
+    });
+
+    const topSellingProducts = Object.values(productSales)
+      .sort((a, b) => b.totalSold - a.totalSold)
+      .slice(0, 20);
+
+    // 2. Customer analysis
+    const customerTypes = {};
+    orders.forEach(order => {
+      const customerId = order.customer_id?._id?.toString();
+      if (customerId) {
+        if (!customerTypes[customerId]) {
+          customerTypes[customerId] = {
+            orders: 0,
+            totalSpent: 0,
+            username: order.customer_id?.username || 'Khách hàng'
+          };
+        }
+        customerTypes[customerId].orders += 1;
+        customerTypes[customerId].totalSpent += order.order_price || 0;
+      }
+    });
+
+    const customerAnalysis = [
+      {
+        name: 'Khách hàng mới (1 đơn)',
+        count: Object.values(customerTypes).filter(c => c.orders === 1).length
+      },
+      {
+        name: 'Khách hàng thường (2-5 đơn)',
+        count: Object.values(customerTypes).filter(c => c.orders >= 2 && c.orders <= 5).length
+      },
+      {
+        name: 'Khách hàng VIP (>5 đơn)',
+        count: Object.values(customerTypes).filter(c => c.orders > 5).length
+      }
+    ];
+
+    // 3. Seasonal trends
+    const monthlyData = {};
+    orders.forEach(order => {
+      const month = new Date(order.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'short' });
+      if (!monthlyData[month]) {
+        monthlyData[month] = { revenue: 0, orders: 0 };
+      }
+      monthlyData[month].revenue += order.order_price || 0;
+      monthlyData[month].orders += 1;
+    });
+
+    const seasonalTrends = Object.entries(monthlyData)
+      .map(([period, data]) => ({
+        period,
+        revenue: data.revenue,
+        orders: data.orders
+      }))
+      .sort((a, b) => new Date(a.period) - new Date(b.period));
+
+    // 4. Category performance
+    const categoryStats = {};
+    products.forEach(product => {
+      const categoryName = product.product_category_id?.product_category_name || 'Không phân loại';
+      if (!categoryStats[categoryName]) {
+        categoryStats[categoryName] = {
+          categoryName,
+          products: 0,
+          revenue: 0,
+          totalSold: 0,
+          totalCost: 0
+        };
+      }
+      categoryStats[categoryName].products += 1;
+    });
+
+    // Add sales data to categories
+    orders.forEach(order => {
+      if (order.order_items && order.order_status === 'delivered') {
+        order.order_items.forEach(item => {
+          const categoryName = item.product_id?.product_category_id?.product_category_name || 'Không phân loại';
+          if (categoryStats[categoryName]) {
+            const revenue = (item.product_id?.product_price || 0) * (item.quantity || 0);
+            categoryStats[categoryName].revenue += revenue;
+            categoryStats[categoryName].totalSold += item.quantity || 0;
+          }
+        });
+      }
+    });
+
+    const categoryPerformance = Object.values(categoryStats)
+      .map(cat => ({
+        ...cat,
+        profitMargin: cat.revenue > 0 ? ((cat.revenue - cat.totalCost) / cat.revenue * 100) : 0
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+
+    // 5. Time analysis - orders by hour
+    const hourlyOrders = Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      orderCount: 0
+    }));
+
+    orders.forEach(order => {
+      const hour = new Date(order.createdAt).getHours();
+      hourlyOrders[hour].orderCount += 1;
+    });
+
+    const timeAnalysis = hourlyOrders.filter(h => h.orderCount > 0);
+
+    const analyticsData = {
+      topSellingProducts,
+      customerAnalysis,
+      seasonalTrends,
+      categoryPerformance,
+      timeAnalysis
+    };
+
+    console.log('Analytics data generated successfully');
+
+    res.status(200).json(successResponse(analyticsData));
+
+  } catch (error) {
+    console.error('Get Shop Analytics Error:', error);
+    res.status(500).json({
+      message: 'Lỗi khi lấy dữ liệu phân tích!',
       error: error.message
     });
   }
@@ -831,6 +1024,7 @@ module.exports = {
   deleteMyProduct,
   getMyProductStats,
   getShopDashboardStats,
+  getShopAnalytics, // Added getShopAnalytics to exports
   reportProduct,
 
   // Public functions
