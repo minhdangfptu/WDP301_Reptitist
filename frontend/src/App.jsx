@@ -73,6 +73,7 @@ import LibraryExpert from './pages/LibraryExpert';
 import LibraryExpertDetail from './pages/LibraryExpertDetail';
 import LibraryExpertTopicCreate from './pages/LibraryExpertTopicCreate';
 import LibraryExpertUpdate from './pages/LibraryExpertUpdate';
+import LibraryExpertCreate from './pages/LibraryExpertCreate';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -314,7 +315,23 @@ const AppRoutes = () => (
     <Route path="*" element={<UnderDevPage />} />
     <Route path="/libraryExpertDetail/:reptileId" element={<LibraryExpertDetail />} />
     <Route path="/library_expert_topics/create" element={<LibraryExpertTopicCreate />} />
-    <Route path="/libraryExpertDetail/update/:reptileId" element={<LibraryExpertUpdate />} />
+    <Route
+      path="/library_expert/create"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <LibraryExpertCreate />
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path="/libraryExpertDetail/update/:reptileId"
+      element={
+        <ProtectedRoute requiredRole="admin">
+          <LibraryExpertUpdate />
+        </ProtectedRoute>
+      }
+    />
+   
   </Routes>
 );
 

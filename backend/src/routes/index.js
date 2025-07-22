@@ -4,7 +4,7 @@ const authRoute=require('./authRoute.js')
 const userRoute=require('./userRoute.js')
 const shopRoute=require('./shopRoute.js')
 const userReptileRoutes = require('./userReptileRoute.js');
-const reptileInfoRoute = require('./reptileInfoRoute.js');
+// const reptileInfoRoute = require('./reptileInfoRoute.js');
 const aiRoute = require('./aiRoute.js');
 const libraryCategoriesRoute = require('./libraryCategoriesRoute');
 const libraryContentRoute = require('./libraryContentRoute');
@@ -22,7 +22,7 @@ router.use('/user', userRoute);
 router.use('/auth',authRoute);
 router.use('/shop',shopRoute);
 router.use('/pet', userReptileRoutes);
-router.use('/reptile-info', reptileInfoRoute);
+// router.use('/reptile-info', reptileInfoRoute);
 router.use('/order', orderRoute);
 
 // ===== AI & LIBRARY ROUTES =====
@@ -30,10 +30,11 @@ router.use('/ai', aiRoute);
 router.use('/library-categories', libraryCategoriesRoute);
 router.use('/library-content', libraryContentRoute);
 router.use('/topic-categories', topicCategoryRoutes);
+router.use('/info', reptileRoutes);
 
 // ===== TRANSACTION ROUTES (includes admin endpoints) =====
 router.use('/transactions', transactionRoute);
-router.use('/info', reptileRoutes);
+
 router.use('/product-reports', productReportRoute);
 router.use(shopComplainRoute);
 

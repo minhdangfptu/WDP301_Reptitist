@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const usernameRegex = /^[a-zA-Z0-9]{3,30}$/;
+const usernameRegex = /^[a-zA-Z0-9]{3,40}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const userSchema = new mongoose.Schema({
@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     minlength: [3, 'Username must be at least 3 characters long'],
     maxlength: [30, 'Username must be at most 30 characters long'],
-    match: [usernameRegex, 'Username must be alphanumeric and between 3 to 30 characters long'],
+    match: [usernameRegex, 'Username must be alphanumeric and between 3 to 40 characters long'],
   },
   email: {
     type: String,

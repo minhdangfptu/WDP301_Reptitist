@@ -44,7 +44,28 @@ const reptileSchema = new mongoose.Schema({
   recommended_foods: { type: [String] },
   prohibited_foods: { type: [String] },
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  disease: diseaseSchema
+  disease: diseaseSchema,
+  reptile_imageurl: {
+    type: String,
+    default: null,
+    // Support both file paths and base64 data
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Allow null/empty values
+        
+        // If it's a base64 image string
+        if (v.startsWith('data:image/')) {
+          // Basic validation for base64 image format
+          const base64Regex = /^data:image\/(jpeg|jpg|png|gif|webp);base64,/;
+          return base64Regex.test(v);
+        }
+        
+        // If it's a regular file path/URL, allow it
+        return typeof v === 'string';
+      },
+      message: 'Invalid image format. Must be a valid base64 image or file path.'
+    }
+  },
 }, {
   collection: 'reptiles',
   timestamps: true

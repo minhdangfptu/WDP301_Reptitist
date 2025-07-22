@@ -21,7 +21,7 @@ router.get(
 
 // Api cập nhật reptile: Chỉ admin
 router.put(
-  '/update-reptile',
+  '/update-reptile/:reptileId',
   authMiddleware1,
   roleMiddleware('admin'),
   reptileController.updateReptileById
