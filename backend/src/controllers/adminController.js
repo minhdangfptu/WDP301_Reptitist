@@ -2,26 +2,78 @@ const User = require('../models/users');
 const Role = require('../models/Roles');
 const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
+const Transaction = require('../models/Transactions');
 const mongoose = require('mongoose');
-const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification, sendProductHideNotification } = require('../config/email');
+//const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification, sendProductHideNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
     try {
         const user = req.user;
-        if (!user || !user.role_id) {
-            return res.status(403).json({ message: 'Không có quyền truy cập' });
+        
+        if (!user || !user._id) {
+            return res.status(403).json({ 
+                message: 'Không có quyền truy cập - User not found',
+                success: false 
+            });
         }
 
-        const role = await Role.findById(user.role_id);
-        if (!role || role.role_name !== 'admin') {
-            return res.status(403).json({ message: 'Chỉ admin mới có quyền truy cập' });
+        // Debug logging
+        console.log('Admin Role Check:', {
+            userId: user._id,
+            username: user.username,
+            role_id: user.role_id,
+            role_name: user.role_id?.role_name,
+            account_type: user.account_type
+        });
+
+        // Check if role_id exists and is populated
+        if (user.role_id && typeof user.role_id === 'object') {
+            // role_id is populated
+            if (user.role_id.role_name === 'admin') {
+                console.log('Admin access granted via populated role_id');
+                return next();
+            }
+        } else if (user.role_id && typeof user.role_id === 'string') {
+            // role_id is not populated, need to fetch role
+            const Role = require('../models/Roles');
+            const role = await Role.findById(user.role_id);
+            if (role && role.role_name === 'admin') {
+                console.log('Admin access granted via fetched role_id');
+                return next();
+            }
         }
 
-        next();
+        // Check account_type as fallback
+        if (user.account_type && user.account_type.type === 4) {
+            console.log('Admin access granted via account_type');
+            return next();
+        }
+
+        // Check if user has admin role through direct role property
+        if (user.role === 'admin') {
+            console.log('Admin access granted via direct role property');
+            return next();
+        }
+
+        console.log('Admin access denied:', {
+            role_id: user.role_id,
+            role_name: user.role_id?.role_name,
+            account_type: user.account_type,
+            role: user.role
+        });
+
+        return res.status(403).json({ 
+            message: 'Chỉ admin mới có quyền truy cập',
+            success: false 
+        });
+
     } catch (error) {
         console.error('Admin role check error:', error);
-        return res.status(500).json({ message: 'Lỗi kiểm tra quyền truy cập' });
+        return res.status(500).json({ 
+            message: 'Lỗi kiểm tra quyền truy cập',
+            success: false 
+        });
     }
 };
 
@@ -47,20 +99,29 @@ const getAllUsers = async (req, res) => {
 const getAllShops = async (req, res) => {
     try {
         const { page = 1, limit = 10, status } = req.query;
-        const query = { "account_type.type": "shop" };
+        
+        // Tìm shop dựa trên account_type (3,4) thay vì role_id
+        const query = {
+            'account_type.type': { $in: [3, 4] } // Shop (3) và Shop Premium (4)
+        };
+        
         if (status && status !== 'all') {
             query.isActive = status === 'active';
         }
+        
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const shops = await User.find(query)
             .select('-password_hashed -refresh_tokens')
             .sort({ created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
+            
         if (!shops || shops.length === 0) {
             return res.status(404).json({ message: 'Không có shop nào' });
         }
+        
         const total = await User.countDocuments(query);
+        
         // Lấy thống kê sản phẩm cho mỗi shop
         const shopsWithStats = await Promise.all(shops.map(async (shop) => {
             const productCount = await Product.countDocuments({ user_id: shop._id });
@@ -74,6 +135,7 @@ const getAllShops = async (req, res) => {
                 reportedCount
             };
         }));
+        
         res.status(200).json({
             shops: shopsWithStats,
             pagination: {
@@ -98,9 +160,9 @@ const getShopProducts = async (req, res) => {
         const { shopId } = req.params;
         const { page = 1, limit = 10, status, category } = req.query;
 
-        // Kiểm tra shop có tồn tại không
-        const shop = await User.findById(shopId).populate('role_id');
-        if (!shop || shop.role_id?.role_name !== 'shop') {
+        // Kiểm tra shop có tồn tại và có account_type là shop (3,4) không
+        const shop = await User.findById(shopId);
+        if (!shop || ![3, 4].includes(shop.account_type?.type)) {
             return res.status(404).json({ message: 'Không tìm thấy shop' });
         }
 
@@ -130,7 +192,8 @@ const getShopProducts = async (req, res) => {
                 _id: shop._id,
                 username: shop.username,
                 email: shop.email,
-                isActive: shop.isActive
+                isActive: shop.isActive,
+                account_type: shop.account_type
             },
             products,
             pagination: {
@@ -346,10 +409,10 @@ const getAdminStats = async (req, res) => {
         const activeUsers = await User.countDocuments({ isActive: true });
         const inactiveUsers = await User.countDocuments({ isActive: false });
         
-        // Thống kê theo roles
-        const adminCount = await User.countDocuments({ "account_type.type": "admin" });
-        const shopCount = await User.countDocuments({ "account_type.type": "shop" });
-        const customerCount = await User.countDocuments({ "account_type.type": "user" });
+        // Thống kê theo account_type
+        const adminCount = await User.countDocuments({ 'account_type.type': 4 }); // Admin
+        const shopCount = await User.countDocuments({ 'account_type.type': { $in: [3, 4] } }); // Shop (3,4)
+        const customerCount = await User.countDocuments({ 'account_type.type': { $in: [1, 2] } }); // Customer (1,2)
         
         // Thống kê sản phẩm
         const totalProducts = await Product.countDocuments();
@@ -549,8 +612,7 @@ const updateUser = async (req, res) => {
         // Handle account_type update if provided
         if (req.body.account_type) {
             updateData.account_type = {
-                type: req.body.account_type.type || 'customer',
-                level: req.body.account_type.level || 'normal',
+                type: req.body.account_type.type || 1, // Default to 1 (customer)
                 activated_at: req.body.account_type.activated_at || new Date(),
                 expires_at: req.body.account_type.expires_at || null
             };
@@ -644,8 +706,8 @@ const toggleUserStatus = async (req, res) => {
             return res.status(400).json({ message: 'Không thể vô hiệu hóa tài khoản admin khác' });
         }
 
-        // If deactivating a shop, hide their products
-        if (user.role_id && user.role_id.role_name === 'shop' && !isActive) {
+        // If deactivating a shop (account_type 3,4), hide their products
+        if ((user.account_type?.type === 3 || user.account_type?.type === 4) && !isActive) {
             await Product.updateMany(
                 { user_id: userId },
                 { product_status: 'not_available' }
@@ -803,7 +865,199 @@ const updateUserAccountType = async (req, res) => {
     }
 };
 
-// Lấy sản phẩm bị ẩn (not_available)
+// Thống kê doanh thu theo thời gian
+const getIncomeByTime = async (req, res) => {
+    try {
+        const { period = 'month', startDate, endDate } = req.query;
+        
+        // Validate period
+        const validPeriods = ['day', 'week', 'month', 'year'];
+        if (!validPeriods.includes(period)) {
+            return res.status(400).json({
+                message: 'Khoảng thời gian không hợp lệ. Các giá trị hợp lệ: day, week, month, year'
+            });
+        }
+
+        // Set date range
+        let start, end;
+        if (startDate && endDate) {
+            start = new Date(startDate);
+            end = new Date(endDate);
+            end.setHours(23, 59, 59, 999); // End of day
+        } else {
+            // Default to last 12 months if no date range provided
+            end = new Date();
+            start = new Date();
+            start.setFullYear(start.getFullYear() - 1);
+        }
+
+        // Build aggregation pipeline
+        const pipeline = [
+            {
+                $match: {
+                    transaction_date: { $gte: start, $lte: end },
+                    status: 'completed',
+                    transaction_type: 'payment'
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: '$amount' },
+                    totalTransactions: { $sum: 1 },
+                    averageTransaction: { $avg: '$amount' }
+                }
+            }
+        ];
+
+        // Add time-based grouping based on period
+        if (period === 'day') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' },
+                month: { $month: '$transaction_date' },
+                day: { $dayOfMonth: '$transaction_date' }
+            };
+        } else if (period === 'week') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' },
+                week: { $week: '$transaction_date' }
+            };
+        } else if (period === 'month') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' },
+                month: { $month: '$transaction_date' }
+            };
+        } else if (period === 'year') {
+            pipeline[1].$group._id = {
+                year: { $year: '$transaction_date' }
+            };
+        }
+
+        // Add sorting
+        pipeline.push({
+            $sort: { '_id': 1 }
+        });
+
+        // Execute aggregation
+        const incomeData = await Transaction.aggregate(pipeline);
+
+        // Format the data for response
+        const formattedData = incomeData.map(item => {
+            let periodLabel = '';
+            let date = '';
+
+            if (period === 'day') {
+                date = new Date(item._id.year, item._id.month - 1, item._id.day);
+                periodLabel = date.toLocaleDateString('vi-VN');
+            } else if (period === 'week') {
+                // Calculate start of week
+                const startOfYear = new Date(item._id.year, 0, 1);
+                const startOfWeek = new Date(startOfYear.getTime() + (item._id.week - 1) * 7 * 24 * 60 * 60 * 1000);
+                date = startOfWeek;
+                periodLabel = `Tuần ${item._id.week} (${startOfWeek.toLocaleDateString('vi-VN')})`;
+            } else if (period === 'month') {
+                date = new Date(item._id.year, item._id.month - 1, 1);
+                periodLabel = date.toLocaleDateString('vi-VN', { year: 'numeric', month: 'long' });
+            } else if (period === 'year') {
+                date = new Date(item._id.year, 0, 1);
+                periodLabel = `Năm ${item._id.year}`;
+            }
+
+            return {
+                period: periodLabel,
+                date: date,
+                revenue: item.totalRevenue,
+                transactionCount: item.totalTransactions,
+                averageTransaction: Math.round(item.averageTransaction),
+                periodType: period
+            };
+        });
+
+        // Calculate summary statistics
+        const totalRevenue = formattedData.reduce((sum, item) => sum + item.revenue, 0);
+        const totalTransactions = formattedData.reduce((sum, item) => sum + item.transactionCount, 0);
+        const averageRevenue = totalTransactions > 0 ? Math.round(totalRevenue / totalTransactions) : 0;
+
+        // Get top performing periods
+        const topPeriods = [...formattedData]
+            .sort((a, b) => b.revenue - a.revenue)
+            .slice(0, 5);
+
+        const response = {
+            period: period,
+            dateRange: {
+                start: start,
+                end: end
+            },
+            summary: {
+                totalRevenue: totalRevenue,
+                totalTransactions: totalTransactions,
+                averageRevenue: averageRevenue,
+                periodCount: formattedData.length
+            },
+            data: formattedData,
+            topPeriods: topPeriods,
+            currency: 'VND'
+        };
+
+        res.status(200).json(response);
+    } catch (error) {
+        console.error('Get income by time error:', error);
+        res.status(500).json({
+            message: 'Không thể lấy thống kê doanh thu',
+            error: error.message
+        });
+    }
+};
+
+// Lấy báo cáo tài chính (danh sách giao dịch) với phân trang, lọc thời gian, loại giao dịch, status
+const getFinancialReports = async (req, res) => {
+    try {
+        let { page = 1, limit = 20, startDate, endDate, transaction_type, status } = req.query;
+        page = parseInt(page);
+        limit = parseInt(limit);
+        const query = { is_test: false };
+
+        // Lọc theo thời gian
+        if (startDate || endDate) {
+            query.transaction_date = {};
+            if (startDate) query.transaction_date.$gte = new Date(startDate);
+            if (endDate) query.transaction_date.$lte = new Date(endDate);
+        }
+        // Lọc theo loại giao dịch
+        if (transaction_type && transaction_type !== 'all') {
+            query.transaction_type = transaction_type;
+        }
+        // Lọc theo trạng thái
+        if (status && status !== 'all') {
+            query.status = status;
+        }
+
+        const skip = (page - 1) * limit;
+        const total = await Transaction.countDocuments(query);
+        const transactions = await Transaction.find(query)
+            .populate('user_id', 'username email')
+            .sort({ transaction_date: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.status(200).json({
+            transactions,
+            pagination: {
+                page,
+                limit,
+                total,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error) {
+        console.error('Get financial reports error:', error);
+        res.status(500).json({
+            message: 'Không thể lấy báo cáo tài chính',
+            error: error.message
+        });
+    }
+};
 const getHiddenProducts = async (req, res) => {
     try {
         const { status } = req.query;
@@ -817,8 +1071,6 @@ const getHiddenProducts = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server', error: error.message });
     }
 };
-
-// Admin cập nhật trạng thái sản phẩm
 const updateProductStatusByAdmin = async (req, res) => {
     try {
         const { productId } = req.params;
@@ -915,6 +1167,8 @@ module.exports = {
     toggleUserStatus,
     createUser,
     updateUserAccountType,
+    getIncomeByTime,
+    getFinancialReports,
     getHiddenProducts,
     updateProductStatusByAdmin
 };

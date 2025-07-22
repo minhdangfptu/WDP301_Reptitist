@@ -38,6 +38,7 @@ import CreateLibraryTopic from './pages/LibraryTopicCreate';
 import UpdateLibraryTopic from './pages/LibraryTopicUpdate';
 import CreateCategory from './pages/CreateCategory';
 import UpdateCategory from './pages/UpdateCategory';
+import AdminCategoryManagement from './pages/AdminCategoryManagement';
 import ProductForm from './pages/ShopAddProductPage';
 import ShopProductManagement from './pages/ShopProductManagement';
 import LibraryManagement from './pages/LibraryManagement';
@@ -46,6 +47,8 @@ import PaymentProcessing from './pages/PaymentProcessing';
 import ProductManagement from './pages/ProductManagement';
 import AuthCallback from './pages/AuthCallback';
 import CreateTreatmentPage from './pages/CreateTreatmentPage';
+import ShopDashboard from './pages/ShopDashboard';
+import OrderManagement from './pages/OrderManagement';
 
 import UnderDevPage from './pages/UnderDevPage';
 import ListProductPage from './pages/ListProductPage';
@@ -60,9 +63,16 @@ import UserManual from './pages/UserManual';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AdminTransactionManagement from './pages/AdminTransactionManagement';
+import AdminIncomeManagement from './pages/AdminIncomeManagement';
 import AccessDenied from './components/AccessDenied';
 import ContactUsButton from './components/SupportButton';
-import ShopComplain from './pages/ShopComplain';
+import CustomerOrderPage from './pages/CustomerOrderPage';
+import AdminUpgradePlanManagement from './pages/AdminUpgradePlanManagement';
+import Header from './components/Header';
+import LibraryExpert from './pages/LibraryExpert';
+import LibraryExpertDetail from './pages/LibraryExpertDetail';
+import LibraryExpertTopicCreate from './pages/LibraryExpertTopicCreate';
+import LibraryExpertUpdate from './pages/LibraryExpertUpdate';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -139,10 +149,10 @@ const PublicRoute = ({ children, redirectIfAuthenticated = true }) => {
 const AccountTypeRoute = ({ canAccess, children }) => {
   const { loading, user } = useAuth();
   if (loading) return <LoadingSpinner />;
-  // Nếu không phải role 'user' thì cho truy cập bình thường
-  if (user?.role !== 'user') return children;
-  // Nếu là user thì kiểm tra quyền
+  
+  // Kiểm tra quyền truy cập cho tất cả các role
   if (!canAccess()) return <AccessDenied />;
+  
   return children;
 };
 
@@ -180,6 +190,9 @@ const AppRoutes = () => (
     <Route path="/library_topics/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateLibraryTopic /></ProtectedRoute>} />
     <Route path="/library_categories/create/:topicId" element={<ProtectedRoute requiredRole="admin"><CreateCategory /></ProtectedRoute>} />
     <Route path="/library_categories/update/:id" element={<ProtectedRoute requiredRole="admin"><UpdateCategory /></ProtectedRoute>} />
+    
+    {/* Admin Category Management */}
+    <Route path="/admin/categories" element={<ProtectedRoute requiredRole="admin"><AdminCategoryManagement /></ProtectedRoute>} />
 
     {/* Product routes */}
 
@@ -211,6 +224,7 @@ const AppRoutes = () => (
     <Route path="/LibraryTopic" element={<LibraryTopic />} />
     <Route path="/LibraryCategory" element={<LibraryCategory />} />
     <Route path="/LibraryContent/:id" element={<LibraryContent />} />
+    <Route path="/LibraryExpert" element={<LibraryExpert />} />
     <Route path="/Settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/YourPet" element={<ProtectedRoute>
       <AccountTypeRoute canAccess={useAuth().canPersonalizeReptile}>
@@ -235,6 +249,20 @@ const AppRoutes = () => (
     } />
     <Route path="/create-health-tracking/:reptileId" element={<ProtectedRoute><CreateTrackingHealthPage /></ProtectedRoute>} />
     <Route path="/create-treatment/:reptileId" element={<ProtectedRoute><CreateTreatmentPage /></ProtectedRoute>} />
+    <Route path="/ShopDashboard" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ShopDashboard />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
+    <Route path="/OrderManagement" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <OrderManagement />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
     <Route path="/ShopProductManagement" element={
       <ProtectedRoute>
         <AccountTypeRoute canAccess={useAuth().canSellProduct}>
@@ -243,6 +271,13 @@ const AppRoutes = () => (
       </ProtectedRoute>
     } />
     <Route path="/shop/products/create" element={
+      <ProtectedRoute>
+        <AccountTypeRoute canAccess={useAuth().canSellProduct}>
+          <ProductForm />
+        </AccountTypeRoute>
+      </ProtectedRoute>
+    } />
+    <Route path="/shop/products/edit/:productId" element={
       <ProtectedRoute>
         <AccountTypeRoute canAccess={useAuth().canSellProduct}>
           <ProductForm />
@@ -259,22 +294,27 @@ const AppRoutes = () => (
         </AccountTypeRoute>
       </ProtectedRoute>} />
 
-    <Route path="/shop/complain" element={<ShopComplain />} />
+    <Route path="/my-orders" element={<ProtectedRoute><CustomerOrderPage /></ProtectedRoute>} />
 
     {/* Admin only routes */}
     <Route path="/UserManagement" element={<ProtectedRoute requiredRole="admin"><UserManagement /></ProtectedRoute>} />
-    <Route path="/ProductManagement" element={<ProtectedRoute requiredRole="admin"><ProductManagement /></ProtectedRoute>} />
+    <Route path="/ProductManagement" element={<ProtectedRoute><ProductManagement /></ProtectedRoute>} />
     <Route path="/AdminShopManagement" element={<ProtectedRoute requiredRole="admin"><AdminShopManagement /></ProtectedRoute>} />
     <Route path="/LibraryManagement" element={<ProtectedRoute requiredRole="admin"><LibraryManagement /></ProtectedRoute>} />
-    <Route path="/admin/products/create" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
+    <Route path="/admin/products/create" element={<ProtectedRoute><ProductForm /></ProtectedRoute>} />
     <Route path="/admin/products/edit/:productId" element={<ProtectedRoute requiredRole="admin"><ProductForm /></ProtectedRoute>} />
     <Route path="/AdminTransactionManagement" element={<ProtectedRoute requiredRole="admin"><AdminTransactionManagement /></ProtectedRoute>} />
-      
+    <Route path="/AdminIncomeManagement" element={<ProtectedRoute requiredRole="admin"><AdminIncomeManagement /></ProtectedRoute>} />
+    <Route path="/admin/upgrade-plans" element={<ProtectedRoute requiredRole="admin"><><Header /><AdminUpgradePlanManagement /></></ProtectedRoute>} />
+
     {/* Auth callback route */}
     <Route path="/auth/callback" element={<AuthCallback />} />
 
     {/* Route catch-all cho các đường dẫn không tồn tại */}
     <Route path="*" element={<UnderDevPage />} />
+    <Route path="/libraryExpertDetail/:reptileId" element={<LibraryExpertDetail />} />
+    <Route path="/library_expert_topics/create" element={<LibraryExpertTopicCreate />} />
+    <Route path="/libraryExpertDetail/update/:reptileId" element={<LibraryExpertUpdate />} />
   </Routes>
 );
 

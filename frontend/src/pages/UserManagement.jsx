@@ -522,15 +522,7 @@ const UserManagement = () => {
               </div>
             </div>
 
-            <div className="um-stat-card um-stat-customer">
-              <div className="um-stat-icon">
-                <i className="fas fa-user"></i>
-              </div>
-              <div className="um-stat-content">
-                <span className="um-stat-number">{stats.roles?.customer || 0}</span>
-                <span className="um-stat-label">Khách hàng</span>
-              </div>
-            </div>
+
           </div>
         </div>
 
@@ -681,6 +673,7 @@ const UserManagement = () => {
                 <table className="um-users-table">
                   <thead>
                     <tr>
+                      <th>ID</th>
                       <th>Người dùng</th>
                       <th>Email</th>
                       <th>Loại tài khoản</th>
@@ -692,6 +685,9 @@ const UserManagement = () => {
                   <tbody>
                     {currentUsers.map(userData => (
                       <tr key={userData._id} className="um-table-row">
+                        <td>
+                          <span className="um-id">{userData._id.slice(-8)}</span>
+                        </td>
                         <td>
                           <div className="um-user-info">
                             <div className="um-user-avatar-container">
@@ -706,10 +702,6 @@ const UserManagement = () => {
                             </div>
                             <div className="um-user-details">
                               <span className="um-username">{userData.username}</span>
-                              <small className="um-user-id">ID: {userData._id.slice(-8)}</small>
-                              {userData.fullname && (
-                                <small className="um-fullname">{userData.fullname}</small>
-                              )}
                             </div>
                           </div>
                         </td>

@@ -89,7 +89,7 @@ const CreateUserModal = ({ isOpen, onClose, onUserCreated }) => {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn');
         return;

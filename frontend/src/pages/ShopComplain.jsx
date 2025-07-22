@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
+import { baseUrl } from '../config';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -21,6 +22,7 @@ const ShopComplain = () => {
     description: '',
   });
   const [submitting, setSubmitting] = useState(false);
+  const [productInfo, setProductInfo] = useState({ name: '', image: '' });
 
   useEffect(() => {
     // Nếu có productId, không set email từ user nữa
@@ -38,14 +40,20 @@ const ShopComplain = () => {
     const fetchProduct = async () => {
       if (productId) {
         try {
-          const res = await fetch(`http://localhost:8080/reptitist/shop/products/detail/${productId}`);
+          const res = await fetch(`${baseUrl}/reptitist/shop/products/detail/${productId}`);
           const data = await res.json();
-          if (data && data.user_id && data.user_id.email) {
-            setForm(prev => ({
-              ...prev,
-              email: data.user_id.email,
-              name: data.user_id.username || prev.name
-            }));
+          if (data) {
+            setProductInfo({
+              name: data.product_name || '',
+              image: data.product_imageurl && data.product_imageurl.length > 0 ? data.product_imageurl[0] : ''
+            });
+            if (data.user_id && data.user_id.email) {
+              setForm(prev => ({
+                ...prev,
+                email: data.user_id.email,
+                name: data.user_id.username || prev.name
+              }));
+            }
           }
         } catch (err) {
           // fallback: giữ nguyên email cũ
@@ -62,13 +70,13 @@ const ShopComplain = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.email || !form.reason) {
+    if (!form.name || !form.email || !form.reason || !form.description) {
       toast.error('Vui lòng điền đầy đủ thông tin bắt buộc!');
       return;
     }
     setSubmitting(true);
     try {
-      const res = await fetch('http://localhost:8080/reptitist/api/shop-complain', {
+      const res = await fetch(`${baseUrl}/reptitist/shop-complain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -103,6 +111,20 @@ const ShopComplain = () => {
             <label>Mã sản phẩm</label>
             <input type="text" className="form-control" value={productId} disabled readOnly />
           </div>
+          {productId && (
+            <>
+              <div className="form-group">
+                <label>Tên sản phẩm</label>
+                <input type="text" className="form-control" value={productInfo.name} disabled readOnly />
+              </div>
+              {productInfo.image && (
+                <div className="form-group">
+                  <label>Ảnh sản phẩm</label><br />
+                  <img src={productInfo.image} alt="Ảnh sản phẩm" style={{maxWidth: 120, maxHeight: 120, borderRadius: 8}} />
+                </div>
+              )}
+            </>
+          )}
           <div className="form-group">
             <label>Tên shop <span style={{ color: 'red' }}>*</span></label>
             <input type="text" className="form-control" name="name" value={form.name} onChange={handleChange} required readOnly={!!user} />
@@ -122,8 +144,8 @@ const ShopComplain = () => {
             </select>
           </div>
           <div className="form-group">
-            <label>Mô tả chi tiết</label>
-            <textarea className="form-control" name="description" value={form.description} onChange={handleChange} rows={5} placeholder="Mô tả chi tiết về khiếu nại (nếu có)..." />
+            <label>Mô tả chi tiết <span style={{ color: 'red' }}>*</span></label>
+            <textarea className="form-control" name="description" value={form.description} onChange={handleChange} rows={5} placeholder="Mô tả chi tiết về khiếu nại (nếu có)..." required />
           </div>
           <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: 16 }} disabled={submitting}>
             {submitting ? 'Đang gửi...' : 'Gửi khiếu nại'}

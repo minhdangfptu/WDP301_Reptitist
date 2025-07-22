@@ -3,6 +3,7 @@ const router = express.Router();
 const productController = require('../controllers/productController');
 const authMiddleware1 = require('../middleware/authMiddlewareModify')
 const roleMiddleware = require('../middleware/roleMiddleware');
+const upgradePlanController = require('../controllers/upgradePlanController');
 const Product = require('../models/Products');
 const { sendProductHideNotification, sendProductUnhideNotification } = require('../config/email');
 const User = require('../models/users');
@@ -24,35 +25,34 @@ const {
     updateUser,
     deleteUser,
     toggleUserStatus,
-    updateUserAccountType
+    updateUserAccountType,
+    getHiddenProducts,
+    updateProductStatusByAdmin,
+    getIncomeByTime,
+    getFinancialReports
 } = require('../controllers/adminController');
 
-router.get(
-  '/approve-product-by-id',
-  authMiddleware1,
-  roleMiddleware('admin'), // Only admin can approve products
-  productController.approveProduct
-);
-
-// Apply auth middleware cho các route còn lại (từ adminRouter)
+// Apply auth middleware to all admin routes
 router.use(authMiddleware);
 router.use(checkAdminRole);
 
 // User management routes
-router.get('/users', getAllUsers);                    // GET /admin/users
-router.get('/users/search', searchUsers);             // GET /admin/users/search
-router.get('/users/:userId', getUserById);            // GET /admin/users/:id
-router.put('/users/:userId', updateUser);             // PUT /admin/users/:id
-router.patch('/users/:userId/status', toggleUserStatus); // PATCH /admin/users/:id/status
-router.patch('/users/:userId/account-type', updateUserAccountType); // PATCH /admin/users/:id/account-type
-router.delete('/users/:userId', deleteUser);          // DELETE /admin/users/:id
+router.get('/users', getAllUsers);                    // GET /admin/users - Lấy tất cả người dùng
+router.get('/users/search', searchUsers);             // GET /admin/users/search - Tìm kiếm người dùng
+router.get('/users/:userId', getUserById);            // GET /admin/users/:id - Lấy thông tin một người dùng
+router.put('/users/:userId', updateUser);             // PUT /admin/users/:id - Cập nhật thông tin người dùng
+router.patch('/users/:userId/status', toggleUserStatus); // PATCH /admin/users/:id/status - Thay đổi trạng thái
+router.patch('/users/:userId/account-type', updateUserAccountType); // PATCH /admin/users/:id/account-type - Cập nhật loại tài khoản
+router.delete('/users/:userId', deleteUser);          // DELETE /admin/users/:id - Xóa người dùng
 
 // Shop management routes
-router.get('/shops', getAllShops);                    // GET /admin/shops
-router.get('/shops/:shopId/products', getShopProducts); // GET /admin/shops/:shopId/products
+router.get('/shops', getAllShops);                    // GET /admin/shops - Lấy tất cả shop
+router.get('/shops/:shopId/products', getShopProducts); // GET /admin/shops/:shopId/products - Lấy sản phẩm của shop
 
 // Product management routes (admin can only delete)
-router.delete('/products/:productId', deleteProductByAdmin); // DELETE /admin/products/:id
+router.get('/products', getHiddenProducts); // GET /admin/products?status=not_available - Lấy sản phẩm bị ẩn
+router.put('/products/:productId/status', updateProductStatusByAdmin); // PUT /admin/products/:productId/status - Cập nhật trạng thái sản phẩm
+router.delete('/products/:productId', deleteProductByAdmin); // DELETE /admin/products/:id - Xóa sản phẩm
 
 // Cập nhật trạng thái sản phẩm (ẩn/bỏ ẩn)
 router.put('/products/:productId/status', async (req, res) => {
@@ -119,10 +119,20 @@ router.get('/products', async (req, res) => {
 });
 
 // Report management routes
-router.get('/reports', getAllProductReports);         // GET /admin/reports
-router.post('/reports/:reportId/handle', handleProductReport); // POST /admin/reports/:id/handle
+router.get('/reports', getAllProductReports);         // GET /admin/reports - Lấy tất cả báo cáo
+router.post('/reports/:reportId/handle', handleProductReport); // POST /admin/reports/:id/handle - Xử lý báo cáo
 
 // Statistics
-router.get('/stats', getAdminStats);                  // GET /admin/stats
+router.get('/stats', getAdminStats);                   // GET /admin/stats
+router.get('/income', getIncomeByTime);               // GET /admin/income
+
+// Financial reports
+router.get('/financial-reports', getFinancialReports); // GET /admin/financial-reports
+
+// Upgrade Plan management (admin only)
+router.get('/get-upgrade-plans', authMiddleware1,  upgradePlanController.getUpgradePlans);
+router.post('/create-upgrade-plans', authMiddleware1,  upgradePlanController.createUpgradePlan);
+router.put('/update-upgrade-plans/:id', authMiddleware1,  upgradePlanController.updateUpgradePlan);
+router.delete('/delete-upgrade-plans/:id',authMiddleware1,  upgradePlanController.deleteUpgradePlan);
 
 module.exports = router;

@@ -21,7 +21,7 @@ const corsOptions = {
     process.env.FRONTEND_URL,
     process.env.FRONTEND_URL2
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 };
@@ -29,12 +29,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 let visitCount = 0
-
-app.use((req, res, next) => {
-  visitCount += 13;
-  next();
-});
-
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
@@ -53,11 +47,18 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/reptitist', router);
 
-router.get("/test", (req, res) => {
+// Test route should be inside the router or moved before mounting
+app.get("/test", (req, res) => {
   res.send("<h1>Hello World!</h1>");
 });
-
+app.use((req, res, next) => {
+  console.log(`Request received: ${req.method} ${req.url}`);
+  next();
+});
 app.get('/visits', (req, res) => {
+  if (req.method === 'GET') { 
+    visitCount += 1;  
+  }
   res.json({ count: visitCount });
 });
 

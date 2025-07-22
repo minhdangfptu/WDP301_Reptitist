@@ -1,12 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import "../css/CartSummary.css"
+import { createOrder } from '../api/orderApi';
 
 // Cập nhật CartSummary để hiển thị thông tin về sản phẩm được chọn
 const CartSummary = ({ totalAmount, totalItems, unavailableItems = [], selectedItems = [] }) => {
   const [promoCode, setPromoCode] = useState("")
   const [discount, setDiscount] = useState(0)
+  const navigate = useNavigate()
 
   const shippingFee = totalAmount > 500000 ? 0 : 30000 // Free shipping over 500k VND
   const tax = totalAmount * 0.1 // 10% tax
@@ -30,15 +33,24 @@ const CartSummary = ({ totalAmount, totalItems, unavailableItems = [], selectedI
     }
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (selectedItems.length === 0) {
       alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán")
       return
     }
-
-    // Tạo đơn hàng với các sản phẩm đã chọn
-    alert(`Đang tạo đơn hàng với ${selectedItems.length} sản phẩm đã chọn...`)
-    console.log("Sản phẩm đã chọn:", selectedItems)
+    try {
+      // Chuyển selectedItems thành mảng order_items đúng định dạng
+      const order_items = selectedItems.map(item => ({
+        product_id: item.product_id?._id || item.product_id,
+        quantity: item.quantity
+      }))
+      await createOrder(order_items)
+      alert("Tạo đơn hàng thành công!")
+      // Có thể redirect sang trang đơn hàng hoặc làm mới giỏ hàng ở đây
+    } catch (err) {
+      alert("Tạo đơn hàng thất bại! Vui lòng thử lại.")
+      console.error(err)
+    }
   }
 
   return (
@@ -111,7 +123,7 @@ const CartSummary = ({ totalAmount, totalItems, unavailableItems = [], selectedI
         Tạo đơn hàng
       </button>
 
-      <button className="continue-shopping-btn-secondary">Tiếp tục mua sắm</button>
+      <button className="continue-shopping-btn-secondary" onClick={() => navigate('/ShopLandingPage')}>Tiếp tục mua sắm</button>
     </div>
   )
 }

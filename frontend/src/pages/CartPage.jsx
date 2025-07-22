@@ -13,7 +13,7 @@ import { getCartService, deleteProductFromCartService, checkProductAvailabilityS
 import { toast } from "react-toastify"
 import axios from "axios"
 import ShopHeader from "../components/ShopHeader"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import Footer from "../components/Footer"
 
 const CartPage = () => {
@@ -22,6 +22,7 @@ const CartPage = () => {
   const [selectAll, setSelectAll] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   // Fetch cart data when component mounts
   useEffect(() => {
@@ -247,7 +248,7 @@ const CartPage = () => {
                   <div className="empty-cart-icon">🛒</div>
                   <h3>Giỏ hàng trống</h3>
                   <p>Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
-                  <button className="continue-shopping-btn">Tiếp tục mua sắm</button>
+                  <button className="continue-shopping-btn" onClick={() => navigate('/ShopLandingPage')}>Tiếp tục mua sắm</button>
                 </div>
               ) : (
                 <>

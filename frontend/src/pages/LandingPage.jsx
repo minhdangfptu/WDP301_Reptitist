@@ -19,8 +19,8 @@ const LandingPage = () => {
   const [accessCount, setAccessCount] = useState(null);
   const [showHelpDialog, setShowHelpDialog] = useState(false);
   const [showFirstLoginPopup, setShowFirstLoginPopup] = useState(false);
-  const [visitCount, setVisitCount] = useState(5134);
-  
+  const [visitCount, setVisitCount] = useState(null);
+
   useEffect(() => {
     const fetchLatestContent = async () => {
       try {
@@ -76,15 +76,16 @@ const LandingPage = () => {
     };
     fetchUserCount();
   }, []);
-
   useEffect(() => {
-    let stored = localStorage.getItem("visitCountLanding");
-    let count = 5134;
-    if (stored) {
-      count = Number(stored) + 1;
-    }
-    setVisitCount(count);
-    localStorage.setItem("visitCountLanding", count);
+    const fetchUserVisitCount = async () => {
+      try {
+        const res = await axios.get(`${baseUrl}/visits`);
+        setVisitCount(res.data.count);
+      } catch (err) {
+        setVisitCount("N/A");
+      }
+    };
+    fetchUserVisitCount();
   }, []);
 
   const { user } = useAuth();
@@ -139,8 +140,9 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="discount-badge">
-            <span className="amount">100%</span>
-            <span>FREE</span>
+            <span>🤖</span>
+            <span className="amount" style={{ fontSize: "1.5rem" }}>ReptiAI</span>
+            <span style={{ fontSize: "1rem" }}>Try Now!</span>
           </div>
         </div>
       </section>
@@ -196,15 +198,27 @@ const LandingPage = () => {
               </p>
             </div>
             <div className="about-image">
-              {/* <img src="BGLandingPage.png" alt="Bò sát tại Reptiest" /> */}
               <ReactPlayer
-                playing={true}
-                muted={true}
                 url="https://www.youtube.com/watch?v=KYPKoT8C5TA"
-                controls
+                playing={true} // Đặt false để video không tự động phát
+                controls={false} // Hiển thị các nút điều khiển
                 width="100%"
+                autoPlay={true}
+                loop={true}
+                muted={true} // Tắt âm thanh
+                height="100%"
+                config={{
+                  youtube: {
+                    playerVars: {
+                      modestbranding: 1, // Loại bỏ logo YouTube
+                      rel: 0, // Không hiển thị video liên quan sau khi phát
+                    },
+                  },
+                }}
+                onError={(e) => {
+                  console.error("Error loading video:", e);
+                }}
               />
-              {/* <div className="play-button"></div> */}
             </div>
           </div>
         </div>
@@ -360,42 +374,39 @@ const LandingPage = () => {
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
                     >
                       {item.title === "Số lượng người dùng hệ thống"
-                        ? "577 Tài khoản"
+                        ? userTotal + " Người"
                         : ""}
                     </p>
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
                     >
-                      {item.title === "Số lượng thông tin kiến thức" ? "1.000 + bài":""
-                       }
+                      {item.title === "Số lượng thông tin kiến thức"
+                        ? "1.000 + bài"
+                        : ""}
                     </p>
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
                     >
                       {item.title === "Số lượng đăng kí trong tuần"
-                        ? "89 Tài khoản"
+                        ? userCount + " Tài khoản"
                         : ""}
                     </p>
                     <p
                       style={{
                         margin: 0,
-                        color: "#666",
                         fontSize: "bold",
                         color: "#0fa958",
                       }}
@@ -414,12 +425,14 @@ const LandingPage = () => {
 
       <Footer />
 
-
       {showFirstLoginPopup && (
         <div className="first-login-popup-overlay">
           <div className="first-login-popup">
             <h2>Đăng nhập lần đầu tiên?</h2>
-            <p>Chào mừng bạn đến với Reptitist! Bạn có muốn xem hướng dẫn sử dụng?</p>
+            <p>
+              Chào mừng bạn đến với Reptitist! Bạn có muốn xem hướng dẫn sử
+              dụng?
+            </p>
             <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
               <button
                 className="help-dialog-btn main"

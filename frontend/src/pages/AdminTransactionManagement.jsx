@@ -5,10 +5,32 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { baseUrl } from '../config';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import paymentApi from '../api/paymentApi';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
+import { saveAs } from 'file-saver';
 import '../css/AdminTransactionManagement.css';
+
+const TRANSACTION_TYPES = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'payment', label: 'Thanh toán' },
+  { value: 'refund', label: 'Hoàn tiền' },
+  { value: 'subscription', label: 'Đăng ký' },
+  { value: 'topup', label: 'Nạp tiền' },
+];
+const STATUS_TYPES = [
+  { value: 'all', label: 'Tất cả' },
+  { value: 'pending', label: 'Đang chờ' },
+  { value: 'completed', label: 'Hoàn thành' },
+  { value: 'failed', label: 'Thất bại' },
+  { value: 'refunded', label: 'Đã hoàn tiền' },
+];
 
 const AdminTransactionManagement = () => {
   const { user, hasRole } = useAuth();
+  const [activeTab, setActiveTab] = useState('management'); // 'management' or 'reports'
+  
+  // Management tab states
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -22,97 +44,261 @@ const AdminTransactionManagement = () => {
   const [editForm, setEditForm] = useState({});
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Reports tab states
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState('');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [transactionType, setTransactionType] = useState('all');
+  const [status, setStatus] = useState('all');
+
   useEffect(() => {
+    console.log('User changed:', user);
+    console.log('Has admin role:', hasRole('admin'));
+    
     if (user && hasRole('admin')) {
-      fetchTransactions();
+      if (activeTab === 'management') {
+        fetchTransactions();
+      } else {
+        fetchReports();
+      }
     }
   }, [user]);
 
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('refresh_token');
-      const response = await axios.get(`${baseUrl}/reptitist/transactions/all`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setTransactions(response.data.transactions || []);
       setError('');
+      
+      // Sử dụng access_token từ localStorage
+      const token = localStorage.getItem('access_token');
+      
+      if (!token) {
+        setError('Không tìm thấy token. Vui lòng đăng nhập lại.');
+        return;
+      }
+
+      console.log('Fetching transactions with token:', token?.substring(0, 20) + '...');
+      
+      const response = await axios.get(`${baseUrl}/reptitist/transactions/all`, {
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('Transactions response:', response.data);
+      
+      if (response.data.success) {
+        setTransactions(response.data.transactions || []);
+        setError('');
+      } else {
+        setError(response.data.error || 'Không thể tải dữ liệu giao dịch');
+        setTransactions([]);
+      }
+      
     } catch (err) {
-      setError('Không thể tải dữ liệu giao dịch.');
+      console.error('Fetch transactions error:', err);
+      console.error('Error response:', err.response?.data);
+      
+      // Xử lý lỗi chi tiết
+      if (err.response?.status === 403) {
+        setError('Bạn không có quyền xem dữ liệu giao dịch. Chỉ Admin mới có thể truy cập.');
+      } else if (err.response?.status === 401) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        // Có thể redirect về login
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 3000);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Không thể tải dữ liệu giao dịch. Vui lòng thử lại.');
+      }
       setTransactions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Xử lý filter thực tế
+  const fetchReports = async () => {
+    try {
+      setReportsLoading(true);
+      setReportsError('');
+      const data = await paymentApi.getAdminFinancialReports({
+        page,
+        limit,
+        startDate,
+        endDate,
+        transaction_type: transactionType,
+        status,
+      });
+      setReports(data.transactions || []);
+      setTotalPages(data.pagination?.pages || 1);
+      setTotal(data.pagination?.total || 0);
+    } catch (err) {
+      setReportsError('Không thể tải báo cáo tài chính: ' + (err.response?.data?.message || err.message));
+      setReports([]);
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  const handleFilterSubmit = (e) => {
+    e.preventDefault();
+    setPage(1);
+    fetchReports();
+  };
+
+  const handleResetFilters = () => {
+    setStartDate('');
+    setEndDate('');
+    setTransactionType('all');
+    setStatus('all');
+    setPage(1);
+    setTimeout(() => fetchReports(), 100);
+  };
+
+  // Filter transactions
   const filterTransactions = () => {
     let filtered = [...transactions];
-    if (statusFilter !== 'all') filtered = filtered.filter(tx => tx.status === statusFilter);
-    if (userFilter.trim()) filtered = filtered.filter(tx => (tx.user?.username || tx.user_id)?.toLowerCase().includes(userFilter.trim().toLowerCase()));
+    
+    // Filter by status
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(tx => tx.status === statusFilter);
+    }
+    
+    // Filter by user
+    if (userFilter.trim()) {
+      const searchTerm = userFilter.trim().toLowerCase();
+      filtered = filtered.filter(tx => {
+        const username = tx.user_id?.username || '';
+        const email = tx.user_id?.email || '';
+        const fullname = tx.user_id?.fullname || '';
+        return username.toLowerCase().includes(searchTerm) ||
+               email.toLowerCase().includes(searchTerm) ||
+               fullname.toLowerCase().includes(searchTerm);
+      });
+    }
+    
+    // Filter by date
     if (dateFilter !== 'all') {
       const now = new Date();
       let startDate;
+      
       switch (dateFilter) {
         case 'today':
           startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
           break;
         case 'week':
-          startDate = new Date(now.setDate(now.getDate() - 7));
+          startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
           break;
         case 'month':
-          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
           break;
         case 'year':
-          startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+          startDate = new Date(now.getTime() - (365 * 24 * 60 * 60 * 1000));
           break;
         default:
           startDate = null;
       }
-      if (startDate) filtered = filtered.filter(tx => new Date(tx.transaction_date) >= startDate);
+      
+      if (startDate) {
+        filtered = filtered.filter(tx => {
+          const txDate = new Date(tx.transaction_date || tx.createdAt);
+          return txDate >= startDate;
+        });
+      }
     }
+    
     return filtered;
   };
+
   const filteredTransactions = filterTransactions();
 
-  // Biểu đồ
+  // Helper functions
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'completed': return 'Hoàn thành';
+      case 'pending': return 'Đang chờ';
+      case 'failed': return 'Thất bại';
+      case 'refunded': return 'Đã hoàn tiền';
+      default: return status;
+    }
+  };
+
+  const getTypeText = (type) => {
+    switch (type) {
+      case 'subscription': return 'Đăng ký';
+      case 'topup': return 'Nạp tiền';
+      case 'refund': return 'Hoàn tiền';
+      case 'payment': return 'Thanh toán';
+      default: return type;
+    }
+  };
+
+  // Chart data preparation
   const statusCounts = filteredTransactions.reduce((acc, tx) => {
     acc[tx.status] = (acc[tx.status] || 0) + 1;
     return acc;
   }, {});
-  const barChartData = Object.entries(statusCounts).map(([status, count]) => ({ name: status, value: count }));
+  const barChartData = Object.entries(statusCounts).map(([status, count]) => ({ 
+    name: getStatusText(status), 
+    value: count 
+  }));
   
   const typeCounts = filteredTransactions.reduce((acc, tx) => {
     acc[tx.transaction_type] = (acc[tx.transaction_type] || 0) + 1;
     return acc;
   }, {});
-  const pieChartData = Object.entries(typeCounts).map(([type, count]) => ({ name: type, value: count }));
+  const pieChartData = Object.entries(typeCounts).map(([type, count]) => ({ 
+    name: getTypeText(type), 
+    value: count 
+  }));
   
   const dateSums = {};
   filteredTransactions.forEach(tx => {
-    const date = new Date(tx.transaction_date).toLocaleDateString('vi-VN');
+    const date = new Date(tx.transaction_date || tx.createdAt).toLocaleDateString('vi-VN');
     dateSums[date] = (dateSums[date] || 0) + tx.amount;
   });
-  const lineChartData = Object.entries(dateSums).map(([date, sum]) => ({ name: date, value: sum }));
+  const lineChartData = Object.entries(dateSums)
+    .map(([date, sum]) => ({ name: date, value: sum }))
+    .sort((a, b) => new Date(a.name.split('/').reverse().join('-')) - new Date(b.name.split('/').reverse().join('-')));
 
-  // Xử lý xóa
+  // Handle delete transaction
   const handleDelete = async (id) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
+      return;
+    }
+    
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('refresh_token');
-      await axios.delete(`${baseUrl}/reptitist/transactions/${id}`, {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.delete(`${baseUrl}/reptitist/transactions/admin/${id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setDeleteId(null);
-      fetchTransactions();
+      
+      if (response.data.success) {
+        setDeleteId(null);
+        fetchTransactions();
+        alert('Xóa giao dịch thành công!');
+      } else {
+        alert(response.data.error || 'Xóa thất bại');
+      }
     } catch (err) {
-      alert(err?.response?.data?.message || 'Xóa thất bại');
+      console.error('Delete error:', err);
+      alert(err?.response?.data?.message || err?.response?.data?.error || 'Xóa thất bại');
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Xử lý sửa
+  // Handle edit transaction
   const openEdit = (tx) => {
     setEditTx(tx);
     setEditForm({
@@ -131,20 +317,26 @@ const AdminTransactionManagement = () => {
     e.preventDefault();
     setActionLoading(true);
     try {
-      const token = localStorage.getItem('refresh_token');
-      await axios.put(`${baseUrl}/reptitist/transactions/${editTx._id}`, editForm, {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.put(`${baseUrl}/reptitist/transactions/admin/${editTx._id}`, editForm, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setEditTx(null);
-      fetchTransactions();
+      
+      if (response.data.success) {
+        setEditTx(null);
+        fetchTransactions();
+        alert('Cập nhật giao dịch thành công!');
+      } else {
+        alert(response.data.error || 'Cập nhật thất bại');
+      }
     } catch (err) {
-      alert(err?.response?.data?.message || 'Cập nhật thất bại');
+      console.error('Edit error:', err);
+      alert(err?.response?.data?.message || err?.response?.data?.error || 'Cập nhật thất bại');
     } finally {
       setActionLoading(false);
     }
   };
 
-  // Helper functions
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -152,11 +344,17 @@ const AdminTransactionManagement = () => {
     }).format(amount);
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleString('vi-VN');
+  };
+
   const getStatusBadgeClass = (status) => {
     switch (status) {
       case 'completed': return 'status-completed';
       case 'pending': return 'status-pending';
       case 'failed': return 'status-failed';
+      case 'refunded': return 'status-refunded';
       default: return 'status-pending';
     }
   };
@@ -166,27 +364,11 @@ const AdminTransactionManagement = () => {
       case 'subscription': return 'type-subscription';
       case 'topup': return 'type-topup';
       case 'refund': return 'type-refund';
+      case 'payment': return 'type-payment';
       default: return 'type-subscription';
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'completed': return 'Hoàn thành';
-      case 'pending': return 'Đang chờ';
-      case 'failed': return 'Thất bại';
-      default: return status;
-    }
-  };
-
-  const getTypeText = (type) => {
-    switch (type) {
-      case 'subscription': return 'Đăng ký';
-      case 'topup': return 'Nạp tiền';
-      case 'refund': return 'Hoàn tiền';
-      default: return type;
-    }
-  };
 
   if (!user || !hasRole('admin')) {
     return (
@@ -220,7 +402,12 @@ const AdminTransactionManagement = () => {
                 <i className="fas fa-chart-line"></i>
                 Quản lý giao dịch các gói dịch vụ
               </h1>
-              <p>Thống kê, chỉnh sửa, xóa và lọc các giao dịch của hệ thống</p>
+              <p>Thống kê, chỉnh sửa và quản lý các giao dịch của người dùng</p>
+              {user && (
+                <div style={{ fontSize: '14px', opacity: 0.9, marginTop: '8px' }}>
+                  Đăng nhập với quyền: <strong>{user.role || 'N/A'}</strong>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -490,7 +677,21 @@ const AdminTransactionManagement = () => {
                 </h3>
               </div>
               <div className="pm-modal-body">
-                <p>Bạn có chắc chắn muốn xóa giao dịch này không? Hành động này không thể hoàn tác.</p>
+                <p>Bạn có chắc chắn muốn xóa giao dịch này không?</p>
+                <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '8px' }}>
+                  <strong>Lưu ý:</strong> Hành động này không thể hoàn tác!
+                </p>
+                <div style={{ 
+                  background: '#f3f4f6', 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  marginTop: '16px',
+                  fontSize: '14px'
+                }}>
+                  <strong>ID:</strong> {deleteId?.slice(-8)}<br/>
+                  <strong>Giao dịch:</strong> {transactions.find(tx => tx._id === deleteId)?.transaction_type}<br/>
+                  <strong>Số tiền:</strong> {formatCurrency(transactions.find(tx => tx._id === deleteId)?.amount || 0)}
+                </div>
               </div>
               <div className="pm-modal-footer">
                 <button 
@@ -499,7 +700,7 @@ const AdminTransactionManagement = () => {
                   disabled={actionLoading}
                 >
                   <i className="fas fa-times"></i>
-                  Hủy
+                  Hủy bỏ
                 </button>
                 <button 
                   className="pm-btn pm-btn-danger" 
@@ -517,7 +718,7 @@ const AdminTransactionManagement = () => {
         {/* Modal sửa giao dịch */}
         {editTx && (
           <div className="pm-modal-overlay">
-            <form className="pm-modal" onSubmit={handleEditSubmit} style={{ minWidth: '400px' }}>
+            <form className="pm-modal" onSubmit={handleEditSubmit} style={{ minWidth: '500px', maxWidth: '600px' }}>
               <div className="pm-modal-header">
                 <h3>
                   <i className="fas fa-edit" style={{ color: '#f59e0b' }}></i>
@@ -526,55 +727,109 @@ const AdminTransactionManagement = () => {
               </div>
               <div className="pm-modal-body">
                 <div className="pm-form-group">
-                  <label>Số tiền:</label>
+                  <label>ID giao dịch:</label>
                   <input 
                     className="pm-form-input" 
-                    name="amount" 
-                    type="number" 
-                    value={editForm.amount} 
+                    value={editTx._id} 
+                    disabled 
+                    style={{ background: '#f3f4f6', color: '#6b7280', fontFamily: 'monospace', fontSize: '12px' }}
+                  />
+                </div>
+
+                <div className="pm-form-group">
+                  <label>Người dùng:</label>
+                  <input 
+                    className="pm-form-input" 
+                    value={editTx.user_id?.username || editTx.user_id?.email || 'N/A'} 
                     disabled 
                     style={{ background: '#f3f4f6', color: '#6b7280' }}
                   />
-                  <small style={{ color: '#6b7280', fontSize: '12px' }}>Số tiền không thể thay đổi</small>
+                </div>
+                
+                <div className="pm-form-group">
+                  <label>Số tiền:</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      className="pm-form-input" 
+                      value={formatCurrency(editForm.amount)} 
+                      disabled 
+                      style={{ background: '#f3f4f6', color: '#6b7280', flex: 1 }}
+                    />
+                    <small style={{ color: '#6b7280', fontSize: '12px', minWidth: 'max-content' }}>
+                      
+                    </small>
+                  </div>
                 </div>
                 
                 <div className="pm-form-group">
                   <label>Loại giao dịch:</label>
-                  <input 
-                    className="pm-form-input" 
-                    name="transaction_type" 
-                    value={getTypeText(editForm.transaction_type)} 
-                    disabled 
-                    style={{ background: '#f3f4f6', color: '#6b7280' }}
-                  />
-                  <small style={{ color: '#6b7280', fontSize: '12px' }}>Loại giao dịch không thể thay đổi</small>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input 
+                      className="pm-form-input" 
+                      value={getTypeText(editForm.transaction_type)} 
+                      disabled 
+                      style={{ background: '#f3f4f6', color: '#6b7280', flex: 1 }}
+                    />
+                    <small style={{ color: '#6b7280', fontSize: '12px', minWidth: 'max-content' }}>
+                      
+                    </small>
+                  </div>
                 </div>
                 
                 <div className="pm-form-group">
-                  <label>Trạng thái: <span style={{ color: '#ef4444' }}>*</span></label>
+                  <label>
+                    Trạng thái: <span style={{ color: '#ef4444' }}>*</span>
+                  </label>
                   <select 
                     className="pm-form-input" 
                     name="status" 
                     value={editForm.status} 
                     onChange={handleEditChange} 
                     required
+                    style={{ background: 'white' }}
                   >
                     <option value="pending">Đang chờ</option>
                     <option value="completed">Hoàn thành</option>
                     <option value="failed">Thất bại</option>
+                    <option value="refunded">Đã hoàn tiền</option>
                   </select>
+                  <small style={{ color: '#059669', fontSize: '12px' }}>
+                    Đây là trường duy nhất có thể chỉnh sửa
+                  </small>
                 </div>
                 
                 <div className="pm-form-group">
                   <label>Mô tả:</label>
-                  <input 
-                    className="pm-form-input" 
-                    name="description" 
-                    value={editForm.description} 
-                    disabled 
-                    style={{ background: '#f3f4f6', color: '#6b7280' }}
-                  />
-                  <small style={{ color: '#6b7280', fontSize: '12px' }}>Mô tả không thể thay đổi</small>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <textarea 
+                      className="pm-form-input" 
+                      value={editForm.description} 
+                      disabled 
+                      rows={3}
+                      style={{ background: '#f3f4f6', color: '#6b7280', flex: 1, resize: 'vertical' }}
+                    />
+                    <small style={{ color: '#6b7280', fontSize: '12px', minWidth: 'max-content' }}>
+                      
+                    </small>
+                  </div>
+                </div>
+
+                <div style={{ 
+                  background: '#fffbeb', 
+                  border: '1px solid #fcd34d', 
+                  borderRadius: '8px', 
+                  padding: '12px', 
+                  marginTop: '16px' 
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <i className="fas fa-info-circle" style={{ color: '#f59e0b' }}></i>
+                    <strong style={{ color: '#92400e' }}>Lưu ý quan trọng:</strong>
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '16px', color: '#92400e', fontSize: '14px' }}>
+                    <li>Chỉ có thể chỉnh sửa trạng thái giao dịch</li>
+                    <li>Việc thay đổi trạng thái có thể ảnh hưởng đến hệ thống thanh toán</li>
+                    <li>Hãy chắc chắn trước khi thực hiện thay đổi</li>
+                  </ul>
                 </div>
               </div>
               <div className="pm-modal-footer">
@@ -585,12 +840,12 @@ const AdminTransactionManagement = () => {
                   disabled={actionLoading}
                 >
                   <i className="fas fa-times"></i>
-                  Hủy
+                  Hủy bỏ
                 </button>
                 <button 
                   className="pm-btn pm-btn-primary" 
                   type="submit" 
-                  disabled={actionLoading}
+                  disabled={actionLoading || editForm.status === editTx.status}
                 >
                   <i className="fas fa-save"></i>
                   {actionLoading ? 'Đang lưu...' : 'Lưu thay đổi'}

@@ -7,159 +7,154 @@ import ReactDOM from "react-dom";
 const AboutUs = () => {
   // Enhanced team data with achievements
   const teamData = {
-    khang: {
-      avatar: "/Gecko1.png",
-      name: "Nguyễn Văn A",
-      role: "CEO & Co-Founder",
-      summary:
-        "Lãnh đạo tài ba với tầm nhìn chiến lược và kinh nghiệm sâu rộng",
-      bio: "Với 15+ năm kinh nghiệm trong ngành công nghệ, Khang đã dẫn dắt REPTISIST từ một startup nhỏ trở thành công ty hàng đầu khu vực. Anh là chuyên gia về strategic planning, business development và có tầm nhìn xa về tương lai của công nghệ. Trước khi thành lập REPTISIST, Khang đã từng làm việc tại các tập đoàn lớn như Microsoft và Google.",
-      skills: [
-        "Strategic Leadership",
-        "Business Development",
-        "Digital Transformation",
-        "Venture Capital",
-        "Market Analysis",
-        "Team Building",
-      ],
-      achievements: [
-        "Dẫn dắt REPTISIST từ 3 người thành 200+ nhân viên",
-        "Phát triển doanh thu từ 0 lên 50M+ USD trong 12 năm",
-        "Mở rộng thị trường ra 15+ quốc gia",
-        "Gọi vốn thành công Series A, B, C tổng 100M+ USD",
-        'Được Forbes vinh danh "40 Under 40" năm 2022',
-      ],
-      email: "khang@REPTISIST.com",
-      phone: "+84 901 234 567",
-      linkedin: "linkedin.com/in/khang-nguyen",
-    },
-    huong: {
-      avatar: "/Gecko2.png",
-      name: "Trần Thu B",
-      role: "CTO & Co-Founder",
-      summary: "Chuyên gia AI hàng đầu với background học thuật mạnh mẽ",
-      bio: "Tiến sĩ Khoa học Máy tính từ MIT, Hương chịu trách nhiệm phát triển các sản phẩm công nghệ tiên tiến. Chuyên gia hàng đầu về AI, Machine Learning và Cloud Architecture với 12+ năm kinh nghiệm tại các tập đoàn công nghệ lớn như Facebook AI Research và DeepMind. Hương có hơn 50 bài báo khoa học được công bố.",
-      skills: [
-        "Artificial Intelligence",
-        "Machine Learning",
-        "Cloud Architecture",
-        "Data Science",
-        "System Design",
-        "Research",
-      ],
-      achievements: [
-        "PhD Computer Science từ MIT với GPA 4.0",
-        "50+ bài báo khoa học được công bố trên Nature, Science",
-        "Phát triển 5+ AI platform được sử dụng bởi 1M+ users",
-        'Giải thưởng "Women in Tech Excellence" 2023',
-        "TEDx speaker với 2M+ views về AI Ethics",
-      ],
-      email: "huong@REPTISIST.com",
-      phone: "+84 901 234 568",
-      linkedin: "linkedin.com/in/huong-tran",
-    },
-    anh: {
-      avatar: "/Gecko3.png",
-      name: "Hoàng Thị C",
-      role: "Head of Design & UX",
-      summary:
-        "Creative director với đam mê tạo ra trải nghiệm người dùng đặc biệt",
-      bio: "Với tài năng sáng tạo và hiểu biết sâu về UX/UI, Anh đảm bảo mọi sản phẩm của REPTISIST đều có trải nghiệm người dùng tuyệt vời. Anh từng làm việc tại Google Design và Facebook Reality Labs, mang đến những insights quý giá về design thinking và human-centered design. Anh cũng là co-founder của Vietnam UX Community.",
-      skills: [
-        "UX/UI Design",
-        "Design Thinking",
-        "Product Strategy",
-        "User Research",
-        "Prototyping",
-        "Design Systems",
-      ],
-      achievements: [
-        "Lead designer cho 3 ứng dụng có 10M+ downloads",
-        "Red Dot Design Award 2022, 2023 winner",
-        "Co-founder Vietnam UX Community (5000+ members)",
-        "Speaker tại Adobe MAX, Figma Config",
-        "Mentor cho 100+ designers trẻ",
-      ],
-      email: "anh@REPTISIST.com",
-      phone: "+84 901 234 569",
-      linkedin: "linkedin.com/in/anh-le",
-    },
-    mai: {
-      avatar: "/Gecko2.png",
-      name: "Nguyễn Thị D",
-      role: "COO",
-      summary: "Operations expert với khả năng tối ưu hóa quy trình vượt trội",
-      bio: "MBA từ Harvard Business School, Mai có 12 năm kinh nghiệm trong operations và project management. Cô đảm bảo mọi dự án đều được thực hiện đúng tiến độ và chất lượng, đồng thời xây dựng quy trình vận hành hiệu quả cho toàn công ty. Mai từng làm việc tại McKinsey & Company và Amazon Operations.",
-      skills: [
-        "Operations Management",
-        "Project Management",
-        "Quality Assurance",
-        "Process Optimization",
-        "Team Leadership",
-        "Agile/Scrum",
-      ],
-      achievements: [
-        "Cải thiện efficiency 40% cho toàn bộ quy trình công ty",
-        "Quản lý thành công 500+ projects với 99% on-time delivery",
-        "Xây dựng ISO 9001:2015 certification cho REPTISIST",
-        "Harvard Business Review case study subject",
-        "Certified PMP và Agile Coach",
-      ],
-      email: "mai@REPTISIST.com",
-      phone: "+84 901 234 570",
-      linkedin: "linkedin.com/in/mai-pham",
-    },
-    tung: {
-      avatar: "/Gecko2.png",
-      name: "Vũ Thanh E",
-      role: "Head of R&D",
-      summary: "Research pioneer với focus vào breakthrough technologies",
-      bio: "Tiến sĩ Computer Science, chuyên gia về Blockchain và Quantum Computing. Tùng dẫn dắt đội ngũ nghiên cứu phát triển những công nghệ đột phá cho tương lai, luôn theo đuổi những innovation có thể thay đổi ngành công nghệ. Tùng từng làm việc tại IBM Research và có 8 patents về quantum algorithms.",
-      skills: [
-        "Blockchain",
-        "Quantum Computing",
-        "Research & Development",
-        "Innovation Strategy",
-        "Tech Leadership",
-        "Patent Filing",
-      ],
-      achievements: [
-        "8 patents về quantum computing và blockchain",
-        "Lead researcher cho 3 breakthrough projects",
-        "Published 30+ papers in top-tier conferences",
-        "Vietnam National Innovation Award 2023",
-        "Collaboration với MIT, Stanford on quantum research",
-      ],
-      email: "tung@REPTISIST.com",
-      phone: "+84 901 234 571",
-      linkedin: "linkedin.com/in/tung-vu",
-    },
-    thu: {
-      avatar: "/Gecko2.png",
-      name: "Đặng Minh G",
-      role: "Head of People & Culture",
-      summary: "People champion với passion về talent development",
-      bio: "Chuyên gia về HR và organizational development với 10+ năm kinh nghiệm. Thư xây dựng văn hóa doanh nghiệp mạnh mẽ và chiến lược phát triển nhân tài cho REPTISIST. Cô từng làm việc tại Google People Operations và Airbnb Belong, mang đến expertise về diversity, inclusion và employee experience.",
-      skills: [
-        "Talent Management",
-        "Culture Building",
-        "Organizational Development",
-        "Diversity & Inclusion",
-        "Learning & Development",
-        "People Analytics",
-      ],
-      achievements: [
-        "Xây dựng culture giúp REPTISIST có 95% employee satisfaction",
-        "Phát triển talent pipeline với 200+ engineers",
-        "Great Place to Work certification 3 năm liên tiếp",
-        "Diversity champion với 40% female leadership",
-        "Keynote speaker tại HR conferences toàn cầu",
-      ],
-      email: "thu@REPTISIST.com",
-      phone: "+84 901 234 572",
-      linkedin: "linkedin.com/in/thu-dang",
-    },
-  };
+  khang: {
+    avatar: "/about_us/minh.png",
+    name: "Đặng Măng Định",
+    role: "CEO & Co - Founder (CỰU THIẾU NHI)",
+    summary: "Lãnh đạo chiến lược trong lĩnh vực công nghệ chăm sóc bò sát",
+    bio: "Với hơn 15 năm kinh nghiệm trong khởi nghiệp công nghệ, Khang là người dẫn dắt REPTISIST phát triển nền tảng AI chăm sóc bò sát 24/7. Anh có tầm nhìn chiến lược và kinh nghiệm quản lý hệ sinh thái sản phẩm số, từng làm việc tại Google và Microsoft.",
+    skills: [
+      "Strategic Leadership",
+      "Startup Growth",
+      "AI Product Vision",
+      "Investor Relations",
+      "Market Expansion",
+      "Team Management"
+    ],
+    achievements: [
+      "Phát triển hệ sinh thái AI chăm sóc bò sát 24/7 đầu tiên tại Đông Nam Á",
+      "Tăng trưởng người dùng từ 0 đến 2 triệu chỉ trong 18 tháng",
+      "Huy động vốn Series A & B tổng 50 triệu USD",
+      "Top 10 Startup AI châu Á theo TechInAsia",
+      "Diễn giả tại hội thảo AI for Petcare toàn cầu"
+    ],
+    email: "khang@REPTISIST.com",
+    phone: "+84 901 234 567",
+    linkedin: "linkedin.com/in/khang-nguyen"
+  },
+  huong: {
+    avatar: "/about_us/tung.png",
+    name: "Trần Khánh NookTung",
+    role: "Giám đốc công nghệ (CTO)",
+    summary: "Kiến trúc sư công nghệ AI với nền tảng học thuật xuất sắc",
+    bio: "Tiến sĩ từ MIT, Hương là người đứng sau hệ thống AI chăm sóc bò sát 24/7, bao gồm chatbot thông minh, khám bệnh qua ảnh, và gợi ý chăm sóc cá nhân hóa. Cô từng công tác tại Facebook AI Research và Google Health.",
+    skills: [
+      "Artificial Intelligence",
+      "Machine Learning",
+      "AI Chatbot Development",
+      "Image Recognition",
+      "Scalable Architecture",
+      "HealthTech Engineering"
+    ],
+    achievements: [
+      "Phát triển AI khám bệnh bò sát qua ảnh đạt độ chính xác 92%",
+      "50+ bài báo khoa học về AI/ML",
+      "Hệ thống chatbot xử lý 5 triệu lượt tương tác/tháng",
+      "TEDx speaker về AI và vật nuôi",
+      "Được Forbes Asia vinh danh 'Top Women in AI'"
+    ],
+    email: "huong@REPTISIST.com",
+    phone: "+84 901 234 568",
+    linkedin: "linkedin.com/in/huong-tran"
+  },
+  anh: {
+    avatar: "/about_us/q_huy.png",
+    name: "Đỗ Quang HờUy",
+    role: "Giám đốc tài chính (CFO)",
+    summary: "Thiết kế trải nghiệm người dùng cho hệ sinh thái bò sát thông minh",
+    bio: "Với nền tảng UX/UI vững chắc, Anh đảm bảo mọi trải nghiệm người dùng trên ứng dụng – từ thư viện kiến thức đến hồ sơ chăm sóc cá nhân hóa – đều thân thiện và hiệu quả. Cô từng làm việc tại Google Design và Figma.",
+    skills: [
+      "UX/UI Design",
+      "Petcare App Design",
+      "User Research",
+      "AI-Powered Interfaces",
+      "Responsive Web Design",
+      "Design Thinking"
+    ],
+    achievements: [
+      "Thiết kế thư viện kiến thức bò sát trực quan, 1 triệu lượt truy cập",
+      "Top 3 ứng dụng UX tại Vietnam Design Awards 2024",
+      "Tăng retention rate người dùng lên 40% nhờ thiết kế onboarding mới",
+      "Chủ trì workshop thiết kế hệ thống chăm sóc pet thông minh"
+    ],
+    email: "anh@REPTISIST.com",
+    phone: "+84 901 234 569",
+    linkedin: "linkedin.com/in/anh-le"
+  },
+  mai: {
+    avatar: "/about_us/d_huy.png",
+    name: "Phạm Đức Hoe",
+    role: "Giám đốc vận hành (COO)",
+    summary: "Chuyên gia vận hành hệ thống AI và quản lý quy trình chăm sóc bò sát",
+    bio: "Mai có kinh nghiệm xây dựng quy trình vận hành cho hệ sinh thái công nghệ chăm sóc thú cưng. Từng làm tại Amazon và McKinsey, cô là người đảm bảo mọi dịch vụ – từ chatbot đến giao hàng sản phẩm – đều vận hành trơn tru.",
+    skills: [
+      "Operations Management",
+      "Petcare Logistics",
+      "AI Workflow Optimization",
+      "Vendor Management",
+      "Scrum & Agile",
+      "SLA & KPIs"
+    ],
+    achievements: [
+      "Xây dựng hệ thống giao hàng thức ăn/thiết bị bò sát toàn quốc",
+      "Tối ưu chi phí vận hành giảm 35%",
+      "Đưa quy trình chăm sóc AI đạt SLA 99%",
+      "ISO 27001 Certified – Data handling & privacy"
+    ],
+    email: "mai@REPTISIST.com",
+    phone: "+84 901 234 570",
+    linkedin: "linkedin.com/in/mai-pham"
+  },
+  tung: {
+    avatar: "/about_us/tien.png",
+    name: "Đỗ Doãn Tiến ",
+    role: "Giám đốc sản xuất (CPO)",
+    summary: "Người tiên phong công nghệ khám bệnh và chăm sóc bò sát bằng AI",
+    bio: "Tùng là tiến sĩ chuyên nghiên cứu về Blockchain và AI cho ngành thú cưng. Anh dẫn đầu các dự án như nhận diện bệnh bò sát qua ảnh, AI gợi ý môi trường sống lý tưởng và hệ thống hồ sơ số hóa vật nuôi.",
+    skills: [
+      "Computer Vision",
+      "Pet Health AI",
+      "Blockchain for Pet ID",
+      "Predictive Care",
+      "Tech Scouting",
+      "Data-Driven Innovation"
+    ],
+    achievements: [
+      "Phát triển hệ thống nhận diện bệnh da bò sát đạt độ chính xác 90%",
+      "Ứng dụng AI giúp giảm 30% tỉ lệ bệnh thường gặp",
+      "Đăng ký 5 bằng sáng chế liên quan đến bò sát & AI",
+      "Collab với Trường ĐH Nông Lâm và VetHub"
+    ],
+    email: "tung@REPTISIST.com",
+    phone: "+84 901 234 571",
+    linkedin: "linkedin.com/in/tung-vu"
+  },
+  thu: {
+    avatar: "/Gecko2.png",
+    name: "Đặng Minh G",
+    role: "Head of People & Culture",
+    summary: "Phát triển đội ngũ yêu bò sát và giàu tinh thần công nghệ",
+    bio: "Thư tập trung xây dựng văn hóa doanh nghiệp gắn kết và đào tạo đội ngũ chuyên gia công nghệ – bác sĩ thú y – content creator trong lĩnh vực bò sát. Từng làm việc tại Airbnb và Google HR, cô mang tới mô hình 'Pet First Workplace'.",
+    skills: [
+      "HR for PetTech",
+      "Talent Development",
+      "Remote Culture Building",
+      "Pet-Friendly HR Policies",
+      "People Analytics",
+      "Diversity & Inclusion"
+    ],
+    achievements: [
+      "Tỷ lệ gắn bó nhân viên đạt 95%",
+      "Mô hình 'AI + Vet + Care' giúp gắn kết đa ngành",
+      "Được HR Asia vinh danh 'Best Place to Work in PetTech'",
+      "Tổ chức hội thảo chăm sóc bò sát toàn quốc với 3.000 người tham dự"
+    ],
+    email: "thu@REPTISIST.com",
+    phone: "+84 901 234 572",
+    linkedin: "linkedin.com/in/thu-dang"
+  }
+};
+
 
   // Team interaction states
   const [modalMember, setModalMember] = useState(null);
@@ -492,6 +487,8 @@ const AboutUs = () => {
                   </div>
                 ))}
             </div>
+
+
             {/* Modal */}
             {modalMember &&
               ReactDOM.createPortal(
@@ -507,7 +504,7 @@ const AboutUs = () => {
                       className="about-close-detail"
                       onClick={() => setModalMember(null)}
                     >
-                      ×
+                      X
                     </button>
                     <div className="about-team-modal-content">
                       <div className="about-team-modal-avatar">
@@ -530,7 +527,7 @@ const AboutUs = () => {
                         </div>
                       </div>
                       <div className="about-team-modal-info">
-                        <div className="about-detail-name">
+                        <div className="about-detail-name" style={{ fontSize: "2rem", fontWeight: "bold" }}>
                           {modalMember.name}
                         </div>
                         <div className="about-detail-role">

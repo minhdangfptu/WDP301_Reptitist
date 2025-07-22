@@ -8,6 +8,7 @@ import { baseUrl } from '../config';
 
 const Library = () => {
   const [topics, setTopics] = useState([]);
+  const [reptiles, setReptiles] = useState([]);
   const [filteredTopics, setFilteredTopics] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [openIndex, setOpenIndex] = useState(null);
@@ -17,19 +18,38 @@ const Library = () => {
   const isAdmin = user && user.role === "admin";
 
   useEffect(() => {
-    setLoading(true);
+    setLoading(true); 
     axios
       .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
         setTopics(response.data);
+        getAllReptileInformation()
+          .then((reptilesData) => {
+            setReptiles(reptilesData);
+            setLoading(false); 
+          })
+          .catch((error) => {
+            setError('Lỗi khi tải dữ liệu về bò sát');
+            setLoading(false); 
+          });
         setFilteredTopics(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error("Lỗi khi lấy danh sách chủ đề:", error);
-        setLoading(false);
+        console.error('Lỗi khi lấy danh sách chủ đề:', error);
+        setError('Lỗi khi tải dữ liệu về chủ đề');
+        setLoading(false); 
       });
   }, []);
+ const getAllReptileInformation = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/reptitist/info/get-all-reptile`);
+      return response.data.data
+      console.log(response.data, 'reptile data');
+    } catch (err) {
+      throw new Error('Lỗi khi tải dữ liệu');
+    }
+  };
 
   // Filter topics based on search term
   useEffect(() => {
@@ -93,7 +113,6 @@ const Library = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              
             </div>
           </div>
           <div className="col-md-3 text-end">
@@ -108,45 +127,86 @@ const Library = () => {
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content">
+          <div className="library-content" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '30px' }}>
             {/* Sidebar */}
             <div className="sidebar">
               <h2 className="sidebar-title">Chủ đề thư viện</h2>
               <ul className="sidebar-menu list-unstyled">
                 {filteredTopics.map((topic, idx) => (
-                  <li key={topic._id}>
+                  <li key={topic._id} style={{ marginBottom: '10px' }}>
                     <div
                       className="menu-item"
                       onClick={() => toggleTopic(idx)}
-                      style={{ cursor: "pointer", userSelect: "none" }}
+                      style={{ cursor: "pointer", userSelect: "none", display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}
                     >
-                      <Link to="#" className="menu-link">
-                        {topic.topic_title}
-                      </Link>
+                      <span>{topic.topic_title}</span>
                       <span
-                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
-                        aria-hidden="true"
-                      ></span>
+                        style={{
+                          transform: openIndex === idx ? 'rotate(90deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease',
+                          display: 'inline-block',
+                        }}
+                      >
+                        ▶
+                      </span>
                     </div>
-                    <ul
-                      className="submenu"
-                      style={{ display: openIndex === idx ? "block" : "none" }}
-                    >
-                      <li>
-                        <Link to={`/libraryCategory/${topic._id}`}>
-                          {topic.topic_description || "Chưa có mô tả"}
-                        </Link>
-                      </li>
-                    </ul>
+                    {openIndex === idx && (
+                      <ul style={{ paddingLeft: '15px', marginTop: '5px' }}>
+                        <li>
+                          <Link to={`/libraryCategory/${topic._id}`}>
+                            {topic.topic_description || 'Chưa có mô tả'}
+                          </Link>
+                        </li>
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
+              {isAdmin && (
+                <div style={{ marginTop: '20px' }}>
+                  <Link to="/library_topics/create">
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '8px 16px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                    >
+                      + Tạo chủ đề
+                    </button>
+                  </Link>
+                </div>
+              )}
+              <h2 className="sidebar-title mt-4">Thư viện chuyên sâu</h2>
+              <Link to="/LibraryExpert">
+                <button
+                  style={{
+                    width: '100%',
+                    padding: '8px 16px',
+                    backgroundColor: '#06a13d',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    marginTop: '20px',
+                    fontWeight: 'bold',
+                    transition: 'background-color 0.2s ease',
+                  }}
+                >
+                  Thư viện chuyên sâu
+                </button>
+              </Link>
             </div>
 
             {/* Content Grid */}
-            <div className="content-grid">
+            <div className="content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
               {filteredTopics.map((topic) => (
-                <div className="category-card" key={topic._id}>
+                <div className="category-card" key={topic._id} style={{ width: '100%' }}>
                   <Link to={`/libraryCategory/${topic._id}`}>
                     <div className="card-image" style={{ cursor: "pointer" }}>
                       <img
@@ -155,11 +215,18 @@ const Library = () => {
                           "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
                         }
                         alt={topic.topic_title}
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                          borderRadius: '4px',
+                        }}
                       />
                     </div>
                   </Link>
-
-                  <div className="card-title">{topic.topic_title}</div>
+                  <div className="card-title" style={{ marginTop: '15px', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                    {topic.topic_title}
+                  </div>
                   <div
                     style={{
                       marginTop: "10px",
@@ -201,7 +268,7 @@ const Library = () => {
               {filteredTopics.length === 0 && (
                 <div className="col-12 text-center mt-4">
                   <p>
-                    {searchTerm 
+                    {searchTerm
                       ? `Không tìm thấy chủ đề nào với từ khóa "${searchTerm}"`
                       : "Không có chủ đề nào để hiển thị."
                     }
