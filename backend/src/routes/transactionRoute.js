@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
+// PayOS Controller functions (remove handlePayOSWebhook)
 const { 
-    createPaymentURL,
-    handlePaymentReturn,
+    createPayOSPayment,
+    checkPayOSPaymentStatus,
+    cancelPayOSPayment,
     getTransactionHistory,
     refundTransaction,
     filterTransactionHistory,
@@ -23,22 +25,29 @@ const { ensureOwnUserData } = require('../middleware/ensureOwner');
 const roleMiddleware = require('../middleware/roleMiddleware');
 
 // ===== USER ROUTES =====
+
+// PayOS Payment Routes
 router.get(
-    '/create',
+    '/payos/create',
     authMiddleware,
-    createPaymentURL
+    createPayOSPayment
 );
 
+// Check payment status (polling method)
 router.get(
-    '/vnpay_return',
-    handlePaymentReturn
+    '/payos/status/:orderCode',
+    authMiddleware,
+    checkPayOSPaymentStatus
 );
 
-router.get(
-    '/return',
-    handlePaymentReturn
+// Cancel payment
+router.post(
+    '/payos/cancel/:orderCode',
+    authMiddleware,
+    cancelPayOSPayment
 );
 
+// Transaction History Routes
 router.get(
     '/history',
     authUserIdOnly,
@@ -54,6 +63,7 @@ router.get(
     filterTransactionHistory
 );
 
+// Refund Route
 router.post(
     '/refund/:transaction_id',
     authMiddleware,

@@ -23,7 +23,7 @@ const transactionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'completed', 'failed', 'refunded'],
+    enum: ['pending', 'completed', 'failed', 'refunded', 'cancelled'],
     required: true
   },
   description: {
@@ -52,18 +52,26 @@ const transactionSchema = new mongoose.Schema({
     default: Date.now
   },
 
-  // --- VNPay specific fields ---
-  vnp_txn_ref: {
-    type: String,
-    required: true,
-    unique: true
+  // --- PayOS specific fields ---
+  payos_order_code: {
+    type: Number,
+    unique: true,
+    required: true
   },
-  vnp_response_code: {
+  payos_payment_link_id: {
     type: String
   },
-  vnp_transaction_no: {
+  payos_response_code: {
     type: String
   },
+  payos_response_desc: {
+    type: String
+  },
+  payos_transaction_id: {
+    type: String
+  },
+  
+  // --- Response data ---
   raw_response: {
     type: mongoose.Schema.Types.Mixed
   }
@@ -79,5 +87,22 @@ transactionSchema.pre('save', function (next) {
   }
   next();
 });
+
+// --- Indexes for better performance ---
+transactionSchema.index({ user_id: 1, createdAt: -1 });
+transactionSchema.index({ status: 1 });
+transactionSchema.index({ payos_order_code: 1 });
+
+// --- Static methods ---
+transactionSchema.statics.findByOrderCode = function(orderCode) {
+  return this.findOne({ payos_order_code: orderCode });
+};
+
+transactionSchema.statics.getUserTransactions = function(userId, limit = 10) {
+  return this.find({ user_id: userId })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .select('amount status description createdAt transaction_type payos_order_code');
+};
 
 module.exports = mongoose.model('Transaction', transactionSchema);

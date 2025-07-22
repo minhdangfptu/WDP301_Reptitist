@@ -4,12 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { toast, ToastContainer } from 'react-toastify';
-import { ArrowLeft, CheckCircle, Copy, Clock, CreditCard } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Copy, Clock, CreditCard, Smartphone, ExternalLink } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
 import '../css/PaymentProcessing.css';
 import axios from 'axios';
 import { baseUrl } from '../config';
-import { createPayment } from '../services/paymentService';
 
 const PaymentProcessing = () => {
   const navigate = useNavigate();
@@ -19,6 +18,12 @@ const PaymentProcessing = () => {
   const [timeLeft, setTimeLeft] = useState(900); // 15 phút = 900 giây
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [transferCode, setTransferCode] = useState('');
+  
+  // PayOS States
+  const [payosPaymentUrl, setPayosPaymentUrl] = useState('');
+  const [payosOrderCode, setPayosOrderCode] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState('');
+  const [polling, setPolling] = useState(false);
 
   // Lấy thông tin từ state hoặc redirect về trang trước nếu không có
   const paymentData = location.state;
@@ -54,11 +59,20 @@ const PaymentProcessing = () => {
 
   const { planName, period, price, planType } = paymentData;
 
-  // Thông tin ngân hàng cố định
+  let planNameForBackend = planName;
+  if (planType === 'partner' && (planName.toLowerCase() === 'cơ bản' || planName.toLowerCase() === 'basic')) {
+    planNameForBackend = 'Gold';
+  } else if (planType === 'partner' && planName.toLowerCase() === 'premium') {
+    planNameForBackend = 'Diamond';
+  } else if (planType === 'individual' && planName.toLowerCase() === 'premium') {
+    planNameForBackend = 'Silver';
+  }
+
+  // Thông tin ngân hàng cố định (backup method)
   const bankInfo = {
-    bankName: 'Vietcombank',
-    accountNumber: '1234567890',
-    accountName: 'REPTITIST COMPANY LIMITED',
+    bankName: 'MBBank',
+    accountNumber: '0396692258',
+    accountName: 'Do Quang Huy',
     transferContent: `REPTITIST ${user?.username || 'USER'} ${planName} ${transferCode}`
   };
 
@@ -80,11 +94,155 @@ const PaymentProcessing = () => {
     toast.success('Đã sao chép vào clipboard');
   };
 
-  const handlePaymentComplete = async () => {
+  // ✅ PayOS Payment Function
+  const handlePayOSPayment = async () => {
+    setIsProcessing(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        setIsProcessing(false);
+        return;
+      }
+
+      const response = await axios.get(`${baseUrl}/reptitist/transactions/payos/create`, {
+        params: {
+          amount: price,
+          user_id: user.id,
+          items: JSON.stringify({
+            plan_name: planNameForBackend,
+            plan_type: planType,
+            period,
+            price
+          }),
+          description: `${planNameForBackend} ${period === 'monthly' ? 'thang' : 'nam'}`
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        setPayosPaymentUrl(response.data.paymentUrl);
+        setPayosOrderCode(response.data.orderCode);
+        setPaymentStatus('pending');
+        
+        toast.success('Đã tạo link thanh toán PayOS!');
+        
+        // Mở PayOS trong tab mới
+        window.open(response.data.paymentUrl, '_blank');
+        
+        // Bắt đầu polling
+        startPaymentPolling(response.data.orderCode);
+      }
+
+    } catch (error) {
+      console.error('PayOS Payment Error:', error);
+      toast.error(error.response?.data?.message || 'Không thể tạo thanh toán PayOS');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // ✅ Polling để check PayOS status
+  const startPaymentPolling = (orderCode) => {
+    setPolling(true);
+    
+    const pollInterval = setInterval(async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const response = await axios.get(`${baseUrl}/reptitist/transactions/payos/status/${orderCode}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        if (response.data.success) {
+          const currentStatus = response.data.status;
+          setPaymentStatus(currentStatus);
+          
+          if (currentStatus === 'completed') {
+            clearInterval(pollInterval);
+            setPolling(false);
+            await handlePaymentSuccess(response.data);
+          } else if (currentStatus === 'cancelled') {
+            clearInterval(pollInterval);
+            setPolling(false);
+            toast.warning('Thanh toán đã bị hủy');
+          } else if (currentStatus === 'failed') {
+            clearInterval(pollInterval);
+            setPolling(false);
+            toast.error('Thanh toán thất bại');
+          }
+        }
+        
+      } catch (error) {
+        console.error('Status check error:', error);
+      }
+    }, 3000); // Check mỗi 3 giây
+
+    // Dừng polling sau 15 phút
+    setTimeout(() => {
+      clearInterval(pollInterval);
+      setPolling(false);
+    }, 900000);
+  };
+
+  // ✅ Check PayOS status manual
+  const checkPayOSStatus = async () => {
+    if (!payosOrderCode) return;
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get(`${baseUrl}/reptitist/transactions/payos/status/${payosOrderCode}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data.success) {
+        setPaymentStatus(response.data.status);
+        
+        if (response.data.status === 'completed') {
+          await handlePaymentSuccess(response.data);
+        }
+        
+        toast.info(`Trạng thái: ${response.data.status}`);
+      }
+    } catch (error) {
+      console.error('Manual status check error:', error);
+      toast.error('Không thể kiểm tra trạng thái');
+    }
+  };
+
+  // ✅ Hủy PayOS payment
+  const cancelPayOSPayment = async () => {
+    if (!payosOrderCode) return;
+    
+    try {
+      const token = localStorage.getItem('access_token');
+      await axios.post(`${baseUrl}/reptitist/transactions/payos/cancel/${payosOrderCode}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setPaymentStatus('cancelled');
+      setPolling(false);
+      toast.warning('Đã hủy thanh toán PayOS');
+      
+    } catch (error) {
+      console.error('Cancel payment error:', error);
+      toast.error('Không thể hủy thanh toán');
+    }
+  };
+
+  // ✅ Handle payment success (chung cho cả PayOS và manual)
+  const handlePaymentSuccess = async (paymentData) => {
     setIsProcessing(true);
     
     try {
-      const token = localStorage.getItem('refresh_token');
+      const token = localStorage.getItem('access_token');
       if (!token) {
         toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setIsProcessing(false);
@@ -96,43 +254,13 @@ const PaymentProcessing = () => {
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
         new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);  // 365 days
 
-      // First, create transaction record
-      const transactionResponse = await axios.post(
-        `${baseUrl}/reptitist/transactions`,
-        {
-          amount: price,
-          net_amount: price,
-          transaction_type: planType === 'partner' ? 'shop_upgrade' : 'premium_upgrade',
-          status: 'completed',
-          description: `Thanh toan nang cap ${planName} ${period === 'monthly' ? 'hang thang' : 'hang nam'}`,
-          items: JSON.stringify({
-            plan_name: planName,
-            plan_type: planType,
-            period: period,
-            price: price,
-            transfer_code: transferCode
-          }),
-          user_id: user.id
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!transactionResponse.data || !transactionResponse.data.transaction) {
-        throw new Error('Failed to create transaction record');
-      }
-
       // Update user account type based on planType
       if (planType === 'partner') {
         // Update account type to shop
         const updateData = {
           account_type: {
             type: 'shop',
-            level: planName === 'Gói Premium' ? 'premium' : 'normal',
+            level: planNameForBackend === 'Silver' ? 'premium' : 'normal',
             activated_at: new Date(),
             expires_at: expiresAt
           }
@@ -161,7 +289,7 @@ const PaymentProcessing = () => {
         } else {
           throw new Error('Failed to update account type to shop');
         }
-      } else if (planType === 'individual' && planName === 'Premium') {
+      } else if (planType === 'individual' && planNameForBackend === 'Silver') {
         // Update account type to premium for individual plan
         const response = await axios.put(
           `${baseUrl}/reptitist/auth/update-role`,
@@ -219,41 +347,10 @@ const PaymentProcessing = () => {
     }
   };
 
-  const handleVNPayPayment = async () => {
-    setIsProcessing(true);
-    try {
-      const token = localStorage.getItem('access_token');
-  
-      const paymentParams = {
-        amount: price,
-        user_id: user.id,
-        items: JSON.stringify({
-          plan_name: planName,
-          plan_type: planType,
-          period,
-          price
-        }),
-        description: `Thanh toán nâng cấp ${planName} (${period === 'monthly' ? 'hàng tháng' : 'hàng năm'})`
-      };
-  
-      const res = await createPayment(paymentParams);
-      
-  
-      if (res && res.paymentUrl) {
-        window.location.href = res.paymentUrl;
-      } else {
-        toast.error('Không lấy được link thanh toán VNPay!');
-        console.log(res);
-      }
-    } catch (err) {
-      toast.error('Có lỗi khi tạo thanh toán VNPay!:');
-      console.error(err);
-    } finally {
-      setIsProcessing(false);
-    }
+  // Manual payment confirmation (giữ nguyên cho bank transfer)
+  const handleManualPaymentComplete = async () => {
+    await handlePaymentSuccess({ type: 'manual' });
   };
-  
-  
 
   if (paymentCompleted) {
     return (
@@ -337,14 +434,111 @@ const PaymentProcessing = () => {
                 <div className="payment-info-price">{formatPrice(price)} đ</div>
               </div>
             </div>
+
+            {/* ✅ PayOS Status Display */}
+            {paymentStatus && (
+              <div className="payos-status-display">
+                <div className="payos-status-row">
+                  <span className="payos-status-label">Trạng thái PayOS:</span>
+                  <span className={`payos-status-badge payos-status-${paymentStatus}`}>
+                    {paymentStatus === 'completed' ? '✅ Thành công' :
+                     paymentStatus === 'pending' ? '⏳ Đang chờ' :
+                     paymentStatus === 'cancelled' ? '❌ Đã hủy' :
+                     paymentStatus === 'failed' ? '💥 Thất bại' : paymentStatus}
+                  </span>
+                </div>
+                {payosOrderCode && (
+                  <p className="payos-order-code">Mã đơn: {payosOrderCode}</p>
+                )}
+                {polling && (
+                  <p className="payos-polling-text">
+                    <div className="payos-spinner"></div>
+                    Đang kiểm tra trạng thái...
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="payment-grid">
-            {/* Thông tin chuyển khoản */}
+            {/* ✅ PayOS Payment Section */}
+            <div className="payment-section">
+              <h2 className="payment-section-title">
+                <Smartphone className="icon-20" />
+                Thanh toán PayOS (Khuyến nghị)
+              </h2>
+              
+              <div className="payos-gradient-section">
+                <div className="payos-title">
+                  Thanh toán nhanh chóng & an toàn
+                </div>
+                <div className="payos-subtitle">
+                  Hỗ trợ QR Banking, Internet Banking, Ví điện tử
+                </div>
+
+                {!payosPaymentUrl && (
+                  <button 
+                    className="payos-btn payos-btn-primary"
+                    onClick={handlePayOSPayment}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <div className="payos-loading">
+                        <div className="payos-spinner"></div>
+                        Đang tạo...
+                      </div>
+                    ) : (
+                      '🚀 Thanh toán với PayOS'
+                    )}
+                  </button>
+                )}
+
+                {payosPaymentUrl && paymentStatus !== 'completed' && (
+                  <>
+                    <button 
+                      onClick={() => window.open(payosPaymentUrl, '_blank')}
+                      className="payos-btn payos-btn-success"
+                    >
+                      <ExternalLink className="icon-16" />
+                      Mở trang thanh toán PayOS
+                    </button>
+
+                    <div className="payos-btn-group">
+                      <button 
+                        onClick={checkPayOSStatus}
+                        className="payos-btn payos-btn-secondary"
+                      >
+                        🔍 Kiểm tra trạng thái
+                      </button>
+                      
+                      {paymentStatus === 'pending' && (
+                        <button 
+                          onClick={cancelPayOSPayment}
+                          className="payos-btn payos-btn-danger"
+                        >
+                          ❌ Hủy PayOS
+                        </button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {paymentStatus === 'completed' && (
+                  <div className="payos-success-display">
+                    <CheckCircle className="payos-success-icon" />
+                    <p className="payos-success-text">
+                      🎉 Thanh toán PayOS thành công!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Thông tin chuyển khoản (backup method) */}
             <div className="payment-section">
               <h2 className="payment-section-title">
                 <CreditCard className="w-6 h-6 mr-2" />
-                Thông tin chuyển khoản
+                Chuyển khoản ngân hàng
               </h2>
               
               <div className="bank-info-item bank">
@@ -396,20 +590,17 @@ const PaymentProcessing = () => {
                   <Copy className="w-5 h-5" />
                 </button>
               </div>
-            </div>
 
-            {/* QR Code */}
-            <div className="payment-section">
               <div className="qr-section">
                 <div className="qr-code-container">
                   <img src={qrCodeUrl} alt="QR Code" className="qr-code" />
                 </div>
                 <p className="qr-description">
-                  Quét mã QR bằng ứng dụng ngân hàng của bạn để thực hiện thanh toán nhanh chóng
+                  Quét mã QR bằng ứng dụng ngân hàng của bạn
                 </p>
                 <button 
                   className="payment-confirm-btn"
-                  onClick={handlePaymentComplete}
+                  onClick={handleManualPaymentComplete}
                   disabled={isProcessing}
                 >
                   {isProcessing ? (
@@ -418,17 +609,8 @@ const PaymentProcessing = () => {
                       Đang xử lý...
                     </>
                   ) : (
-                    'Xác nhận thanh toán'
+                    'Xác nhận chuyển khoản thủ công'
                   )}
-                </button>
-                {/* Nút thanh toán VNPay */}
-                <button
-                  className="payment-confirm-btn vnpay-btn"
-                  style={{ marginTop: 12, background: '#0a68fe', color: '#fff' }}
-                  onClick={handleVNPayPayment}
-                  disabled={isProcessing}
-                >
-                  Thanh toán với VNPay
                 </button>
               </div>
             </div>
@@ -436,25 +618,26 @@ const PaymentProcessing = () => {
 
           <div className="payment-note">
             <div className="payment-warning">
-              <p>Lưu ý: Vui lòng chuyển khoản đúng số tiền và nội dung để tránh trường hợp xử lý chậm trễ.</p>
+              <p><strong>Khuyến nghị:</strong> Sử dụng PayOS để thanh toán nhanh chóng và an toàn nhất.</p>
+              <p>Chỉ sử dụng chuyển khoản thủ công khi PayOS không khả dụng.</p>
             </div>
             <div className="payment-guide">
               <h3 className="payment-guide-title">Hướng dẫn thanh toán</h3>
               <div className="payment-guide-grid">
                 <div className="payment-guide-step">
                   <div className="payment-guide-icon">1</div>
-                  <h4>Chuyển khoản</h4>
-                  <p>Chuyển khoản theo thông tin bên trên hoặc quét mã QR</p>
+                  <h4>PayOS</h4>
+                  <p>Nhấn "Thanh toán PayOS" → Quét QR hoặc chọn ngân hàng</p>
                 </div>
                 <div className="payment-guide-step">
                   <div className="payment-guide-icon">2</div>
-                  <h4>Xác nhận</h4>
-                  <p>Nhấn nút "Xác nhận thanh toán" sau khi chuyển khoản</p>
+                  <h4>Tự động</h4>
+                  <p>Hệ thống tự động cập nhật khi thanh toán thành công</p>
                 </div>
                 <div className="payment-guide-step">
                   <div className="payment-guide-icon">3</div>
                   <h4>Hoàn tất</h4>
-                  <p>Hệ thống sẽ tự động cập nhật tài khoản của bạn</p>
+                  <p>Tài khoản được nâng cấp ngay lập tức</p>
                 </div>
               </div>
             </div>
