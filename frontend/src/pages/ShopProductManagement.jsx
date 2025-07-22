@@ -22,7 +22,7 @@ const ShopProductManagement = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterDate, setFilterDate] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
   const [sortField, setSortField] = useState("createdAt");
   const [sortDirection, setSortDirection] = useState("desc");
 
@@ -118,7 +118,11 @@ const ShopProductManagement = () => {
       // Nếu response trả về object có key data thì lấy response.data.data, nếu không thì lấy response.data
       const statsData = response.data?.data || response.data;
       if (statsData) {
-        setStats(statsData);
+        setStats(prev => ({
+          ...prev,
+          ...statsData,
+          inventoryValue: statsData.inventoryValue ?? statsData.totalValue ?? 0
+        }));
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -466,6 +470,27 @@ const ShopProductManagement = () => {
     }).format(amount);
   };
 
+  // Format inventory value with M, B, T
+  const formatInventoryValue = (amount) => {
+    if (amount == null || isNaN(amount)) return '0₫';
+    const abs = Math.abs(amount);
+    let value = amount;
+    let suffix = '';
+    if (abs >= 1e12) {
+      value = amount / 1e12;
+      suffix = 'T'; // Nghìn tỉ
+    } else if (abs >= 1e9) {
+      value = amount / 1e9;
+      suffix = 'B'; // Tỉ
+    } else if (abs >= 1e6) {
+      value = amount / 1e6;
+      suffix = 'M'; // Triệu
+    }
+    // Lấy 1-2 chữ số thập phân nếu cần
+    const formatted = value % 1 === 0 ? value.toFixed(0) : value.toFixed(2).replace(/\.0+$/, '');
+    return `${formatted}${suffix}₫`;
+  };
+
   // Get status badge color
   const getStatusBadgeColor = (status) => {
     switch (status) {
@@ -635,12 +660,9 @@ const ShopProductManagement = () => {
                 </span>
                 <span className="pm-stat-label">Đang bán</span>
                 <span className="pm-stat-percentage">
-                  {stats.totalProducts
-                    ? Math.round(
-                        (stats.availableProducts / stats.totalProducts) * 100
-                      )
-                    : 0}
-                  %
+                  {stats.totalProducts && stats.availableProducts >= 0
+                    ? `${Math.round((stats.availableProducts / stats.totalProducts) * 100)}%`
+                    : ''}
                 </span>
               </div>
             </div>
@@ -653,12 +675,9 @@ const ShopProductManagement = () => {
                 <span className="pm-stat-number">{stats.reportedProducts}</span>
                 <span className="pm-stat-label">Bị báo cáo</span>
                 <span className="pm-stat-percentage">
-                  {stats.totalProducts
-                    ? Math.round(
-                        (stats.reportedProducts / stats.totalProducts) * 100
-                      )
-                    : 0}
-                  %
+                  {stats.totalProducts && stats.reportedProducts >= 0
+                    ? `${Math.round((stats.reportedProducts / stats.totalProducts) * 100)}%`
+                    : ''}
                 </span>
               </div>
             </div>
@@ -691,7 +710,9 @@ const ShopProductManagement = () => {
               </div>
               <div className="pm-stat-content">
                 <span className="pm-stat-number">
-                  {formatCurrency(stats.inventoryValue)}
+                  {typeof stats.inventoryValue === 'number' && !isNaN(stats.inventoryValue)
+                    ? formatInventoryValue(stats.inventoryValue)
+                    : formatInventoryValue(0)}
                 </span>
                 <span className="pm-stat-label">Giá trị kho hàng</span>
               </div>
@@ -757,20 +778,6 @@ const ShopProductManagement = () => {
                 <option value="month">Tháng này</option>
                 <option value="quarter">3 tháng qua</option>
                 <option value="year">Năm nay</option>
-              </select>
-            </div>
-
-            <div className="pm-filter-group">
-              <label>Hiển thị:</label>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                className="pm-filter-select"
-              >
-                <option value={10}>10 mục</option>
-                <option value={25}>25 mục</option>
-                <option value={50}>50 mục</option>
-                <option value={100}>100 mục</option>
               </select>
             </div>
 
@@ -962,19 +969,6 @@ const ShopProductManagement = () => {
                                 {product.product_name}
                               </h4>
                               <p className="pm-product-id">ID: {product._id}</p>
-                              {product.product_description && (
-                                <p
-                                  className="pm-product-description"
-                                  title={product.product_description}
-                                >
-                                  {product.product_description.length > 50
-                                    ? `${product.product_description.substring(
-                                        0,
-                                        50
-                                      )}...`
-                                    : product.product_description}
-                                </p>
-                              )}
                             </div>
                           </div>
                         </td>
