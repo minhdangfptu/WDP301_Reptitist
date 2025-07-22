@@ -29,7 +29,7 @@ import AIChatPage from './pages/AIChatPage';
 import CreateTrackingHealthPage from './pages/CreateTrackingHealthPage';
 import ProductDetail from './pages/ProductDetail';
 import PlanUpgrade from './pages/PlanUpgrade';
-
+import PlanDetail from './pages/PlanDetailConfirmationModal'; 
 import LibraryTopic from './pages/LibraryTopic';
 import LibraryCategory from './pages/LibraryCategory';
 import LibraryContent from './pages/LibraryContent';
@@ -208,6 +208,7 @@ const AppRoutes = () => (
       </CartProvider>
     } />
     <Route path="/PlanUpgrade" element={<PlanUpgrade />} />
+    <Route path="/plan-detail/:planId" element={<ProtectedRoute><PlanDetail /></ProtectedRoute>} />
     <Route path="/payment-processing" element={<ProtectedRoute><PaymentProcessing /></ProtectedRoute>} />
     <Route path="/products/search/:productName" element={<CartProvider><ListProductPage /></CartProvider>} />
     <Route path="/products/category/:categoryId" element={<CartProvider><ListProductPage /></CartProvider>} />
