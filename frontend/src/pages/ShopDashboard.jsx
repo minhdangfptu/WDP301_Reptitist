@@ -28,21 +28,21 @@ const ShopDashboard = () => {
   const { user, canSellProduct } = useAuth();
   const navigate = useNavigate();
 
-  // State management - Updated to match ShopProductManagement exactly
+  // State management
   const [stats, setStats] = useState({
-    total: 0,           // Same field name as ShopProductManagement
-    available: 0,       // Same field name as ShopProductManagement  
-    draft: 0,           // Same field name as ShopProductManagement
-    inventoryValue: 0,  // Same field name as ShopProductManagement
-    totalOrders: 0,     // Additional dashboard field
-    pendingOrders: 0,   // Additional dashboard field
-    totalRevenue: 0     // Additional dashboard field
+    totalProducts: 0,
+    activeProducts: 0,
+    draftProducts: 0,
+    totalValue: 0,
+    totalOrders: 0,
+    pendingOrders: 0,
+    totalRevenue: 0
   });
 
   const [chartData, setChartData] = useState({
     bestSellingProductsByTime: [],
     productRevenueShare: [],
-    dailyRevenue: [],
+    shopRevenueByTime: [],
     cumulativeRevenue: []
   });
 
@@ -66,7 +66,7 @@ const ShopDashboard = () => {
     '#0891b2', '#be185d', '#059669', '#ea580c', '#4338ca'
   ];
 
-  // Fetch shop data - Enhanced with detailed debugging
+  // ✅ SỬA: Chỉ gọi 1 API và xử lý response đúng cách
   const fetchShopData = async () => {
     try {
       setLoading(true);
@@ -79,136 +79,90 @@ const ShopDashboard = () => {
         return;
       }
 
-      console.log('🔥 ShopDashboard: Fetching data using SAME API as ShopProductManagement...');
+      console.log('🔥 ShopDashboard: Fetching dashboard data with order stats...');
 
-      // ===== STEP 1: Enhanced API call with detailed logging =====
+      // ✅ GỌI ĐÚNG API dashboard-stats
       const response = await axios.get(
-        `${baseUrl}/reptitist/shop/my-stats`,
+        `${baseUrl}/reptitist/shop/dashboard-stats`,
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
+          params: { timeFilter }
         }
       );
 
-      // ===== DETAILED LOGGING =====
-      console.log('✅ Raw API Response:', response);
-      console.log('📊 Response Status:', response.status);
-      console.log('📊 Response Data (full):', response.data);
-      console.log('📊 Response Data Type:', typeof response.data);
-      console.log('📊 Response Data Keys:', Object.keys(response.data || {}));
+      console.log('✅ Dashboard Response:', response.data);
 
-      // Try different data extraction paths
-      const dataOption1 = response.data;
-      const dataOption2 = response.data.data;
-      const dataOption3 = response.data.result;
-
-      console.log('🎯 Data Option 1 (response.data):', dataOption1);
-      console.log('🎯 Data Option 2 (response.data.data):', dataOption2);
-      console.log('🎯 Data Option 3 (response.data.result):', dataOption3);
-
-      // Try to extract stats from different possible structures
-      let extractedStats = null;
-
-      if (dataOption2 && typeof dataOption2 === 'object') {
-        extractedStats = dataOption2;
-        console.log('📈 Using dataOption2 (response.data.data)');
-      } else if (dataOption1 && typeof dataOption1 === 'object') {
-        extractedStats = dataOption1;
-        console.log('📈 Using dataOption1 (response.data)');
-      } else if (dataOption3 && typeof dataOption3 === 'object') {
-        extractedStats = dataOption3;
-        console.log('📈 Using dataOption3 (response.data.result)');
+      // ✅ XỬ LÝ RESPONSE ĐÚNG CÁCH
+      let dashboardData = null;
+      
+      // Kiểm tra các cấu trúc response có thể có
+      if (response.data?.success && response.data?.data) {
+        dashboardData = response.data.data;
+      } else if (response.data?.data) {
+        dashboardData = response.data.data;
+      } else if (response.data && typeof response.data === 'object') {
+        dashboardData = response.data;
       }
 
-      if (extractedStats) {
-        console.log('🎯 Extracted Stats Object:', extractedStats);
-        console.log('🎯 Stats Keys:', Object.keys(extractedStats));
-        console.log('🎯 Individual Fields:', {
-          total: extractedStats.total,
-          available: extractedStats.available,
-          draft: extractedStats.draft,
-          inventoryValue: extractedStats.inventoryValue,
-          // Also check alternative field names
-          totalProducts: extractedStats.totalProducts,
-          activeProducts: extractedStats.activeProducts,
-          draftProducts: extractedStats.draftProducts,
-          totalValue: extractedStats.totalValue
-        });
-
-        // Set stats with fallback field names
-        const finalStats = {
-          // Try primary field names first, then fallbacks
-          total: extractedStats.total || extractedStats.totalProducts || 0,
-          available: extractedStats.available || extractedStats.activeProducts || 0,
-          draft: extractedStats.draft || extractedStats.draftProducts || 0,
-          inventoryValue: extractedStats.inventoryValue || extractedStats.totalValue || 0,
-          
-          // Additional dashboard fields
-          totalOrders: extractedStats.totalOrders || 0,
-          pendingOrders: extractedStats.pendingOrders || 0,
-          totalRevenue: extractedStats.totalRevenue || 0
-        };
-
-        setStats(finalStats);
-
-        console.log('✅ Stats successfully set with values:', finalStats);
-
-      } else {
-        console.error('❌ Could not extract stats from response!');
-        console.error('❌ Response structure:', response.data);
+      if (dashboardData) {
+        console.log('📊 Dashboard Data:', dashboardData);
         
-        // Set defaults
+        // Extract basicStats (includes order data)
+        const basicStats = dashboardData.basicStats || dashboardData;
+        
+        console.log('📈 Basic Stats:', basicStats);
+        
         setStats({
-          total: 0,
-          available: 0,
-          draft: 0,
-          inventoryValue: 0,
-          totalOrders: 0,
-          pendingOrders: 0,
-          totalRevenue: 0
+          totalProducts: basicStats.totalProducts || 0,
+          activeProducts: basicStats.activeProducts || 0,
+          draftProducts: basicStats.draftProducts || 0,
+          totalValue: basicStats.totalValue || 0,
+          totalOrders: basicStats.totalOrders || 0,
+          pendingOrders: basicStats.pendingOrders || 0,
+          totalRevenue: basicStats.totalRevenue || 0
         });
-      }
 
-      // ===== STEP 2: Try dashboard chart data (optional) =====
-      try {
-        console.log('📈 Fetching additional dashboard chart data...');
-        const dashboardResponse = await axios.get(
-          `${baseUrl}/reptitist/products/shop/dashboard-stats`,
+        // Process chart data nếu có
+        const processedChartData = {
+          bestSellingProductsByTime: dashboardData.bestSellingProductsByTime?.slice(-15) || [],
+          productRevenueShare: processProductRevenueShare(dashboardData.productRevenueStats || []),
+          shopRevenueByTime: dashboardData.shopRevenueByTime?.slice(-30) || [],
+          cumulativeRevenue: dashboardData.cumulativeRevenue?.slice(-30) || []
+        };
+        
+        console.log('📈 Processed Chart Data:', processedChartData);
+        setChartData(processedChartData);
+        
+      } else {
+        console.warn('⚠️ No valid data structure found, using fallback API...');
+        
+        // ✅ FALLBACK: Nếu dashboard-stats không có data, gọi my-stats
+        const fallbackResponse = await axios.get(
+          `${baseUrl}/reptitist/shop/my-stats`,
           {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { timeFilter }
+            headers: { Authorization: `Bearer ${token}` }
           }
         );
 
-        const dashboardData = dashboardResponse.data.data;
-        console.log('✅ Dashboard chart data received:', dashboardData);
+        console.log('📋 Fallback Response:', fallbackResponse.data);
+        
+        const fallbackData = fallbackResponse.data?.data || fallbackResponse.data;
+        
+        setStats({
+          totalProducts: fallbackData.totalProducts || fallbackData.total || 0,
+          activeProducts: fallbackData.activeProducts || fallbackData.available || 0,
+          draftProducts: fallbackData.draftProducts || fallbackData.draft || 0,
+          totalValue: fallbackData.totalValue || fallbackData.inventoryValue || 0,
+          totalOrders: 0, // my-stats không có order data
+          pendingOrders: 0, // my-stats không có order data
+          totalRevenue: 0 // my-stats không có order data
+        });
 
-        if (dashboardData) {
-          // Update additional stats if available from dashboard API
-          if (dashboardData.basicStats) {
-            setStats(prevStats => ({
-              ...prevStats,
-              totalOrders: dashboardData.basicStats.totalOrders || prevStats.totalOrders,
-              pendingOrders: dashboardData.basicStats.pendingOrders || prevStats.pendingOrders,
-              totalRevenue: dashboardData.basicStats.totalRevenue || prevStats.totalRevenue
-            }));
-          }
-
-          // Process chart data
-          const processedChartData = {
-            bestSellingProductsByTime: dashboardData.bestSellingProductsByTime?.slice(-15) || [],
-            productRevenueShare: processProductRevenueShare(dashboardData.productRevenueStats || []),
-            dailyRevenue: dashboardData.shopRevenueByTime?.slice(-30) || [],
-            cumulativeRevenue: dashboardData.cumulativeRevenue?.slice(-30) || []
-          };
-          setChartData(processedChartData);
-        }
-      } catch (dashboardError) {
-        console.warn('⚠️ Could not fetch dashboard chart data:', dashboardError.message);
-        // Chart data is optional, main stats already loaded
+        // Empty chart data for fallback
         setChartData({
           bestSellingProductsByTime: [],
           productRevenueShare: [],
-          dailyRevenue: [],
+          shopRevenueByTime: [],
           cumulativeRevenue: []
         });
       }
@@ -219,14 +173,13 @@ const ShopDashboard = () => {
     } catch (error) {
       console.error('❌ Fetch shop data error:', error);
       console.error('❌ Error response:', error.response?.data);
-      console.error('❌ Error status:', error.response?.status);
       
       // Set defaults on error
       setStats({
-        total: 0,
-        available: 0,
-        draft: 0,
-        inventoryValue: 0,
+        totalProducts: 0,
+        activeProducts: 0,
+        draftProducts: 0,
+        totalValue: 0,
         totalOrders: 0,
         pendingOrders: 0,
         totalRevenue: 0
@@ -235,7 +188,7 @@ const ShopDashboard = () => {
       setChartData({
         bestSellingProductsByTime: [],
         productRevenueShare: [],
-        dailyRevenue: [],
+        shopRevenueByTime: [],
         cumulativeRevenue: []
       });
 
@@ -257,12 +210,12 @@ const ShopDashboard = () => {
     const result = topProducts.map(product => ({
       name: product.productName || 'Không xác định',
       value: product.revenue || 0,
-      percentage: product.percentage || 0
+      percentage: parseFloat(product.percentage) || 0
     }));
     
     if (otherProducts.length > 0) {
       const othersRevenue = otherProducts.reduce((sum, p) => sum + (p.revenue || 0), 0);
-      const othersPercentage = otherProducts.reduce((sum, p) => sum + (p.percentage || 0), 0);
+      const othersPercentage = otherProducts.reduce((sum, p) => sum + (parseFloat(p.percentage) || 0), 0);
       
       result.push({
         name: `Khác (${otherProducts.length} sản phẩm)`,
@@ -276,6 +229,7 @@ const ShopDashboard = () => {
 
   // Format currency
   const formatCurrency = (amount) => {
+    if (amount == null || isNaN(amount)) return '0₫';
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND'
@@ -284,6 +238,7 @@ const ShopDashboard = () => {
 
   // Format number
   const formatNumber = (num) => {
+    if (num == null || isNaN(num)) return '0';
     return new Intl.NumberFormat('vi-VN').format(num);
   };
 
@@ -293,6 +248,7 @@ const ShopDashboard = () => {
     const abs = Math.abs(amount);
     let value = amount;
     let suffix = '';
+    
     if (abs >= 1e12) {
       value = amount / 1e12;
       suffix = 'T'; // Nghìn tỉ
@@ -303,6 +259,7 @@ const ShopDashboard = () => {
       value = amount / 1e6;
       suffix = 'M'; // Triệu
     }
+    
     // Lấy 1-2 chữ số thập phân nếu cần
     const formatted = value % 1 === 0 ? value.toFixed(0) : value.toFixed(2).replace(/\.0+$/, '');
     return `${formatted}${suffix}₫`;
@@ -316,9 +273,13 @@ const ShopDashboard = () => {
           <p className="tooltip-label">{`${label}`}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
-              {`${entry.dataKey === 'revenue' || entry.dataKey === 'cumulativeRevenue' || entry.dataKey === 'dailyRevenue' 
+              {`${entry.name}: ${
+                entry.dataKey === 'revenue' || 
+                entry.dataKey === 'cumulativeRevenue' || 
+                entry.dataKey === 'dailyRevenue'
                 ? formatCurrency(entry.value) 
-                : formatNumber(entry.value)}`}
+                : formatNumber(entry.value)
+              }`}
             </p>
           ))}
         </div>
@@ -335,7 +296,7 @@ const ShopDashboard = () => {
         <div className="custom-tooltip">
           <p className="tooltip-label">{data.name}</p>
           <p style={{ color: payload[0].color }}>
-            {formatCurrency(data.value)} ({data.percentage}%)
+            {formatCurrency(data.value)} ({data.percentage.toFixed(1)}%)
           </p>
         </div>
       );
@@ -343,12 +304,36 @@ const ShopDashboard = () => {
     return null;
   };
 
+  // Custom label for pie chart
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percentage }) => {
+    if (percentage < 5) return null; // Don't show label for small slices
+    
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12"
+        fontWeight="bold"
+      >
+        {`${percentage.toFixed(1)}%`}
+      </text>
+    );
+  };
+
   if (loading) {
     return (
       <>
         <Header />
         <div className="um-user-list-container">
-          <div className="um-loading-state">
+          <div className="um-loading-container">
             <div className="um-spinner"></div>
             <h3>Đang tải dashboard...</h3>
             <p>Vui lòng đợi trong giây lát</p>
@@ -416,7 +401,7 @@ const ShopDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Dashboard - Updated to use SAME field names as ShopProductManagement */}
+        {/* Stats Dashboard */}
         <div className="um-stats-dashboard">
           <div className="um-stats-grid">
             <div className="um-stat-card um-stat-total">
@@ -424,7 +409,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-cube"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatNumber(stats.total)}</span>
+                <span className="um-stat-number">{formatNumber(stats.totalProducts)}</span>
                 <span className="um-stat-label">Tổng sản phẩm</span>
                 <span className="um-stat-percentage">Tất cả sản phẩm</span>
               </div>
@@ -435,7 +420,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-check-circle"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatNumber(stats.available)}</span>
+                <span className="um-stat-number">{formatNumber(stats.activeProducts)}</span>
                 <span className="um-stat-label">Đang bán</span>
                 <span className="um-stat-percentage">Sản phẩm hoạt động</span>
               </div>
@@ -446,7 +431,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-pause-circle"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatNumber(stats.draft)}</span>
+                <span className="um-stat-number">{formatNumber(stats.draftProducts)}</span>
                 <span className="um-stat-label">Ngừng bán</span>
                 <span className="um-stat-percentage">Sản phẩm tạm dừng</span>
               </div>
@@ -457,7 +442,7 @@ const ShopDashboard = () => {
                 <i className="fas fa-money-bill-wave"></i>
               </div>
               <div className="um-stat-content">
-                <span className="um-stat-number">{formatInventoryValue(stats.inventoryValue)}</span>
+                <span className="um-stat-number">{formatInventoryValue(stats.totalValue)}</span>
                 <span className="um-stat-label">Giá trị kho</span>
                 <span className="um-stat-percentage">Tổng giá trị hàng tồn</span>
               </div>
@@ -502,6 +487,11 @@ const ShopDashboard = () => {
                   <div className="um-spinner"></div>
                   <p>Đang tải biểu đồ...</p>
                 </div>
+              ) : chartData.bestSellingProductsByTime.length === 0 ? (
+                <div className="chart-empty">
+                  <i className="fas fa-chart-bar"></i>
+                  <span>Chưa có dữ liệu bán hàng</span>
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={chartData.bestSellingProductsByTime}>
@@ -527,6 +517,11 @@ const ShopDashboard = () => {
                   <div className="um-spinner"></div>
                   <p>Đang tải biểu đồ...</p>
                 </div>
+              ) : chartData.productRevenueShare.length === 0 ? (
+                <div className="chart-empty">
+                  <i className="fas fa-chart-pie"></i>
+                  <span>Chưa có dữ liệu doanh số</span>
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -535,7 +530,7 @@ const ShopDashboard = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percentage }) => `${name} (${percentage}%)`}
+                      label={renderCustomizedLabel}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -545,6 +540,7 @@ const ShopDashboard = () => {
                       ))}
                     </Pie>
                     <Tooltip content={<PieTooltip />} />
+                    <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -564,9 +560,14 @@ const ShopDashboard = () => {
                   <div className="um-spinner"></div>
                   <p>Đang tải biểu đồ...</p>
                 </div>
+              ) : chartData.shopRevenueByTime.length === 0 ? (
+                <div className="chart-empty">
+                  <i className="fas fa-chart-line"></i>
+                  <span>Chưa có dữ liệu doanh số</span>
+                </div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={chartData.dailyRevenue}>
+                  <LineChart data={chartData.shopRevenueByTime}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -595,6 +596,11 @@ const ShopDashboard = () => {
                 <div className="chart-loading">
                   <div className="um-spinner"></div>
                   <p>Đang tải biểu đồ...</p>
+                </div>
+              ) : chartData.cumulativeRevenue.length === 0 ? (
+                <div className="chart-empty">
+                  <i className="fas fa-chart-area"></i>
+                  <span>Chưa có dữ liệu tích lũy</span>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
@@ -657,7 +663,18 @@ const ShopDashboard = () => {
                   <i className="fas fa-clipboard-list"></i>
                 </div>
                 <h4>Quản lý đơn hàng</h4>
-                <p>Xem và xử lý đơn hàng từ khách hàng</p>
+                <p>Xem và xử lý đơn hàng từ khách hàng ({stats.pendingOrders} đơn chờ xử lý)</p>
+                <span className="action-arrow">
+                  <i className="fas fa-arrow-right"></i>
+                </span>
+              </div>
+
+              <div className="action-card" onClick={() => navigate('/ShopAnalytics')}>
+                <div className="action-icon">
+                  <i className="fas fa-chart-bar"></i>
+                </div>
+                <h4>Phân tích chi tiết</h4>
+                <p>Xem báo cáo và phân tích kinh doanh chi tiết</p>
                 <span className="action-arrow">
                   <i className="fas fa-arrow-right"></i>
                 </span>
