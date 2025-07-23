@@ -76,10 +76,7 @@ const editCategory = async (req, res) => {
         if (!category) {
             return res.status(404).json({ message: 'Product category not found' });
         }
-        const nameExists = await ProductCategory.findOne({ product_category_name });
-        if (nameExists) {
-            return res.status(400).json({ message: 'Product category name already exists' });
-        }
+        // const nameExists = await ProductCategory.findOne({ product_category_name });
         if (product_category_imageurl) {
             category.product_category_imageurl = product_category_imageurl;
         }
