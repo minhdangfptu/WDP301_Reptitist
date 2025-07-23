@@ -799,7 +799,8 @@ const getProductDetails = async (req, res) => {
   try {
     const { productId } = req.params;
     const product = await Product.findById(productId)
-      .populate('product_category_id', 'product_category_name');
+      .populate('product_category_id', 'product_category_name')
+      .populate('user_id', 'username email');
 
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
