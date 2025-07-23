@@ -62,6 +62,7 @@ const ShopProductManagement = () => {
     product_status: 'available'
   });
   const [editErrors, setEditErrors] = useState({});
+  const [editLoading, setEditLoading] = useState(false);
 
   const searchInputRef = useRef(null);
 
@@ -351,6 +352,110 @@ const ShopProductManagement = () => {
   const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
+  // Handle edit product
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setEditForm({
+      product_name: product.product_name || '',
+      product_description: product.product_description || '',
+      product_price: product.product_price || '',
+      product_quantity: product.product_quantity || '',
+      product_category_id: product.product_category_id?._id || '',
+      product_status: product.product_status || 'available'
+    });
+    setEditErrors({});
+    setShowEditModal(true);
+  };
+
+  // Validate edit form
+  const validateEditForm = () => {
+    const errors = {};
+
+    if (!editForm.product_name?.trim()) {
+      errors.product_name = 'Tên sản phẩm không được để trống';
+    }
+
+    if (!editForm.product_price || editForm.product_price <= 0) {
+      errors.product_price = 'Giá sản phẩm phải lớn hơn 0';
+    }
+
+    if (!editForm.product_quantity || editForm.product_quantity < 0) {
+      errors.product_quantity = 'Số lượng không được âm';
+    }
+
+    if (!editForm.product_category_id) {
+      errors.product_category_id = 'Vui lòng chọn danh mục';
+    }
+
+    setEditErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle edit form change
+  const handleEditFormChange = (field, value) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear error for this field
+    if (editErrors[field]) {
+      setEditErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  // Submit edit form
+  const handleEditSubmit = async () => {
+    if (!validateEditForm()) {
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const updateData = {
+        product_name: editForm.product_name.trim(),
+        product_description: editForm.product_description.trim(),
+        product_price: parseFloat(editForm.product_price),
+        product_quantity: parseInt(editForm.product_quantity),
+        product_category_id: editForm.product_category_id,
+        product_status: editForm.product_status
+      };
+
+      await axios.put(`${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`, updateData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      toast.success('Cập nhật sản phẩm thành công!');
+      setShowEditModal(false);
+      setSelectedProduct(null);
+      setEditForm({
+        product_name: '',
+        product_description: '',
+        product_price: '',
+        product_quantity: '',
+        product_category_id: '',
+        product_status: 'available'
+      });
+      
+      // Refresh data
+      await Promise.all([fetchProducts(), fetchStats()]);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Không thể cập nhật sản phẩm');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   // Delete product
   const handleDeleteProduct = async () => {
     if (!selectedProduct) return;
@@ -372,42 +477,6 @@ const ShopProductManagement = () => {
     } catch (error) {
       console.error('Error deleting product:', error);
       toast.error('Không thể xóa sản phẩm');
-    }
-  };
-
-  // Update product
-  const handleUpdateProduct = async () => {
-    try {
-      const token = localStorage.getItem('access_token');
-      if (!token) return;
-
-      const updateData = {
-        ...editForm,
-        product_price: parseFloat(editForm.product_price),
-        product_quantity: parseInt(editForm.product_quantity)
-      };
-
-      await axios.put(`${baseUrl}/reptitist/shop/my-products/${selectedProduct._id}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      toast.success('Cập nhật sản phẩm thành công!');
-      setShowEditModal(false);
-      setSelectedProduct(null);
-      setEditForm({
-        product_name: '',
-        product_description: '',
-        product_price: '',
-        product_quantity: '',
-        product_category_id: '',
-        product_status: 'available'
-      });
-      
-      // Refresh data
-      await Promise.all([fetchProducts(), fetchStats()]);
-    } catch (error) {
-      console.error('Error updating product:', error);
-      toast.error('Không thể cập nhật sản phẩm');
     }
   };
 
@@ -819,18 +888,7 @@ const ShopProductManagement = () => {
                             </button>
 
                             <button
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setEditForm({
-                                  product_name: product.product_name,
-                                  product_description: product.product_description || '',
-                                  product_price: product.product_price.toString(),
-                                  product_quantity: product.product_quantity.toString(),
-                                  product_category_id: product.product_category_id?._id || '',
-                                  product_status: product.product_status
-                                });
-                                setShowEditModal(true);
-                              }}
+                              onClick={() => handleEditProduct(product)}
                               className="pm-btn pm-btn-icon pm-btn-edit"
                               title="Chỉnh sửa"
                             >
@@ -1004,16 +1062,7 @@ const ShopProductManagement = () => {
               <button
                 onClick={() => {
                   setShowDetailModal(false);
-                  setSelectedProduct(selectedProduct);
-                  setEditForm({
-                    product_name: selectedProduct.product_name,
-                    product_description: selectedProduct.product_description || '',
-                    product_price: selectedProduct.product_price.toString(),
-                    product_quantity: selectedProduct.product_quantity.toString(),
-                    product_category_id: selectedProduct.product_category_id?._id || '',
-                    product_status: selectedProduct.product_status
-                  });
-                  setShowEditModal(true);
+                  handleEditProduct(selectedProduct);
                 }}
                 className="pm-btn pm-btn-primary"
               >
@@ -1032,7 +1081,7 @@ const ShopProductManagement = () => {
         </div>
       )}
 
-      {/* Edit Product Modal */}
+      {/* Edit Product Modal - Consistent with Detail Modal Structure */}
       {showEditModal && selectedProduct && (
         <div className="pm-modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="pm-modal pm-detail-modal" onClick={(e) => e.stopPropagation()}>
@@ -1049,20 +1098,22 @@ const ShopProductManagement = () => {
               </button>
             </div>
 
-            <div className="pm-modal-body">
-              <form className="pm-edit-form" onSubmit={(e) => e.preventDefault()}>
-                <div className="pm-edit-grid">
-                  <div className="pm-edit-image">
-                    <img
-                      src={selectedProduct.product_imageurl?.[0] || '/images/default-product.png'}
-                      alt={selectedProduct.product_name}
-                      className="pm-edit-main-image"
-                      onError={(e) => {
-                        e.target.src = '/images/default-product.png';
-                      }}
-                    />
-                  </div>
+            <div className="pm-modal-body pm-detail-body">
+              <div className="pm-edit-grid">
+                <div className="pm-edit-image">
+                  <img
+                    src={selectedProduct.product_imageurl?.[0] || '/images/default-product.png'}
+                    alt={selectedProduct.product_name}
+                    className="pm-edit-main-image"
+                    onError={(e) => {
+                      e.target.src = '/images/default-product.png';
+                    }}
+                  />
+                </div>
 
+                <div className="pm-edit-content">
+                  <h4 className="pm-detail-title">Thông tin sản phẩm</h4>
+                  
                   <div className="pm-edit-fields">
                     <div className="pm-edit-field">
                       <label className="pm-edit-label">
@@ -1072,7 +1123,7 @@ const ShopProductManagement = () => {
                       <input
                         type="text"
                         value={editForm.product_name}
-                        onChange={(e) => setEditForm({...editForm, product_name: e.target.value})}
+                        onChange={(e) => handleEditFormChange('product_name', e.target.value)}
                         className={`pm-edit-input ${editErrors.product_name ? 'pm-error' : ''}`}
                         placeholder="Nhập tên sản phẩm"
                       />
@@ -1084,6 +1135,20 @@ const ShopProductManagement = () => {
                       )}
                     </div>
 
+                    <div className="pm-edit-field">
+                      <label className="pm-edit-label">
+                        <i className="fas fa-align-left"></i>
+                        Mô tả sản phẩm
+                      </label>
+                      <textarea
+                        value={editForm.product_description}
+                        onChange={(e) => handleEditFormChange('product_description', e.target.value)}
+                        className="pm-edit-textarea"
+                        placeholder="Nhập mô tả sản phẩm"
+                        rows="4"
+                      />
+                    </div>
+
                     <div className="pm-edit-row">
                       <div className="pm-edit-field">
                         <label className="pm-edit-label">
@@ -1093,7 +1158,7 @@ const ShopProductManagement = () => {
                         <input
                           type="number"
                           value={editForm.product_price}
-                          onChange={(e) => setEditForm({...editForm, product_price: e.target.value})}
+                          onChange={(e) => handleEditFormChange('product_price', e.target.value)}
                           className={`pm-edit-input ${editErrors.product_price ? 'pm-error' : ''}`}
                           placeholder="0"
                           min="0"
@@ -1109,13 +1174,13 @@ const ShopProductManagement = () => {
 
                       <div className="pm-edit-field">
                         <label className="pm-edit-label">
-                          <i className="fas fa-cubes"></i>
+                          <i className="fas fa-boxes"></i>
                           Số lượng *
                         </label>
                         <input
                           type="number"
                           value={editForm.product_quantity}
-                          onChange={(e) => setEditForm({...editForm, product_quantity: e.target.value})}
+                          onChange={(e) => handleEditFormChange('product_quantity', e.target.value)}
                           className={`pm-edit-input ${editErrors.product_quantity ? 'pm-error' : ''}`}
                           placeholder="0"
                           min="0"
@@ -1133,12 +1198,12 @@ const ShopProductManagement = () => {
                       <div className="pm-edit-field">
                         <label className="pm-edit-label">
                           <i className="fas fa-list"></i>
-                          Danh mục
+                          Danh mục *
                         </label>
                         <select
                           value={editForm.product_category_id}
-                          onChange={(e) => setEditForm({...editForm, product_category_id: e.target.value})}
-                          className="pm-edit-select"
+                          onChange={(e) => handleEditFormChange('product_category_id', e.target.value)}
+                          className={`pm-edit-select ${editErrors.product_category_id ? 'pm-error' : ''}`}
                         >
                           <option value="">Chọn danh mục</option>
                           {categories.map(category => (
@@ -1147,6 +1212,12 @@ const ShopProductManagement = () => {
                             </option>
                           ))}
                         </select>
+                        {editErrors.product_category_id && (
+                          <div className="pm-error-message">
+                            <i className="fas fa-exclamation-circle"></i>
+                            {editErrors.product_category_id}
+                          </div>
+                        )}
                       </div>
 
                       <div className="pm-edit-field">
@@ -1156,52 +1227,68 @@ const ShopProductManagement = () => {
                         </label>
                         <select
                           value={editForm.product_status}
-                          onChange={(e) => setEditForm({...editForm, product_status: e.target.value})}
+                          onChange={(e) => handleEditFormChange('product_status', e.target.value)}
                           className="pm-edit-select"
                         >
                           <option value="available">Đang bán</option>
-                          <option value="not_available">Ngừng bán</option>
                           <option value="pending">Chờ duyệt</option>
+                          <option value="not_available">Ngừng bán</option>
                         </select>
                       </div>
                     </div>
 
                     <div className="pm-edit-field">
                       <label className="pm-edit-label">
-                        <i className="fas fa-align-left"></i>
-                        Mô tả sản phẩm
+                        <i className="fas fa-info-circle"></i>
+                        Thông tin bổ sung
                       </label>
-                      <textarea
-                        value={editForm.product_description}
-                        onChange={(e) => setEditForm({...editForm, product_description: e.target.value})}
-                        className="pm-edit-textarea"
-                        placeholder="Nhập mô tả chi tiết về sản phẩm"
-                        rows="4"
-                      />
+                      <div className="pm-detail-fields">
+                        <div className="pm-detail-field">
+                          <label>Mã sản phẩm:</label>
+                          <span>{selectedProduct._id}</span>
+                        </div>
+                        <div className="pm-detail-field">
+                          <label>Ngày tạo:</label>
+                          <span>{formatDate(selectedProduct.createdAt)}</span>
+                        </div>
+                        {selectedProduct.updatedAt && selectedProduct.updatedAt !== selectedProduct.createdAt && (
+                          <div className="pm-detail-field">
+                            <label>Cập nhật cuối:</label>
+                            <span>{formatDate(selectedProduct.updatedAt)}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </form>
+              </div>
             </div>
 
             <div className="pm-modal-footer">
               <button
-                onClick={handleUpdateProduct}
-                className="pm-btn pm-btn-primary"
-                disabled={!editForm.product_name || !editForm.product_price || !editForm.product_quantity}
-              >
-                <i className="fas fa-save"></i>
-                Lưu thay đổi
-              </button>
-              <button
-                onClick={() => {
-                  setShowEditModal(false);
-                  setEditErrors({});
-                }}
+                onClick={() => setShowEditModal(false)}
                 className="pm-btn pm-btn-secondary"
+                disabled={editLoading}
               >
                 <i className="fas fa-times"></i>
                 Hủy
+              </button>
+              <button
+                onClick={handleEditSubmit}
+                className="pm-btn pm-btn-primary"
+                disabled={editLoading}
+              >
+                {editLoading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i>
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-save"></i>
+                    Lưu thay đổi
+                  </>
+                )}
               </button>
             </div>
           </div>
