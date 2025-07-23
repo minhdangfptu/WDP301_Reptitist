@@ -13,10 +13,13 @@ const AdminCategoryManagement = () => {
   const navigate = useNavigate();
   
   const [categories, setCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('name');
   const [formData, setFormData] = useState({
     product_category_name: '',
     product_category_imageurl: ''
@@ -37,6 +40,7 @@ const AdminCategoryManagement = () => {
       setLoading(true);
       const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
       setCategories(response.data);
+      setFilteredCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast.error('Không thể tải danh sách danh mục');
@@ -44,7 +48,34 @@ const AdminCategoryManagement = () => {
       setLoading(false);
     }
   };
+useEffect(() => {
+    let filtered = [...categories];
 
+    // Search by name
+    if (searchTerm) {
+      filtered = filtered.filter(category =>
+        category.product_category_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return a.product_category_name.localeCompare(b.product_category_name);
+        case 'name-desc':
+          return b.product_category_name.localeCompare(a.product_category_name);
+        case 'newest':
+          return new Date(b.createdAt || b._id) - new Date(a.createdAt || a._id);
+        case 'oldest':
+          return new Date(a.createdAt || a._id) - new Date(b.createdAt || b._id);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredCategories(filtered);
+  }, [categories, searchTerm, sortBy]);
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     try {
@@ -70,8 +101,7 @@ const AdminCategoryManagement = () => {
     }
   };
 
-  const handleUpdateCategory = async (e) => {
-    e.preventDefault();
+  const handleUpdateCategory = async () => {
     try {
       const response = await axios.put(
         `${baseUrl}/reptitist/shop/edit-category/${selectedCategory._id}`,
@@ -143,9 +173,11 @@ const AdminCategoryManagement = () => {
     return (
       <>
         <Header />
-        <div className="admin-category-loading">
-          <div className="loading-spinner"></div>
-          <p>Đang tải dữ liệu...</p>
+        <div className="admin-category-container">
+          <div className="admin-category-loading">
+            <div className="loading-spinner"></div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
         </div>
         <Footer />
       </>
@@ -168,16 +200,41 @@ const AdminCategoryManagement = () => {
           </button>
         </div>
 
+        <div className="admin-category-filters">
+          <div className="search-bar">
+            <i className="fas fa-search"></i>
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên danh mục..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <div className="sort-filter">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="sort-select"
+            >
+              <option value="name">Tên A-Z</option>
+              <option value="name-desc">Tên Z-A</option>
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
+            </select>
+          </div>
+        </div>
+
         <div className="admin-category-content">
-          {categories.length === 0 ? (
+          {filteredCategories.length === 0 ? (
             <div className="admin-category-empty">
               <i className="fas fa-tags"></i>
-              <h3>Chưa có danh mục nào</h3>
-              <p>Hãy tạo danh mục đầu tiên để bắt đầu</p>
+              <h3>{searchTerm ? 'Không tìm thấy danh mục nào' : 'Chưa có danh mục nào'}</h3>
+              <p>{searchTerm ? 'Thử tìm kiếm với từ khóa khác' : 'Hãy tạo danh mục đầu tiên để bắt đầu'}</p>
             </div>
           ) : (
             <div className="admin-category-grid">
-              {categories.map((category) => (
+              {filteredCategories.map((category) => (
                 <div key={category._id} className="admin-category-card">
                   <div className="admin-category-image">
                     <img
@@ -190,23 +247,22 @@ const AdminCategoryManagement = () => {
                   </div>
                   <div className="admin-category-info">
                     <h3>{category.product_category_name}</h3>
-                    
-                    <div className="admin-category-actions">
-                      <button
-                        className="admin-category-edit-btn"
-                        onClick={() => openEditModal(category)}
-                      >
-                        <i className="fas fa-edit"></i>
-                        Sửa
-                      </button>
-                      <button
-                        className="admin-category-delete-btn"
-                        onClick={() => handleDeleteCategory(category._id)}
-                      >
-                        <i className="fas fa-trash"></i>
-                        Xóa
-                      </button>
-                    </div>
+                  </div>
+                  <div className="admin-category-actions">
+                    <button
+                      className="admin-category-edit-btn"
+                      onClick={() => openEditModal(category)}
+                    >
+                      <i className="fas fa-edit"></i>
+                      Sửa
+                    </button>
+                    <button
+                      className="admin-category-delete-btn"
+                      onClick={() => handleDeleteCategory(category._id)}
+                    >
+                      <i className="fas fa-trash"></i>
+                      Xóa
+                    </button>
                   </div>
                 </div>
               ))}
@@ -230,7 +286,7 @@ const AdminCategoryManagement = () => {
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              <form onSubmit={handleCreateCategory} className="admin-category-form">
+              <div className="admin-category-form">
                 <div className="admin-category-form-group">
                   <label>Tên danh mục:</label>
                   <input
@@ -251,19 +307,23 @@ const AdminCategoryManagement = () => {
                     placeholder="Nhập URL hình ảnh"
                   />
                 </div>
-                <div className="admin-category-modal-footer">
-                  <button
-                    type="button"
-                    className="admin-category-modal-cancel"
-                    onClick={() => setShowCreateModal(false)}
-                  >
-                    Hủy
-                  </button>
-                  <button type="submit" className="admin-category-modal-submit">
-                    Tạo danh mục
-                  </button>
-                </div>
-              </form>
+              </div>
+              <div className="admin-category-modal-footer">
+                <button
+                  type="button"
+                  className="admin-category-modal-cancel"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="button" 
+                  className="admin-category-modal-submit"
+                  onClick={handleCreateCategory}
+                >
+                  Tạo danh mục
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -284,7 +344,7 @@ const AdminCategoryManagement = () => {
                   <i className="fas fa-times"></i>
                 </button>
               </div>
-              <form onSubmit={handleUpdateCategory} className="admin-category-form">
+              <div className="admin-category-form">
                 <div className="admin-category-form-group">
                   <label>Tên danh mục:</label>
                   <input
@@ -305,19 +365,23 @@ const AdminCategoryManagement = () => {
                     placeholder="Nhập URL hình ảnh"
                   />
                 </div>
-                <div className="admin-category-modal-footer">
-                  <button
-                    type="button"
-                    className="admin-category-modal-cancel"
-                    onClick={() => setShowEditModal(false)}
-                  >
-                    Hủy
-                  </button>
-                  <button type="submit" className="admin-category-modal-submit">
-                    Cập nhật
-                  </button>
-                </div>
-              </form>
+              </div>
+              <div className="admin-category-modal-footer">
+                <button
+                  type="button"
+                  className="admin-category-modal-cancel"
+                  onClick={() => setShowEditModal(false)}
+                >
+                  Hủy
+                </button>
+                <button 
+                  type="button" 
+                  className="admin-category-modal-submit"
+                  onClick={handleUpdateCategory}
+                >
+                  Cập nhật
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -327,4 +391,4 @@ const AdminCategoryManagement = () => {
   );
 };
 
-export default AdminCategoryManagement; 
+export default AdminCategoryManagement;

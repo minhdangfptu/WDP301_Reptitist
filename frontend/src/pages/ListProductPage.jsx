@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import ShopHeader from "../components/ShopHeader";
 import { useAuth } from "../context/AuthContext";
-import { baseUrl } from '../config';
+import { baseUrl } from "../config";
 // Mock data for products
 const mockProducts = [
   {
@@ -73,10 +73,6 @@ const mockProducts = [
     sold: 743,
     location: "TP. Hồ Chí Minh",
   },
-];
-
-const categories = [
- "Chưa phân loại"
 ];
 
 const priceRanges = [
@@ -279,6 +275,7 @@ const ListProductPage = () => {
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [cate, setCate] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const { productName, categoryId } = useParams();
 
   useEffect(() => {
@@ -295,9 +292,7 @@ const ListProductPage = () => {
             `${baseUrl}/reptitist/shop/products/category/${categoryId}`
           );
         } else {
-          response = await axios.get(
-            `${baseUrl}/reptitist/shop/products`
-          );
+          response = await axios.get(`${baseUrl}/reptitist/shop/products`);
         }
         setProducts(response.data);
       } catch (error) {
@@ -308,23 +303,37 @@ const ListProductPage = () => {
     };
     fetchProducts();
   }, [productName, categoryId]);
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get(
-          `${baseUrl}/reptitist/shop/category/${categoryId}`
-        );
-        setCate(response.data);
-        setLoading(false);
+        if (categoryId) {
+          const currentCateResponse = await axios.get(
+            `${baseUrl}/reptitist/shop/category/${categoryId}`
+          );
+          setCate(currentCateResponse.data);
+        }
       } catch (err) {
-        setError("Không thể tải danh mục sản phẩm");
-        setLoading(false);
-        console.error("Lỗi khi tải danh mục:", err);
+        setError("Không thể tải danh mục hiện tại");
+        console.error("Lỗi khi tải danh mục hiện tại:", err);
+      }
+    };
+    fetchCategories();
+  }, [categoryId]);
+
+  // useEffect mới để fetch tất cả danh mục
+  useEffect(() => {
+    const fetchAllCategories = async () => {
+      try {
+        const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
+        setAllCategories(response.data);
+      } catch (err) {
+        console.error("Lỗi khi tải tất cả danh mục:", err);
       }
     };
 
-    fetchCategories();
-  }, []);
+    fetchAllCategories();
+  }, []); // Chỉ chạy một lần khi component mount
   return (
     <div style={{ backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
       {/* Header */}
@@ -383,7 +392,10 @@ const ListProductPage = () => {
             Bộ lọc tìm kiếm
           </h3>
 
-          <FilterSection title="Danh Mục" items={categories} />
+          <FilterSection
+            title="Danh Mục"
+            items={allCategories.map((cat) => cat.product_category_name)}
+          />
           <FilterSection title="Khoảng Giá" items={priceRanges} type="radio" />
 
           <div style={{ marginBottom: "16px" }}>
@@ -436,7 +448,9 @@ const ListProductPage = () => {
                 margin: 0,
               }}
             >
-              Danh mục: {productName || cate.product_category_name}
+              {productName
+                ? `Sản phẩm: ${productName}`
+                : `Danh mục: ${cate.product_category_name}`}
             </h1>
           </div>
 
