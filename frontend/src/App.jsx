@@ -74,6 +74,7 @@ import LibraryExpertDetail from './pages/LibraryExpertDetail';
 import LibraryExpertTopicCreate from './pages/LibraryExpertTopicCreate';
 import LibraryExpertUpdate from './pages/LibraryExpertUpdate';
 import LibraryExpertCreate from './pages/LibraryExpertCreate';
+import ShopComplain from './pages/ShopComplain';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -331,6 +332,7 @@ const AppRoutes = () => (
         </ProtectedRoute>
       }
     />
+    <Route path="/shop/complain" element={<ShopComplain />} />
    
   </Routes>
 );

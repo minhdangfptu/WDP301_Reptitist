@@ -4,7 +4,7 @@ const Product = require('../models/Products');
 const ProductReport = require('../models/Product_reports');
 const Transaction = require('../models/Transactions');
 const mongoose = require('mongoose');
-//const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification, sendProductHideNotification } = require('../config/email');
+const { sendProductReportNotification, sendProductUnhideNotification, sendProductDeleteNotification, sendProductHideNotification } = require('../config/email');
 
 // Middleware kiểm tra quyền admin
 const checkAdminRole = async (req, res, next) => {
