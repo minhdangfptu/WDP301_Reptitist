@@ -4,7 +4,7 @@ import axios from "axios";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { useAuth } from "../context/AuthContext";
-import { baseUrl } from '../config';
+import { baseUrl } from "../config";
 const LibraryCategory = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [filteredCategories, setFilteredCategories] = useState([]);
@@ -21,8 +21,10 @@ const LibraryCategory = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log(topicId, 'topicId');
-        const response = await axios.get(`${baseUrl}/reptitist/library-categories/topic/${topicId}`);
+        console.log(topicId, "topicId");
+        const response = await axios.get(
+          `${baseUrl}/reptitist/library-categories/topic/${topicId}`
+        );
         setAllCategories(response.data);
         setFilteredCategories(response.data);
       } catch (err) {
@@ -33,7 +35,9 @@ const LibraryCategory = () => {
 
     const fetchTopic = async () => {
       try {
-        const response = await axios.get(`${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`);
+        const response = await axios.get(
+          `${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`
+        );
         setTopic(response.data);
       } catch (err) {
         setError("Lỗi khi tải thông tin chủ đề");
@@ -56,7 +60,9 @@ const LibraryCategory = () => {
   const handleDelete = async (categoryId) => {
     if (window.confirm("Bạn có chắc chắn muốn xoá danh mục này không?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/library-categories/${categoryId}`);
+        await axios.delete(
+          `${baseUrl}/reptitist/library-categories/${categoryId}`
+        );
         setAllCategories(allCategories.filter((cat) => cat._id !== categoryId));
       } catch (error) {
         alert("Lỗi khi xoá danh mục.");
@@ -68,7 +74,17 @@ const LibraryCategory = () => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
 
-  if (loading) return <div className="text-center my-5">Đang tải dữ liệu...</div>;
+  if (loading)
+    return (
+      <div className="text-center my-5">
+        <img
+          src="/loading.gif"
+          alt="Đang tải..."
+          style={{ width: 48, height: 48 }}
+        />
+        Đang tải dữ liệu...
+      </div>
+    );
   if (error) return <div className="text-danger text-center my-5">{error}</div>;
 
   return (
@@ -84,14 +100,13 @@ const LibraryCategory = () => {
       <div className="container">
         <div className="breadcrumb">
           <a href="/">Trang chủ</a> <i className="fas fa-angle-right"></i>{" "}
-          <a href="/LibraryTopic">Thư viện kiến thức</a> <i className="fas fa-angle-right"></i>{" "}
+          <a href="/LibraryTopic">Thư viện kiến thức</a>{" "}
+          <i className="fas fa-angle-right"></i>{" "}
           <span>{topic?.topic_title || "Chủ đề không xác định"}</span>
         </div>
 
         <div className="row mb-3">
-          <div className="col-md-3">
-            {/* Empty space for left alignment */}
-          </div>
+          <div className="col-md-3">{/* Empty space for left alignment */}</div>
           <div className="col-md-6">
             <div className="input-group">
               <input
@@ -101,7 +116,6 @@ const LibraryCategory = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              
             </div>
           </div>
           <div className="col-md-3 text-end">
@@ -132,7 +146,9 @@ const LibraryCategory = () => {
                         {cat.category_content}
                       </Link>
                       <span
-                        className={`caret ${openIndex === idx ? "caret-up" : "caret-down"}`}
+                        className={`caret ${
+                          openIndex === idx ? "caret-up" : "caret-down"
+                        }`}
                         aria-hidden="true"
                       ></span>
                     </div>
@@ -158,7 +174,10 @@ const LibraryCategory = () => {
                   <Link to={`/librarycontent/${cat._id}`}>
                     <div className="card-image" style={{ cursor: "pointer" }}>
                       <img
-                        src={cat.category_imageurl || "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"}
+                        src={
+                          cat.category_imageurl ||
+                          "https://cdn.pixabay.com/photo/2017/01/31/15/06/dinosaurs-2022584_960_720.png"
+                        }
                         alt={cat.category_content}
                       />
                     </div>
@@ -206,10 +225,9 @@ const LibraryCategory = () => {
               {filteredCategories.length === 0 && (
                 <div className="col-12 text-center mt-4">
                   <p>
-                    {searchTerm 
+                    {searchTerm
                       ? `Không tìm thấy danh mục nào với từ khóa "${searchTerm}"`
-                      : "Không có danh mục nào để hiển thị."
-                    }
+                      : "Không có danh mục nào để hiển thị."}
                   </p>
                 </div>
               )}

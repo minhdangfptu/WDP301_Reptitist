@@ -38,7 +38,7 @@ router.delete('/category/:categoryId', deleteCategory);
 
 // Public Product Routes (for browsing)
 router.get('/products/category/:categoryId', getAllProductsByCategory);
-router.get('/products/search/:productName', getAllProductByName);
+router.get('/products/search/:name', getAllProductByName);
 router.get('/products/recent/', getAllProductRecentUploaded);
 router.get('/products/detail/:productId', getProductDetails);
 

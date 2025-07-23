@@ -765,7 +765,9 @@ const getAllProductsByCategory = async (req, res) => {
 
 const getAllProductByName = async (req, res) => {
   try {
-    const { name } = req.query;
+    const { name } = req.params;
+    console.log("productName param type:", typeof name, "value:", name);
+
     const products = await Product.find({
       product_name: { $regex: name, $options: 'i' },
       product_status: 'available'

@@ -206,8 +206,8 @@ const ShopLandingPage = () => {
         </section>
 
         {/* Flash Sale */}
-        <section className="flash-sale-section">
-          <div className="section-header">
+        {/* <section className="flash-sale-section"> */}
+          {/* <div className="section-header">
             <h2 style={{ fontWeight: "700" }}>FLASH SALE</h2>
             <div className="countdown">
               <span className="countdown-number">01</span>
@@ -228,7 +228,7 @@ const ShopLandingPage = () => {
               Coming Soon
             </h2>
           </div>
-          <div className="products-grid">
+          <div className="products-grid"> */}
             {/* {flashSaleProducts.map((product) => (
               <Link
                 to="/product-detail"
@@ -262,8 +262,8 @@ const ShopLandingPage = () => {
                 </div>
               </Link>
             ))} */}
-          </div>
-        </section>
+          {/* </div>
+        </section> */}
 
         {/* Featured Products */}
         <section className="featured-products-section">

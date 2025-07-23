@@ -16,7 +16,7 @@ exports.getAllReptiles = async (req, res) => {
 
 exports.getReptileById = async (req, res) => {
   try {
-    const { id } = req.query;  
+    const { id } = req.query;
     if (!id) {
       return res.status(400).json({ message: 'Missing id query parameter' });
     }
@@ -38,6 +38,7 @@ exports.createReptile = async (req, res) => {
     const newReptile = new Reptile({
       ...req.body,
       user_id: req.user._id
+
     });
 
     const savedReptile = await newReptile.save();
@@ -51,15 +52,15 @@ exports.createReptile = async (req, res) => {
 
 exports.updateReptileById = async (req, res) => {
   try {
-    const { id } = req.query;
-    if (!id) {
+    const { reptileId } = req.params;
+    if (!reptileId) {
       return res.status(400).json({ message: 'Missing id query parameter' });
     }
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!mongoose.Types.ObjectId.isValid(reptileId)) {
       return res.status(400).json({ message: 'Invalid id format' });
     }
 
-    const reptile = await Reptile.findById(id);
+    const reptile = await Reptile.findById(reptileId);
     if (!reptile) {
       return res.status(404).json({ message: 'Reptile not found' });
     }
@@ -67,10 +68,11 @@ exports.updateReptileById = async (req, res) => {
     if (reptile.user_id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'You do not have permission to update this reptile' });
     }
-
+    console.log("Params:", req.params);
+    console.log("Body:", req.body);
     const updateData = req.body;
 
-    const updatedReptile = await Reptile.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedReptile = await Reptile.findByIdAndUpdate(reptileId, updateData, { new: true });
     res.json(successResponse(updatedReptile));
   } catch (err) {
     console.error('Error updating reptile:', err);
@@ -113,7 +115,7 @@ exports.deleteReptileById = async (req, res) => {
 
 exports.getReptilesByUser = async (req, res) => {
   try {
-    const userId = req.user._id; 
+    const userId = req.user._id;
 
     const reptiles = await Reptile.find({ user_id: userId });
 

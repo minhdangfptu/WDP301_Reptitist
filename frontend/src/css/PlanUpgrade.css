@@ -3,23 +3,29 @@ PlanUpgrade.css - Enhanced Design with Dark Green + Modal Styles
 */
 
 .plan-upgrade-page {
-  background: #f5f6fa;
-  min-height: 100vh;
-  padding: 40px 0 60px 0;
+  min-height: calc(100vh - 64px);
+  background-color: #f8f9fa;
+  padding: 60px 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .plan-container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 20px;
+}
+
+/* Header */
+.plan-upgrade-header {
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .plan-upgrade-title {
-  text-align: center;
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #222;
-  margin-bottom: 36px;
+  font-size: 36px;
+  font-weight: 700;
+  color: #2d3748;
+  margin: 0 0 16px 0;
 }
 
 .plan-upgrade-subtitle {
@@ -82,31 +88,35 @@ PlanUpgrade.css - Enhanced Design with Dark Green + Modal Styles
 }
 
 .plan-plans-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 32px;
-  justify-content: center;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 30px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
+/* Plan Card */
 .plan-card {
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-  padding: 32px 36px 28px 36px;
-  min-width: 260px;
-  max-width: 320px;
-  flex: 1 1 260px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: box-shadow 0.2s, transform 0.2s;
-  cursor: pointer;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 0;
   position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  animation: planSlideInUp 0.6s ease-out;
 }
+
+.plan-card:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
 .plan-card:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.16);
-  transform: translateY(-6px) scale(1.03);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-color: #48bb78;
 }
 
 .plan-card.popular {
@@ -152,38 +162,46 @@ PlanUpgrade.css - Enhanced Design with Dark Green + Modal Styles
 }
 
 .plan-name {
-  font-size: 1.1rem;
+  font-size: 24px;
   font-weight: 700;
-  color: #0fa958;
-  margin-bottom: 8px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  color: #2d3748;
+  margin: 0 0 20px 0;
 }
 
 .plan-pricing {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  margin-bottom: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+  line-height: 1;
 }
+
+.plan-currency {
+  font-size: 20px;
+  font-weight: 600;
+  color: #48bb78;
+  margin-right: 4px;
+}
+
 .plan-price {
-  font-size: 2.3rem;
+  font-size: 48px;
   font-weight: 800;
-  color: #0fa958;
-  letter-spacing: 1px;
+  color: #48bb78;
+  margin-right: 8px;
 }
+
 .plan-period {
-  font-size: 1rem;
-  color: #888;
+  font-size: 16px;
+  color: #718096;
   font-weight: 500;
 }
 
 .plan-description {
-  margin-top: 10px;
-  font-size: 1.05rem;
-  color: #444;
+  font-size: 15px;
+  color: #4a5568;
+  line-height: 1.6;
+  margin: 0;
   text-align: center;
-  min-height: 38px;
 }
 
 /* Plan Button */

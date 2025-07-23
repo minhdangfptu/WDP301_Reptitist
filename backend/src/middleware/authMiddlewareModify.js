@@ -5,7 +5,8 @@ const authMiddleware1 = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization || req.headers.Authorization;
         const token = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
-
+        console.log("Authorization Header:", req.headers.authorization);
+        console.log("Decoded User:", req.user);
         if (!token) {
             return res.status(401).json({ message: 'Access denied! No token provided.' });
         }

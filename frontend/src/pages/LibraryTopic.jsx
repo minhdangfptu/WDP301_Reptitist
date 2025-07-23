@@ -4,7 +4,7 @@ import Footer from "../components/Footer";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { baseUrl } from '../config';
+import { baseUrl } from "../config";
 
 const Library = () => {
   const [topics, setTopics] = useState([]);
@@ -18,7 +18,7 @@ const Library = () => {
   const isAdmin = user && user.role === "admin";
 
   useEffect(() => {
-    setLoading(true); 
+    setLoading(true);
     axios
       .get(`${baseUrl}/reptitist/topic-categories/library_topics`)
       .then((response) => {
@@ -26,28 +26,29 @@ const Library = () => {
         getAllReptileInformation()
           .then((reptilesData) => {
             setReptiles(reptilesData);
-            setLoading(false); 
+            setLoading(false);
           })
           .catch((error) => {
-            setError('Lỗi khi tải dữ liệu về bò sát');
-            setLoading(false); 
+            setLoading(false);
+            throw new Error("Lỗi khi tải dữ liệu");
           });
         setFilteredTopics(response.data);
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Lỗi khi lấy danh sách chủ đề:', error);
-        setError('Lỗi khi tải dữ liệu về chủ đề');
-        setLoading(false); 
+        console.error("Lỗi khi lấy danh sách chủ đề:", error);
+        setLoading(false);
+        throw new Error("Lỗi khi tải dữ liệu");
       });
   }, []);
- const getAllReptileInformation = async () => {
+  const getAllReptileInformation = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/reptitist/info/get-all-reptile`);
-      return response.data.data
-      console.log(response.data, 'reptile data');
+      const response = await axios.get(
+        `${baseUrl}/reptitist/info/get-all-reptile`
+      );
+      return response.data.data;
     } catch (err) {
-      throw new Error('Lỗi khi tải dữ liệu');
+      throw new Error("Lỗi khi tải dữ liệu");
     }
   };
 
@@ -66,7 +67,9 @@ const Library = () => {
   const handleDelete = async (topicId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa chủ đề này?")) {
       try {
-        await axios.delete(`${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`);
+        await axios.delete(
+          `${baseUrl}/reptitist/topic-categories/library_topics/${topicId}`
+        );
         setTopics(topics.filter((topic) => topic._id !== topicId));
         alert("Xóa chủ đề thành công!");
       } catch (error) {
@@ -78,7 +81,17 @@ const Library = () => {
 
   if (loading) {
     return (
-      <div className="text-center my-5">
+      <div
+        className="text-center my-5"
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          fontSize: "18px",
+        }}
+      >
+        <img src="./loading.gif" />
         Đang tải danh sách chủ đề...
       </div>
     );
@@ -101,9 +114,7 @@ const Library = () => {
         </div>
 
         <div className="row mb-3">
-          <div className="col-md-3">
-            {/* Empty space for left alignment */}
-          </div>
+          <div className="col-md-3">{/* Empty space for left alignment */}</div>
           <div className="col-md-6">
             <div className="input-group">
               <input
@@ -127,34 +138,51 @@ const Library = () => {
 
       <section className="library-section">
         <div className="container">
-          <div className="library-content" style={{ display: 'grid', gridTemplateColumns: '250px 1fr', gap: '30px' }}>
+          <div
+            className="library-content"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "250px 1fr",
+              gap: "30px",
+            }}
+          >
             {/* Sidebar */}
             <div className="sidebar">
               <h2 className="sidebar-title">Chủ đề thư viện</h2>
               <ul className="sidebar-menu list-unstyled">
                 {filteredTopics.map((topic, idx) => (
-                  <li key={topic._id} style={{ marginBottom: '10px' }}>
+                  <li key={topic._id} style={{ marginBottom: "10px" }}>
                     <div
                       className="menu-item"
                       onClick={() => toggleTopic(idx)}
-                      style={{ cursor: "pointer", userSelect: "none", display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 'bold' }}
+                      style={{
+                        cursor: "pointer",
+                        userSelect: "none",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontWeight: "bold",
+                      }}
                     >
                       <span>{topic.topic_title}</span>
                       <span
                         style={{
-                          transform: openIndex === idx ? 'rotate(90deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.2s ease',
-                          display: 'inline-block',
+                          transform:
+                            openIndex === idx
+                              ? "rotate(90deg)"
+                              : "rotate(0deg)",
+                          transition: "transform 0.2s ease",
+                          display: "inline-block",
                         }}
                       >
                         ▶
                       </span>
                     </div>
                     {openIndex === idx && (
-                      <ul style={{ paddingLeft: '15px', marginTop: '5px' }}>
+                      <ul style={{ paddingLeft: "15px", marginTop: "5px" }}>
                         <li>
                           <Link to={`/libraryCategory/${topic._id}`}>
-                            {topic.topic_description || 'Chưa có mô tả'}
+                            {topic.topic_description || "Chưa có mô tả"}
                           </Link>
                         </li>
                       </ul>
@@ -163,18 +191,18 @@ const Library = () => {
                 ))}
               </ul>
               {isAdmin && (
-                <div style={{ marginTop: '20px' }}>
+                <div style={{ marginTop: "20px" }}>
                   <Link to="/library_topics/create">
                     <button
                       style={{
-                        width: '100%',
-                        padding: '8px 16px',
-                        backgroundColor: '#28a745',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.2s ease',
+                        width: "100%",
+                        padding: "8px 16px",
+                        backgroundColor: "#28a745",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s ease",
                       }}
                     >
                       + Tạo chủ đề
@@ -186,16 +214,16 @@ const Library = () => {
               <Link to="/LibraryExpert">
                 <button
                   style={{
-                    width: '100%',
-                    padding: '8px 16px',
-                    backgroundColor: '#06a13d',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    marginTop: '20px',
-                    fontWeight: 'bold',
-                    transition: 'background-color 0.2s ease',
+                    width: "100%",
+                    padding: "8px 16px",
+                    backgroundColor: "#06a13d",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "5px",
+                    cursor: "pointer",
+                    marginTop: "20px",
+                    fontWeight: "bold",
+                    transition: "background-color 0.2s ease",
                   }}
                 >
                   Thư viện chuyên sâu
@@ -204,9 +232,20 @@ const Library = () => {
             </div>
 
             {/* Content Grid */}
-            <div className="content-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+            <div
+              className="content-grid"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "20px",
+              }}
+            >
               {filteredTopics.map((topic) => (
-                <div className="category-card" key={topic._id} style={{ width: '100%' }}>
+                <div
+                  className="category-card"
+                  key={topic._id}
+                  style={{ width: "100%" }}
+                >
                   <Link to={`/libraryCategory/${topic._id}`}>
                     <div className="card-image" style={{ cursor: "pointer" }}>
                       <img
@@ -216,15 +255,22 @@ const Library = () => {
                         }
                         alt={topic.topic_title}
                         style={{
-                          width: '100%',
-                          height: '200px',
-                          objectFit: 'cover',
-                          borderRadius: '4px',
+                          width: "100%",
+                          height: "200px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
                         }}
                       />
                     </div>
                   </Link>
-                  <div className="card-title" style={{ marginTop: '15px', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                  <div
+                    className="card-title"
+                    style={{
+                      marginTop: "15px",
+                      fontWeight: "bold",
+                      fontSize: "1.1rem",
+                    }}
+                  >
                     {topic.topic_title}
                   </div>
                   <div
@@ -270,8 +316,7 @@ const Library = () => {
                   <p>
                     {searchTerm
                       ? `Không tìm thấy chủ đề nào với từ khóa "${searchTerm}"`
-                      : "Không có chủ đề nào để hiển thị."
-                    }
+                      : "Không có chủ đề nào để hiển thị."}
                   </p>
                 </div>
               )}

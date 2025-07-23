@@ -325,9 +325,7 @@ function ReptileHealthTrackingPage() {
   const { reptileId } = useParams();
   const navigate = useNavigate();
   const [currentWeight, setCurrentWeight] = useState("");
-  const [weightHistory, setWeightHistory] = useState([
-    { date: "", weight: "" },
-  ]);
+  const [weightHistory, setWeightHistory] = useState([]);
   const [sleepingStatus, setSleepingStatus] = useState([
     { status: "", date: "" },
   ]);
@@ -363,15 +361,25 @@ function ReptileHealthTrackingPage() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Tạo bản ghi weight_history mới nếu có current_weight
+    const updatedWeightHistory = currentWeight 
+      ? [...(weightHistory || []), {
+          date: new Date(),
+          weight: parseFloat(currentWeight)
+        }]
+      : weightHistory || [];
+
     const data = {
       reptileId,
       current_weight: currentWeight,
-      weight_history: weightHistory,
+      weight_history: updatedWeightHistory,
       sleeping_status: sleepingStatus,
       sleeping_history: sleepingHistory,
       treatment_history: noTreatment ? [] : treatmentHistory,
       nutrition_history: nutritionHistory,
     };
+
     try {
       await axios.put(
         `${baseUrl}/reptitist/pet/health-history/${reptileId}`,
