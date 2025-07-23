@@ -91,7 +91,7 @@ const Header = () => {
                 TRANG CHỦ
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to="/Community"
                 className={`header__nav-link${location.pathname === "/Community" ? " header__nav-link--active" : ""}`}
@@ -104,7 +104,7 @@ const Header = () => {
               >
                 CỘNG ĐỒNG
               </Link>
-            </li>
+            </li> */}
             <li>
               <Link
                 to="/LibraryTopic"
