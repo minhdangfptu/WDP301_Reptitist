@@ -19,7 +19,6 @@ const AdminCategoryManagement = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [formData, setFormData] = useState({
     product_category_name: '',
-    product_category_description: '',
     product_category_imageurl: ''
   });
 
@@ -49,9 +48,9 @@ const AdminCategoryManagement = () => {
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${baseUrl}/reptitist/shop/category`, formData, {
+      const response = await axios.post(`${baseUrl}/reptitist/shop/create-category`, formData, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json'
         }
       });
@@ -61,7 +60,6 @@ const AdminCategoryManagement = () => {
         setShowCreateModal(false);
         setFormData({
           product_category_name: '',
-          product_category_description: '',
           product_category_imageurl: ''
         });
         fetchCategories();
@@ -76,11 +74,11 @@ const AdminCategoryManagement = () => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        `${baseUrl}/reptitist/shop/category/${selectedCategory._id}`,
+        `${baseUrl}/reptitist/shop/edit-category/${selectedCategory._id}`,
         formData,
         {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
             'Content-Type': 'application/json'
           }
         }
@@ -92,7 +90,6 @@ const AdminCategoryManagement = () => {
         setSelectedCategory(null);
         setFormData({
           product_category_name: '',
-          product_category_description: '',
           product_category_imageurl: ''
         });
         fetchCategories();
@@ -129,7 +126,6 @@ const AdminCategoryManagement = () => {
     setSelectedCategory(category);
     setFormData({
       product_category_name: category.product_category_name,
-      product_category_description: category.product_category_description || '',
       product_category_imageurl: category.product_category_imageurl || ''
     });
     setShowEditModal(true);
@@ -138,7 +134,6 @@ const AdminCategoryManagement = () => {
   const openCreateModal = () => {
     setFormData({
       product_category_name: '',
-      product_category_description: '',
       product_category_imageurl: ''
     });
     setShowCreateModal(true);
@@ -195,7 +190,7 @@ const AdminCategoryManagement = () => {
                   </div>
                   <div className="admin-category-info">
                     <h3>{category.product_category_name}</h3>
-                    <p>{category.product_category_description || 'Không có mô tả'}</p>
+                    
                     <div className="admin-category-actions">
                       <button
                         className="admin-category-edit-btn"
@@ -246,15 +241,7 @@ const AdminCategoryManagement = () => {
                     placeholder="Nhập tên danh mục"
                   />
                 </div>
-                <div className="admin-category-form-group">
-                  <label>Mô tả:</label>
-                  <textarea
-                    value={formData.product_category_description}
-                    onChange={(e) => setFormData({...formData, product_category_description: e.target.value})}
-                    placeholder="Nhập mô tả danh mục"
-                    rows="3"
-                  />
-                </div>
+               
                 <div className="admin-category-form-group">
                   <label>URL hình ảnh:</label>
                   <input
@@ -308,15 +295,7 @@ const AdminCategoryManagement = () => {
                     placeholder="Nhập tên danh mục"
                   />
                 </div>
-                <div className="admin-category-form-group">
-                  <label>Mô tả:</label>
-                  <textarea
-                    value={formData.product_category_description}
-                    onChange={(e) => setFormData({...formData, product_category_description: e.target.value})}
-                    placeholder="Nhập mô tả danh mục"
-                    rows="3"
-                  />
-                </div>
+               
                 <div className="admin-category-form-group">
                   <label>URL hình ảnh:</label>
                   <input
