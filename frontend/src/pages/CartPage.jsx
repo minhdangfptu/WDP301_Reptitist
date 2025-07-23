@@ -263,16 +263,15 @@ const CartPage = () => {
                       />
                       <label htmlFor="select-all">Chọn tất cả</label>
                     </div>
-                    <span>Sản phẩm</span>
-                    <span>Số lượng</span>
-                    <span>Giá</span>
-                    <span>Tổng</span>
+                    <span style={{paddingLeft: '20px'}}>Sản phẩm</span>
+                    <span style={{paddingLeft: '40px'}}>Số lượng</span>
+                    <span style={{paddingLeft: '45px'}}>Giá</span>
+                    <span style={{paddingLeft: '40px'}}>Tổng</span>
                     <span></span>
                   </div>
                   <div className="cart-items-list">
                     {cartItems.map((item) => {
-                      const isAvailable = item.product_status?.product_status === "available" && 
-                                        item.product_status?.product_quantity > 0
+                      const isAvailable = item.product_status?.product_status === "true" 
                       return (
                         <CartItem
                           key={item._id}

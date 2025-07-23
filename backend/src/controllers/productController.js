@@ -821,8 +821,7 @@ const checkProductAvailability = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    const isAvailable = product.product_status === 'available' && product.product_quantity > 0;
-    res.status(200).json({ isAvailable });
+    res.status(200).json({ product_quantity: product.product_quantity, product_status: product.product_status  });
   } catch (error) {
     console.error('Check Product Availability Error:', error);
     res.status(500).json({ message: 'Server error' });
