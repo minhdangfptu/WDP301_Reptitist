@@ -230,27 +230,19 @@ const Transaction = () => {
   const getUserAccountTypeDisplay = () => {
     if (!user) return 'Customer';
     
-    // Check role first for admin
     if (hasRole('admin')) {
       return 'Administrator';
     }
     
-    // Check account_type for shop
-    if (user.account_type?.type === 'shop') {
-      const level = user.account_type?.level;
-      if (level === 'premium') {
-        return 'Premium Shop Partner';
-      } else {
-        return 'Shop Partner';
-      }
+    if (user.account_type?.type === 2) {
+      return 'Premium User';
+    }
+
+    if (user.account_type?.type === 1) {
+      return 'Pro User';
     }
     
-    // Check account type level for customers
-    if (user.account_type?.level === 'premium') {
-      return 'Premium Customer';
-    }
-    
-    return 'Customer';
+    return 'Common User';
   };
 
   // Helper function to check if user should see upgrade option
