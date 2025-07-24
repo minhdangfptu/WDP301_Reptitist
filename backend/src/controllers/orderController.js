@@ -140,7 +140,7 @@ exports.getAllOrdersByShop = async (req, res) => {
     const shopId = req.user._id;
 
     const orders = await Order.find({ shop_id: shopId, is_deleted: false })
-      .populate('order_items.product_id', 'product_name product_price')
+      .populate('order_items.product_id', 'product_name product_price product_imageurl')
       .populate('customer_id', 'username email') // lấy thông tin người mua
       .sort({ createdAt: -1 });
 
