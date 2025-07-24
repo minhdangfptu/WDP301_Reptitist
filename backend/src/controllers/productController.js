@@ -256,7 +256,6 @@ const getMyProductStats = async (req, res) => {
   }
 };
 
-// ✅ SỬA LẠI HOÀN TOÀN HÀM NÀY - Bao gồm dữ liệu Order
 const getShopDashboardStats = async (req, res) => {
   try {
     console.log('🔥 Get Shop Dashboard Stats Request:', {
@@ -274,23 +273,18 @@ const getShopDashboardStats = async (req, res) => {
     const userId = req.user._id;
     const timeFilter = req.query.timeFilter || 'day';
 
-    console.log('📊 Processing dashboard stats for userId:', userId, 'timeFilter:', timeFilter);
-
-    // ===== STEP 1: Get Products =====
+    
     const products = await Product.find({ user_id: userId })
       .populate('product_category_id', 'product_category_name');
 
     console.log('📦 Found products:', products.length);
 
-    // ===== STEP 2: Get Orders for this shop =====
     const orders = await Order.find({ shop_id: userId })
       .populate('order_items.product_id', 'product_name product_price')
       .populate('customer_id', 'username email')
       .sort({ createdAt: -1 });
 
-    console.log('📋 Found orders:', orders.length);
 
-    // ===== STEP 3: Calculate Basic Stats =====
     const totalProducts = products.length;
     const activeProducts = products.filter(p => p.product_status === 'available').length;
     const draftProducts = products.filter(p => p.product_status === 'not_available').length;
@@ -298,23 +292,17 @@ const getShopDashboardStats = async (req, res) => {
       .filter(p => p.product_status === 'available')
       .reduce((sum, p) => sum + (p.product_price * p.product_quantity), 0);
 
-    // ===== STEP 4: Calculate Order Stats =====
     const totalOrders = orders.length;
     const pendingOrders = orders.filter(o => o.order_status === 'ordered').length;
     const shippedOrders = orders.filter(o => o.order_status === 'shipped').length;
     const deliveredOrders = orders.filter(o => o.order_status === 'delivered').length;
+    const completedOrders = orders.filter(o => o.order_status === 'completed').length;
     const cancelledOrders = orders.filter(o => o.order_status === 'cancelled').length;
     
     const totalRevenue = orders
-      .filter(o => o.order_status === 'delivered')
+      .filter(o => o.order_status === 'completed')
       .reduce((sum, o) => sum + (o.order_price || 0), 0);
 
-    console.log('📊 Basic Stats:', {
-      totalProducts, activeProducts, draftProducts, totalValue,
-      totalOrders, pendingOrders, totalRevenue
-    });
-
-    // ===== STEP 5: Process Chart Data - Best Selling Products By Time =====
     const productSalesByTime = {};
     
     orders.forEach(order => {
@@ -348,7 +336,6 @@ const getShopDashboardStats = async (req, res) => {
       }
     });
 
-    // Create bestSellingProductsByTime array với format đúng cho chart
     const bestSellingProductsByTime = Object.entries(productSalesByTime)
       .map(([timeKey, products]) => {
         const topProduct = Object.entries(products)
@@ -367,11 +354,9 @@ const getShopDashboardStats = async (req, res) => {
         }
         return new Date(a.time) - new Date(b.time);
       })
-      .slice(-15); // Lấy 15 ngày/tháng/năm gần nhất
+      .slice(-15); 
 
-    console.log('📊 Best Selling Products By Time:', bestSellingProductsByTime.length, 'entries');
 
-    // ===== STEP 6: Revenue By Time =====
     const revenueByTime = {};
     
     orders.forEach(order => {
@@ -402,11 +387,9 @@ const getShopDashboardStats = async (req, res) => {
         }
         return new Date(a.date) - new Date(b.date);
       })
-      .slice(-30); // Lấy 30 ngày/tháng/năm gần nhất
+      .slice(-30); 
 
-    console.log('📊 Shop Revenue By Time:', shopRevenueByTime.length, 'entries');
 
-    // ===== STEP 7: Cumulative Revenue =====
     const cumulativeRevenue = [];
     let runningTotal = 0;
     
@@ -418,10 +401,6 @@ const getShopDashboardStats = async (req, res) => {
         cumulativeRevenue: runningTotal
       });
     });
-
-    console.log('📊 Cumulative Revenue:', cumulativeRevenue.length, 'entries');
-
-    // ===== STEP 8: Product Revenue Share =====
     const productRevenueStats = {};
     let totalRevenueForShare = 0;
 
@@ -448,9 +427,7 @@ const getShopDashboardStats = async (req, res) => {
       }))
       .sort((a, b) => b.revenue - a.revenue);
 
-    console.log('📊 Product Revenue Share:', productRevenueShare.length, 'products');
 
-    // ===== STEP 9: Prepare Final Response =====
     const dashboardStats = {
       bestSellingProductsByTime,
       productRevenueStats: productRevenueShare,
@@ -465,20 +442,12 @@ const getShopDashboardStats = async (req, res) => {
         pendingOrders,
         shippedOrders,
         deliveredOrders,
+        completedOrders,
         cancelledOrders,
         totalRevenue
       }
     };
-
-    console.log('✅ Dashboard stats generated successfully:', {
-      basicStats: dashboardStats.basicStats,
-      chartDataCounts: {
-        bestSelling: dashboardStats.bestSellingProductsByTime.length,
-        revenue: dashboardStats.shopRevenueByTime.length,
-        products: dashboardStats.productRevenueStats.length,
-        cumulative: dashboardStats.cumulativeRevenue.length
-      }
-    });
+    
 
     res.status(200).json({
       success: true,

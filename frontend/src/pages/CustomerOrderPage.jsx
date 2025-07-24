@@ -182,9 +182,9 @@ const CustomerOrderPage = () => {
                       Hủy đơn
                     </button>
                   )}
-                  {/* Xác nhận đã nhận hàng: chỉ khi trạng thái là shipped */}
-                  {selectedOrder.order_status === 'shipped' && (
-                    <button className="order-action-btn confirm" disabled={actionLoading} onClick={() => handleStatusChange(selectedOrder._id, 'delivered')}>
+                  {/* Xác nhận đã nhận hàng: chỉ khi trạng thái là shipped hoặc delivered */}
+                  {(selectedOrder.order_status === 'shipped' || selectedOrder.order_status === 'delivered') && (
+                    <button className="order-action-btn confirm" disabled={actionLoading} onClick={() => handleStatusChange(selectedOrder._id, 'completed')}>
                       Xác nhận đã nhận hàng
                     </button>
                   )}

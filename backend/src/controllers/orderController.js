@@ -143,7 +143,7 @@ exports.updateOrderStatus = async (req, res) => {
     //Chỉ cho phép chuyển theo quy tắc:
     const validTransitions = {
       ordered: ['cancelled'],
-      shipped: ['delivered']
+      shipped: ['completed','delivered']
     };
 
     if (!validTransitions[currentStatus] || !validTransitions[currentStatus].includes(status)) {
@@ -168,7 +168,7 @@ exports.getAllOrdersByShop = async (req, res) => {
 
     const orders = await Order.find({ shop_id: shopId, is_deleted: false })
       .populate('order_items.product_id', 'product_name product_price product_imageurl')
-      .populate('customer_id', 'username email') // lấy thông tin người mua
+      .populate('customer_id', 'username email') 
       .sort({ createdAt: -1 });
 
     res.status(200).json(successResponse(orders));
@@ -247,7 +247,7 @@ exports.softDeleteOrder = async (req, res) => {
   }
 };
 
-// ✅ FUNCTION MỚI CHO SHOP CẬP NHẬT TRẠNG THÁI DELIVERED/CANCELLED
+
 exports.updateOrderStatusByShop = async (req, res) => {
   try {
     const { id, status } = req.query;
@@ -259,15 +259,12 @@ exports.updateOrderStatusByShop = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid order ID format' });
     }
-
-    // Shop tìm order theo shop_id thay vì customer_id
     const order = await Order.findOne({ _id: id, shop_id: req.user._id });
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found or access denied' });
     }
 
-    // Chỉ cho phép shop cập nhật từ shipped sang delivered/cancelled
     if (order.order_status === 'shipped' && ['delivered', 'cancelled'].includes(status)) {
       order.order_status = status;
       await order.save();

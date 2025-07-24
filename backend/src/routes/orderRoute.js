@@ -23,8 +23,6 @@ router.get(
   authMiddleware1,
   orderController.updateOrderStatus
 );
-
-// ✅ THÊM ROUTE MỚI CHO SHOP CẬP NHẬT TRẠNG THÁI
 router.get(
   '/update-order-status-by-shop',
   authMiddleware1,

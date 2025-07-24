@@ -26,6 +26,7 @@ const OrderManagement = () => {
     pendingOrders: 0,
     shippedOrders: 0,
     deliveredOrders: 0,
+    completedOrders: 0,
     cancelledOrders: 0,
     totalRevenue: 0
   });
@@ -111,7 +112,6 @@ const OrderManagement = () => {
         }
       );
 
-      console.log('✅ Dashboard Stats Response:', response.data);
 
       // Process response same way as other pages
       let dashboardData = null;
@@ -132,6 +132,7 @@ const OrderManagement = () => {
           pendingOrders: basicStats.pendingOrders || 0,
           shippedOrders: basicStats.shippedOrders || 0,
           deliveredOrders: basicStats.deliveredOrders || 0,
+          completedOrders: basicStats.completedOrders || 0,
           cancelledOrders: basicStats.cancelledOrders || 0,
           totalRevenue: basicStats.totalRevenue || 0
         });
@@ -283,8 +284,9 @@ const OrderManagement = () => {
     switch (status) {
       case 'ordered': return 'om-badge-admin'; // Orange/yellow for pending
       case 'shipped': return 'om-badge-shop'; // Blue for shipped  
-      case 'delivered': return 'om-badge-customer'; // Green for delivered
-      case 'cancelled': return 'om-badge-default'; // Gray for failed delivery
+      case 'delivered': return 'om-badge-delivered'; // Green for delivered
+      case 'cancelled': return 'om-badge-default';
+      case 'completed': return 'om-badge-customer'; // Purple for completed
       default: return 'om-badge-default';
     }
   };
@@ -295,6 +297,7 @@ const OrderManagement = () => {
       case 'shipped': return 'Đang vận chuyển';
       case 'delivered': return 'Đã giao hàng';
       case 'cancelled': return 'Giao thất bại';
+      case 'completed': return 'Đã hoàn thành';
       default: return 'Không xác định';
     }
   };
@@ -393,6 +396,16 @@ const OrderManagement = () => {
               </div>
             </div>
 
+            <div className="om-stat-card om-stat-shop">
+              <div className="om-stat-icon">
+                <i className="fas fa-check-circle"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.completedOrders)}</span>
+                <span className="om-stat-label">Đã hoàn thành</span>
+              </div>
+            </div>
+
             <div className="om-stat-card om-stat-admin">
               <div className="om-stat-icon">
                 <i className="fas fa-clock"></i>
@@ -415,7 +428,7 @@ const OrderManagement = () => {
 
             <div className="om-stat-card om-stat-customer">
               <div className="om-stat-icon">
-                <i className="fas fa-check-circle"></i>
+                <i className="fas fa-map-marker-alt"></i>
               </div>
               <div className="om-stat-content">
                 <span className="om-stat-number">{formatNumber(stats.deliveredOrders)}</span>
