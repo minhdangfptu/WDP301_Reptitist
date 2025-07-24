@@ -1,5 +1,6 @@
 const Order = require('../models/Orders');
 const Product = require('../models/Products');
+const Cart = require('../models/Carts');
 const { successResponse } = require('../../utils/APIResponse');
 const mongoose = require('mongoose');
 
@@ -11,11 +12,9 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'order_items must be a non-empty array' });
     }
 
-    let totalPrice = 0;
-    let shopId = null;
+    const createdOrders = [];
 
-    for (let i = 0; i < order_items.length; i++) {
-      const item = order_items[i];
+    for (const item of order_items) {
       const product = await Product.findById(item.product_id);
 
       if (!product) {
@@ -26,34 +25,62 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: `Not enough stock for: ${product.product_name}` });
       }
 
-      totalPrice += product.product_price * item.quantity;
+      const user_id = req.user._id;
+      const cart = await Cart.findOne({ user_id });
+      if (!cart) {
+        return res.status(404).json({ message: 'Cart not found for user' });
+      }
+      const index = cart.cart_items.findIndex(
+        (cartItem) => cartItem.product_id.toString() === item.product_id
+      );
 
-      // Gán shop_id từ sản phẩm đầu tiên
-      if (i === 0) {
-        shopId = product.user_id;
+      if (index !== -1) {
+        if (cart.cart_items[index].quantity > item.quantity) {
+          cart.cart_items[index].quantity -= item.quantity;
+          cart.cart_items[index].subtotal = cart.cart_items[index].price * cart.cart_items[index].quantity;
+        } else {
+          cart.cart_items.splice(index, 1);
+        }
+
+        await cart.save();
       }
 
-      // ❗ Nếu bạn muốn validate rằng tất cả sản phẩm phải cùng 1 shop:
-      // if (product.user_id.toString() !== shopId.toString()) {
-      //   return res.status(400).json({ message: 'All products must belong to the same shop' });
-      // }
+      const itemPrice = product.product_price * item.quantity;
+
+      const newOrder = new Order({
+        order_items: [ // order_items vẫn là array, nhưng chỉ chứa 1 sản phẩm
+          {
+            product_id: product._id,
+            product_name: product.product_name,
+            product_price: product.product_price,
+            quantity: item.quantity,
+          }
+        ],
+        order_price: itemPrice,
+        order_status: 'ordered',
+        customer_id: req.user._id,
+        shop_id: product.user_id
+      });
+
+      const savedOrder = await newOrder.save();
+      createdOrders.push(savedOrder);
+
+      // Trừ tồn kho
+      product.product_quantity -= item.quantity;
+      await product.save();
     }
 
-    const newOrder = new Order({
-      order_items,
-      order_price: totalPrice,
-      order_status: 'ordered',
-      customer_id: req.user._id,
-      shop_id: shopId
+    res.status(201).json({
+      message: 'Orders created successfully',
+      orders: createdOrders
     });
 
-    const savedOrder = await newOrder.save();
-    res.status(201).json(successResponse(savedOrder));
   } catch (err) {
     console.error('Create Order Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 exports.getAllOrderByUser = async (req, res) => {
   try {
@@ -61,7 +88,7 @@ exports.getAllOrderByUser = async (req, res) => {
 
     const orders = await Order.find({ customer_id: userId, is_deleted: false })
       .populate('order_items.product_id', 'product_name product_price')
-      .populate('shop_id', 'username email')  
+      .populate('shop_id', 'username email')
       .sort({ createdAt: -1 });
 
     res.json(successResponse(orders));
@@ -73,19 +100,19 @@ exports.getAllOrderByUser = async (req, res) => {
 
 exports.getOrderById = async (req, res) => {
   try {
-    const { id } = req.query;  
+    const { id } = req.query;
     if (!id) {
       return res.status(400).json({ message: 'Missing id query parameter' });
     }
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid id format' });
     }
-    const userId = req.user._id; 
+    const userId = req.user._id;
     const order = await Order.findOne({ _id: id, customer_id: userId })
       .populate('order_items.product_id', 'product_name product_price')
-        .populate('shop_id', 'username email');
+      .populate('shop_id', 'username email');
     if (!order) {
-      return res.status(200).json({ message: 'Order not found',data: [] });
+      return res.status(200).json({ message: 'Order not found', data: [] });
     }
     res.json(successResponse(order));
   } catch (err) {
@@ -140,7 +167,7 @@ exports.getAllOrdersByShop = async (req, res) => {
     const shopId = req.user._id;
 
     const orders = await Order.find({ shop_id: shopId, is_deleted: false })
-      .populate('order_items.product_id', 'product_name product_price')
+      .populate('order_items.product_id', 'product_name product_price product_imageurl')
       .populate('customer_id', 'username email') // lấy thông tin người mua
       .sort({ createdAt: -1 });
 
@@ -153,7 +180,7 @@ exports.getAllOrdersByShop = async (req, res) => {
 
 exports.markOrderAsShippedByShop = async (req, res) => {
   try {
-    const { id } = req.query;  
+    const { id } = req.query;
     if (!id) {
       return res.status(400).json({ message: 'Missing id query parameter' });
     }

@@ -503,13 +503,13 @@ const Security = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  {user.account_type?.type === 'premium' ? (
+                  {user.account_type?.type === '1' ? (
                     <div className="profile-badge-container">
-                      <span className="profile-badge-text">Premium Customer</span>
+                      <span className="profile-badge-text">Common User</span>
                     </div>
                   ) : (
                     <Link to="/PlanUpgrade" className="profile-badge-container">
-                      <span className="profile-badge-text">Customer</span>
+                      <span className="profile-badge-text">Common User</span>
                       <span className="upgrade-button">Upgrade account</span>
                     </Link>
                   )}

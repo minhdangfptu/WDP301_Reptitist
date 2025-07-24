@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { baseUrl } from "../config";
+import { baseUrl } from '../config';      
 const CreateLibraryTopic = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -15,13 +15,10 @@ const CreateLibraryTopic = () => {
     const newTopic = {
       topic_title: title,
       topic_description: description,
-      topic_imageurl: [imageurl],
+      topic_imageurl: [imageurl]
     };
     try {
-      await axios.post(
-        `${baseUrl}/reptitist/topic-categories/library_topics`,
-        newTopic
-      );
+      await axios.post(`${baseUrl}/reptitist/topic-categories/library_topics`, newTopic);
       navigate("/LibraryTopic");
     } catch (error) {
       console.error("Lỗi khi tạo chủ đề:", error);
@@ -46,29 +43,8 @@ const CreateLibraryTopic = () => {
         </div>
       </div>
 
-      <div
-        className="container"
-        style={{
-          margin: "30px auto",
-          padding: "15px",
-          backgroundColor: "white",
-          borderRadius: "12px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          maxWidth: "600px",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "16px",
-          }}
-        >
+      <div className="container">
+        <form onSubmit={handleSubmit} style={{ maxWidth: "600px", margin: "0 auto" }}>
           <div className="form-group" style={{ marginBottom: "16px" }}>
             <label>Tiêu đề</label>
             <input
@@ -101,11 +77,7 @@ const CreateLibraryTopic = () => {
               className="form-control"
             />
             {imageurl && (
-              <img
-                src={imageurl}
-                alt="Preview"
-                style={{ maxWidth: "100%", marginTop: 8 }}
-              />
+              <img src={imageurl} alt="Preview" style={{ maxWidth: '100%', marginTop: 8 }} />
             )}
           </div>
 

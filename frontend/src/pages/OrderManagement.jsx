@@ -216,15 +216,11 @@ const OrderManagement = () => {
   };
 
   // Helper function to get product image URL - FIX IMAGE DISPLAY
-  const getProductImageUrl = (imageUrl) => {
-    // Nếu là base64 image, return trực tiếp
-    if (imageUrl && imageUrl.startsWith('data:image/')) {
-      return imageUrl;
-    }
+  const getProductImageUrl = (product) => {
     
     // Nếu là URL thông thường, return trực tiếp
-    if (imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'))) {
-      return imageUrl;
+    if (product?.product_imageurl[0] && (product?.product_imageurl[0].startsWith('http') || product?.product_imageurl[0].startsWith('/'))) {
+      return product?.product_imageurl[0];
     }
     
     // Fallback to default image
@@ -781,7 +777,7 @@ const OrderManagement = () => {
                         <div key={index} className="om-order-item">
                           <div className="om-item-info">
                             <img 
-                              src={getProductImageUrl(item.product_id?.product_imageurl?.[0])} 
+                              src={getProductImageUrl(item.product_id)}  //item.product_id?.product_imageurl?.[0]
                               alt={item.product_id?.product_name || 'Sản phẩm'}
                               className="om-item-image"
                               onError={(e) => {

@@ -271,7 +271,7 @@ const CartPage = () => {
                   </div>
                   <div className="cart-items-list">
                     {cartItems.map((item) => {
-                      const isAvailable = item.product_status?.product_status === "true" 
+                      const isAvailable = item.product_status?.product_status === "available" && item.product_status?.product_quantity > 0
                       return (
                         <CartItem
                           key={item._id}

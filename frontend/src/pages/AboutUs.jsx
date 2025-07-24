@@ -274,7 +274,7 @@ const AboutUs = () => {
       <section className="about-hero" id="home">
         <div className="about-hero-left">
           <h1 className="about-hero-title1">Chúng Tôi Đơn Giản Là</h1>
-          <h1 className="about-hero-title">REPTISIST</h1>
+          <h1 className="about-hero-title">REPTITIST</h1>
           <p className="about-hero-subtitle">
             Hệ sinh thái AI cho bò sát: Chatbot thông minh, thư viện kiến thức,
             hồ sơ cá nhân hóa, kết nối cộng đồng, khám bệnh và mua sắm dễ dàng –
