@@ -185,7 +185,6 @@ const checkPayOSPaymentStatus = async (req, res) => {
           if (!planName && transaction.description) {
             planName = transaction.description;
           }
-          // Quy ước: Silver = 2, Gold = 3, Diamond = 4
           if (planName === 'Diamond') planType = 4;
           else if (planName === 'Gold') planType = 3;
           else if (planName === 'Silver') planType = 2;
@@ -206,7 +205,6 @@ const checkPayOSPaymentStatus = async (req, res) => {
               'account_type.expires_at': expiresAt
             }
           });
-          console.log(`✅ User ${transaction.user_id} upgraded to account_type.type = ${planType}, expires at ${expiresAt}`);
         } catch (err) {
           console.error('❌ Error upgrading user account_type:', err);
         }

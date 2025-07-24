@@ -75,6 +75,8 @@ import LibraryExpertTopicCreate from './pages/LibraryExpertTopicCreate';
 import LibraryExpertUpdate from './pages/LibraryExpertUpdate';
 import LibraryExpertCreate from './pages/LibraryExpertCreate';
 import ShopComplain from './pages/ShopComplain';
+import PaymentCancel from './components/PaymentCancel';
+import PaymentSuccess from './components/PaymentSuccess';
 
 // Loading spinner
 const LoadingSpinner = () => (
@@ -234,6 +236,8 @@ const AppRoutes = () => (
       </AccountTypeRoute>
     </ProtectedRoute>} />
     <Route path="/Transaction" element={<ProtectedRoute><Transaction /></ProtectedRoute>} />
+    <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+    <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
     <Route path="/your-pet/detail/:reptileId" element={
       <ProtectedRoute>
         <AccountTypeRoute canAccess={useAuth().canPersonalizeReptile}>

@@ -58,6 +58,7 @@ const PaymentProcessing = () => {
   }
 
   const { planName, period, price, planType } = paymentData;
+  console.log('Payment Data:', paymentData);
 
   let planNameForBackend = planName;
   if (planType === 'partner' && (planName.toLowerCase() === 'cơ bản' || planName.toLowerCase() === 'basic')) {
@@ -215,7 +216,6 @@ const PaymentProcessing = () => {
     }
   };
 
-  // ✅ Hủy PayOS payment
   const cancelPayOSPayment = async () => {
     if (!payosOrderCode) return;
     
@@ -237,7 +237,6 @@ const PaymentProcessing = () => {
     }
   };
 
-  // ✅ Handle payment success (chung cho cả PayOS và manual)
   const handlePaymentSuccess = async (paymentData) => {
     setIsProcessing(true);
     
@@ -249,18 +248,15 @@ const PaymentProcessing = () => {
         return;
       }
 
-      // Determine the expiration date based on period
       const expiresAt = period === 'monthly' ? 
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
         new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);  // 365 days
 
-      // Update user account type based on planType
       if (planType === 'partner') {
-        // Update account type to shop
         const updateData = {
           account_type: {
             type: 'shop',
-            level: planNameForBackend === 'Silver' ? 'premium' : 'normal',
+
             activated_at: new Date(),
             expires_at: expiresAt
           }
@@ -290,13 +286,11 @@ const PaymentProcessing = () => {
           throw new Error('Failed to update account type to shop');
         }
       } else if (planType === 'individual' && planNameForBackend === 'Silver') {
-        // Update account type to premium for individual plan
         const response = await axios.put(
           `${baseUrl}/reptitist/auth/update-role`,
           {
             account_type: {
-              type: 'customer',
-              level: 'premium',
+              type: 2,
               activated_at: new Date(),
               expires_at: expiresAt
             }
@@ -310,7 +304,6 @@ const PaymentProcessing = () => {
         );
 
         if (response.status === 200) {
-          // Update local user data
           const updatedUserData = response.data;
           updateUser(updatedUserData);
           localStorage.setItem('user', JSON.stringify(updatedUserData));
@@ -324,9 +317,9 @@ const PaymentProcessing = () => {
       
       setTimeout(() => {
         if (planType === 'partner') {
-          navigate('/ProductManagement'); // Redirect to product management for shop
+          navigate('/ProductManagement'); 
         } else {
-          navigate('/Profile'); // Redirect to profile for premium customer
+          navigate('/Profile'); 
         }
       }, 3000);
 
@@ -347,7 +340,6 @@ const PaymentProcessing = () => {
     }
   };
 
-  // Manual payment confirmation (giữ nguyên cho bank transfer)
   const handleManualPaymentComplete = async () => {
     await handlePaymentSuccess({ type: 'manual' });
   };
