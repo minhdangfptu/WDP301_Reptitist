@@ -132,7 +132,7 @@ exports.updateOrderStatus = async (req, res) => {
       return res.status(400).json({ message: 'Invalid order ID format' });
     }
 
-    const order = await Order.findOne({ _id: id, customer_id: req.user.id });
+    const order = await Order.findOne({ _id: id, customer_id: req.user._id });
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found or access denied' });
@@ -177,6 +177,7 @@ exports.getAllOrdersByShop = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 exports.markOrderAsShippedByShop = async (req, res) => {
   try {
     const { id } = req.query;
@@ -242,6 +243,46 @@ exports.softDeleteOrder = async (req, res) => {
     res.status(200).json(successResponse({ message: 'Đã xóa đơn hàng (mềm)', order }));
   } catch (err) {
     console.error('Soft delete order error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ✅ FUNCTION MỚI CHO SHOP CẬP NHẬT TRẠNG THÁI DELIVERED/CANCELLED
+exports.updateOrderStatusByShop = async (req, res) => {
+  try {
+    const { id, status } = req.query;
+    
+    if (!id || !status) {
+      return res.status(400).json({ message: 'Missing id or status parameter' });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid order ID format' });
+    }
+
+    // Shop tìm order theo shop_id thay vì customer_id
+    const order = await Order.findOne({ _id: id, shop_id: req.user._id });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found or access denied' });
+    }
+
+    // Chỉ cho phép shop cập nhật từ shipped sang delivered/cancelled
+    if (order.order_status === 'shipped' && ['delivered', 'cancelled'].includes(status)) {
+      order.order_status = status;
+      await order.save();
+      
+      res.status(200).json(successResponse({ 
+        message: `Order status updated to '${status}'`, 
+        order 
+      }));
+    } else {
+      res.status(400).json({ 
+        message: `Cannot change status from '${order.order_status}' to '${status}'. Only shipped orders can be updated to delivered/cancelled.`
+      });
+    }
+  } catch (error) {
+    console.error('Update Order Status By Shop Error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
