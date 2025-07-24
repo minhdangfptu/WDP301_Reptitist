@@ -1,4 +1,4 @@
-// OrderManagement.jsx - Complete Implementation
+// OrderManagement.jsx - Updated Implementation with 2 Action Buttons Only
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
@@ -176,22 +176,42 @@ const OrderManagement = () => {
           headers: { Authorization: `Bearer ${token}` },
           params: { id: orderId }
         });
-      } else {
-        // Use general status update endpoint
-        await axios.get(`${baseUrl}/reptitist/order/update-order-status`, {
+      } else if (newStatus === 'delivered') {
+        // Use shop endpoint to mark as delivered
+        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { id: orderId, status: newStatus }
+          params: { id: orderId, status: 'delivered' }
+        });
+      } else if (newStatus === 'cancelled') {
+        // Use shop endpoint to mark as cancelled
+        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { id: orderId, status: 'cancelled' }
         });
       }
 
-      toast.success('Cập nhật trạng thái đơn hàng thành công');
+      // Success messages based on status
+      const statusMessages = {
+        'shipped': 'Đã đánh dấu đơn hàng đang vận chuyển',
+        'delivered': 'Đã đánh dấu đơn hàng đã giao thành công',
+        'cancelled': 'Đã đánh dấu đơn hàng giao thất bại'
+      };
+
+      toast.success(statusMessages[newStatus] || 'Cập nhật trạng thái đơn hàng thành công');
       
       // Refresh data
       await Promise.all([fetchOrders(), fetchStats()]);
       
     } catch (error) {
       console.error('❌ Error updating order status:', error);
-      toast.error('Không thể cập nhật trạng thái đơn hàng');
+      console.error('Error details:', error.response?.data || error.message);
+      
+      // Show more specific error message
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Không thể cập nhật trạng thái đơn hàng');
+      }
     }
   };
 
@@ -227,13 +247,13 @@ const OrderManagement = () => {
     }
 
     // Sort by creation date (newest first)
-    filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    filtered.sort((a, b) => new Date(b.order_date || b.createdAt) - new Date(a.order_date || a.createdAt));
 
     setFilteredOrders(filtered);
     setCurrentPage(1);
   }, [orders, searchTerm, filterStatus]);
 
-  // Format functions (same as other pages)
+  // Format functions
   const formatCurrency = (amount) => {
     if (amount == null || isNaN(amount)) return '0₫';
     return new Intl.NumberFormat('vi-VN', {
@@ -264,7 +284,7 @@ const OrderManagement = () => {
       case 'ordered': return 'om-badge-admin'; // Orange/yellow for pending
       case 'shipped': return 'om-badge-shop'; // Blue for shipped  
       case 'delivered': return 'om-badge-customer'; // Green for delivered
-      case 'cancelled': return 'om-badge-default'; // Gray for cancelled
+      case 'cancelled': return 'om-badge-default'; // Gray for failed delivery
       default: return 'om-badge-default';
     }
   };
@@ -272,10 +292,24 @@ const OrderManagement = () => {
   const getStatusText = (status) => {
     switch (status) {
       case 'ordered': return 'Chờ xử lý';
-      case 'shipped': return 'Đã gửi hàng';
+      case 'shipped': return 'Đang vận chuyển';
       case 'delivered': return 'Đã giao hàng';
-      case 'cancelled': return 'Đã hủy';
+      case 'cancelled': return 'Giao thất bại';
       default: return 'Không xác định';
+    }
+  };
+
+  // Check if button should be enabled based on current order status
+  const canPerformAction = (currentStatus, targetStatus) => {
+    switch (targetStatus) {
+      case 'shipped':
+        return currentStatus === 'ordered';
+      case 'delivered':
+        return currentStatus === 'shipped';
+      case 'cancelled':
+        return currentStatus === 'shipped';
+      default:
+        return false;
     }
   };
 
@@ -375,7 +409,7 @@ const OrderManagement = () => {
               </div>
               <div className="om-stat-content">
                 <span className="om-stat-number">{formatNumber(stats.shippedOrders)}</span>
-                <span className="om-stat-label">Đã gửi hàng</span>
+                <span className="om-stat-label">Đang vận chuyển</span>
               </div>
             </div>
 
@@ -395,7 +429,7 @@ const OrderManagement = () => {
               </div>
               <div className="om-stat-content">
                 <span className="om-stat-number">{formatNumber(stats.cancelledOrders)}</span>
-                <span className="om-stat-label">Đã hủy</span>
+                <span className="om-stat-label">Giao thất bại</span>
               </div>
             </div>
 
@@ -434,9 +468,9 @@ const OrderManagement = () => {
               >
                 <option value="all">Tất cả trạng thái</option>
                 <option value="ordered">Chờ xử lý</option>
-                <option value="shipped">Đã gửi hàng</option>
+                <option value="shipped">Đang vận chuyển</option>
                 <option value="delivered">Đã giao hàng</option>
-                <option value="cancelled">Đã hủy</option>
+                <option value="cancelled">Giao thất bại</option>
               </select>
             </div>
 
@@ -579,7 +613,7 @@ const OrderManagement = () => {
                         <td>
                           <div className="om-date-info">
                             <span className="om-date">
-                              {formatDate(order.createdAt)}
+                              {formatDate(order.order_date || order.createdAt)}
                             </span>
                           </div>
                         </td>
@@ -592,18 +626,17 @@ const OrderManagement = () => {
 
                         <td>
                           <div className="om-action-buttons">
-                            {/* Nút giao hàng - chỉ enable khi ordered */}
+                            {/* Chỉ hiển thị 2 nút: Đang vận chuyển và Xem chi tiết */}
                             <button
                               onClick={() => updateOrderStatus(order._id, 'shipped')}
-                              disabled={order.order_status !== 'ordered'}
-                              className={`om-btn-action ${order.order_status === 'ordered' ? 'om-btn-edit' : 'om-btn-disabled'}`}
-                              title={order.order_status === 'ordered' ? 'Đánh dấu đã gửi hàng' : 'Chỉ có thể giao hàng khi đang xử lý'}
+                              disabled={!canPerformAction(order.order_status, 'shipped')}
+                              className={`om-btn-action ${canPerformAction(order.order_status, 'shipped') ? 'om-btn-edit' : 'om-btn-disabled'}`}
+                              title={canPerformAction(order.order_status, 'shipped') ? 'Đánh dấu đang vận chuyển' : 'Chỉ có thể vận chuyển khi đang chờ xử lý'}
                             >
                               <i className="fas fa-shipping-fast"></i>
                             </button>
                             
                             
-                            {/* Nút xem chi tiết */}
                             <button
                               onClick={() => {
                                 setSelectedOrder(order);
@@ -701,7 +734,7 @@ const OrderManagement = () => {
                   <div className="om-detail-header">
                     <div className="om-user-basic-info">
                       <h4>Đơn hàng #{selectedOrder._id.slice(-8)}</h4>
-                      <p className="om-user-email">Đặt hàng: {formatDate(selectedOrder.createdAt)}</p>
+                      <p className="om-user-email">Đặt hàng: {formatDate(selectedOrder.order_date || selectedOrder.createdAt)}</p>
                       <span className={`om-role-badge ${getStatusBadgeClass(selectedOrder.order_status)}`}>
                         {getStatusText(selectedOrder.order_status)}
                       </span>
@@ -724,7 +757,7 @@ const OrderManagement = () => {
                       </div>
                       <div className="om-detail-item">
                         <label>Ngày đặt hàng:</label>
-                        <span>{formatDate(selectedOrder.createdAt)}</span>
+                        <span>{formatDate(selectedOrder.order_date || selectedOrder.createdAt)}</span>
                       </div>
                       <div className="om-detail-item">
                         <label>Trạng thái:</label>
@@ -787,6 +820,7 @@ const OrderManagement = () => {
 
               <div className="om-modal-footer">
                 <div className="om-quick-actions">
+                  {/* Hiển thị các nút hành động dựa trên trạng thái đơn hàng */}
                   {selectedOrder.order_status === 'ordered' && (
                     <button
                       onClick={() => {
@@ -796,8 +830,32 @@ const OrderManagement = () => {
                       className="om-btn om-btn-primary"
                     >
                       <i className="fas fa-shipping-fast"></i>
-                      Đánh dấu đã gửi hàng
+                      Đánh dấu đang vận chuyển
                     </button>
+                  )}
+                  {selectedOrder.order_status === 'shipped' && (
+                    <>
+                      <button
+                        onClick={() => {
+                          updateOrderStatus(selectedOrder._id, 'delivered');
+                          setShowDetailModal(false);
+                        }}
+                        className="om-btn om-btn-success"
+                      >
+                        <i className="fas fa-check-circle"></i>
+                        Đánh dấu đã giao hàng
+                      </button>
+                      <button
+                        onClick={() => {
+                          updateOrderStatus(selectedOrder._id, 'cancelled');
+                          setShowDetailModal(false);
+                        }}
+                        className="om-btn om-btn-danger"
+                      >
+                        <i className="fas fa-times-circle"></i>
+                        Đánh dấu giao thất bại
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={() => setShowDetailModal(false)}
