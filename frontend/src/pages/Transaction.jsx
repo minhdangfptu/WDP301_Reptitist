@@ -66,8 +66,8 @@ const Transaction = () => {
   };
 
   const getAmountClass = (amount, status) => {
-    if (status === 'pending') return 'pending';
-    if (status === 'failed') return 'failed';
+    if (status === 'paid') return 'paid';
+    if (status === 'cancelled') return 'cancelled';
     return amount > 0 ? 'positive' : 'negative';
   };
 
@@ -476,14 +476,14 @@ const Transaction = () => {
                               </div>
                             </div>
                             <div className={`transaction-amount ${getAmountClass(transaction.amount, transaction.status)}`}>
-                              {transaction.status === 'pending' ? (
+                              {transaction.status === 'paid' ? (
                                 <div>
                                   <div>Đang xử lý</div>
                                   <div style={{ fontSize: '12px', opacity: 0.7 }}>
                                     {formatAmount(transaction.amount)}
                                   </div>
                                 </div>
-                              ) : transaction.status === 'failed' ? (
+                              ) : transaction.status === 'cancelled' ? (
                                 <div>
                                   <div>Thất bại</div>
                                   <div style={{ fontSize: '12px', opacity: 0.7 }}>
@@ -534,11 +534,11 @@ const Transaction = () => {
           100% { transform: rotate(360deg); }
         }
         
-        .transaction-item .transaction-amount.failed {
+        .transaction-item .transaction-amount.cancelled {
           color: #dc3545;
         }
         
-        .arrow-icon.failed {
+        .arrow-icon.cancelled {
           background-color: #dc3545;
           color: white;
         }

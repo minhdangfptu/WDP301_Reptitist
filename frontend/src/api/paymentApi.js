@@ -24,10 +24,14 @@ export const getAdminFinancialReports = async ({ page = 1, limit = 20, startDate
   const res = await axiosClient.get(`/admin/financial-reports?${params.toString()}`);
   return res.data;
 };
+const getTransactionHistory = (dayRange) => {
+  return axiosClient.get(`transactions/history?dayRange=${dayRange}`);
+};
 
 const paymentApi = {
     createVNPayTransaction,
     verifyVNPayTransaction,
     getAdminFinancialReports,
+    getTransactionHistory
 };
 export default paymentApi;
