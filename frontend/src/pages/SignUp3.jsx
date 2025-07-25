@@ -26,7 +26,7 @@ const SignUp3 = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    console.log("SignUp3 - Email:", email, "Verified:", isVerified); 
+    // console.log("SignUp3 - Email:", email, "Verified:", isVerified); 
     
     if (!email || !isVerified) {
       toast.error("Vui lòng xác thực email trước khi tiếp tục đăng ký.");

@@ -50,7 +50,7 @@ const YourPet = () => {
         .then((response) => {
           setUserPets(response.data);
           setLoading(false);
-          console.log(response.data); 
+          // console.log(response.data); 
         })
         .catch((error) => {
           console.error("There was an error fetching the user pets:", error);
@@ -76,7 +76,7 @@ const YourPet = () => {
         const response = await axios.delete(
           `${baseUrl}/reptitist/pet/${reptileId}`
         );
-        console.log("Pet deleted successfully", response.data);
+        // console.log("Pet deleted successfully", response.data);
         toast.success("Thú cưng đã được xóa thành công!");
         setUserPets(userPets.filter((pet) => pet._id !== reptileId));
       } catch (error) {

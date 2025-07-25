@@ -10,7 +10,7 @@ import '../css/dark-mode.css';
 
 
 const Settings = () => {
-  const { user,hasRole } = useAuth();
+  const { user,hasRole, isShop } = useAuth();
   const navigate = useNavigate();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [systemNotifications, setSystemNotifications] = useState(false);
@@ -31,7 +31,7 @@ const Settings = () => {
 
   const confirmDelete = () => {
     // Logic xóa tài khoản
-    console.log('Deleting account...');
+    // console.log('Deleting account...');
     setShowDeleteConfirm(false);
   };
 

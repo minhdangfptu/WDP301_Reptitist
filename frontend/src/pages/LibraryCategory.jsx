@@ -21,7 +21,7 @@ const LibraryCategory = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log(topicId, "topicId");
+        // console.log(topicId, "topicId");
         const response = await axios.get(
           `${baseUrl}/reptitist/library-categories/topic/${topicId}`
         );

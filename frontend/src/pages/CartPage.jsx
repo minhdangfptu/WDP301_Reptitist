@@ -33,14 +33,14 @@ const CartPage = () => {
     try {
       setLoading(true)
       const response = await getCartService()
-      console.log('Cart API Response:', response)
+      // console.log('Cart API Response:', response)
       
       // Check product status for each item
       const itemsWithStatus = await Promise.all(
         (response.cart.cart_items || []).map(async (item) => {
           try {
             const status = await checkProductAvailabilityService(item.product_id)
-            console.log('Product status for item:', item.product_id, status)
+            // console.log('Product status for item:', item.product_id, status)
             return {
               ...item,
               product_status: status

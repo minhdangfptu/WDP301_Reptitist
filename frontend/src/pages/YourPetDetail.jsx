@@ -37,7 +37,7 @@ export default function YourPetDetail() {
         setLoading(false);
       });
   }, [reptileId]); // This will run whenever the reptileId changes
-  console.log(petDetails); // Log pet details to console for debugging
+  // console.log(petDetails); // Log pet details to console for debugging
 
   const handleToggleSection = (index) => {
     setOpenSections((prev) => ({

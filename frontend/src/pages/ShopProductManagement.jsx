@@ -113,7 +113,7 @@ const ShopProductManagement = () => {
         }
       );
 
-      console.log('✅ Dashboard Stats Response:', response.data);
+      // console.log('✅ Dashboard Stats Response:', response.data);
 
       // ✅ Process response same way as ShopDashboard
       let dashboardData = null;
@@ -129,7 +129,7 @@ const ShopProductManagement = () => {
       if (dashboardData && dashboardData.basicStats) {
         const basicStats = dashboardData.basicStats;
         
-        console.log('📊 Setting stats from basicStats:', basicStats);
+        // console.log('📊 Setting stats from basicStats:', basicStats);
         
         setStats({
           totalProducts: basicStats.totalProducts || 0,

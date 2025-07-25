@@ -79,7 +79,7 @@ const Profile = () => {
         }
       );
 
-      console.log('Profile update response:', response.data);
+      // console.log('Profile update response:', response.data);
 
       if (response.status === 200) {
         // Cập nhật user data trong context
@@ -308,7 +308,7 @@ const Profile = () => {
     
     // If it's a regular URL, return as is
     if (user?.imageUrl.startsWith('http')) {
-      return uimageUrl;
+      return user.imageUrl;
     }
     const defaultAvatar = '/default-avatar.png';
     

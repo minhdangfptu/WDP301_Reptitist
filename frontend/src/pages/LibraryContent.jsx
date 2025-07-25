@@ -56,7 +56,7 @@ const LibraryContent = () => {
         const response = await axios.get(
           `${baseUrl}/reptitist/library-categories/${categoryId}`
         );
-        console.log("Category:", response.data);
+        // console.log("Category:", response.data);
         setCategory(response.data);
       } catch (err) {
         setError("Lỗi khi tải thông tin danh mục");
@@ -69,7 +69,7 @@ const LibraryContent = () => {
           `${baseUrl}/reptitist/library-content`
         );
         const filtered = response.data.filter((item) => {
-          console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
+          // console.log("item.category_content_id:", item.category_content_id, "categoryId:", categoryId);
           if (item.category_content_id && typeof item.category_content_id === "object") {
             if (item.category_content_id._id) {
               return String(item.category_content_id._id) === String(categoryId);
@@ -80,7 +80,7 @@ const LibraryContent = () => {
           }
           return String(item.category_content_id) === String(categoryId);
         });
-        console.log("Contents:", filtered);
+        // console.log("Contents:", filtered);
         setContents(filtered);
         setFilteredContents(filtered);
       } catch (err) {
@@ -137,11 +137,11 @@ const LibraryContent = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
-    console.log("Bắt đầu handleCreate");
-    console.log("userId:", userId);
-    console.log("Token:", localStorage.getItem("access_token"));
-    console.log("categoryId:", categoryId);
-    console.log("Category:", category);
+    // console.log("Bắt đầu handleCreate");
+    // console.log("userId:", userId);
+    // console.log("Token:", localStorage.getItem("access_token"));
+    // console.log("categoryId:", categoryId);
+    // console.log("Category:", category);
     
     // Kiểm tra đăng nhập
     if (!userId) {
@@ -181,15 +181,15 @@ const LibraryContent = () => {
       };
 
       const apiUrl = `${baseUrl}/reptitist/library-content`;
-      console.log("API URL:", apiUrl);
-      console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
-      console.log("Headers:", {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        "Content-Type": "application/json"
-      });
+      // console.log("API URL:", apiUrl);
+      // console.log("Dữ liệu gửi đi:", JSON.stringify(dataToSend, null, 2));
+      // console.log("Headers:", {
+      //   Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      //   "Content-Type": "application/json"
+      // });
 
       const response = await axios.post(apiUrl, dataToSend);
-      console.log("Phản hồi từ server:", response.data);
+      // console.log("Phản hồi từ server:", response.data);
       
       // Reset form và cập nhật danh sách
       setIsCreating(false);
@@ -203,7 +203,7 @@ const LibraryContent = () => {
       });
       
       // Cập nhật danh sách nội dung
-      console.log("Cập nhật danh sách nội dung");
+      // console.log("Cập nhật danh sách nội dung");
       const contentsResponse = await axios.get(apiUrl);
       const filtered = contentsResponse.data.filter((item) => {
         if (item.category_content_id && typeof item.category_content_id === "object") {
@@ -241,7 +241,7 @@ const LibraryContent = () => {
 
   // Thêm log cho form submit
   const handleFormSubmit = (e) => {
-    console.log("Form submit");
+    // console.log("Form submit");
     if (isCreating) {
       handleCreate(e);
     } else if (isEditing) {

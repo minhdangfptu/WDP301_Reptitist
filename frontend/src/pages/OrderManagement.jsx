@@ -76,13 +76,13 @@ const OrderManagement = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      console.log('🔥 Fetching shop orders...');
+      // console.log('🔥 Fetching shop orders...');
 
       const response = await axios.get(`${baseUrl}/reptitist/order/shop-orders`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      console.log('✅ Orders Response:', response.data);
+      // console.log('✅ Orders Response:', response.data);
 
       const ordersData = response.data?.data || response.data?.orders || response.data || [];
       setOrders(ordersData);
@@ -102,7 +102,7 @@ const OrderManagement = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      console.log('🔥 Fetching dashboard stats for orders...');
+      // console.log('🔥 Fetching dashboard stats for orders...');
 
       const response = await axios.get(
         `${baseUrl}/reptitist/shop/dashboard-stats`,
@@ -169,7 +169,7 @@ const OrderManagement = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      console.log('🔄 Updating order status:', orderId, newStatus);
+      // console.log('🔄 Updating order status:', orderId, newStatus);
 
       if (newStatus === 'shipped') {
         // Use the specific ship order endpoint

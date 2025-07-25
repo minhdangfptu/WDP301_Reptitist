@@ -9,11 +9,11 @@ class AuthService {
     try {
       // Kiểm tra có phải email không
       const isEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(userNameOrEmail);
-      console.log(isEmail);
+      // console.log(isEmail);
       const payload = isEmail
         ? { email: userNameOrEmail, password }
         : { username: userNameOrEmail, password };
-      console.log(payload);
+      // console.log(payload);
       const response = await axios.post(`${API_BASE_URL}/reptitist/auth/login`, payload);
       
       const { access_token, refresh_token, user: userData } = response.data;
@@ -54,14 +54,14 @@ class AuthService {
         throw new Error('No token found');
       }
 
-      console.log('Verifying token with backend...');
+      // console.log('Verifying token with backend...');
       const response = await axios.get(`${API_BASE_URL}/reptitist/auth/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      console.log('Token verification response:', response.data);
+      // console.log('Token verification response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Token verification error:', error.response?.data || error.message);

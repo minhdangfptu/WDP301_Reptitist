@@ -369,7 +369,7 @@ const ShopAddProductPage = () => {
       newErrors.product_imageurl = 'Vui lòng nhập URL hình ảnh hoặc tải lên một ảnh sản phẩm';
     }
 
-    console.log('Validation Errors:', newErrors);
+    // console.log('Validation Errors:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -407,10 +407,10 @@ const ShopAddProductPage = () => {
         product_status: formData.product_status || 'available'
       };
 
-      console.log('Submitting data:', {
-        ...submitData,
-        product_imageurl: imageData ? (imageData.startsWith('data:') ? '[Base64 Image Data]' : imageData) : ''
-      });
+      // console.log('Submitting data:', {
+      //   ...submitData,
+      //   product_imageurl: imageData ? (imageData.startsWith('data:') ? '[Base64 Image Data]' : imageData) : ''
+      // });
 
       let response;
       if (isEdit) {

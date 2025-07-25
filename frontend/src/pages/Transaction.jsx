@@ -37,7 +37,7 @@ const Transaction = () => {
       const response = await getTransactionHistory(dateRange);
       if (response) {
         setTransactions(response);
-        console.log('Transactions fetched:', response);
+        // console.log('Transactions fetched:', response);
         setError('');
       } else {
         setTransactions([]);

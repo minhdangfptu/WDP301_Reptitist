@@ -4,6 +4,7 @@ import emailjs from "emailjs-com";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../css/SignUp2.css";
+import { useAuth } from "../context/AuthContext";
 
 const SignUp2 = () => {
   const [email, setEmail] = useState("");
@@ -13,7 +14,11 @@ const SignUp2 = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
+  const { loginWithGoogle } = useAuth();
+  const handleGoogleLogin = (e) => {
+    e.preventDefault();
+    loginWithGoogle();
+  };
   // Cấu hình EmailJS - Kiểm tra lại các thông số này
   const EMAILJS_CONFIG = {
     SERVICE_ID: "service_9ylk5f6", // Xác nhận lại Service ID
@@ -29,7 +34,6 @@ const SignUp2 = () => {
       const codeGenerated = Math.floor(100000 + Math.random() * 900000);
       setVerificationCode(codeGenerated.toString());
 
-      
       const templateParams = {
         to_email: userEmail, // Email người nhận
         user_name: "Người dùng", // Tên người dùng
@@ -37,7 +41,7 @@ const SignUp2 = () => {
         message: `Mã xác nhận của bạn là: ${codeGenerated}`, // Thêm message rõ ràng
       };
 
-      console.log("Sending email with params:", templateParams); // Debug log
+      // console.log("Sending email with params:", templateParams); // Debug log
 
       // Gửi email qua EmailJS
       const response = await emailjs.send(
@@ -47,7 +51,7 @@ const SignUp2 = () => {
         EMAILJS_CONFIG.PUBLIC_KEY
       );
 
-      console.log("EmailJS response:", response); // Debug log
+      // console.log("EmailJS response:", response); // Debug log
 
       if (response.status === 200) {
         toast.success(
@@ -88,7 +92,7 @@ const SignUp2 = () => {
       });
 
       // Reset trạng thái nếu gửi email thất bại
-      setCurrentStep("initial");
+      // setCurrentStep("initial");
       setIsRegistered(false);
       setShowCodeInput(false);
     } finally {
@@ -150,7 +154,7 @@ const SignUp2 = () => {
     }
 
     // So sánh mã (cả hai đều là string)
-    console.log("Verifying code:", code.trim(), "vs", verificationCode); 
+    // console.log("Verifying code:", code.trim(), "vs", verificationCode);
 
     if (code.trim() === verificationCode) {
       toast.success("Xác thực thành công! Đang chuyển hướng...", {
@@ -356,9 +360,9 @@ const SignUp2 = () => {
 
               <button
                 className="social-login-btn"
-                // onClick={handleGoogleLogin}
-                disabled={true}
-                style={{ opacity: 0.6, cursor: "not-allowed" }}
+                onClick={handleGoogleLogin}
+                disabled={false}
+                style={{  cursor: "pointer" }}
               >
                 <span className="google-icon">
                   <img
@@ -399,8 +403,7 @@ const SignUp2 = () => {
           </div>
         </div>
 
-        <div className="signup2-image">
-        </div>
+        <div className="signup2-image"></div>
       </div>
     </div>
   );

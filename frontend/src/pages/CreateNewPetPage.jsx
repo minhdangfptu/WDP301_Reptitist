@@ -164,7 +164,7 @@ const CreateNewPet = () => {
 
     try {
       const response = await axios.post(`${baseUrl}/reptitist/pet/`, submitData);
-      console.log("Pet created successfully", response.data);
+      // console.log("Pet created successfully", response.data);
       setSubmitResult({
         success: true,
         message: "Thú cưng đã được tạo thành công!",

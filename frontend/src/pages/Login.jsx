@@ -44,13 +44,13 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      console.log("Starting login process...");
+      // console.log("Starting login process...");
 
       // Use AuthContext login function
       const result = await login(userName.trim(), password);
       const user_login_imageUrl = "/default-avatar2.png";
 
-      console.log("Login result:", result);
+      // console.log("Login result:", result);
 
       if (result.success) {
         // Show success message
@@ -78,16 +78,16 @@ const Login = () => {
         recentLogins.unshift(newLogin);
 
         recentLogins = recentLogins.slice(0, 3);
-        console.log("Recent logins:", recentLogins[0]);
+        // console.log("Recent logins:", recentLogins[0]);
         localStorage.setItem("recentLogins", JSON.stringify(recentLogins));
 
         // Small delay to show success message before redirect
         setTimeout(() => {
-          console.log("Redirecting to home page...");
+          // console.log("Redirecting to home page...");
           navigate("/");
         }, 1000);
       } else {
-        console.log("Login failed:", result.message);
+        // console.log("Login failed:", result.message);
         setError(result.message);
         toast.error(result.message, {
           position: "top-right",

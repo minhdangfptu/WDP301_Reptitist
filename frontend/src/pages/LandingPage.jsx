@@ -36,7 +36,7 @@ const LandingPage = () => {
           const latestContent = data[data.length - 1];
           setTop1LatestContents(latestContent);
           setLoading(false);
-          console.log("Latest content:", latestContent);
+          // console.log("Latest content:", latestContent);
         } else {
           setTop1LatestContents(null);
           setLoading(false);

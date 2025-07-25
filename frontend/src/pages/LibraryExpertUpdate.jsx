@@ -138,8 +138,8 @@ const LibraryExpertUpdate = () => {
       const reader = new FileReader();
 
       reader.onload = () => {
-        console.log("✅ FileReader.onload called");
-        console.log("👉 Base64 result:", reader.result);
+        // console.log("✅ FileReader.onload called");
+        // console.log("👉 Base64 result:", reader.result);
         resolve(reader.result);
       };
 
@@ -176,7 +176,7 @@ const LibraryExpertUpdate = () => {
 
   const handleImageUpload = async (event) => {
     const file = event.target.files[0];
-    console.log("File selected:", file); // 👈 BẮT BUỘC có log này
+    // console.log("File selected:", file); // 👈 BẮT BUỘC có log này
     if (!file) return;
 
     const validation = validateImageFile(file);

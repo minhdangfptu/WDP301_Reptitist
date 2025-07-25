@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 "use client";
 
 /* eslint-disable no-console */
@@ -71,15 +72,15 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        console.log(productId);
+        // console.log(productId);
         const response = await axios.get(
           `${baseUrl}/reptitist/shop/products/detail/${productId}`
         );
         setProduct(response.data);
-        console.log(
-          "product>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
-          response.data
-        );
+        // console.log(
+        //   "product>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
+        //   response.data
+        // );
         setLoading(false);
       } catch (err) {
         setError("Failed to load product details");
@@ -238,7 +239,7 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = async (productId, quantity) => {
-    console.log("Adding to cart:", { productId, quantity })
+    // console.log("Adding to cart:", { productId, quantity })
 
     try {
       await addToCartService(productId, quantity)
@@ -381,15 +382,12 @@ const handleReportSubmit = async (reason, description) => {
     toast.error("Không tìm thấy thông tin sản phẩm.");
     return;
   }
-  if (user.id === product.shop_id?._id || user.id === product.user_id?._id) {
-    toast.error("Bạn không thể báo cáo sản phẩm của chính mình.");
-    return;
-  }
+  
   // Hiển thị thông báo đang gửi
   const loadingToast = toast.loading("Đang gửi báo cáo...");
   
   try {
-    console.log('Sending report payload:', { product_id: product._id, reason, description });
+    // console.log('Sending report payload:', { product_id: product._id, reason, description });
     const response = await reportProductService(product._id, reason, description);
     
     // Đóng toast loading
@@ -465,7 +463,7 @@ const handleReportSubmit = async (reason, description) => {
               />
 
               <div className="product-detail-image-actions">
-                {user && user.role !== 'admin' && (user.id !== product?.user_id?._id && user.id !== product?.user_id) && (
+                {user && user.role !== 'admin' && (
                   <button
                     className="product-detail-action-btn"
                     onClick={() => setIsReportModalOpen(true)}

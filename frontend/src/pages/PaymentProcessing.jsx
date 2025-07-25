@@ -58,7 +58,7 @@ const PaymentProcessing = () => {
   }
 
   const { planName, period, price, planType } = paymentData;
-  console.log('Payment Data:', paymentData);
+  // console.log('Payment Data:', paymentData);
 
   let planNameForBackend = planName;
   if (planType === 'partner' && (planName.toLowerCase() === 'gói premium' || planName.toLowerCase() === 'premium')) {
