@@ -178,14 +178,13 @@ const OrderManagement = () => {
           params: { id: orderId }
         });
       } else if (newStatus === 'delivered') {
-        // Use shop endpoint to mark as delivered
-        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+        await axios.patch(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { id: orderId, status: 'delivered' }
         });
       } else if (newStatus === 'cancelled') {
         // Use shop endpoint to mark as cancelled
-        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+        await axios.patch(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { id: orderId, status: 'cancelled' }
         });
@@ -204,7 +203,7 @@ const OrderManagement = () => {
       await Promise.all([fetchOrders(), fetchStats()]);
 
     } catch (error) {
-      console.error('❌ Error updating order status:', error);
+      console.error(' Error updating order status:', error);
       console.error('Error details:', error.response?.data || error.message);
 
       // Show more specific error message

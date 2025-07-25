@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 "use client";
 
 /* eslint-disable no-console */
@@ -72,15 +71,15 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        // console.log(productId);
+        console.log(productId);
         const response = await axios.get(
           `${baseUrl}/reptitist/shop/products/detail/${productId}`
         );
         setProduct(response.data);
-        // console.log(
-        //   "product>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
-        //   response.data
-        // );
+        console.log(
+          "product>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>",
+          response.data
+        );
         setLoading(false);
       } catch (err) {
         setError("Failed to load product details");
@@ -239,7 +238,7 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = async (productId, quantity) => {
-    // console.log("Adding to cart:", { productId, quantity })
+    console.log("Adding to cart:", { productId, quantity })
 
     try {
       await addToCartService(productId, quantity)
@@ -387,7 +386,7 @@ const handleReportSubmit = async (reason, description) => {
   const loadingToast = toast.loading("Đang gửi báo cáo...");
   
   try {
-    // console.log('Sending report payload:', { product_id: product._id, reason, description });
+    console.log('Sending report payload:', { product_id: product._id, reason, description });
     const response = await reportProductService(product._id, reason, description);
     
     // Đóng toast loading

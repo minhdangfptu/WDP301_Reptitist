@@ -69,9 +69,11 @@ exports.createOrder = async (req, res) => {
       const savedOrder = await newOrder.save();
       createdOrders.push(savedOrder);
 
-      // Trừ tồn kho
+      // Trừ tồn kho khi tạo đơn hàng
       product.product_quantity -= item.quantity;
       await product.save();
+
+      console.log(`✅ Stock deducted for ${product.product_name}: ${item.quantity} units. Remaining: ${product.product_quantity}`);
     }
 
     res.status(201).json({
@@ -84,7 +86,6 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 
 exports.getAllOrderByUser = async (req, res) => {
   try {
@@ -124,9 +125,12 @@ exports.getOrderById = async (req, res) => {
   }
 };
 
+// ✅ FIXED: Hàm updateOrderStatus - Khách hàng cập nhật trạng thái đơn hàng
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id, status } = req.query;
+
+    console.log(`🔄 Customer updating order status: ${id} -> ${status}`);
 
     if (!id || !status) {
       return res.status(400).json({ message: 'Missing id or status parameter' });
@@ -143,34 +147,94 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const currentStatus = order.order_status;
+    console.log(`📋 Current order status: ${currentStatus}`);
 
-    //Chỉ cho phép chuyển theo quy tắc:
+    // ✅ FIXED: Cập nhật logic chuyển trạng thái đầy đủ
     const validTransitions = {
-      ordered: ['cancelled'],
-      shipped: ['completed','delivered']
+      ordered: ['cancelled'],                    // Từ "đang xử lý" → hủy đơn
+      shipped: ['completed', 'delivered'],      // Từ "đã gửi" → hoàn thành hoặc đã giao
+      delivered: ['completed'],                 // Từ "đã giao" → hoàn thành  
+      completed: [],                            // Đã hoàn thành - không thể chuyển
+      cancelled: []                             // Đã hủy - không thể chuyển
     };
 
-    if (!validTransitions[currentStatus] || !validTransitions[currentStatus].includes(status)) {
+    // Kiểm tra transition có hợp lệ không
+    if (!validTransitions[currentStatus]) {
+      console.log(`❌ Unknown current status: ${currentStatus}`);
       return res.status(400).json({
-        message: `Cannot change status from '${currentStatus}' to '${status}'`
+        message: `Unknown order status: ${currentStatus}`
       });
     }
+
+    if (!validTransitions[currentStatus].includes(status)) {
+      console.log(`❌ Invalid transition: ${currentStatus} -> ${status}`);
+      console.log(`✅ Valid transitions from ${currentStatus}:`, validTransitions[currentStatus]);
+      
+      return res.status(400).json({
+        message: `Cannot change status from '${currentStatus}' to '${status}'. Valid transitions: ${validTransitions[currentStatus].length > 0 ? validTransitions[currentStatus].join(', ') : 'none'}`
+      });
+    }
+    
+    // ✅ Xử lý hoàn kho khi khách hàng hủy đơn
     if (currentStatus === 'ordered' && status === 'cancelled') {
+      console.log(`🔄 Customer cancelling order ${id}, restoring stock...`);
+      
       for (const item of order.order_items) {
-        await Product.findByIdAndUpdate(
-          item.product_id,
-          { $inc: { product_quantity: item.quantity } }
-        );
+        const product = await Product.findById(item.product_id);
+        if (product) {
+          const oldQuantity = product.product_quantity;
+          product.product_quantity += item.quantity;
+          await product.save();
+          
+          console.log(`✅ Stock restored for ${product.product_name}: +${item.quantity} units. New quantity: ${product.product_quantity} (was: ${oldQuantity})`);
+        } else {
+          console.warn(`⚠️ Product not found for restoring stock: ${item.product_id}`);
+        }
       }
     }
 
+    // ✅ Cập nhật trạng thái đơn hàng
+    const oldStatus = order.order_status;
     order.order_status = status;
     await order.save();
 
-    res.status(200).json(successResponse({ message: `Order status updated to '${status}'`, order }));
+    console.log(`✅ Order ${id} status updated: ${oldStatus} → ${status}`);
+
+    // ✅ Tạo message phù hợp
+    let message;
+    switch (status) {
+      case 'cancelled':
+        message = currentStatus === 'ordered' 
+          ? 'Đơn hàng đã được hủy và kho hàng đã được hoàn lại'
+          : 'Đơn hàng đã được hủy';
+        break;
+      case 'completed':
+        message = 'Đơn hàng đã được xác nhận hoàn thành';
+        break;
+      case 'delivered':
+        message = 'Đơn hàng đã được đánh dấu là đã giao';
+        break;
+      default:
+        message = `Trạng thái đơn hàng đã được cập nhật thành '${status}'`;
+    }
+
+    res.status(200).json({
+      success: true,
+      message,
+      data: {
+        order,
+        oldStatus,
+        newStatus: status
+      }
+    });
+
   } catch (error) {
-    console.error('Update Order Status Error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Update Order Status Error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Lỗi server khi cập nhật trạng thái đơn hàng',
+      error: error.message 
+    });
   }
 };
 
@@ -192,6 +256,7 @@ exports.getAllOrdersByShop = async (req, res) => {
   }
 };
 
+// ✅ FIXED: markOrderAsShippedByShop - Loại bỏ logic trừ kho
 exports.markOrderAsShippedByShop = async (req, res) => {
   try {
     const { id } = req.query;
@@ -212,26 +277,14 @@ exports.markOrderAsShippedByShop = async (req, res) => {
       return res.status(400).json({ message: 'Only orders in "ordered" status can be marked as shipped' });
     }
 
-    for (const item of order.order_items) {
-      const product = await Product.findById(item.product_id);
+    console.log(`📦 Marking order ${id} as shipped (no stock changes)`);
 
-      if (!product) {
-        return res.status(404).json({ message: `Product not found: ${item.product_id}` });
-      }
-
-      if (product.product_quantity < item.quantity) {
-        return res.status(400).json({ message: `Not enough stock for: ${product.product_name}` });
-      }
-
-      product.product_quantity -= item.quantity;
-      await product.save();
-    }
-
+    // Chỉ cập nhật trạng thái - không thay đổi kho
     order.order_status = 'shipped';
     await order.save();
 
     res.status(200).json(successResponse({
-      message: 'Order marked as shipped and product stock updated',
+      message: 'Order marked as shipped successfully',
       order
     }));
   } catch (err) {
@@ -249,8 +302,8 @@ exports.softDeleteOrder = async (req, res) => {
     const order = await Order.findOne({ _id: id, customer_id: userId });
     if (!order) return res.status(404).json({ message: 'Order not found or not your order' });
     if (order.is_deleted) return res.status(400).json({ message: 'Order already deleted' });
-    if (!["cancelled", "delivered"].includes(order.order_status)) {
-      return res.status(400).json({ message: 'Chỉ được xóa đơn đã hủy hoặc đã giao' });
+    if (!["cancelled", "delivered", "completed"].includes(order.order_status)) {
+      return res.status(400).json({ message: 'Chỉ được xóa đơn đã hủy, đã giao hoặc đã hoàn thành' });
     }
     order.is_deleted = true;
     await order.save();
@@ -261,10 +314,12 @@ exports.softDeleteOrder = async (req, res) => {
   }
 };
 
-
+// ✅ ENHANCED: updateOrderStatusByShop - Shop cập nhật trạng thái với logic hoàn kho
 exports.updateOrderStatusByShop = async (req, res) => {
   try {
     const { id, status } = req.query;
+    
+    console.log(`🏪 Shop updating order status: ${id} -> ${status}`);
     
     if (!id || !status) {
       return res.status(400).json({ message: 'Missing id or status parameter' });
@@ -273,6 +328,7 @@ exports.updateOrderStatusByShop = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid order ID format' });
     }
+    
     const order = await Order.findOne({ _id: id, shop_id: req.user._id });
 
     if (!order) {
@@ -280,11 +336,35 @@ exports.updateOrderStatusByShop = async (req, res) => {
     }
 
     if (order.order_status === 'shipped' && ['delivered', 'cancelled'].includes(status)) {
+      // ✅ NẾU SHOP ĐÁNH DẤU GIAO THẤT BẠI (cancelled), HOÀN LẠI KHO
+      if (status === 'cancelled') {
+        console.log(`❌ Shop marking order ${id} as failed delivery, restoring stock...`);
+        
+        for (const item of order.order_items) {
+          const product = await Product.findById(item.product_id);
+          if (product) {
+            const oldQuantity = product.product_quantity;
+            product.product_quantity += item.quantity;
+            await product.save();
+            
+            console.log(`✅ Stock restored for ${product.product_name}: +${item.quantity} units. New quantity: ${product.product_quantity} (was: ${oldQuantity})`);
+          } else {
+            console.warn(`⚠️ Product not found for restoring stock: ${item.product_id}`);
+          }
+        }
+      } else if (status === 'delivered') {
+        console.log(`✅ Order ${id} marked as delivered successfully`);
+      }
+
       order.order_status = status;
       await order.save();
       
+      const message = status === 'cancelled' 
+        ? 'Order marked as failed delivery and stock restored successfully'
+        : `Order status updated to '${status}' successfully`;
+      
       res.status(200).json(successResponse({ 
-        message: `Order status updated to '${status}'`, 
+        message, 
         order 
       }));
     } else {
@@ -295,5 +375,43 @@ exports.updateOrderStatusByShop = async (req, res) => {
   } catch (error) {
     console.error('Update Order Status By Shop Error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ✅ THÊM: Route debug để kiểm tra trạng thái đơn hàng
+exports.debugOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const order = await Order.findOne({ _id: id, customer_id: req.user._id });
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    const validTransitions = {
+      ordered: ['cancelled'],
+      shipped: ['completed', 'delivered'],
+      delivered: ['completed'],
+      completed: [],
+      cancelled: []
+    };
+
+    res.json({
+      orderId: order._id,
+      currentStatus: order.order_status,
+      validTransitions: validTransitions[order.order_status] || [],
+      canComplete: validTransitions[order.order_status]?.includes('completed') || false,
+      canCancel: validTransitions[order.order_status]?.includes('cancelled') || false,
+      orderDetails: {
+        order_date: order.order_date,
+        order_price: order.order_price,
+        customer_id: order.customer_id,
+        shop_id: order.shop_id,
+        created_at: order.createdAt,
+        updated_at: order.updatedAt
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
