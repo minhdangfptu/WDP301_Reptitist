@@ -74,6 +74,7 @@ const ShopLandingPage = () => {
         );
         setTopRatedProducts(response.data.data);
         setLoading(false);
+        console.log("Top rated products:", response.data.data);
       } catch (err) {
         console.error("Lỗi khi tải sản phẩm đánh giá cao:", err);
         setLoading(false);

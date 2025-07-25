@@ -467,11 +467,7 @@ const getShopDashboardStats = async (req, res) => {
 // API mới cho trang Analytics chi tiết
 const getShopAnalytics = async (req, res) => {
   try {
-    console.log('Get Shop Analytics Request:', {
-      user: req.user ? { id: req.user._id } : null,
-      dateRange: req.query.dateRange,
-      metric: req.query.metric
-    });
+    
 
     if (!req.user) {
       return res.status(401).json({
@@ -1009,9 +1005,10 @@ const getTopRatedProducts = async (req, res) => {
      product_status: 'available', 
      average_rating: { $gt: 0 } 
    })
+   .populate('product_category_id', 'product_category_name')
    .sort({ average_rating: -1 })
-   .limit(limit)
-   .populate('product_category_id', 'product_category_name');
+   .limit(limit);
+  
 
    if (!products || products.length === 0) {
      return res.status(200).json({ 
@@ -1032,6 +1029,27 @@ const getTopRatedProducts = async (req, res) => {
      error: error.message
    });
  }
+};
+const checkStockAvailability = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ message: 'Invalid product ID' });
+    }
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      product_quantity: product.product_quantity,
+    });
+  } catch (error) {
+    console.error('Check Stock Availability Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 module.exports = {
@@ -1060,5 +1078,6 @@ module.exports = {
  
  // Admin functions
  approveProduct,
- getTopRatedProducts
+ getTopRatedProducts,
+ checkStockAvailability
 };

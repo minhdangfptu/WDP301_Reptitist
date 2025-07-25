@@ -188,6 +188,69 @@ const CartPage = () => {
     setSelectAll(isSelected)
   }
 
+  // Function để update cart quantity từ CartSummary (cho stock check)
+  const handleUpdateCartQuantity = async (productId, newQuantity, action) => {
+    try {
+      if (action === 'remove') {
+        // Find item by product_id và remove
+        const itemToRemove = cartItems.find(item => 
+          (item.product_id?._id || item.product_id) === productId
+        )
+        
+        if (itemToRemove) {
+          await deleteProductFromCartService(itemToRemove._id)
+          setCartItems(prev => prev.filter(item => item._id !== itemToRemove._id))
+          setSelectedItems(prev => {
+            const newSelected = { ...prev }
+            delete newSelected[itemToRemove._id]
+            return newSelected
+          })
+        }
+      } else if (action === 'update') {
+        // Find item by product_id và update quantity
+        const itemToUpdate = cartItems.find(item => 
+          (item.product_id?._id || item.product_id) === productId
+        )
+        
+        if (itemToUpdate) {
+          const quantityChange = newQuantity - itemToUpdate.quantity
+          
+          // Update UI immediately
+          setCartItems(prev => prev.map(item => {
+            if (item._id === itemToUpdate._id) {
+              return { 
+                ...item, 
+                quantity: newQuantity, 
+                subtotal: item.price * newQuantity 
+              }
+            }
+            return item
+          }))
+
+          // Update on server
+          await addToCartService(itemToUpdate.product_id, quantityChange)
+          
+          // Update product status để reflect available quantity mới
+          const updatedStatus = await checkProductAvailabilityService(itemToUpdate.product_id)
+          setCartItems(prev => prev.map(item => {
+            if (item._id === itemToUpdate._id) {
+              return { 
+                ...item, 
+                product_status: updatedStatus 
+              }
+            }
+            return item
+          }))
+        }
+      }
+    } catch (error) {
+      console.error("Error updating cart quantity:", error)
+      toast.error("Không thể cập nhật giỏ hàng")
+      // Refresh cart data nếu có lỗi
+      await fetchCartData()
+    }
+  }
+
   const getTotalAmount = () => {
     return cartItems.reduce((total, item) => {
       const isAvailable = item.product_status?.product_status === "available" && 
@@ -215,6 +278,14 @@ const CartPage = () => {
       const isAvailable = item.product_status?.product_status === "available" && 
                          item.product_status?.product_quantity > 0
       return selectedItems[item._id] && isAvailable
+    })
+  }
+
+  const getUnavailableItems = () => {
+    return cartItems.filter((item) => {
+      const isUnavailable = item.product_status?.product_status !== "available" || 
+                           item.product_status?.product_quantity <= 0
+      return isUnavailable
     })
   }
 
@@ -294,6 +365,8 @@ const CartPage = () => {
                 totalItems={getTotalItems()}
                 totalAmount={getTotalAmount()}
                 selectedItems={getSelectedItems()}
+                unavailableItems={getUnavailableItems()}
+                onUpdateCartQuantity={handleUpdateCartQuantity}
               />
             )}
           </div>

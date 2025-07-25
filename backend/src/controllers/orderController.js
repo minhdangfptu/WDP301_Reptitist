@@ -155,6 +155,14 @@ exports.updateOrderStatus = async (req, res) => {
         message: `Cannot change status from '${currentStatus}' to '${status}'`
       });
     }
+    if (currentStatus === 'ordered' && status === 'cancelled') {
+      for (const item of order.order_items) {
+        await Product.findByIdAndUpdate(
+          item.product_id,
+          { $inc: { product_quantity: item.quantity } }
+        );
+      }
+    }
 
     order.order_status = status;
     await order.save();

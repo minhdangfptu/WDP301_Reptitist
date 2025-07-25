@@ -23,7 +23,8 @@ const {
   getTopRatedProducts,
   checkProductAvailability,
   getShopDashboardStats,
-  getShopAnalytics
+  getShopAnalytics,
+  checkStockAvailability
 } = require('../controllers/productController');
 
 const {addProductToCart, getCart, deleteProductFromCart, deleteAllProductFromCart,countCartItems} = require('../controllers/cartController');
@@ -76,5 +77,6 @@ router.delete('/cart/:cartItemId', authUserIdOnly, deleteProductFromCart);
 router.delete('/my-cart', authUserIdOnly, deleteAllProductFromCart);
 router.get('/cart/count', authUserIdOnly, countCartItems);
 router.get('/cart/product/check/:productId', checkProductAvailability);
+router.get('/products/check-stock-availability/:productId', checkProductAvailability);
 
 module.exports = router;
