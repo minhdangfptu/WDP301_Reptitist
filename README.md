@@ -15,15 +15,6 @@
 
 ---
 
-## 🧱 Project Structure
-
-WDP301_REPTITISTSERVICE/
-├── backend/   # RESTful API built with Node.js, Express, and MongoDB
-└── frontend/  # Web-based user interface built with React and Vit
-
-
----
-
 ## 🛠️ Technologies Used
 
 | Frontend (Client) | Backend (Server) | Database   |
