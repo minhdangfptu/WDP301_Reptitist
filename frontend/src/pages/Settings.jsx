@@ -10,7 +10,7 @@ import '../css/dark-mode.css';
 
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user,hasRole } = useAuth();
   const navigate = useNavigate();
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [systemNotifications, setSystemNotifications] = useState(false);
@@ -41,17 +41,52 @@ const Settings = () => {
 
   const formatDate = () => {
     const today = new Date();
-    const options = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     };
     return today.toLocaleDateString('vi-VN', options).toUpperCase();
   };
 
   const handleUpgradeClick = () => {
     navigate('/PlanUpgrade');
+  };
+
+  const getUserAccountTypeDisplay = () => {
+    if (!user) return 'Customer';
+
+    // Check role first for admin
+    if (hasRole('admin')) {
+      return 'Administrator';
+    }
+
+    // Check account_type for shop
+    if (user.account_type?.type === 2) {
+      return 'Pro User';
+    }
+
+    // Check account type level for customers
+    if (user.account_type?.type === 3) {
+      return 'Premium User';
+    }
+    if (user.account_type?.type === 4) {
+      return 'Super Premium User';
+    }
+
+    return 'Common User';
+  };
+  const shouldShowUpgrade = () => {
+    if (!user) return false;
+    
+    // Don't show upgrade for admin
+    if (hasRole('admin')) return false;
+    
+    // Don't show upgrade if already shop or premium
+    if (user.account_type?.type === 4) return false;
+    
+    return true;
   };
 
   if (!user || !isDataLoaded) {
@@ -79,7 +114,7 @@ const Settings = () => {
       <Header />
       <div className="profile-layout">
         <NavigationBar />
-        
+
         <div className="profile-container">
           {/* Welcome Header */}
           <div className="welcome-header">
@@ -109,15 +144,20 @@ const Settings = () => {
                 </div>
                 <div className="profile-user-details">
                   <h2>{user.username}</h2>
-                  {user.account_type?.type === 'premium' ? (
-                    <div className="profile-badge-container">
-                      <span className="profile-badge-text">Premium Customer</span>
-                    </div>
-                  ) : (
+                  {shouldShowUpgrade() ? (
                     <Link to="/PlanUpgrade" className="profile-badge-container">
-                      <span className="profile-badge-text">Customer</span>
+                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
                       <span className="upgrade-button">Upgrade account</span>
                     </Link>
+                  ) : (
+                    <div className="profile-badge-container">
+                      <span className="profile-badge-text">{getUserAccountTypeDisplay()}</span>
+                      {isShop() && (
+                        <span className="shop-features-link">
+                          <Link to="/ProductManagement">Quản lý cửa hàng</Link>
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
@@ -125,7 +165,7 @@ const Settings = () => {
 
             {/* Settings Content */}
             <div className="settings-content">
-              
+
               {/* Cài đặt thông báo */}
               <div className="settings-section">
                 <h3 className="settings-section-title">Cài đặt thông báo</h3>
@@ -185,7 +225,7 @@ const Settings = () => {
                       <input
                         type="checkbox"
                         checked={false}
-                        onChange={() => {}}
+                        onChange={() => { }}
                       />
                       <span className="toggle-slider"></span>
                     </label>

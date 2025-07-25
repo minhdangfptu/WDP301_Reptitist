@@ -326,21 +326,19 @@ const Profile = () => {
     }
     
     // Check account_type for shop
-    if (user.account_type?.type === 'shop') {
-      const level = user.account_type?.level;
-      if (level === 'premium') {
-        return 'Premium Shop Partner';
-      } else {
-        return 'Shop Partner';
-      }
+    if (user.account_type?.type === 2) {
+      return 'Pro User';
     }
     
     // Check account type level for customers
-    if (user.account_type?.level === 'premium') {
-      return 'Premium Customer';
+    if (user.account_type?.type === 3) {
+      return 'Premium User';
+    }
+    if (user.account_type?.type === 4) {
+      return 'Super Premium User';
     }
     
-    return 'Customer';
+    return 'Common User';
   };
 
   // Helper function to check if user should see upgrade option

@@ -230,16 +230,22 @@ const Transaction = () => {
   const getUserAccountTypeDisplay = () => {
     if (!user) return 'Customer';
     
+    // Check role first for admin
     if (hasRole('admin')) {
       return 'Administrator';
     }
     
-    if (user.account_type?.type === 2) {
-      return 'Premium User';
-    }
-
+    // Check account_type for shop
     if (user.account_type?.type === 2) {
       return 'Pro User';
+    }
+    
+    // Check account type level for customers
+    if (user.account_type?.type === 3) {
+      return 'Premium User';
+    }
+    if (user.account_type?.type === 4) {
+      return 'Super Premium User';
     }
     
     return 'Common User';
