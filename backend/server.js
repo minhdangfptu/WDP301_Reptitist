@@ -62,6 +62,6 @@ app.get('/visits', (req, res) => {
   res.json({ count: visitCount });
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(process.env.PORT || 8080, () => {
   console.log(`server is running at http://localhost:${process.env.PORT}`);
 });

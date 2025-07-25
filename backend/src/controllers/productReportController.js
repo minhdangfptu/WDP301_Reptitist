@@ -37,7 +37,9 @@ const createProductReport = async (req, res) => {
       ? product.user_id 
       : null;
     console.log('Shop ID:', shop_id);
-
+    if (shop_id && shop_id.toString() === reporter_id) {
+      return res.status(403).json({ message: 'Bạn không thể báo cáo sản phẩm của chính mình.' });
+    }
     // Fetch the user with role info
     const reporter = await User.findById(reporter_id).populate('role_id');
     if (!reporter) {

@@ -381,7 +381,10 @@ const handleReportSubmit = async (reason, description) => {
     toast.error("Không tìm thấy thông tin sản phẩm.");
     return;
   }
-  
+  if (user.id === product.shop_id?._id || user.id === product.user_id?._id) {
+    toast.error("Bạn không thể báo cáo sản phẩm của chính mình.");
+    return;
+  }
   // Hiển thị thông báo đang gửi
   const loadingToast = toast.loading("Đang gửi báo cáo...");
   
@@ -462,7 +465,7 @@ const handleReportSubmit = async (reason, description) => {
               />
 
               <div className="product-detail-image-actions">
-                {user && user.role !== 'admin' && (
+                {user && user.role !== 'admin' && (user.id !== product?.user_id?._id && user.id !== product?.user_id) && (
                   <button
                     className="product-detail-action-btn"
                     onClick={() => setIsReportModalOpen(true)}
