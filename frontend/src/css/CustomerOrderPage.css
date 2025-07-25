@@ -58,6 +58,7 @@
 }
 .order-status.pending { background: #ffc107; color: #333; }
 .order-status.shipped { background: #17a2b8; }
+.order-status.delivered { background: #007bff; }
 .order-status.completed { background: #28a745; }
 .order-status.cancelled { background: #dc3545; }
 

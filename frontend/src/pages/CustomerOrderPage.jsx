@@ -8,8 +8,9 @@ import { CartProvider } from '../context/CartContext';
 const statusMap = {
   ordered: { label: 'Đang xử lý', class: 'pending' },
   shipped: { label: 'Đã gửi hàng', class: 'shipped' },
-  delivered: { label: 'Đã giao', class: 'completed' },
+  delivered: { label: 'Đã giao', class: 'delivered' },
   cancelled: { label: 'Đã hủy', class: 'cancelled' },
+  completed: { label: 'Hoàn thành', class: 'completed' }
 };
 
 const CustomerOrderPage = () => {
