@@ -70,7 +70,7 @@ const CartSummary = ({ totalAmount, totalItems, unavailableItems = [], selectedI
       toast.success("Tạo đơn hàng thành công!")
       
       
-       navigate('/orders') // Nếu có trang quản lý đơn hàng
+       navigate('/my-orders') // Nếu có trang quản lý đơn hàng
       
     } catch (err) {
       setShowCheckoutModal(false)
