@@ -18,8 +18,9 @@
 ## 🧱 Project Structure
 
 WDP301_REPTITISTSERVICE/
-├── backend/ # REST API using Express & MongoDB
-├── frontend/ # Web UI built with React & Vite
+├── backend/   # RESTful API built with Node.js, Express, and MongoDB
+├── frontend/  # Web-based user interface built with React and Vite
+
 
 ---
 
