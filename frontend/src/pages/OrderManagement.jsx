@@ -1,516 +1,344 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+// OrderManagement.jsx - Updated Implementation with 2 Action Buttons Only
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import '../css/ProductForm.css';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast, ToastContainer } from 'react-toastify';
+import axios from 'axios';
+import '../css/OrderManagement.css'; // Import CSS riêng
+
 import { baseUrl } from '../config';
 
-const ShopAddProductPage = () => {
+const OrderManagement = () => {
   const { user, canSellProduct } = useAuth();
   const navigate = useNavigate();
-  const { productId } = useParams();
-  const isEdit = Boolean(productId);
-  
-  // Form states
-  const [formData, setFormData] = useState({
-    product_name: '',
-    product_description: '',
-    product_price: '',
-    product_quantity: '',
-    product_category_id: '',
-    product_imageurl: '',
-    product_status: 'available' 
+
+  // State management
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Stats từ dashboard API
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    pendingOrders: 0,
+    shippedOrders: 0,
+    deliveredOrders: 0,
+    completedOrders: 0,
+    cancelledOrders: 0,
+    totalRevenue: 0
   });
 
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [pageLoading, setPageLoading] = useState(isEdit);
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [previewImage, setPreviewImage] = useState('');
-  
-  // Image upload states
-  const [imageFile, setImageFile] = useState(null);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [imageSource, setImageSource] = useState(''); // 'url' or 'file'
-  const fileInputRef = useRef(null);
+  // Filter states
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Form validation rules
-  const validationRules = {
-    product_name: {
-      required: true,
-      minLength: 2,
-      maxLength: 100,
-      pattern: /^[a-zA-ZÀ-ỹ0-9\s\-.,()&]+$/
-    },
-    product_description: {
-      maxLength: 1000
-    },
-    product_price: {
-      required: true,
-      min: 1000,
-      max: 1000000000,
-      pattern: /^\d+$/
-    },
-    product_quantity: {
-      required: true,
-      min: 0,
-      max: 999999,
-      pattern: /^\d+$/
-    },
-    product_category_id: {
-      required: true
-    },
-    product_imageurl: {
-      pattern: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
-    }
-  };
+  // Modal states
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
-  // Check shop permission
+  // Permission check
   useEffect(() => {
     if (!canSellProduct()) {
       toast.error('Bạn không có quyền truy cập trang này');
       navigate('/');
       return;
     }
-    initializeForm();
-  }, [canSellProduct, navigate, productId]);
+    initializeData();
+  }, [canSellProduct, navigate]);
 
-  // Initialize form data
-  const initializeForm = async () => {
+  // Initialize data (fetch both orders and stats)
+  const initializeData = async () => {
     try {
-      await fetchCategories();
-      
-      if (isEdit) {
-        await fetchProductData();
-      }
+      setLoading(true);
+      setStatsLoading(true);
+
+      await Promise.all([
+        fetchOrders(),
+        fetchStats()
+      ]);
     } catch (error) {
-      console.error('Error initializing form:', error);
+      console.error('Error initializing data:', error);
       toast.error('Có lỗi xảy ra khi tải dữ liệu');
     } finally {
-      setPageLoading(false);
+      setLoading(false);
+      setStatsLoading(false);
     }
   };
 
-  // Fetch categories
-  const fetchCategories = useCallback(async () => {
+  // Fetch orders using correct API endpoint
+  const fetchOrders = async () => {
     try {
-      const response = await axios.get(`${baseUrl}/reptitist/shop/category`);
-      setCategories(response.data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      toast.error('Không thể tải danh sách danh mục');
-      setCategories([]);
-    }
-  }, []);
-
-  // Fetch product data for editing
-  const fetchProductData = async () => {
-    try {
-      setPageLoading(true);
       const token = localStorage.getItem('access_token');
-      if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn');
-        navigate('/Login');
-        return;
-      }
+      if (!token) return;
+
+      console.log('🔥 Fetching shop orders...');
+
+      const response = await axios.get(`${baseUrl}/reptitist/order/shop-orders`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log('✅ Orders Response:', response.data);
+
+      const ordersData = response.data?.data || response.data?.orders || response.data || [];
+      setOrders(ordersData);
+      setFilteredOrders(ordersData);
+
+    } catch (error) {
+      console.error('❌ Error fetching orders:', error);
+      toast.error('Không thể tải danh sách đơn hàng');
+      setOrders([]);
+      setFilteredOrders([]);
+    }
+  };
+
+  // Fetch stats from dashboard API
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      console.log('🔥 Fetching dashboard stats for orders...');
 
       const response = await axios.get(
-        `${baseUrl}/reptitist/shop/my-products/${productId}`,
+        `${baseUrl}/reptitist/shop/dashboard-stats`,
         {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` },
+          params: { timeFilter: 'day' }
         }
       );
 
-      const product = response.data;
-      
-      if (product) {
-        const imageUrl = Array.isArray(product.product_imageurl) 
-          ? product.product_imageurl[0] || '' 
-          : product.product_imageurl || '';
 
-        setFormData({
-          product_name: product.product_name || '',
-          product_description: product.product_description || '',
-          product_price: product.product_price ? product.product_price.toString() : '',
-          product_quantity: product.product_quantity ? product.product_quantity.toString() : '',
-          product_category_id: product.product_category_id?._id || product.product_category_id || '',
-          product_imageurl: imageUrl,
-          product_status: product.product_status || 'available'
+      // Process response same way as other pages
+      let dashboardData = null;
+
+      if (response.data?.success && response.data?.data) {
+        dashboardData = response.data.data;
+      } else if (response.data?.data) {
+        dashboardData = response.data.data;
+      } else if (response.data && typeof response.data === 'object') {
+        dashboardData = response.data;
+      }
+
+      if (dashboardData && dashboardData.basicStats) {
+        const basicStats = dashboardData.basicStats;
+
+        setStats({
+          totalOrders: basicStats.totalOrders || 0,
+          pendingOrders: basicStats.pendingOrders || 0,
+          shippedOrders: basicStats.shippedOrders || 0,
+          deliveredOrders: basicStats.deliveredOrders || 0,
+          completedOrders: basicStats.completedOrders || 0,
+          cancelledOrders: basicStats.cancelledOrders || 0,
+          totalRevenue: basicStats.totalRevenue || 0
         });
-        
-        setPreviewImage(imageUrl);
-        if (imageUrl) {
-          setImageSource('url');
-        }
+      } else {
+        // Set defaults if no stats available
+        setStats({
+          totalOrders: orders.length || 0,
+          pendingOrders: orders.filter(o => o.order_status === 'ordered').length || 0,
+          shippedOrders: orders.filter(o => o.order_status === 'shipped').length || 0,
+          deliveredOrders: orders.filter(o => o.order_status === 'delivered').length || 0,
+          cancelledOrders: orders.filter(o => o.order_status === 'cancelled').length || 0,
+          totalRevenue: 0
+        });
       }
+
     } catch (error) {
-      console.error('Error fetching product:', error);
-      toast.error('Không thể tải thông tin sản phẩm');
-      navigate('/ShopProductManagement');
+      console.error('❌ Error fetching stats:', error);
+
+      // Calculate stats from orders data as fallback
+      setStats({
+        totalOrders: orders.length || 0,
+        pendingOrders: orders.filter(o => o.order_status === 'ordered').length || 0,
+        shippedOrders: orders.filter(o => o.order_status === 'shipped').length || 0,
+        deliveredOrders: orders.filter(o => o.order_status === 'delivered').length || 0,
+        cancelledOrders: orders.filter(o => o.order_status === 'cancelled').length || 0,
+        totalRevenue: 0
+      });
     }
   };
 
-  // Handle input change
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    
-    // Special handling for numeric fields
-    if (name === 'product_price' || name === 'product_quantity') {
-      // Allow only numbers
-      const numericValue = value.replace(/\D/g, '');
-      setFormData(prev => ({
-        ...prev,
-        [name]: numericValue
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
-    
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: ''
-      }));
-    }
-
-    // Mark field as touched
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-  };
-
-  // Handle image URL change
-  const handleImageUrlChange = (e) => {
-    const value = e.target.value;
-    
-    // If user types in URL field, clear file upload
-    if (value) {
-      setImageFile(null);
-      setImageSource('url');
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } else {
-      setImageSource('');
-    }
-    
-    setFormData(prev => ({
-      ...prev,
-      product_imageurl: value
-    }));
-    setPreviewImage(value);
-    
-    // Clear error
-    if (errors.product_imageurl) {
-      setErrors(prev => ({
-        ...prev,
-        product_imageurl: ''
-      }));
-    }
-  };
-
-  // Handle file upload
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    
-    if (!file) return;
-    
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      toast.error('Chỉ hỗ trợ file ảnh: JPG, PNG, GIF, WebP');
-      e.target.value = '';
-      return;
-    }
-    
-    // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-      toast.error('Kích thước file không được vượt quá 5MB');
-      e.target.value = '';
-      return;
-    }
-    
-    // Clear URL input when file is selected
-    setFormData(prev => ({
-      ...prev,
-      product_imageurl: ''
-    }));
-    setImageSource('file');
-    
-    // Convert to base64 for preview and storage
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64String = event.target.result;
-      setImageFile(base64String);
-      setPreviewImage(base64String);
-      
-      // Clear errors
-      setErrors(prev => ({
-        ...prev,
-        product_imageurl: ''
-      }));
-    };
-    
-    reader.onerror = () => {
-      toast.error('Có lỗi xảy ra khi đọc file');
-      e.target.value = '';
-    };
-    
-    reader.readAsDataURL(file);
-  };
-
-  // Remove image
-  const removeImage = () => {
-    setImageFile(null);
-    setPreviewImage('');
-    setImageSource('');
-    setFormData(prev => ({
-      ...prev,
-      product_imageurl: ''
-    }));
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-    
-    // Set error if no image
-    setErrors(prev => ({
-      ...prev,
-      product_imageurl: 'Vui lòng chọn hình ảnh sản phẩm'
-    }));
-  };
-
-  // Handle blur event for validation
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    
-    const error = validateField(name, value);
-    setErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
-
-  // Validate field
-  const validateField = (name, value) => {
-    const rules = validationRules[name];
-    if (!rules) return '';
-
-    if (rules.required && !value) {
-      return 'Vui lòng nhập thông tin này';
-    }
-
-    if (value) {
-      if (rules.minLength && value.length < rules.minLength) {
-        return `Tối thiểu ${rules.minLength} ký tự`;
-      }
-
-      if (rules.maxLength && value.length > rules.maxLength) {
-        return `Tối đa ${rules.maxLength} ký tự`;
-      }
-
-      if (rules.pattern && !rules.pattern.test(value)) {
-        if (name === 'product_price' || name === 'product_quantity') {
-          return 'Vui lòng nhập số nguyên dương';
-        }
-        if (name === 'product_imageurl') {
-          return 'URL hình ảnh không hợp lệ';
-        }
-        return 'Giá trị không hợp lệ';
-      }
-
-      if (rules.min !== undefined && parseInt(value) < rules.min) {
-        return `Giá trị tối thiểu là ${rules.min.toLocaleString('vi-VN')}`;
-      }
-
-      if (rules.max !== undefined && parseInt(value) > rules.max) {
-        return `Giá trị tối đa là ${rules.max.toLocaleString('vi-VN')}`;
-      }
-    }
-
-    return '';
-  };
-
-  // Validate entire form
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Validate all required fields
-    Object.keys(validationRules).forEach(field => {
-      const error = validateField(field, formData[field]);
-      if (error) {
-        newErrors[field] = error;
-      }
-    });
-
-    // Additional validations
-    if (formData.product_category_id && !categories.find(cat => cat._id === formData.product_category_id)) {
-      newErrors.product_category_id = 'Danh mục không tồn tại';
-    }
-
-    // Image validation - require either URL or file
-    if (!formData.product_imageurl && !imageFile) {
-      newErrors.product_imageurl = 'Vui lòng nhập URL hình ảnh hoặc tải lên một ảnh sản phẩm';
-    }
-
-    console.log('Validation Errors:', newErrors);
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle form submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      toast.error('Vui lòng kiểm tra lại thông tin đã nhập');
-      return;
-    }
-
-    setLoading(true);
-
+  // Update order status using correct API endpoint
+  const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem('access_token');
-      if (!token) {
-        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        navigate('/Login');
-        return;
+      if (!token) return;
+
+      console.log('🔄 Updating order status:', orderId, newStatus);
+
+      if (newStatus === 'shipped') {
+        // Use the specific ship order endpoint
+        await axios.put(`${baseUrl}/reptitist/order/mark-shipped-order`, null, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { id: orderId }
+        });
+      } else if (newStatus === 'delivered') {
+        // Use shop endpoint to mark as delivered
+        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { id: orderId, status: 'delivered' }
+        });
+      } else if (newStatus === 'cancelled') {
+        // Use shop endpoint to mark as cancelled
+        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { id: orderId, status: 'cancelled' }
+        });
       }
 
-      // Prepare image data - use file upload if available, otherwise use URL
-      const imageData = imageFile || formData.product_imageurl.trim();
-
-      // Prepare form data
-      const submitData = {
-        product_name: formData.product_name.trim(),
-        product_description: formData.product_description.trim(),
-        product_price: parseInt(formData.product_price),
-        product_quantity: parseInt(formData.product_quantity),
-        product_category_id: formData.product_category_id,
-        product_imageurl: imageData,
-        product_status: formData.product_status || 'available'
+      // Success messages based on status
+      const statusMessages = {
+        'shipped': 'Đã đánh dấu đơn hàng đang vận chuyển',
+        'delivered': 'Đã đánh dấu đơn hàng đã giao thành công',
+        'cancelled': 'Đã đánh dấu đơn hàng giao thất bại'
       };
 
-      console.log('Submitting data:', {
-        ...submitData,
-        product_imageurl: imageData ? (imageData.startsWith('data:') ? '[Base64 Image Data]' : imageData) : ''
-      });
+      toast.success(statusMessages[newStatus] || 'Cập nhật trạng thái đơn hàng thành công');
 
-      let response;
-      if (isEdit) {
-        // Update existing product
-        response = await axios.put(
-          `${baseUrl}/reptitist/shop/my-products/${productId}`,
-          submitData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      } else {
-        // Create new product
-        response = await axios.post(
-          `${baseUrl}/reptitist/shop/products/create`,
-          submitData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      }
-
-      if (response.status === 200 || response.status === 201) {
-        toast.success(isEdit ? 'Cập nhật sản phẩm thành công!' : 'Thêm sản phẩm thành công!');
-        navigate('/ShopProductManagement');
-      }
+      // Refresh data
+      await Promise.all([fetchOrders(), fetchStats()]);
 
     } catch (error) {
-      console.error('Submit error:', error);
-      
-      let errorMessage = 'Có lỗi xảy ra khi xử lý yêu cầu';
-      
-      if (error.response) {
-        // Server responded with error
-        switch (error.response.status) {
-          case 400:
-            errorMessage = error.response.data?.message || 'Dữ liệu không hợp lệ';
-            break;
-          case 401:
-            errorMessage = 'Phiên đăng nhập đã hết hạn';
-            navigate('/Login');
-            return;
-          case 403:
-            errorMessage = 'Bạn không có quyền thực hiện thao tác này';
-            break;
-          case 500:
-            errorMessage = 'Lỗi server. Vui lòng thử lại sau';
-            break;
-          default:
-            errorMessage = error.response.data?.message || 'Có lỗi xảy ra';
-        }
-      } else if (error.request) {
-        // Network error
-        errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng';
+      console.error('❌ Error updating order status:', error);
+      console.error('Error details:', error.response?.data || error.message);
+
+      // Show more specific error message
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error('Không thể cập nhật trạng thái đơn hàng');
       }
-      
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Loading state
-  if (pageLoading) {
-    return (
-      <>
-        <Header />
-        <div className="pf-container">
-          <div className="pf-loading-state">
-            <div className="pf-spinner"></div>
-            <h3>Đang tải dữ liệu...</h3>
-            <p>Vui lòng chờ trong giây lát</p>
-          </div>
-        </div>
-        <Footer />
-      </>
-    );
-  }
+  // Helper function to get product image URL - FIX IMAGE DISPLAY
+  const getProductImageUrl = (product) => {
 
-  // No access state
-  if (!canSellProduct()) {
+    // Nếu là URL thông thường, return trực tiếp
+    if (product?.product_imageurl[0] && (product?.product_imageurl[0].startsWith('http') || product?.product_imageurl[0].startsWith('/'))) {
+      return product?.product_imageurl[0];
+    }
+
+    // Fallback to default image
+    return '/images/default-product.png';
+  };
+
+  // Filter and search logic
+  useEffect(() => {
+    let filtered = [...orders];
+
+    // Search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(order =>
+        order._id.toLowerCase().includes(searchLower) ||
+        order.customer_id?.username?.toLowerCase().includes(searchLower) ||
+        order.customer_id?.email?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Status filter
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(order => order.order_status === filterStatus);
+    }
+
+    // Sort by creation date (newest first)
+    filtered.sort((a, b) => new Date(b.order_date || b.createdAt) - new Date(a.order_date || a.createdAt));
+
+    setFilteredOrders(filtered);
+    setCurrentPage(1);
+  }, [orders, searchTerm, filterStatus]);
+
+  // Format functions
+  const formatCurrency = (amount) => {
+    if (amount == null || isNaN(amount)) return '0₫';
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  const formatNumber = (num) => {
+    if (num == null || isNaN(num)) return '0';
+    return new Intl.NumberFormat('vi-VN').format(num);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Get status badge class
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'ordered': return 'om-badge-admin'; // Orange/yellow for pending
+      case 'shipped': return 'om-badge-shop'; // Blue for shipped  
+      case 'delivered': return 'om-badge-delivered'; // Green for delivered
+      case 'cancelled': return 'om-badge-default';
+      case 'completed': return 'om-badge-customer'; // Purple for completed
+      default: return 'om-badge-default';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'ordered': return 'Chờ xử lý';
+      case 'shipped': return 'Đang vận chuyển';
+      case 'delivered': return 'Đã giao hàng';
+      case 'cancelled': return 'Giao thất bại';
+      case 'completed': return 'Đã hoàn thành';
+      default: return 'Không xác định';
+    }
+  };
+
+  // Check if button should be enabled based on current order status
+  const canPerformAction = (currentStatus, targetStatus) => {
+    switch (targetStatus) {
+      case 'shipped':
+        return currentStatus === 'ordered';
+      case 'delivered':
+        return currentStatus === 'shipped';
+      case 'cancelled':
+        return currentStatus === 'shipped';
+      default:
+        return false;
+    }
+  };
+
+  // Reset filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterStatus('all');
+    setCurrentPage(1);
+  };
+
+  // Pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentOrders = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+
+  // Loading state
+  if (loading) {
     return (
       <>
         <Header />
-        <div className="pf-container">
-          <div className="pf-no-access">
-            <i className="fas fa-exclamation-triangle pf-warning-icon"></i>
-            <h2>Không có quyền truy cập</h2>
-            <p>Bạn không có quyền thêm sản phẩm. Chỉ có Shop mới có thể sử dụng tính năng này.</p>
-            <Link to="/" className="pf-btn pf-btn-primary">
-              <i className="fas fa-home"></i>
-              Về trang chủ
-            </Link>
+        <div className="om-user-list-container">
+          <div className="om-loading-state">
+            <div className="om-spinner"></div>
+            <h3>Đang tải dữ liệu đơn hàng...</h3>
+            <p>Vui lòng đợi trong giây lát</p>
           </div>
         </div>
         <Footer />
@@ -533,382 +361,560 @@ const ShopAddProductPage = () => {
         pauseOnHover
         theme="light"
       />
-      
-      <div className="pf-container">
+
+      <div className="om-user-list-container">
         {/* Page Header */}
-        <div className="pf-page-header">
-          <div className="pf-page-header-content">
-            <div className="pf-page-header-text">
+        <div className="om-page-header">
+          <div className="om-page-header-content">
+            <div className="om-page-header-text">
               <h1>
-                <i className={`fas ${isEdit ? 'fa-edit' : 'fa-plus-circle'}`}></i>
-                {isEdit ? 'Chỉnh sửa sản phẩm' : 'Thêm sản phẩm mới'}
+                <i className="fas fa-clipboard-list"></i>
+                Quản lý đơn hàng
               </h1>
-              <p>
-                {isEdit 
-                  ? 'Cập nhật thông tin sản phẩm trong cửa hàng của bạn'
-                  : 'Tạo sản phẩm mới để bán trong cửa hàng của bạn'
-                }
-              </p>
-              <div className="pf-header-breadcrumb">
+              <p>Quản lý và xử lý tất cả đơn hàng từ khách hàng</p>
+              <div className="om-header-breadcrumb">
                 <Link to="/">Trang chủ</Link>
                 <i className="fas fa-chevron-right"></i>
-                <Link to="/ShopProductManagement">Quản lý sản phẩm</Link>
+                <Link to="/ShopDashboard">Dashboard</Link>
                 <i className="fas fa-chevron-right"></i>
-                <span>{isEdit ? 'Chỉnh sửa' : 'Thêm mới'}</span>
+                <span>Quản lý đơn hàng</span>
               </div>
-            </div>
-            <div className="pf-header-actions">
-              <Link to="/ShopProductManagement" className="pf-btn pf-btn-secondary">
-                <i className="fas fa-arrow-left"></i>
-                Quay lại
-              </Link>
             </div>
           </div>
         </div>
 
-        {/* Form Section */}
-        <div className="pf-form-section">
-          <form onSubmit={handleSubmit} className="pf-form" noValidate>
-            <div className="pf-form-container">
-              
-              {/* Product Information */}
-              <div className="pf-form-group-section">
-                <h3 className="pf-section-title">
-                  <i className="fas fa-info-circle"></i>
-                  Thông tin cơ bản
+        {/* Statistics Dashboard */}
+        <div className="om-stats-dashboard">
+          <div className="om-stats-grid">
+            <div className="om-stat-card om-stat-total">
+              <div className="om-stat-icon">
+                <i className="fas fa-shopping-cart"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.totalOrders)}</span>
+                <span className="om-stat-label">Tổng đơn hàng</span>
+              </div>
+            </div>
+
+            <div className="om-stat-card om-stat-shop">
+              <div className="om-stat-icon">
+                <i className="fas fa-check-circle"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.completedOrders)}</span>
+                <span className="om-stat-label">Đã hoàn thành</span>
+              </div>
+            </div>
+
+            <div className="om-stat-card om-stat-admin">
+              <div className="om-stat-icon">
+                <i className="fas fa-clock"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.pendingOrders)}</span>
+                <span className="om-stat-label">Chờ xử lý</span>
+              </div>
+            </div>
+
+            <div className="om-stat-card om-stat-shop">
+              <div className="om-stat-icon">
+                <i className="fas fa-shipping-fast"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.shippedOrders)}</span>
+                <span className="om-stat-label">Đang vận chuyển</span>
+              </div>
+            </div>
+
+            <div className="om-stat-card om-stat-customer">
+              <div className="om-stat-icon">
+                <i className="fas fa-map-marker-alt"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.deliveredOrders)}</span>
+                <span className="om-stat-label">Đã giao hàng</span>
+              </div>
+            </div>
+
+            <div className="om-stat-card om-stat-inactive">
+              <div className="om-stat-icon">
+                <i className="fas fa-times-circle"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatNumber(stats.cancelledOrders)}</span>
+                <span className="om-stat-label">Giao thất bại</span>
+              </div>
+            </div>
+
+            <div className="om-stat-card om-stat-active">
+              <div className="om-stat-icon">
+                <i className="fas fa-chart-line"></i>
+              </div>
+              <div className="om-stat-content">
+                <span className="om-stat-number">{formatCurrency(stats.totalRevenue)}</span>
+                <span className="om-stat-label">Tổng doanh thu</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters Section */}
+        <div className="om-filters-section">
+          <div className="om-filters-row">
+            <div className="om-search-box">
+              <input
+                type="text"
+                placeholder="Tìm kiếm đơn hàng theo ID, tên khách hàng..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="om-search-input"
+              />
+              <i className="fas fa-search om-search-icon"></i>
+            </div>
+
+            <div className="om-filter-group">
+              <label>Trạng thái:</label>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="om-filter-select"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                <option value="ordered">Chờ xử lý</option>
+                <option value="shipped">Đang vận chuyển</option>
+                <option value="delivered">Đã giao hàng</option>
+                <option value="cancelled">Giao thất bại</option>
+              </select>
+            </div>
+
+            <div className="om-filter-group">
+              <label>Hiển thị:</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="om-filter-select"
+              >
+                <option value={10}>10 mục</option>
+                <option value={25}>25 mục</option>
+                <option value={50}>50 mục</option>
+              </select>
+            </div>
+
+            <button
+              onClick={resetFilters}
+              className="om-btn om-btn-secondary om-reset-btn"
+            >
+              <i className="fas fa-undo"></i>
+              Đặt lại
+            </button>
+          </div>
+
+          {/* Filter Summary */}
+          {(searchTerm || filterStatus !== 'all') && (
+            <div className="om-filter-summary">
+              <div className="om-filter-results">
+                <span>Hiển thị {filteredOrders.length} / {orders.length} đơn hàng</span>
+              </div>
+              <div className="om-filter-tags">
+                {searchTerm && (
+                  <span className="om-filter-tag">
+                    <i className="fas fa-search"></i>"{searchTerm}"
+                    <button onClick={() => setSearchTerm('')}>×</button>
+                  </span>
+                )}
+                {filterStatus !== 'all' && (
+                  <span className="om-filter-tag">
+                    <i className="fas fa-filter"></i>
+                    {getStatusText(filterStatus)}
+                    <button onClick={() => setFilterStatus('all')}>×</button>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Orders Table Section */}
+        <div className="om-table-section">
+          {currentOrders.length === 0 ? (
+            <div className="om-empty-state">
+              <i className="fas fa-clipboard-list om-empty-icon"></i>
+              <h3>Không có đơn hàng nào</h3>
+              <p>
+                {searchTerm || filterStatus !== 'all'
+                  ? 'Không tìm thấy đơn hàng phù hợp với bộ lọc hiện tại'
+                  : 'Bạn chưa có đơn hàng nào. Đơn hàng mới sẽ xuất hiện ở đây khi có khách hàng đặt hàng.'
+                }
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="om-table-header">
+                <h3>
+                  <i className="fas fa-table"></i>
+                  Danh sách đơn hàng ({filteredOrders.length})
                 </h3>
-                
-                <div className="pf-form-grid">
-                  {/* Product Name */}
-                  <div className="pf-form-group pf-form-group-full">
-                    <label className="pf-label pf-required">
-                      <i className="fas fa-tag"></i>
-                      Tên sản phẩm
-                    </label>
-                    <input
-                      type="text"
-                      name="product_name"
-                      value={formData.product_name}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`pf-input ${errors.product_name ? 'pf-error' : ''}`}
-                      placeholder="Nhập tên sản phẩm..."
-                      maxLength="100"
-                    />
-                    {errors.product_name && (
-                      <span className="pf-error-message">
-                        <i className="fas fa-exclamation-circle"></i>
-                        {errors.product_name}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Product Price */}
-                  <div className="pf-form-group">
-                    <label className="pf-label pf-required">
-                      <i className="fas fa-money-bill-wave"></i>
-                      Giá bán (VNĐ)
-                    </label>
-                    <div className="pf-input-wrapper">
-                      <input
-                        type="text"
-                        name="product_price"
-                        value={formData.product_price}
-                        onChange={handleInputChange}
-                        onBlur={handleBlur}
-                        className={`pf-input pf-input-price ${errors.product_price ? 'pf-error' : ''}`}
-                        placeholder="0"
-                      />
-                      <span className="pf-input-suffix">VNĐ</span>
-                    </div>
-                    {errors.product_price && (
-                      <span className="pf-error-message">
-                        <i className="fas fa-exclamation-circle"></i>
-                        {errors.product_price}
-                      </span>
-                    )}
-                    {formData.product_price && !errors.product_price && (
-                      <small className="pf-input-info">
-                        ≈ {parseInt(formData.product_price).toLocaleString('vi-VN')} VNĐ
-                      </small>
-                    )}
-                  </div>
-
-                  {/* Product Quantity */}
-                  <div className="pf-form-group">
-                    <label className="pf-label pf-required">
-                      <i className="fas fa-boxes"></i>
-                      Số lượng
-                    </label>
-                    <input
-                      type="text"
-                      name="product_quantity"
-                      value={formData.product_quantity}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`pf-input ${errors.product_quantity ? 'pf-error' : ''}`}
-                      placeholder="0"
-                    />
-                    {errors.product_quantity && (
-                      <span className="pf-error-message">
-                        <i className="fas fa-exclamation-circle"></i>
-                        {errors.product_quantity}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Product Category */}
-                  <div className="pf-form-group pf-form-group-full">
-                    <label className="pf-label pf-required">
-                      <i className="fas fa-list"></i>
-                      Danh mục sản phẩm
-                    </label>
-                    <select
-                      name="product_category_id"
-                      value={formData.product_category_id}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`pf-select ${errors.product_category_id ? 'pf-error' : ''}`}
-                    >
-                      <option value="">-- Chọn danh mục --</option>
-                      {categories.map((category) => (
-                        <option key={category._id} value={category._id}>
-                          {category.product_category_name}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.product_category_id && (
-                      <span className="pf-error-message">
-                        <i className="fas fa-exclamation-circle"></i>
-                        {errors.product_category_id}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Product Description */}
-                  <div className="pf-form-group pf-form-group-full">
-                    <label className="pf-label">
-                      <i className="fas fa-align-left"></i>
-                      Mô tả sản phẩm
-                    </label>
-                    <textarea
-                      name="product_description"
-                      value={formData.product_description}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`pf-textarea ${errors.product_description ? 'pf-error' : ''}`}
-                      placeholder="Nhập mô tả chi tiết về sản phẩm..."
-                      rows="4"
-                      maxLength="1000"
-                    ></textarea>
-                    {errors.product_description && (
-                      <span className="pf-error-message">
-                        <i className="fas fa-exclamation-circle"></i>
-                        {errors.product_description}
-                      </span>
-                    )}
-                    <small className="pf-input-info">
-                      {formData.product_description.length}/1000 ký tự
-                    </small>
-                  </div>
+                <div className="om-table-actions">
+                  <button
+                    onClick={() => initializeData()}
+                    className="om-btn om-btn-secondary om-btn-icon"
+                    title="Làm mới"
+                  >
+                    <i className="fas fa-sync-alt"></i>
+                  </button>
                 </div>
               </div>
 
-              {/* Image Section */}
-              <div className="pf-form-group-section">
-                <h3 className="pf-section-title">
-                  <i className="fas fa-image"></i>
-                  Hình ảnh sản phẩm
-                </h3>
-                
-                <div className="pf-image-section">
-                  <div className="pf-image-upload">
-                    {/* Upload Methods */}
-                    <div className="pf-upload-methods">
-                      {/* Method 1: Upload from computer */}
-                      <div className="pf-upload-method">
-                        <label className="pf-label">
-                          <i className="fas fa-upload"></i>
-                          Tải ảnh từ máy tính
-                        </label>
-                        <div className="pf-file-upload">
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileUpload}
-                            className="pf-file-input"
-                            disabled={imageSource === 'url'}
-                          />
+              <div className="om-table-container">
+                <table className="om-users-table">
+                  <thead>
+                    <tr>
+                      <th>Mã đơn hàng</th>
+                      <th>Khách hàng</th>
+                      <th>Sản phẩm</th>
+                      <th>Tổng tiền</th>
+                      <th>Ngày đặt</th>
+                      <th>Trạng thái</th>
+                      <th>Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentOrders.map((order) => (
+                      <tr key={order._id} className="om-table-row">
+                        <td>
+                          <div className="om-user-info">
+                            <div className="om-user-details">
+                              <span className="om-username">
+                                #{order._id.slice(-8)}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="om-contact-info">
+                            <div className="om-email">
+                              <i className="fas fa-user"></i>
+                              {order.customer_id?.username || 'Khách hàng'}
+                            </div>
+                            <div className="om-phone">
+                              <i className="fas fa-envelope"></i>
+                              {order.customer_id?.email || 'N/A'}
+                            </div>
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="om-balance-info">
+                            <span className="om-balance">
+                              {order.order_items?.length || 0} sản phẩm
+                            </span>
+                            <small className="om-account-type">
+                              <i className="fas fa-box"></i>
+                              {order.order_items?.[0]?.product_id?.product_name?.substring(0, 20) || 'Sản phẩm'}
+                              {order.order_items?.length > 1 && '...'}
+                            </small>
+                          </div>
+                        </td>
+
+                        <td>
+                          <span className="om-balance">
+                            {formatCurrency(order.order_price)}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="om-date-info">
+                            <span className="om-date">
+                              {formatDate(order.order_date || order.createdAt)}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td>
+                          <span className={`om-role-badge ${getStatusBadgeClass(order.order_status)}`}>
+                            {getStatusText(order.order_status)}
+                          </span>
+                        </td>
+
+                        <td>
+                          <div className="om-action-buttons">
+                            {/* Chỉ hiển thị 2 nút: Đang vận chuyển và Xem chi tiết */}
+                            <button
+                              onClick={() => updateOrderStatus(order._id, 'shipped')}
+                              disabled={!canPerformAction(order.order_status, 'shipped')}
+                              className={`om-btn-action ${canPerformAction(order.order_status, 'shipped') ? 'om-btn-edit' : 'om-btn-disabled'}`}
+                              title={canPerformAction(order.order_status, 'shipped') ? 'Đánh dấu đang vận chuyển' : 'Chỉ có thể vận chuyển khi đang chờ xử lý'}
+                            >
+                              <i className="fas fa-shipping-fast"></i>
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setShowDetailModal(true);
+                              }}
+                              className="om-btn-action om-btn-view"
+                              title="Xem chi tiết"
+                            >
+                              <i className="fas fa-eye"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="om-pagination">
+                  <div className="om-pagination-info">
+                    Hiển thị {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, filteredOrders.length)} của {filteredOrders.length} đơn hàng
+                  </div>
+
+                  <div className="om-pagination-controls">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="om-pagination-btn om-pagination-prev"
+                    >
+                      <i className="fas fa-chevron-left"></i>
+                      Trước
+                    </button>
+
+                    <div className="om-pagination-numbers">
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                        let pageNumber;
+                        if (totalPages <= 5) {
+                          pageNumber = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNumber = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNumber = totalPages - 4 + i;
+                        } else {
+                          pageNumber = currentPage - 2 + i;
+                        }
+
+                        return (
                           <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="pf-btn pf-upload-btn"
-                            disabled={imageSource === 'url'}
+                            key={pageNumber}
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className={`om-pagination-btn ${currentPage === pageNumber ? 'active' : ''}`}
                           >
-                            <i className="fas fa-cloud-upload-alt"></i>
-                            {imageSource === 'url' ? 'Vui lòng xóa URL trước' : 'Chọn file ảnh'}
+                            {pageNumber}
                           </button>
-                        </div>
-                        <div className="pf-upload-info">
-                          <small>Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB</small>
-                        </div>
-                      </div>
+                        );
+                      })}
+                    </div>
 
-                      <div className="pf-upload-divider">
-                        <span>HOẶC</span>
-                      </div>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="om-pagination-btn om-pagination-next"
+                    >
+                      Sau
+                      <i className="fas fa-chevron-right"></i>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
 
-                      {/* Method 2: URL input */}
-                      <div className="pf-upload-method">
-                        <label className="pf-label">
-                          <i className="fas fa-link"></i>
-                          Nhập URL hình ảnh
-                        </label>
-                        <input
-                          type="url"
-                          name="product_imageurl"
-                          value={formData.product_imageurl}
-                          onChange={handleImageUrlChange}
-                          onBlur={handleBlur}
-                          className={`pf-input ${errors.product_imageurl ? 'pf-error' : ''}`}
-                          placeholder="https://example.com/image.jpg"
-                          disabled={imageSource === 'file'}
-                        />
-                        {imageSource === 'file' && (
-                          <small className="pf-input-info pf-warning">
-                            <i className="fas fa-info-circle"></i>
-                            Bạn đang sử dụng ảnh upload. Xóa ảnh để nhập URL.
-                          </small>
+        {/* Order Detail Modal */}
+        {showDetailModal && selectedOrder && (
+          <div className="om-modal-overlay" onClick={() => setShowDetailModal(false)}>
+            <div className="om-modal-content om-modal-large" onClick={(e) => e.stopPropagation()}>
+              <div className="om-modal-header">
+                <h3>
+                  <i className="fas fa-clipboard-list"></i>
+                  Chi tiết đơn hàng #{selectedOrder._id.slice(-8)}
+                </h3>
+                <button
+                  onClick={() => setShowDetailModal(false)}
+                  className="om-close-btn"
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+
+              <div className="om-modal-body">
+                <div className="om-user-detail-container">
+                  <div className="om-detail-header">
+                    <div className="om-user-basic-info">
+                      <h4>Đơn hàng #{selectedOrder._id.slice(-8)}</h4>
+                      <p className="om-user-email">Đặt hàng: {formatDate(selectedOrder.order_date || selectedOrder.createdAt)}</p>
+                      <span className={`om-role-badge ${getStatusBadgeClass(selectedOrder.order_status)}`}>
+                        {getStatusText(selectedOrder.order_status)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="om-detail-section">
+                    <h4 className="om-section-title">
+                      <i className="fas fa-user"></i>
+                      Thông tin khách hàng
+                    </h4>
+                    <div className="om-detail-grid">
+                      <div className="om-detail-item">
+                        <label>Tên khách hàng:</label>
+                        <span>{selectedOrder.customer_id?.username || 'N/A'}</span>
+                      </div>
+                      <div className="om-detail-item">
+                        <label>Email:</label>
+                        <span>{selectedOrder.customer_id?.email || 'N/A'}</span>
+                      </div>
+                      <div className="om-detail-item">
+                        <label>Ngày đặt hàng:</label>
+                        <span>{formatDate(selectedOrder.order_date || selectedOrder.createdAt)}</span>
+                      </div>
+                      <div className="om-detail-item">
+                        <label>Trạng thái:</label>
+                        <span className={`om-role-badge ${getStatusBadgeClass(selectedOrder.order_status)}`}>
+                          {getStatusText(selectedOrder.order_status)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedOrder?.delivery_info && (
+                    <div className="om-detail-section">
+                      <h4 className="om-section-title">
+                        <i className="fas fa-truck"></i>
+                        Thông tin giao hàng
+                      </h4>
+                      <div className="om-detail-grid">
+                        <div className="om-detail-item">
+                          <label>Người nhận:</label>
+                          <span>{selectedOrder.delivery_info?.fullName}</span>
+                        </div>
+                        <div className="om-detail-item">
+                          <label>Số điện thoại:</label>
+                          <span>{selectedOrder.delivery_info?.phoneNumber}</span>
+                        </div>
+                        <div className="om-detail-item full-width">
+                          <label>Địa chỉ giao hàng:</label>
+                          <span>{selectedOrder.delivery_info.address}</span>
+                        </div>
+                        {selectedOrder.delivery_info?.note && (
+                          <div className="om-detail-item full-width">
+                            <label>Ghi chú:</label>
+                            <span className="om-note-text">{selectedOrder.delivery_info?.note}</span>
+                          </div>
                         )}
                       </div>
                     </div>
+                  )}
 
-                    {errors.product_imageurl && (
-                      <div className="pf-error-message">
-                        <i className="fas fa-exclamation-circle"></i>
-                        {errors.product_imageurl}
-                      </div>
-                    )}
+                  <div className="om-detail-section">
+                    <h4 className="om-section-title">
+                      <i className="fas fa-box"></i>
+                      Sản phẩm đặt hàng
+                    </h4>
+                    <div className="om-order-items">
+                      {selectedOrder.order_items?.map((item, index) => (
+                        <div key={index} className="om-order-item">
+                          <div className="om-item-info">
+                            <img
+                              src={getProductImageUrl(item.product_id)}  //item.product_id?.product_imageurl?.[0]
+                              alt={item.product_id?.product_name || 'Sản phẩm'}
+                              className="om-item-image"
+                              onError={(e) => {
+                                e.target.src = '/images/default-product.png';
+                              }}
+                            />
+                            <div className="om-item-details">
+                              <h5>{item.product_id?.product_name || 'Sản phẩm đã xóa'}</h5>
+                              <p>Số lượng: {item.quantity}</p>
+                              <p>Giá: {formatCurrency(item.product_id?.product_price || 0)}</p>
+                              <p>Thành tiền: {formatCurrency((item.product_id?.product_price || 0) * item.quantity)}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )) || (
+                          <p>Không có thông tin sản phẩm</p>
+                        )}
+                    </div>
                   </div>
 
-                  {/* Image Preview */}
-                  <div className="pf-image-preview-section">
-                    <div className="pf-image-preview">
-                      {previewImage ? (
-                        <div className="pf-preview-container">
-                          <img 
-                            src={previewImage} 
-                            alt="Preview" 
-                            className="pf-preview-image"
-                            onError={() => {
-                              setPreviewImage('');
-                              if (imageSource === 'url') {
-                                setErrors(prev => ({
-                                  ...prev,
-                                  product_imageurl: 'Không thể tải ảnh từ URL này'
-                                }));
-                              }
-                            }}
-                          />
-                          <div className="pf-preview-overlay">
-                            <button
-                              type="button"
-                              onClick={removeImage}
-                              className="pf-btn pf-btn-danger pf-remove-image"
-                              title="Xóa ảnh"
-                            >
-                              <i className="fas fa-trash"></i>
-                            </button>
-                          </div>
-                          <div className="pf-preview-info">
-                            {imageSource === 'file' ? 'Ảnh từ máy tính' : 'Ảnh từ URL'}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="pf-no-preview">
-                          <i className="fas fa-image"></i>
-                          <p>Chưa có ảnh</p>
-                          <small>Tải lên ảnh hoặc nhập URL</small>
-                        </div>
-                      )}
+                  <div className="om-detail-section">
+                    <h4 className="om-section-title">
+                      <i className="fas fa-calculator"></i>
+                      Tổng kết đơn hàng
+                    </h4>
+                    <div className="om-order-summary">
+                      <div className="om-summary-item">
+                        <span>Tổng tiền hàng:</span>
+                        <span>{formatCurrency(selectedOrder.order_price)}</span>
+                      </div>
+                      <div className="om-summary-item total">
+                        <span>Tổng cộng:</span>
+                        <span>{formatCurrency(selectedOrder.order_price)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Form Actions */}
-              <div className="pf-form-actions">
-                <div className="pf-actions-left">
+              <div className="om-modal-footer">
+                <div className="om-quick-actions">
+                  {/* Hiển thị các nút hành động dựa trên trạng thái đơn hàng */}
+                  {selectedOrder.order_status === 'ordered' && (
+                    <button
+                      onClick={() => {
+                        updateOrderStatus(selectedOrder._id, 'shipped');
+                        setShowDetailModal(false);
+                      }}
+                      className="om-btn om-btn-primary"
+                    >
+                      <i className="fas fa-shipping-fast"></i>
+                      Đánh dấu đang vận chuyển
+                    </button>
+                  )}
+                  {selectedOrder.order_status === 'shipped' && (
+                    <>
+                      <button
+                        onClick={() => {
+                          updateOrderStatus(selectedOrder._id, 'delivered');
+                          setShowDetailModal(false);
+                        }}
+                        className="om-btn om-btn-success"
+                      >
+                        <i className="fas fa-check-circle"></i>
+                        Đánh dấu đã giao hàng
+                      </button>
+                      <button
+                        onClick={() => {
+                          updateOrderStatus(selectedOrder._id, 'cancelled');
+                          setShowDetailModal(false);
+                        }}
+                        className="om-btn om-btn-danger"
+                      >
+                        <i className="fas fa-times-circle"></i>
+                        Đánh dấu giao thất bại
+                      </button>
+                    </>
+                  )}
                   <button
-                    type="button"
-                    onClick={() => navigate('/ShopProductManagement')}
-                    className="pf-btn pf-btn-secondary"
-                    disabled={loading}
+                    onClick={() => setShowDetailModal(false)}
+                    className="om-btn om-btn-secondary"
                   >
                     <i className="fas fa-times"></i>
-                    Hủy bỏ
-                  </button>
-                </div>
-                
-                <div className="pf-actions-right">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormData({
-                        product_name: '',
-                        product_description: '',
-                        product_price: '',
-                        product_quantity: '',
-                        product_category_id: '',
-                        product_imageurl: '',
-                        product_status: 'available'
-                      });
-                      setImageFile(null);
-                      setPreviewImage('');
-                      setImageSource('');
-                      setErrors({});
-                      setTouched({});
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                      }
-                    }}
-                    className="pf-btn pf-btn-reset"
-                    disabled={loading}
-                  >
-                    <i className="fas fa-undo"></i>
-                    Đặt lại
-                  </button>
-                  
-                  <button
-                    type="submit"
-                    className="pf-btn pf-btn-primary pf-btn-submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <i className="fas fa-spinner fa-spin"></i>
-                        {isEdit ? 'Đang cập nhật...' : 'Đang thêm...'}
-                      </>
-                    ) : (
-                      <>
-                        <i className={`fas ${isEdit ? 'fa-save' : 'fa-plus'}`}></i>
-                        {isEdit ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}
-                      </>
-                    )}
+                    Đóng
                   </button>
                 </div>
               </div>
-
-
             </div>
-          </form>
-        </div>
+          </div>
+        )}
       </div>
-      
+
       <Footer />
     </>
   );
 };
 
-export default ShopAddProductPage;
+export default OrderManagement;
