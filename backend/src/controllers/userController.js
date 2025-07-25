@@ -112,9 +112,7 @@ const getUserProfile = async (req, res) => {
   }
 }
 
-// @desc    Update user profile (không bao gồm password)
-// @route   PUT /api/users/profile
-// @access  Private
+
 const updateUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)

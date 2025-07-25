@@ -56,7 +56,7 @@ const OrderManagement = () => {
     try {
       setLoading(true);
       setStatsLoading(true);
-      
+
       await Promise.all([
         fetchOrders(),
         fetchStats()
@@ -115,7 +115,7 @@ const OrderManagement = () => {
 
       // Process response same way as other pages
       let dashboardData = null;
-      
+
       if (response.data?.success && response.data?.data) {
         dashboardData = response.data.data;
       } else if (response.data?.data) {
@@ -126,7 +126,7 @@ const OrderManagement = () => {
 
       if (dashboardData && dashboardData.basicStats) {
         const basicStats = dashboardData.basicStats;
-        
+
         setStats({
           totalOrders: basicStats.totalOrders || 0,
           pendingOrders: basicStats.pendingOrders || 0,
@@ -150,7 +150,7 @@ const OrderManagement = () => {
 
     } catch (error) {
       console.error('❌ Error fetching stats:', error);
-      
+
       // Calculate stats from orders data as fallback
       setStats({
         totalOrders: orders.length || 0,
@@ -199,14 +199,14 @@ const OrderManagement = () => {
       };
 
       toast.success(statusMessages[newStatus] || 'Cập nhật trạng thái đơn hàng thành công');
-      
+
       // Refresh data
       await Promise.all([fetchOrders(), fetchStats()]);
-      
+
     } catch (error) {
       console.error('❌ Error updating order status:', error);
       console.error('Error details:', error.response?.data || error.message);
-      
+
       // Show more specific error message
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -218,12 +218,12 @@ const OrderManagement = () => {
 
   // Helper function to get product image URL - FIX IMAGE DISPLAY
   const getProductImageUrl = (product) => {
-    
+
     // Nếu là URL thông thường, return trực tiếp
     if (product?.product_imageurl[0] && (product?.product_imageurl[0].startsWith('http') || product?.product_imageurl[0].startsWith('/'))) {
       return product?.product_imageurl[0];
     }
-    
+
     // Fallback to default image
     return '/images/default-product.png';
   };
@@ -648,7 +648,7 @@ const OrderManagement = () => {
                             >
                               <i className="fas fa-shipping-fast"></i>
                             </button>
-                            
+
                             <button
                               onClick={() => {
                                 setSelectedOrder(order);
@@ -780,6 +780,35 @@ const OrderManagement = () => {
                     </div>
                   </div>
 
+                  {selectedOrder?.delivery_info && (
+                    <div className="om-detail-section">
+                      <h4 className="om-section-title">
+                        <i className="fas fa-truck"></i>
+                        Thông tin giao hàng
+                      </h4>
+                      <div className="om-detail-grid">
+                        <div className="om-detail-item">
+                          <label>Người nhận:</label>
+                          <span>{selectedOrder.delivery_info?.fullName}</span>
+                        </div>
+                        <div className="om-detail-item">
+                          <label>Số điện thoại:</label>
+                          <span>{selectedOrder.delivery_info?.phoneNumber}</span>
+                        </div>
+                        <div className="om-detail-item full-width">
+                          <label>Địa chỉ giao hàng:</label>
+                          <span>{selectedOrder.delivery_info.address}</span>
+                        </div>
+                        {selectedOrder.delivery_info?.note && (
+                          <div className="om-detail-item full-width">
+                            <label>Ghi chú:</label>
+                            <span className="om-note-text">{selectedOrder.delivery_info?.note}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="om-detail-section">
                     <h4 className="om-section-title">
                       <i className="fas fa-box"></i>
@@ -789,7 +818,7 @@ const OrderManagement = () => {
                       {selectedOrder.order_items?.map((item, index) => (
                         <div key={index} className="om-order-item">
                           <div className="om-item-info">
-                            <img 
+                            <img
                               src={getProductImageUrl(item.product_id)}  //item.product_id?.product_imageurl?.[0]
                               alt={item.product_id?.product_name || 'Sản phẩm'}
                               className="om-item-image"
@@ -806,8 +835,8 @@ const OrderManagement = () => {
                           </div>
                         </div>
                       )) || (
-                        <p>Không có thông tin sản phẩm</p>
-                      )}
+                          <p>Không có thông tin sản phẩm</p>
+                        )}
                     </div>
                   </div>
 

@@ -32,6 +32,24 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  delivery_info: {
+    fullName: {
+      type: String,
+      required: true
+    },
+    phoneNumber: {
+      type: String,
+      required: true
+    },
+    delivery_address: {
+      type: String,
+      required: true
+    },
+    note: {
+      type: String,
+      default: ''
+    }
+  },
   customer_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', 

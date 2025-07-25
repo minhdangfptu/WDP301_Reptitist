@@ -238,7 +238,7 @@ const Transaction = () => {
       return 'Premium User';
     }
 
-    if (user.account_type?.type === 1) {
+    if (user.account_type?.type === 2) {
       return 'Pro User';
     }
     

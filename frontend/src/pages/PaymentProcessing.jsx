@@ -61,9 +61,9 @@ const PaymentProcessing = () => {
   console.log('Payment Data:', paymentData);
 
   let planNameForBackend = planName;
-  if (planType === 'partner' && (planName.toLowerCase() === 'cơ bản' || planName.toLowerCase() === 'basic')) {
+  if (planType === 'partner' && (planName.toLowerCase() === 'gói premium' || planName.toLowerCase() === 'premium')) {
     planNameForBackend = 'Gold';
-  } else if (planType === 'partner' && planName.toLowerCase() === 'premium') {
+  } else if (planType === 'partner' && planName.toLowerCase() === 'gói super premium') {
     planNameForBackend = 'Diamond';
   } else if (planType === 'individual' && planName.toLowerCase() === 'premium') {
     planNameForBackend = 'Silver';
@@ -95,7 +95,6 @@ const PaymentProcessing = () => {
     toast.success('Đã sao chép vào clipboard');
   };
 
-  // ✅ PayOS Payment Function
   const handlePayOSPayment = async () => {
     setIsProcessing(true);
     try {
@@ -189,7 +188,6 @@ const PaymentProcessing = () => {
     }, 900000);
   };
 
-  // ✅ Check PayOS status manual
   const checkPayOSStatus = async () => {
     if (!payosOrderCode) return;
     
@@ -252,11 +250,10 @@ const PaymentProcessing = () => {
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) : // 30 days
         new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);  // 365 days
 
-      if (planType === 'partner') {
+      if (planType === 'partner'&& planNameForBackend === 'Gold') {
         const updateData = {
           account_type: {
-            type: 'shop',
-
+            type: 3,
             activated_at: new Date(),
             expires_at: expiresAt
           }
@@ -274,7 +271,6 @@ const PaymentProcessing = () => {
         );
 
         if (response.status === 200) {
-          // Update local user data
           const updatedUser = {
             ...user,
             account_type: updateData.account_type

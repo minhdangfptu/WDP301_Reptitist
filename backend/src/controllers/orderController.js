@@ -6,10 +6,13 @@ const mongoose = require('mongoose');
 
 exports.createOrder = async (req, res) => {
   try {
-    const { order_items } = req.body;
+    const { order_items, delivery_info } = req.body;
 
     if (!order_items || !Array.isArray(order_items) || order_items.length === 0) {
       return res.status(400).json({ message: 'order_items must be a non-empty array' });
+    }
+    if (!delivery_info || typeof delivery_info !== 'object') {
+      return res.status(400).json({ message: 'delivery_info must be an object' });
     }
 
     const createdOrders = [];
@@ -48,7 +51,7 @@ exports.createOrder = async (req, res) => {
       const itemPrice = product.product_price * item.quantity;
 
       const newOrder = new Order({
-        order_items: [ // order_items vẫn là array, nhưng chỉ chứa 1 sản phẩm
+        order_items: [ 
           {
             product_id: product._id,
             product_name: product.product_name,
@@ -58,6 +61,7 @@ exports.createOrder = async (req, res) => {
         ],
         order_price: itemPrice,
         order_status: 'ordered',
+        delivery_info,
         customer_id: req.user._id,
         shop_id: product.user_id
       });
@@ -170,6 +174,8 @@ exports.getAllOrdersByShop = async (req, res) => {
       .populate('order_items.product_id', 'product_name product_price product_imageurl')
       .populate('customer_id', 'username email') 
       .sort({ createdAt: -1 });
+
+    console.log(orders);
 
     res.status(200).json(successResponse(orders));
   } catch (err) {

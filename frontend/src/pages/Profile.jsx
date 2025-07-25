@@ -298,21 +298,22 @@ const Profile = () => {
     fileInputRef.current?.click();
   };
 
-  const getAvatarUrl = (imageUrl) => {
-      if (!imageUrl) return "/api/placeholder/64/64";
+  const getAvatarUrl = (user) => {
+      if (!user?.imageUrl) return "/default-avatar.png";
     
     // If it's a base64 string, return as is
-    if (imageUrl.startsWith('data:image/')) {
-      return imageUrl;
+    if (user?.imageUrl.startsWith('data:image/')) {
+      return user.imageUrl;
     }
     
     // If it's a regular URL, return as is
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
+    if (user?.imageUrl.startsWith('http')) {
+      return uimageUrl;
     }
+    const defaultAvatar = '/default-avatar.png';
     
     // If it's a path, construct full URL
-    return `${baseUrl}${imageUrl}`;
+    return `${baseUrl}${user.imageUrl || defaultAvatar}`;
   };
 
   // Helper function to get user account type display
@@ -434,7 +435,7 @@ const Profile = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <img
-                    src={getAvatarUrl(user.user_imageurl)}
+                    src={getAvatarUrl(user)}
                     alt="Profile"
                     onError={(e) => {
                       e.target.onerror = null;

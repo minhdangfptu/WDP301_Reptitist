@@ -20,7 +20,7 @@ export const softDeleteOrder = async (id) => {
   return res.data.data || res.data;
 };
 
-export const createOrder = async (order_items) => {
-  const res = await axiosClient.post('order/create-order', { order_items });
+export const createOrder = async (order_items, delivery_info) => {
+  const res = await axiosClient.post('order/create-order', { order_items,delivery_info });
   return res.data.data || res.data;
 }; 

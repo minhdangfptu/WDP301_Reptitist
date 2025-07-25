@@ -3,17 +3,17 @@ const Transaction = require('../models/Transactions');
 const moment = require('moment');
 const User = require('../models/users');
 
-// PayOS Configuration
+
 const payOS = new PayOS(
   process.env.PAYOS_CLIENT_ID,
   process.env.PAYOS_API_KEY,
   process.env.PAYOS_CHECKSUM_KEY
 );
 
-// ✅ Tạo PayOS Payment
+
 const createPayOSPayment = async (req, res) => {
   try {
-    console.log('🚀 CREATE PAYOS PAYMENT - START');
+    
     const { amount, user_id, items, description } = req.query;
 
     // Validate input
@@ -62,12 +62,9 @@ const createPayOSPayment = async (req, res) => {
       cancelUrl: `${process.env.FRONTEND_URL}/payment/cancel?orderCode=${orderCode}`
     };
 
-    console.log('📋 PayOS Payment Data:', paymentData);
-
-    // Tạo payment link
     const paymentLinkRes = await payOS.createPaymentLink(paymentData);
 
-    console.log('✅ PayOS Payment Link:', paymentLinkRes.checkoutUrl);
+    
 
     // Lưu transaction vào database
     const transaction = await Transaction.create({
@@ -95,7 +92,6 @@ const createPayOSPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ PayOS Payment Error:', error);
     res.status(500).json({
       success: false,
       message: 'Không thể tạo link thanh toán',
@@ -104,7 +100,6 @@ const createPayOSPayment = async (req, res) => {
   }
 };
 
-// ✅ Kiểm tra trạng thái thanh toán (Polling method)
 const checkPayOSPaymentStatus = async (req, res) => {
   try {
     const { orderCode } = req.params;
@@ -224,9 +219,7 @@ const checkPayOSPaymentStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Check Status Error:', error);
 
-    // Fallback: trả về thông tin từ database
     try {
       const transaction = await Transaction.findOne({
         payos_order_code: parseInt(req.params.orderCode)
@@ -256,17 +249,12 @@ const checkPayOSPaymentStatus = async (req, res) => {
   }
 };
 
-// ✅ Hủy thanh toán
+
 const cancelPayOSPayment = async (req, res) => {
   try {
     const { orderCode } = req.params;
 
-    console.log('🚫 Canceling payment:', orderCode);
-
-    // Gọi PayOS API để hủy
     const cancelResult = await payOS.cancelPaymentLink(parseInt(orderCode));
-
-    // Cập nhật database
     const transaction = await Transaction.findOne({
       payos_order_code: parseInt(orderCode)
     });

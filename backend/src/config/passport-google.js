@@ -5,7 +5,21 @@ const Role = require('../models/Roles');
 const Cart = require('../models/Carts');
 
 // Determine the callback URL based on environment
-const callbackURL = `${process.env.VITE_BACKEND_URL}/reptitist/auth/google/callback`; // fix
+const callbackURL = `${process.env.VITE_BACKEND_URL}/reptitist/auth/google/callback`;
+
+async function generateUniqueUsername(baseName) {
+    const normalized = baseName.toLowerCase().replace(/\s+/g, '');
+    let username = normalized;
+    let count = 1;
+
+    // Loop until a unique username is found
+    while (await User.findOne({ username })) {
+        username = `${normalized}${count}`;
+        count++;
+    }
+
+    return username;
+}
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
@@ -23,8 +37,10 @@ passport.use(new GoogleStrategy({
             let user = await User.findOne({ email: profile.emails[0].value });
             if (!user) {
                 console.log('Creating new user from Google profile');
+                const baseUsername = profile.displayName || 'googleuser';
+                const uniqueUsername = await generateUniqueUsername(baseUsername);
                 user = await User.create({
-                    username: profile.displayName.replace(/\s+/g, '').toLowerCase(),
+                    username: uniqueUsername,
                     email: profile.emails[0].value,
                     password_hashed: 'google_auth_' + profile.id, // Placeholder password
                     role_id: await Role.findOne({ role_name: 'user' }).then(role => role._id),
