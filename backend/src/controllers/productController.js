@@ -85,10 +85,6 @@ const createProduct = async (req, res) => {
 
 const getMyProducts = async (req, res) => {
   try {
-    console.log('Get My Products Request:', {
-      user: req.user ? { id: req.user._id, account_type: req.user.account_type } : null
-    });
-
     // Kiểm tra user authentication
     if (!req.user) {
       return res.status(401).json({
@@ -110,8 +106,6 @@ const getMyProducts = async (req, res) => {
     const products = await Product.find({ user_id: req.user._id })
       .populate('product_category_id', 'product_category_name product_category_imageurl')
       .sort({ createdAt: -1 });
-
-    console.log(`Found ${products.length} products for user ${req.user._id}`);
 
     res.status(200).json(products);
 
@@ -210,10 +204,6 @@ const deleteMyProduct = async (req, res) => {
 
 const getMyProductStats = async (req, res) => {
   try {
-    console.log('Get Product Stats Request:', {
-      user: req.user ? { id: req.user._id } : null
-    });
-
     // Kiểm tra user authentication
     if (!req.user) {
       return res.status(401).json({
@@ -243,8 +233,6 @@ const getMyProductStats = async (req, res) => {
       totalValue
     };
 
-    console.log('Product stats:', stats);
-
     res.status(200).json(successResponse(stats));
 
   } catch (error) {
@@ -258,11 +246,6 @@ const getMyProductStats = async (req, res) => {
 
 const getShopDashboardStats = async (req, res) => {
   try {
-    console.log('🔥 Get Shop Dashboard Stats Request:', {
-      user: req.user ? { id: req.user._id } : null,
-      timeFilter: req.query.timeFilter
-    });
-
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -273,17 +256,13 @@ const getShopDashboardStats = async (req, res) => {
     const userId = req.user._id;
     const timeFilter = req.query.timeFilter || 'day';
 
-    
     const products = await Product.find({ user_id: userId })
       .populate('product_category_id', 'product_category_name');
-
-    console.log('📦 Found products:', products.length);
 
     const orders = await Order.find({ shop_id: userId })
       .populate('order_items.product_id', 'product_name product_price')
       .populate('customer_id', 'username email')
       .sort({ createdAt: -1 });
-
 
     const totalProducts = products.length;
     const activeProducts = products.filter(p => p.product_status === 'available').length;
@@ -356,7 +335,6 @@ const getShopDashboardStats = async (req, res) => {
       })
       .slice(-15); 
 
-
     const revenueByTime = {};
     
     orders.forEach(order => {
@@ -389,7 +367,6 @@ const getShopDashboardStats = async (req, res) => {
       })
       .slice(-30); 
 
-
     const cumulativeRevenue = [];
     let runningTotal = 0;
     
@@ -401,6 +378,7 @@ const getShopDashboardStats = async (req, res) => {
         cumulativeRevenue: runningTotal
       });
     });
+    
     const productRevenueStats = {};
     let totalRevenueForShare = 0;
 
@@ -427,7 +405,6 @@ const getShopDashboardStats = async (req, res) => {
       }))
       .sort((a, b) => b.revenue - a.revenue);
 
-
     const dashboardStats = {
       bestSellingProductsByTime,
       productRevenueStats: productRevenueShare,
@@ -447,7 +424,6 @@ const getShopDashboardStats = async (req, res) => {
         totalRevenue
       }
     };
-    
 
     res.status(200).json({
       success: true,
@@ -467,8 +443,6 @@ const getShopDashboardStats = async (req, res) => {
 // API mới cho trang Analytics chi tiết
 const getShopAnalytics = async (req, res) => {
   try {
-    
-
     if (!req.user) {
       return res.status(401).json({
         message: 'Bạn cần đăng nhập để thực hiện thao tác này'
@@ -637,8 +611,6 @@ const getShopAnalytics = async (req, res) => {
       timeAnalysis
     };
 
-    console.log('Analytics data generated successfully');
-
     res.status(200).json(successResponse(analyticsData));
 
   } catch (error) {
@@ -731,7 +703,6 @@ const getAllProductsByCategory = async (req, res) => {
 const getAllProductByName = async (req, res) => {
   try {
     const { name } = req.params;
-    console.log("productName param type:", typeof name, "value:", name);
 
     const products = await Product.find({
       product_name: { $regex: name, $options: 'i' },
@@ -1009,7 +980,6 @@ const getTopRatedProducts = async (req, res) => {
    .sort({ average_rating: -1 })
    .limit(limit);
   
-
    if (!products || products.length === 0) {
      return res.status(200).json({ 
        message: 'No products found with ratings',
@@ -1030,6 +1000,7 @@ const getTopRatedProducts = async (req, res) => {
    });
  }
 };
+
 const checkStockAvailability = async (req, res) => {
   try {
     const { productId } = req.params;

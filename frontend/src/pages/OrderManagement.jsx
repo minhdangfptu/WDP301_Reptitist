@@ -1,4 +1,4 @@
-// OrderManagement.jsx - Updated Implementation with 2 Action Buttons Only
+// OrderManagement.jsx - Complete Implementation with API Fixes
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
-import '../css/OrderManagement.css'; // Import CSS riêng
+import '../css/OrderManagement.css';
 
 import { baseUrl } from '../config';
 
@@ -76,13 +76,13 @@ const OrderManagement = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      // console.log('🔥 Fetching shop orders...');
+      console.log('🔥 Fetching shop orders...');
 
       const response = await axios.get(`${baseUrl}/reptitist/order/shop-orders`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // console.log('✅ Orders Response:', response.data);
+      console.log('✅ Orders Response:', response.data);
 
       const ordersData = response.data?.data || response.data?.orders || response.data || [];
       setOrders(ordersData);
@@ -102,7 +102,7 @@ const OrderManagement = () => {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      // console.log('🔥 Fetching dashboard stats for orders...');
+      console.log('🔥 Fetching dashboard stats for orders...');
 
       const response = await axios.get(
         `${baseUrl}/reptitist/shop/dashboard-stats`,
@@ -111,7 +111,6 @@ const OrderManagement = () => {
           params: { timeFilter: 'day' }
         }
       );
-
 
       // Process response same way as other pages
       let dashboardData = null;
@@ -163,34 +162,34 @@ const OrderManagement = () => {
     }
   };
 
-  // Update order status using correct API endpoint
+  // FIXED: Update order status using correct API endpoints and methods
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
       const token = localStorage.getItem('access_token');
       if (!token) return;
 
-      // console.log('🔄 Updating order status:', orderId, newStatus);
+      console.log('🔄 Updating order status:', orderId, newStatus);
 
       if (newStatus === 'shipped') {
-        // Use the specific ship order endpoint
+        // Use the specific ship order endpoint (PUT method)
         await axios.put(`${baseUrl}/reptitist/order/mark-shipped-order`, null, {
           headers: { Authorization: `Bearer ${token}` },
           params: { id: orderId }
         });
       } else if (newStatus === 'delivered') {
-        await axios.patch(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+
+        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { id: orderId, status: 'delivered' }
         });
       } else if (newStatus === 'cancelled') {
-        // Use shop endpoint to mark as cancelled
-        await axios.patch(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
+        await axios.get(`${baseUrl}/reptitist/order/update-order-status-by-shop`, {
           headers: { Authorization: `Bearer ${token}` },
           params: { id: orderId, status: 'cancelled' }
         });
       }
 
-      // Success messages based on status
+
       const statusMessages = {
         'shipped': 'Đã đánh dấu đơn hàng đang vận chuyển',
         'delivered': 'Đã đánh dấu đơn hàng đã giao thành công',
@@ -203,7 +202,7 @@ const OrderManagement = () => {
       await Promise.all([fetchOrders(), fetchStats()]);
 
     } catch (error) {
-      console.error(' Error updating order status:', error);
+      console.error('❌ Error updating order status:', error);
       console.error('Error details:', error.response?.data || error.message);
 
       // Show more specific error message
@@ -217,9 +216,8 @@ const OrderManagement = () => {
 
   // Helper function to get product image URL - FIX IMAGE DISPLAY
   const getProductImageUrl = (product) => {
-
     // Nếu là URL thông thường, return trực tiếp
-    if (product?.product_imageurl[0] && (product?.product_imageurl[0].startsWith('http') || product?.product_imageurl[0].startsWith('/'))) {
+    if (product?.product_imageurl?.[0] && (product?.product_imageurl[0].startsWith('http') || product?.product_imageurl[0].startsWith('/'))) {
       return product?.product_imageurl[0];
     }
 
@@ -796,7 +794,7 @@ const OrderManagement = () => {
                         </div>
                         <div className="om-detail-item full-width">
                           <label>Địa chỉ giao hàng:</label>
-                          <span>{selectedOrder.delivery_info.address}</span>
+                          <span>{selectedOrder.delivery_info.delivery_address}</span>
                         </div>
                         {selectedOrder.delivery_info?.note && (
                           <div className="om-detail-item full-width">
@@ -818,7 +816,7 @@ const OrderManagement = () => {
                         <div key={index} className="om-order-item">
                           <div className="om-item-info">
                             <img
-                              src={getProductImageUrl(item.product_id)}  //item.product_id?.product_imageurl?.[0]
+                              src={getProductImageUrl(item.product_id)}
                               alt={item.product_id?.product_name || 'Sản phẩm'}
                               className="om-item-image"
                               onError={(e) => {
