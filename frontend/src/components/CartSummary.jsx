@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import "../css/CartSummary.css"
 import { useAuth } from '../context/AuthContext'; 
 import CheckoutModal from './CheckoutModal'; 
-import { createOrder } from '../api/orderAPI'; 
+import { createOrder } from '../api/orderApi'; 
 import { ToastContainer } from "react-toastify";
 
 import 'react-toastify/dist/ReactToastify.css';
