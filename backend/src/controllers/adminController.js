@@ -339,6 +339,9 @@ const handleProductReport = async (req, res) => {
                 product_status: 'not_available'
             });
 
+
+            await ProductReport.deleteMany({ product_id: report.product_id._id });
+
             await ProductReport.findByIdAndUpdate(reportId, {
                 status: 'approved',
                 admin_note: adminNote,
@@ -379,7 +382,10 @@ const handleProductReport = async (req, res) => {
         } else if (action === 'reject') {
             // Từ chối báo cáo - khôi phục sản phẩm
             await Product.findByIdAndUpdate(report.product_id._id, {
-                product_status: 'available'
+                status: 'rejected',
+        admin_note: adminNote,
+        resolved_at: new Date(),
+        resolved_by: req.user._id
             });
 
             // Xóa tất cả các báo cáo liên quan đến sản phẩm này
