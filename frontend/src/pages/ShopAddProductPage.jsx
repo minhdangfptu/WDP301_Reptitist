@@ -35,6 +35,7 @@ const ShopAddProductPage = () => {
   // Image upload states
   const [imageFile, setImageFile] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
+  const [imageSource, setImageSource] = useState(''); // 'url' or 'file'
   const fileInputRef = useRef(null);
 
   // Form validation rules
@@ -129,22 +130,24 @@ const ShopAddProductPage = () => {
       const product = response.data;
       
       if (product) {
+        const imageUrl = Array.isArray(product.product_imageurl) 
+          ? product.product_imageurl[0] || '' 
+          : product.product_imageurl || '';
+
         setFormData({
           product_name: product.product_name || '',
           product_description: product.product_description || '',
           product_price: product.product_price ? product.product_price.toString() : '',
           product_quantity: product.product_quantity ? product.product_quantity.toString() : '',
           product_category_id: product.product_category_id?._id || product.product_category_id || '',
-          product_imageurl: Array.isArray(product.product_imageurl) 
-            ? product.product_imageurl[0] || '' 
-            : product.product_imageurl || '',
+          product_imageurl: imageUrl,
           product_status: product.product_status || 'available'
         });
         
-        const imageUrl = Array.isArray(product.product_imageurl) 
-          ? product.product_imageurl[0] || '' 
-          : product.product_imageurl || '';
         setPreviewImage(imageUrl);
+        if (imageUrl) {
+          setImageSource('url');
+        }
       }
     } catch (error) {
       console.error('Error fetching product:', error);
@@ -190,6 +193,18 @@ const ShopAddProductPage = () => {
   // Handle image URL change
   const handleImageUrlChange = (e) => {
     const value = e.target.value;
+    
+    // If user types in URL field, clear file upload
+    if (value) {
+      setImageFile(null);
+      setImageSource('url');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else {
+      setImageSource('');
+    }
+    
     setFormData(prev => ({
       ...prev,
       product_imageurl: value
@@ -203,6 +218,78 @@ const ShopAddProductPage = () => {
         product_imageurl: ''
       }));
     }
+  };
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    
+    if (!file) return;
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Chỉ hỗ trợ file ảnh: JPG, PNG, GIF, WebP');
+      e.target.value = '';
+      return;
+    }
+    
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      toast.error('Kích thước file không được vượt quá 5MB');
+      e.target.value = '';
+      return;
+    }
+    
+    // Clear URL input when file is selected
+    setFormData(prev => ({
+      ...prev,
+      product_imageurl: ''
+    }));
+    setImageSource('file');
+    
+    // Convert to base64 for preview and storage
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64String = event.target.result;
+      setImageFile(base64String);
+      setPreviewImage(base64String);
+      
+      // Clear errors
+      setErrors(prev => ({
+        ...prev,
+        product_imageurl: ''
+      }));
+    };
+    
+    reader.onerror = () => {
+      toast.error('Có lỗi xảy ra khi đọc file');
+      e.target.value = '';
+    };
+    
+    reader.readAsDataURL(file);
+  };
+
+  // Remove image
+  const removeImage = () => {
+    setImageFile(null);
+    setPreviewImage('');
+    setImageSource('');
+    setFormData(prev => ({
+      ...prev,
+      product_imageurl: ''
+    }));
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
+    // Set error if no image
+    setErrors(prev => ({
+      ...prev,
+      product_imageurl: 'Vui lòng chọn hình ảnh sản phẩm'
+    }));
   };
 
   // Handle blur event for validation
@@ -277,6 +364,7 @@ const ShopAddProductPage = () => {
       newErrors.product_category_id = 'Danh mục không tồn tại';
     }
 
+    // Image validation - require either URL or file
     if (!formData.product_imageurl && !imageFile) {
       newErrors.product_imageurl = 'Vui lòng nhập URL hình ảnh hoặc tải lên một ảnh sản phẩm';
     }
@@ -305,6 +393,9 @@ const ShopAddProductPage = () => {
         return;
       }
 
+      // Prepare image data - use file upload if available, otherwise use URL
+      const imageData = imageFile || formData.product_imageurl.trim();
+
       // Prepare form data
       const submitData = {
         product_name: formData.product_name.trim(),
@@ -312,11 +403,14 @@ const ShopAddProductPage = () => {
         product_price: parseInt(formData.product_price),
         product_quantity: parseInt(formData.product_quantity),
         product_category_id: formData.product_category_id,
-        product_imageurl: formData.product_imageurl.trim(),
+        product_imageurl: imageData,
         product_status: formData.product_status || 'available'
       };
 
-      console.log('Submitting data:', submitData);
+      console.log('Submitting data:', {
+        ...submitData,
+        product_imageurl: imageData ? (imageData.startsWith('data:') ? '[Base64 Image Data]' : imageData) : ''
+      });
 
       let response;
       if (isEdit) {
@@ -496,7 +590,7 @@ const ShopAddProductPage = () => {
                       value={formData.product_name}
                       onChange={handleInputChange}
                       onBlur={handleBlur}
-                      className={`pf-input ${errors.product_name ? 'pf-input-error' : ''}`}
+                      className={`pf-input ${errors.product_name ? 'pf-error' : ''}`}
                       placeholder="Nhập tên sản phẩm..."
                       maxLength="100"
                     />
@@ -514,20 +608,28 @@ const ShopAddProductPage = () => {
                       <i className="fas fa-money-bill-wave"></i>
                       Giá bán (VNĐ)
                     </label>
-                    <input
-                      type="text"
-                      name="product_price"
-                      value={formData.product_price}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`pf-input ${errors.product_price ? 'pf-input-error' : ''}`}
-                      placeholder="Nhập giá sản phẩm..."
-                    />
+                    <div className="pf-input-wrapper">
+                      <input
+                        type="text"
+                        name="product_price"
+                        value={formData.product_price}
+                        onChange={handleInputChange}
+                        onBlur={handleBlur}
+                        className={`pf-input pf-input-price ${errors.product_price ? 'pf-error' : ''}`}
+                        placeholder="0"
+                      />
+                      <span className="pf-input-suffix">VNĐ</span>
+                    </div>
                     {errors.product_price && (
                       <span className="pf-error-message">
                         <i className="fas fa-exclamation-circle"></i>
                         {errors.product_price}
                       </span>
+                    )}
+                    {formData.product_price && !errors.product_price && (
+                      <small className="pf-input-info">
+                        ≈ {parseInt(formData.product_price).toLocaleString('vi-VN')} VNĐ
+                      </small>
                     )}
                   </div>
 
@@ -543,8 +645,8 @@ const ShopAddProductPage = () => {
                       value={formData.product_quantity}
                       onChange={handleInputChange}
                       onBlur={handleBlur}
-                      className={`pf-input ${errors.product_quantity ? 'pf-input-error' : ''}`}
-                      placeholder="Nhập số lượng..."
+                      className={`pf-input ${errors.product_quantity ? 'pf-error' : ''}`}
+                      placeholder="0"
                     />
                     {errors.product_quantity && (
                       <span className="pf-error-message">
@@ -565,7 +667,7 @@ const ShopAddProductPage = () => {
                       value={formData.product_category_id}
                       onChange={handleInputChange}
                       onBlur={handleBlur}
-                      className={`pf-select ${errors.product_category_id ? 'pf-input-error' : ''}`}
+                      className={`pf-select ${errors.product_category_id ? 'pf-error' : ''}`}
                     >
                       <option value="">-- Chọn danh mục --</option>
                       {categories.map((category) => (
@@ -593,7 +695,7 @@ const ShopAddProductPage = () => {
                       value={formData.product_description}
                       onChange={handleInputChange}
                       onBlur={handleBlur}
-                      className={`pf-textarea ${errors.product_description ? 'pf-input-error' : ''}`}
+                      className={`pf-textarea ${errors.product_description ? 'pf-error' : ''}`}
                       placeholder="Nhập mô tả chi tiết về sản phẩm..."
                       rows="4"
                       maxLength="1000"
@@ -604,77 +706,200 @@ const ShopAddProductPage = () => {
                         {errors.product_description}
                       </span>
                     )}
-                    <small className="pf-field-hint">
+                    <small className="pf-input-info">
                       {formData.product_description.length}/1000 ký tự
                     </small>
                   </div>
+                </div>
+              </div>
 
-                  {/* Product Image */}
-                  <div className="pf-form-group pf-form-group-full">
-                    <label className="pf-label pf-required">
-                      <i className="fas fa-image"></i>
-                      Hình ảnh sản phẩm
-                    </label>
-                    <input
-                      type="url"
-                      name="product_imageurl"
-                      value={formData.product_imageurl}
-                      onChange={handleImageUrlChange}
-                      onBlur={handleBlur}
-                      className={`pf-input ${errors.product_imageurl ? 'pf-input-error' : ''}`}
-                      placeholder="Nhập URL hình ảnh sản phẩm..."
-                    />
+              {/* Image Section */}
+              <div className="pf-form-group-section">
+                <h3 className="pf-section-title">
+                  <i className="fas fa-image"></i>
+                  Hình ảnh sản phẩm
+                </h3>
+                
+                <div className="pf-image-section">
+                  <div className="pf-image-upload">
+                    {/* Upload Methods */}
+                    <div className="pf-upload-methods">
+                      {/* Method 1: Upload from computer */}
+                      <div className="pf-upload-method">
+                        <label className="pf-label">
+                          <i className="fas fa-upload"></i>
+                          Tải ảnh từ máy tính
+                        </label>
+                        <div className="pf-file-upload">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            className="pf-file-input"
+                            disabled={imageSource === 'url'}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="pf-btn pf-upload-btn"
+                            disabled={imageSource === 'url'}
+                          >
+                            <i className="fas fa-cloud-upload-alt"></i>
+                            {imageSource === 'url' ? 'Vui lòng xóa URL trước' : 'Chọn file ảnh'}
+                          </button>
+                        </div>
+                        <div className="pf-upload-info">
+                          <small>Hỗ trợ: JPG, PNG, GIF, WebP. Tối đa 5MB</small>
+                        </div>
+                      </div>
+
+                      <div className="pf-upload-divider">
+                        <span>HOẶC</span>
+                      </div>
+
+                      {/* Method 2: URL input */}
+                      <div className="pf-upload-method">
+                        <label className="pf-label">
+                          <i className="fas fa-link"></i>
+                          Nhập URL hình ảnh
+                        </label>
+                        <input
+                          type="url"
+                          name="product_imageurl"
+                          value={formData.product_imageurl}
+                          onChange={handleImageUrlChange}
+                          onBlur={handleBlur}
+                          className={`pf-input ${errors.product_imageurl ? 'pf-error' : ''}`}
+                          placeholder="https://example.com/image.jpg"
+                          disabled={imageSource === 'file'}
+                        />
+                        {imageSource === 'file' && (
+                          <small className="pf-input-info pf-warning">
+                            <i className="fas fa-info-circle"></i>
+                            Bạn đang sử dụng ảnh upload. Xóa ảnh để nhập URL.
+                          </small>
+                        )}
+                      </div>
+                    </div>
+
                     {errors.product_imageurl && (
-                      <span className="pf-error-message">
+                      <div className="pf-error-message">
                         <i className="fas fa-exclamation-circle"></i>
                         {errors.product_imageurl}
-                      </span>
-                    )}
-                    
-                    {/* Image Preview */}
-                    {previewImage && (
-                      <div className="pf-image-preview">
-                        <img 
-                          src={previewImage} 
-                          alt="Preview" 
-                          onError={() => setPreviewImage('')}
-                        />
                       </div>
                     )}
+                  </div>
+
+                  {/* Image Preview */}
+                  <div className="pf-image-preview-section">
+                    <div className="pf-image-preview">
+                      {previewImage ? (
+                        <div className="pf-preview-container">
+                          <img 
+                            src={previewImage} 
+                            alt="Preview" 
+                            className="pf-preview-image"
+                            onError={() => {
+                              setPreviewImage('');
+                              if (imageSource === 'url') {
+                                setErrors(prev => ({
+                                  ...prev,
+                                  product_imageurl: 'Không thể tải ảnh từ URL này'
+                                }));
+                              }
+                            }}
+                          />
+                          <div className="pf-preview-overlay">
+                            <button
+                              type="button"
+                              onClick={removeImage}
+                              className="pf-btn pf-btn-danger pf-remove-image"
+                              title="Xóa ảnh"
+                            >
+                              <i className="fas fa-trash"></i>
+                            </button>
+                          </div>
+                          <div className="pf-preview-info">
+                            {imageSource === 'file' ? 'Ảnh từ máy tính' : 'Ảnh từ URL'}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="pf-no-preview">
+                          <i className="fas fa-image"></i>
+                          <p>Chưa có ảnh</p>
+                          <small>Tải lên ảnh hoặc nhập URL</small>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Form Actions */}
               <div className="pf-form-actions">
-                <button
-                  type="button"
-                  onClick={() => navigate('/ShopProductManagement')}
-                  className="pf-btn pf-btn-secondary"
-                  disabled={loading}
-                >
-                  <i className="fas fa-times"></i>
-                  Hủy bỏ
-                </button>
+                <div className="pf-actions-left">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/ShopProductManagement')}
+                    className="pf-btn pf-btn-secondary"
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times"></i>
+                    Hủy bỏ
+                  </button>
+                </div>
                 
-                <button
-                  type="submit"
-                  className="pf-btn pf-btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin"></i>
-                      {isEdit ? 'Đang cập nhật...' : 'Đang thêm...'}
-                    </>
-                  ) : (
-                    <>
-                      <i className={`fas ${isEdit ? 'fa-save' : 'fa-plus'}`}></i>
-                      {isEdit ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}
-                    </>
-                  )}
-                </button>
+                <div className="pf-actions-right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({
+                        product_name: '',
+                        product_description: '',
+                        product_price: '',
+                        product_quantity: '',
+                        product_category_id: '',
+                        product_imageurl: '',
+                        product_status: 'available'
+                      });
+                      setImageFile(null);
+                      setPreviewImage('');
+                      setImageSource('');
+                      setErrors({});
+                      setTouched({});
+                      if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                      }
+                    }}
+                    className="pf-btn pf-btn-reset"
+                    disabled={loading}
+                  >
+                    <i className="fas fa-undo"></i>
+                    Đặt lại
+                  </button>
+                  
+                  <button
+                    type="submit"
+                    className="pf-btn pf-btn-primary pf-btn-submit"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        {isEdit ? 'Đang cập nhật...' : 'Đang thêm...'}
+                      </>
+                    ) : (
+                      <>
+                        <i className={`fas ${isEdit ? 'fa-save' : 'fa-plus'}`}></i>
+                        {isEdit ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
+
+
             </div>
           </form>
         </div>

@@ -1853,7 +1853,6 @@ const AdminShopManagement = () => {
                           <th>Số lượng</th>
                           <th>Trạng thái</th>
                           <th>Ngày tạo</th>
-                          <th>Hành động</th>
                         </tr>
                       </thead>
                       <tbody>
