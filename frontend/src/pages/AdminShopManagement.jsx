@@ -1455,7 +1455,7 @@ const AdminShopManagement = () => {
                         </td>
                         <td>
                           <div className="um-action-buttons">
-                            {/* <button
+                            <button
                               onClick={() => {
                                 setDeletingProductId(product._id);
                                 setDeleteReason("");
@@ -1465,7 +1465,7 @@ const AdminShopManagement = () => {
                               title="Xóa sản phẩm"
                             >
                               <i className="fas fa-trash"></i>
-                            </button> */}
+                            </button>
                             <button
                               className={`um-status-btn ${
                                 product.product_status === "not_available"
