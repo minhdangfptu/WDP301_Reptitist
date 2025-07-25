@@ -15,21 +15,13 @@
 
 ---
 
-## 🧱 Project Structure
-
-WDP301_REPTITISTSERVICE/
-├── backend/ # REST API using Express & MongoDB
-├── frontend/ # Web UI built with React & Vite
-
----
-
 ## 🛠️ Technologies Used
 
 | Frontend (Client) | Backend (Server) | Database   |
 |-------------------|------------------|------------|
 | React + Vite      | Node.js + Express| MongoDB    |
-| TailwindCSS       | JWT Authentication | Mongoose |
-| Axios, React Router | Joi Validation | Cloudinary (image hosting) |
+| BootstrapCSS      | JWT Authentication | Mongoose |
+| Axios, React Router | Joi Validation | MongoDBAtlats |
 
 ---
 
